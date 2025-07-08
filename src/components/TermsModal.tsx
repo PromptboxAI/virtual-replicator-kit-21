@@ -28,8 +28,8 @@ export function TermsModal({ open, onAccept }: TermsModalProps) {
   const canProceed = termsAccepted && policiesAccepted;
 
   return (
-    <Dialog open={open} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-md [&>button]:hidden">
+    <Dialog open={open} modal={false}>
+      <DialogContent className="sm:max-w-md [&>button]:hidden bg-background border-border">
         <DialogHeader>
           <DialogTitle className="text-center">Welcome to PromptBox</DialogTitle>
         </DialogHeader>
