@@ -1,5 +1,5 @@
 import { usePrivy } from '@privy-io/react-auth';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 export function useAuth() {
@@ -15,11 +15,17 @@ export function useAuth() {
     unlinkWallet
   } = usePrivy();
 
+  const [isProcessing, setIsProcessing] = useState(false);
+
   // Sync Privy user with Supabase profiles
   useEffect(() => {
-    if (!ready || !authenticated || !user) return;
+    if (!ready || !authenticated || !user) {
+      setIsProcessing(false);
+      return;
+    }
 
     const syncUserProfile = async () => {
+      setIsProcessing(true);
       try {
         // Use Privy's user ID directly (it's a string, not UUID)
         const userId = user.id;
@@ -60,6 +66,8 @@ export function useAuth() {
         }
       } catch (error) {
         console.error('Error syncing user profile:', error);
+      } finally {
+        setIsProcessing(false);
       }
     };
 
@@ -69,7 +77,7 @@ export function useAuth() {
   return {
     user: authenticated ? user : null,
     session: authenticated ? { user } : null,
-    loading: !ready,
+    loading: !ready || isProcessing,
     signOut: logout,
     signIn: login,
     linkEmail,
