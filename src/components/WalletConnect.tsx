@@ -23,18 +23,23 @@ export function WalletConnect() {
   useEffect(() => {
     const checkWallet = () => {
       if (typeof window !== 'undefined') {
+        // Be more strict about MetaMask detection
         const hasEthereum = typeof window.ethereum !== 'undefined';
-        const hasMetaMask = hasEthereum && window.ethereum.isMetaMask;
-        const hasAnyWallet = hasEthereum || window.ethereum;
+        const isMetaMask = hasEthereum && window.ethereum.isMetaMask === true;
+        const isCoinbase = hasEthereum && window.ethereum.isCoinbaseWallet === true;
+        const hasWorkingWallet = isMetaMask || isCoinbase;
         
         console.log('=== WALLET DETECTION DEBUG ===');
         console.log('window.ethereum exists:', hasEthereum);
-        console.log('window.ethereum.isMetaMask:', hasMetaMask);
-        console.log('hasAnyWallet:', hasAnyWallet);
-        console.log('Setting isWalletInstalled to:', hasAnyWallet || hasMetaMask);
+        console.log('window.ethereum.isMetaMask:', window.ethereum?.isMetaMask);
+        console.log('window.ethereum.isCoinbaseWallet:', window.ethereum?.isCoinbaseWallet);
+        console.log('isMetaMask:', isMetaMask);
+        console.log('isCoinbase:', isCoinbase);
+        console.log('hasWorkingWallet:', hasWorkingWallet);
+        console.log('Setting isWalletInstalled to:', hasWorkingWallet);
         console.log('==============================');
         
-        setIsWalletInstalled(hasAnyWallet || hasMetaMask);
+        setIsWalletInstalled(hasWorkingWallet);
       }
     };
 
