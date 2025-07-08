@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Wallet, LogOut, Copy, ExternalLink, AlertCircle } from "lucide-react";
+import { Wallet, LogOut, Copy, ExternalLink, AlertCircle, Download } from "lucide-react";
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
 import { injected } from 'wagmi/connectors';
 import {
@@ -10,13 +10,36 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export function WalletConnect() {
   const { address, isConnected } = useAccount();
   const { connect, error, isError, isPending } = useConnect();
   const { disconnect } = useDisconnect();
   const { toast } = useToast();
+  const [isWalletInstalled, setIsWalletInstalled] = useState<boolean | null>(null);
+
+  // Check if wallet is installed
+  useEffect(() => {
+    const checkWallet = () => {
+      if (typeof window !== 'undefined') {
+        const hasEthereum = typeof window.ethereum !== 'undefined';
+        const hasMetaMask = hasEthereum && window.ethereum.isMetaMask;
+        const hasAnyWallet = hasEthereum || window.ethereum;
+        
+        console.log('Wallet detection:', { hasEthereum, hasMetaMask, hasAnyWallet });
+        setIsWalletInstalled(hasAnyWallet || hasMetaMask);
+      }
+    };
+
+    checkWallet();
+    
+    // Also check when the page loads completely
+    if (document.readyState === 'loading') {
+      window.addEventListener('load', checkWallet);
+      return () => window.removeEventListener('load', checkWallet);
+    }
+  }, []);
 
   // Handle connection errors
   useEffect(() => {
@@ -34,11 +57,11 @@ export function WalletConnect() {
     try {
       console.log('Attempting to connect wallet...');
       
-      // Check if wallet is installed
-      if (typeof window.ethereum === 'undefined') {
+      // Double-check wallet installation before connecting
+      if (!isWalletInstalled) {
         toast({
           title: "Wallet Not Found",
-          description: "Please install MetaMask or another web3 wallet to continue.",
+          description: "Please install MetaMask to continue.",
           variant: "destructive",
         });
         return;
@@ -99,6 +122,59 @@ export function WalletConnect() {
     return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
   };
 
+  // Show install prompt if wallet is not detected
+  if (isWalletInstalled === false) {
+    return (
+      <div className="flex flex-col items-center space-y-3">
+        <Button 
+          onClick={() => window.open('https://metamask.io/download/', '_blank')}
+          variant="outline" 
+          className="flex items-center space-x-2 border-destructive/50 hover:border-destructive hover:bg-destructive/10"
+        >
+          <Download className="h-4 w-4" />
+          <span>Install MetaMask</span>
+        </Button>
+        <div className="text-xs text-muted-foreground text-center max-w-56">
+          You need a web3 wallet like MetaMask to connect to PromptBox
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading while checking wallet
+  if (isWalletInstalled === null) {
+    return (
+      <Button 
+        disabled
+        variant="outline" 
+        className="flex items-center space-x-2 border-border opacity-50"
+      >
+        <div className="w-4 h-4 border-2 border-muted-foreground border-t-transparent rounded-full animate-spin"></div>
+        <span>Checking...</span>
+      </Button>
+    );
+  }
+
+  // If wallet is connecting, show connecting state with instructions
+  if (isPending) {
+    return (
+      <div className="flex flex-col items-center space-y-2">
+        <Button 
+          disabled
+          variant="outline" 
+          className="flex items-center space-x-2 border-primary/50 opacity-50"
+        >
+          <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <span>Connecting...</span>
+        </Button>
+        <div className="text-xs text-muted-foreground text-center max-w-48">
+          Check your wallet for a connection request
+        </div>
+      </div>
+    );
+  }
+
+  // Connected wallet dropdown
   if (isConnected && address) {
     return (
       <DropdownMenu>
@@ -132,25 +208,6 @@ export function WalletConnect() {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-    );
-  }
-
-  // If wallet is connecting, show connecting state with instructions
-  if (isPending) {
-    return (
-      <div className="flex flex-col items-center space-y-2">
-        <Button 
-          disabled
-          variant="outline" 
-          className="flex items-center space-x-2 border-primary/50 opacity-50"
-        >
-          <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-          <span>Connecting...</span>
-        </Button>
-        <div className="text-xs text-muted-foreground text-center max-w-48">
-          Check your wallet for a connection request
-        </div>
-      </div>
     );
   }
 
