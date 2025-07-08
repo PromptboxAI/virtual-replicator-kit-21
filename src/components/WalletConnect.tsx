@@ -27,7 +27,13 @@ export function WalletConnect() {
         const hasMetaMask = hasEthereum && window.ethereum.isMetaMask;
         const hasAnyWallet = hasEthereum || window.ethereum;
         
-        console.log('Wallet detection:', { hasEthereum, hasMetaMask, hasAnyWallet });
+        console.log('=== WALLET DETECTION DEBUG ===');
+        console.log('window.ethereum exists:', hasEthereum);
+        console.log('window.ethereum.isMetaMask:', hasMetaMask);
+        console.log('hasAnyWallet:', hasAnyWallet);
+        console.log('Setting isWalletInstalled to:', hasAnyWallet || hasMetaMask);
+        console.log('==============================');
+        
         setIsWalletInstalled(hasAnyWallet || hasMetaMask);
       }
     };
@@ -122,12 +128,23 @@ export function WalletConnect() {
     return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
   };
 
+  console.log('=== RENDER STATE DEBUG ===');
+  console.log('isWalletInstalled:', isWalletInstalled);
+  console.log('isPending:', isPending);
+  console.log('isConnected:', isConnected);
+  console.log('isError:', isError);
+  console.log('=========================');
+
   // Show install prompt if wallet is not detected
   if (isWalletInstalled === false) {
+    console.log('RENDERING: Install MetaMask button');
     return (
       <div className="flex flex-col items-center space-y-3">
         <Button 
-          onClick={() => window.open('https://metamask.io/download/', '_blank')}
+          onClick={() => {
+            console.log('Install MetaMask button clicked');
+            window.open('https://metamask.io/download/', '_blank');
+          }}
           variant="outline" 
           className="flex items-center space-x-2 border-destructive/50 hover:border-destructive hover:bg-destructive/10"
         >
@@ -143,6 +160,7 @@ export function WalletConnect() {
 
   // Show loading while checking wallet
   if (isWalletInstalled === null) {
+    console.log('RENDERING: Checking wallet state');
     return (
       <Button 
         disabled
