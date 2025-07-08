@@ -42,7 +42,7 @@ const App = () => (
         rpcUrls: { default: { http: ['https://rpc.ankr.com/eth'] } },
         blockExplorers: { default: { name: 'Etherscan', url: 'https://etherscan.io' } },
       },
-      // Remove walletConnectCloudProjectId for now - you can add it later if needed
+      walletConnectCloudProjectId: 'your-project-id', // Optional: You can get this from walletconnect.com
       embeddedWallets: {
         createOnLogin: 'users-without-wallets',
       },
