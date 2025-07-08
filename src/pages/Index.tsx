@@ -9,12 +9,15 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Filter, MoreHorizontal, Loader2 } from "lucide-react";
 import { useAgents } from "@/hooks/useAgents";
+import { useAuth } from "@/hooks/useAuth";
+import { TermsModal } from "@/components/TermsModal";
 import agentAvatar1 from "@/assets/agent-avatar-1.png";
 import agentAvatar2 from "@/assets/agent-avatar-2.png";
 import agentAvatar3 from "@/assets/agent-avatar-3.png";
 
 const Index = () => {
   const { agents, loading, error } = useAgents();
+  const { showTermsModal, handleAcceptTerms } = useAuth();
 
   // Get spotlight agent (highest market cap)
   const spotlightAgent = agents.length > 0 ? {
@@ -145,6 +148,12 @@ const Index = () => {
       </section>
 
       <Footer />
+      
+      {/* Terms Modal */}
+      <TermsModal 
+        open={showTermsModal} 
+        onAccept={handleAcceptTerms} 
+      />
     </div>
   );
 };

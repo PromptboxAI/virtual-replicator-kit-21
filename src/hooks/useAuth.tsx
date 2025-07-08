@@ -136,6 +136,26 @@ export function useAuth() {
     syncUserProfile();
   }, [ready, authenticated, user]);
 
+  const handleAcceptTerms = async () => {
+    if (!user) return;
+    
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ terms_accepted_at: new Date().toISOString() })
+        .eq('user_id', user.id);
+        
+      if (error) {
+        console.error('Error accepting terms:', error);
+      } else {
+        setHasAcceptedTerms(true);
+        setShowTermsModal(false);
+      }
+    } catch (error) {
+      console.error('Error accepting terms:', error);
+    }
+  };
+
   return {
     user: authenticated ? user : null,
     session: authenticated ? { user } : null,
@@ -147,6 +167,9 @@ export function useAuth() {
     unlinkEmail,
     unlinkWallet,
     authenticated,
-    ready
+    ready,
+    showTermsModal,
+    hasAcceptedTerms,
+    handleAcceptTerms
   };
 }
