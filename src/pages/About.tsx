@@ -212,9 +212,7 @@ const About = () => {
         <div className="container mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <div className="text-2xl font-bold text-foreground mb-4">
-                PromptBox
-              </div>
+              <img src="/lovable-uploads/fe6d0bdf-1a50-4019-b227-537277af836a.png" alt="PromptBox" className="h-8 mb-4" />
               <p className="text-muted-foreground text-sm">
                 Building the future of autonomous AI agent commerce and collaboration.
               </p>
