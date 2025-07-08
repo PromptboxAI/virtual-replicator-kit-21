@@ -44,15 +44,36 @@ export function WalletConnect() {
         return;
       }
 
-      await connect({ connector: injected() });
+      // Add timeout to prevent infinite pending state
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Connection timeout')), 10000)
+      );
+
+      const connectPromise = connect({ connector: injected() });
+
+      await Promise.race([connectPromise, timeoutPromise]);
       console.log('Wallet connection initiated');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Connection error:', err);
-      toast({
-        title: "Connection Error",
-        description: "Failed to connect wallet. Please check your wallet and try again.",
-        variant: "destructive",
-      });
+      
+      if (err.message === 'Connection timeout') {
+        toast({
+          title: "Connection Timeout",
+          description: "Please check your wallet and try again. Make sure to approve the connection request.",
+          variant: "destructive",
+        });
+      } else if (err.message?.includes('User rejected')) {
+        toast({
+          title: "Connection Cancelled",
+          description: "You cancelled the wallet connection.",
+        });
+      } else {
+        toast({
+          title: "Connection Error", 
+          description: "Failed to connect wallet. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -114,19 +135,32 @@ export function WalletConnect() {
     );
   }
 
+  // If wallet is connecting, show connecting state with instructions
+  if (isPending) {
+    return (
+      <div className="flex flex-col items-center space-y-2">
+        <Button 
+          disabled
+          variant="outline" 
+          className="flex items-center space-x-2 border-primary/50 opacity-50"
+        >
+          <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <span>Connecting...</span>
+        </Button>
+        <div className="text-xs text-muted-foreground text-center max-w-48">
+          Check your wallet for a connection request
+        </div>
+      </div>
+    );
+  }
+
   return (
     <Button 
       onClick={handleConnect}
-      disabled={isPending}
       variant="outline" 
-      className="flex items-center space-x-2 border-primary/50 hover:border-primary hover:bg-primary/10 disabled:opacity-50"
+      className="flex items-center space-x-2 border-primary/50 hover:border-primary hover:bg-primary/10"
     >
-      {isPending ? (
-        <>
-          <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-          <span>Connecting...</span>
-        </>
-      ) : isError ? (
+      {isError ? (
         <>
           <AlertCircle className="h-4 w-4 text-destructive" />
           <span>Retry Connection</span>
