@@ -24,6 +24,24 @@ const App = () => (
         showWalletLoginFirst: true,
       },
       loginMethods: ['wallet', 'email'],
+      supportedChains: [
+        {
+          id: 1,
+          name: 'Ethereum',
+          network: 'ethereum',
+          nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+          rpcUrls: { default: { http: ['https://rpc.ankr.com/eth'] } },
+          blockExplorers: { default: { name: 'Etherscan', url: 'https://etherscan.io' } },
+        },
+      ],
+      defaultChain: {
+        id: 1,
+        name: 'Ethereum',
+        network: 'ethereum',
+        nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+        rpcUrls: { default: { http: ['https://rpc.ankr.com/eth'] } },
+        blockExplorers: { default: { name: 'Etherscan', url: 'https://etherscan.io' } },
+      },
       embeddedWallets: {
         createOnLogin: 'users-without-wallets',
       },
