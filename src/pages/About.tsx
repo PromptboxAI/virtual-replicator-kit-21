@@ -214,7 +214,7 @@ const About = () => {
         <div className="container mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <div className="text-2xl font-bold bg-gradient-story bg-clip-text text-transparent mb-4">
+              <div className="text-2xl font-bold text-foreground mb-4">
                 PromptBox
               </div>
               <p className="text-muted-foreground text-sm">
