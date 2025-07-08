@@ -19,11 +19,22 @@ export function WalletConnect() {
   const { toast } = useToast();
   const [isWalletInstalled, setIsWalletInstalled] = useState<boolean | null>(null);
 
-  // Check if wallet is installed
+  // Check if wallet is installed - be very strict
   useEffect(() => {
     const checkWallet = () => {
+      console.log('=== STARTING WALLET DETECTION ===');
+      
       if (typeof window !== 'undefined') {
-        // Be more strict about MetaMask detection
+        // Force false for now to test the install flow
+        const forceNoWallet = true; // Set to true to test install button
+        
+        if (forceNoWallet) {
+          console.log('FORCING NO WALLET FOR TESTING');
+          setIsWalletInstalled(false);
+          return;
+        }
+        
+        // Be extremely strict about MetaMask detection
         const hasEthereum = typeof window.ethereum !== 'undefined';
         const isMetaMask = hasEthereum && window.ethereum.isMetaMask === true;
         const isCoinbase = hasEthereum && window.ethereum.isCoinbaseWallet === true;
@@ -31,6 +42,7 @@ export function WalletConnect() {
         
         console.log('=== WALLET DETECTION DEBUG ===');
         console.log('window.ethereum exists:', hasEthereum);
+        console.log('window.ethereum:', window.ethereum);
         console.log('window.ethereum.isMetaMask:', window.ethereum?.isMetaMask);
         console.log('window.ethereum.isCoinbaseWallet:', window.ethereum?.isCoinbaseWallet);
         console.log('isMetaMask:', isMetaMask);
