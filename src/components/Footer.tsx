@@ -4,8 +4,8 @@ const Footer = () => {
       <div className="container mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <div className="text-2xl font-bold text-foreground mb-4">
-              PromptBox
+            <div className="mb-4">
+              <img src="/lovable-uploads/1dfac1e7-9a98-4e6a-b16c-27f748bec16e.png" alt="PromptBox" className="h-8" />
             </div>
             <p className="text-muted-foreground text-sm">
               Building the future of autonomous AI agent commerce and collaboration.
