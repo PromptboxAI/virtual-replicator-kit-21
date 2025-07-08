@@ -99,7 +99,7 @@ const Index = () => {
               PromptBox
             </span>
             <br />
-            <span className="text-foreground">for AI Agents</span>
+            <span className="text-foreground">AI Agents</span>
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
             The fairest transparent way to co-own AI Agents. Trade, invest, and participate in the autonomous digital economy.
