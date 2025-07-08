@@ -21,13 +21,9 @@ const About = () => {
             <br />
             PromptBox lets you take control over your AI agents and earn wherever they're used.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex justify-center">
             <Button size="lg" className="bg-white text-primary hover:bg-white/90 font-semibold">
               Start Building
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-            <Button size="lg" variant="outline" className="bg-transparent border-white text-white hover:bg-white/10 hover:border-white/80">
-              Learn More
             </Button>
           </div>
         </div>
