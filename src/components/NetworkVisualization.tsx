@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { useAgents } from '@/hooks/useAgents';
 
 interface Node {
   id: string;
@@ -17,17 +18,57 @@ interface NetworkVisualizationProps {
 export function NetworkVisualization({ className }: NetworkVisualizationProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>();
+  const { agents, loading } = useAgents();
   
-  const nodes: Node[] = [
-    { id: 'aixbt', name: 'aixbt', x: 200, y: 150, radius: 25, color: 'hsl(261, 83%, 58%)', connections: ['Luna', 'Zerebro', 'Aelred'] },
-    { id: 'Luna', name: 'Luna', x: 100, y: 100, radius: 20, color: 'hsl(192, 100%, 50%)', connections: ['aixbt', 'Degenixi'] },
-    { id: 'Zerebro', name: 'Zerebro', x: 300, y: 80, radius: 18, color: 'hsl(142, 76%, 36%)', connections: ['aixbt', 'Athena'] },
-    { id: 'Aelred', name: 'Aelred', x: 280, y: 220, radius: 22, color: 'hsl(261, 83%, 58%)', connections: ['aixbt', 'Athena'] },
-    { id: 'Degenixi', name: 'Degenixi', x: 50, y: 200, radius: 16, color: 'hsl(192, 100%, 50%)', connections: ['Luna'] },
-    { id: 'Athena', name: 'Athena', x: 350, y: 150, radius: 19, color: 'hsl(142, 76%, 36%)', connections: ['Zerebro', 'Aelred'] },
-    { id: 'Gigabrain', name: 'Gigabrain', x: 150, y: 250, radius: 17, color: 'hsl(192, 100%, 50%)', connections: ['aixbt'] },
-    { id: 'MacOINT', name: 'MacOINT', x: 120, y: 50, radius: 15, color: 'hsl(261, 83%, 58%)', connections: ['Luna'] },
-  ];
+  // Generate nodes from database agents
+  const generateNodes = (): Node[] => {
+    if (loading || agents.length === 0) return [];
+    
+    const colors = [
+      'hsl(261, 83%, 58%)', // Purple
+      'hsl(192, 100%, 50%)', // Cyan
+      'hsl(142, 76%, 36%)', // Green
+      'hsl(45, 93%, 47%)', // Yellow
+      'hsl(0, 72%, 51%)', // Red
+      'hsl(262, 52%, 47%)', // Indigo
+    ];
+    
+    // Take first 8 agents and position them in a network layout
+    const displayAgents = agents.slice(0, 8);
+    
+    return displayAgents.map((agent, index) => {
+      // Calculate position in a circular pattern with some randomness
+      const angle = (index / displayAgents.length) * 2 * Math.PI;
+      const radius = 120 + Math.random() * 60;
+      const centerX = 200;
+      const centerY = 150;
+      
+      const x = centerX + Math.cos(angle) * radius;
+      const y = centerY + Math.sin(angle) * radius;
+      
+      // Calculate node size based on market cap
+      const marketCap = agent.market_cap || 0;
+      const baseRadius = 15;
+      const maxRadius = 25;
+      const normalizedRadius = baseRadius + (marketCap / 10000000) * (maxRadius - baseRadius);
+      
+      // Generate some connections to other agents
+      const possibleConnections = displayAgents
+        .filter((_, i) => i !== index)
+        .slice(0, Math.floor(Math.random() * 3) + 1)
+        .map(a => a.name);
+      
+      return {
+        id: agent.name,
+        name: agent.name,
+        x: Math.max(30, Math.min(370, x)), // Keep within bounds
+        y: Math.max(30, Math.min(270, y)), // Keep within bounds
+        radius: Math.min(maxRadius, Math.max(baseRadius, normalizedRadius)),
+        color: colors[index % colors.length],
+        connections: possibleConnections,
+      };
+    });
+  };
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -49,6 +90,18 @@ export function NetworkVisualization({ className }: NetworkVisualizationProps) {
     let time = 0;
     
     const animate = () => {
+      const nodes = generateNodes();
+      if (nodes.length === 0) {
+        // Show loading state
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#666666';
+        ctx.font = '14px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Loading agents...', 200, 150);
+        animationRef.current = requestAnimationFrame(animate);
+        return;
+      }
+      
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       time += 0.02;
 
@@ -113,7 +166,7 @@ export function NetworkVisualization({ className }: NetworkVisualizationProps) {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, []);
+  }, [agents, loading]);
 
   return (
     <div className={`relative ${className}`}>
