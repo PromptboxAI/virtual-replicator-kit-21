@@ -10,31 +10,24 @@ const Learn = () => {
       <Header />
       
       {/* Hero Section */}
-      <section className="relative py-20 px-4 min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-400 via-purple-500 to-blue-600">
-        {/* Animated background elements could go here */}
+      <section className="py-20 px-4">
         <div className="container mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-            <div className="text-left">
-              <h1 className="text-6xl md:text-8xl mb-8 text-white">
-                <span className="font-normal">LEARN </span>
-                <span className="font-bold">PROMPT</span>
-              </h1>
-              <h2 className="text-2xl md:text-3xl mb-6 text-white/90">
-                Leverage the power
-                <br />
-                of autonomous intelligence
-                <br />
-                on the world's AI blockchain.
-              </h2>
-            </div>
-            <div className="flex justify-center lg:justify-end">
-              <Button className="bg-black text-white hover:bg-black/90 rounded-full px-8 py-6 text-base font-medium">
-                <div className="flex flex-col items-center">
-                  <span className="text-xs uppercase tracking-wide opacity-80">GET STARTED WITH</span>
-                  <span className="text-lg font-semibold">AI Agents</span>
-                </div>
-              </Button>
-            </div>
+          <h1 className="text-6xl md:text-8xl mb-8 text-foreground text-left">
+            <span className="font-normal">LEARN </span>
+            <span className="font-bold">PROMPT</span>
+          </h1>
+          <h2 className="text-3xl md:text-4xl mb-6 text-foreground text-left">
+            Leverage the power
+            <br />
+            of autonomous intelligence
+            <br />
+            on the world's AI blockchain.
+          </h2>
+          <div className="flex justify-end">
+            <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-lg px-8 py-6">
+              Get Started with AI Agents
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
           </div>
         </div>
       </section>
