@@ -96,7 +96,7 @@ export function NetworkVisualization({ className }: NetworkVisualizationProps) {
         ctx.stroke();
 
         // Node label
-        ctx.fillStyle = 'white';
+        ctx.fillStyle = '#000000';
         ctx.font = '12px Inter, sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText(node.name, currentX, currentY + node.radius + 20);
@@ -122,7 +122,7 @@ export function NetworkVisualization({ className }: NetworkVisualizationProps) {
         className="w-full h-full"
         style={{ background: 'transparent' }}
       />
-      <div className="absolute top-4 left-4 text-sm text-muted-foreground">
+      <div className="absolute top-4 left-4 text-sm text-foreground font-medium">
         Agent Network
       </div>
     </div>
