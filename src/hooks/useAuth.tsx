@@ -21,11 +21,14 @@ export function useAuth() {
 
     const syncUserProfile = async () => {
       try {
+        // Use Privy's user ID directly (it's a string, not UUID)
+        const userId = user.id;
+        
         // Check if profile exists
         const { data: existingProfile } = await supabase
           .from('profiles')
           .select('*')
-          .eq('user_id', user.id)
+          .eq('user_id', userId)
           .single();
 
         if (!existingProfile) {
@@ -33,7 +36,7 @@ export function useAuth() {
           const { error } = await supabase
             .from('profiles')
             .insert({
-              user_id: user.id,
+              user_id: userId,
               wallet_address: user.wallet?.address,
               username: user.email?.address?.split('@')[0] || `user_${user.id.slice(0, 8)}`,
               display_name: user.email?.address?.split('@')[0] || `User ${user.id.slice(0, 8)}`,
@@ -48,7 +51,7 @@ export function useAuth() {
             const { error } = await supabase
               .from('profiles')
               .update({ wallet_address: user.wallet.address })
-              .eq('user_id', user.id);
+              .eq('user_id', userId);
 
             if (error) {
               console.error('Error updating wallet address:', error);
