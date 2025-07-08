@@ -21,6 +21,7 @@ export function useAuth() {
 
   // Handle authentication state changes and close modals
   useEffect(() => {
+    console.log('Privy state:', { ready, authenticated, user });
     if (ready && authenticated && user) {
       // Multiple attempts to close Privy modals with different selectors
       const closeModals = () => {
