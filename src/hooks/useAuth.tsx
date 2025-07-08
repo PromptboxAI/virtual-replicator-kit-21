@@ -1,66 +1,79 @@
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
-import { User, Session } from '@supabase/supabase-js';
+import { usePrivy } from '@privy-io/react-auth';
+import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-interface AuthContextType {
-  user: User | null;
-  session: Session | null;
-  loading: boolean;
-  signOut: () => Promise<void>;
-}
+export function useAuth() {
+  const { 
+    ready, 
+    authenticated, 
+    user, 
+    login, 
+    logout,
+    linkEmail,
+    linkWallet,
+    unlinkEmail,
+    unlinkWallet
+  } = usePrivy();
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
-
+  // Sync Privy user with Supabase profiles
   useEffect(() => {
-    // Get initial session
-    const getInitialSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
+    if (!ready || !authenticated || !user) return;
+
+    const syncUserProfile = async () => {
+      try {
+        // Check if profile exists
+        const { data: existingProfile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+
+        if (!existingProfile) {
+          // Create new profile
+          const { error } = await supabase
+            .from('profiles')
+            .insert({
+              user_id: user.id,
+              wallet_address: user.wallet?.address,
+              username: user.email?.address?.split('@')[0] || `user_${user.id.slice(0, 8)}`,
+              display_name: user.email?.address?.split('@')[0] || `User ${user.id.slice(0, 8)}`,
+            });
+
+          if (error) {
+            console.error('Error creating profile:', error);
+          }
+        } else {
+          // Update existing profile with wallet if connected
+          if (user.wallet?.address && existingProfile.wallet_address !== user.wallet.address) {
+            const { error } = await supabase
+              .from('profiles')
+              .update({ wallet_address: user.wallet.address })
+              .eq('user_id', user.id);
+
+            if (error) {
+              console.error('Error updating wallet address:', error);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error syncing user profile:', error);
+      }
     };
 
-    getInitialSession();
+    syncUserProfile();
+  }, [ready, authenticated, user]);
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-      }
-    );
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const signOut = async () => {
-    await supabase.auth.signOut();
+  return {
+    user: authenticated ? user : null,
+    session: authenticated ? { user } : null,
+    loading: !ready,
+    signOut: logout,
+    signIn: login,
+    linkEmail,
+    linkWallet,
+    unlinkEmail,
+    unlinkWallet,
+    authenticated,
+    ready
   };
-
-  const value = {
-    user,
-    session,
-    loading,
-    signOut,
-  };
-
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
-}
-
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
 }

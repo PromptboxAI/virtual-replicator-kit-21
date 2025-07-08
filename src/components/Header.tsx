@@ -1,8 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, User, LogOut } from "lucide-react";
+import { Search, User, LogOut, Wallet } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-import { WalletConnect } from "@/components/WalletConnect";
 import { useAuth } from "@/hooks/useAuth";
 import {
   DropdownMenu,
@@ -15,7 +14,7 @@ import {
 export function Header() {
   const location = useLocation();
   const isAboutPage = location.pathname === '/about';
-  const { user, signOut } = useAuth();
+  const { user, signOut, signIn, linkWallet } = useAuth();
 
   return (
     <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
@@ -66,13 +65,29 @@ export function Header() {
                     <DropdownMenuTrigger asChild>
                       <Button variant="outline" className="flex items-center space-x-2">
                         <User className="h-4 w-4" />
-                        <span className="hidden md:inline">Account</span>
+                        <span className="hidden md:inline">
+                          {user.wallet?.address 
+                            ? `${user.wallet.address.slice(0, 6)}...${user.wallet.address.slice(-4)}`
+                            : user.email?.address || 'Account'
+                          }
+                        </span>
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56">
                       <DropdownMenuItem disabled>
-                        <span className="text-muted-foreground">{user.email}</span>
+                        <span className="text-muted-foreground">
+                          {user.email?.address || user.wallet?.address || 'Connected'}
+                        </span>
                       </DropdownMenuItem>
+                      {!user.wallet && (
+                        <>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={linkWallet} className="cursor-pointer">
+                            <Wallet className="mr-2 h-4 w-4" />
+                            Connect Wallet
+                          </DropdownMenuItem>
+                        </>
+                      )}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={signOut} className="cursor-pointer text-destructive">
                         <LogOut className="mr-2 h-4 w-4" />
@@ -81,11 +96,10 @@ export function Header() {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 ) : (
-                  <Button asChild variant="outline">
-                    <Link to="/auth">Sign In</Link>
+                  <Button onClick={signIn} variant="outline">
+                    Connect Wallet
                   </Button>
                 )}
-                <WalletConnect />
               </>
             )}
             

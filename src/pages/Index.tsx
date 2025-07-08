@@ -4,7 +4,6 @@ import { SpotlightAgent } from "@/components/SpotlightAgent";
 import { AgentCard } from "@/components/AgentCard";
 import { NetworkVisualization } from "@/components/NetworkVisualization";
 import { MarketStats } from "@/components/MarketStats";
-import { WalletProfileSync } from "@/components/WalletProfileSync";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -43,7 +42,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <WalletProfileSync />
       <Header />
       
       {/* Hero Section */}

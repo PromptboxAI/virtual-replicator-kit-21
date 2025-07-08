@@ -5,26 +5,35 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { WagmiProvider } from 'wagmi';
 import { config } from './lib/wagmi';
-import { AuthProvider } from './hooks/useAuth';
+import { PrivyProvider } from '@privy-io/react-auth';
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Learn from "./pages/Learn";
-import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
 const App = () => (
-  <WagmiProvider config={config}>
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
+  <PrivyProvider
+    appId="cmcv2r72202fqld0lnr5kgq3k"
+    config={{
+      appearance: {
+        theme: 'dark',
+        accentColor: '#10b981',
+        logo: 'https://your-logo-url.com/logo.png',
+      },
+      loginMethods: ['wallet', 'email', 'google', 'twitter'],
+      walletConnectCloudProjectId: 'your-walletconnect-project-id',
+    }}
+  >
+    <WagmiProvider config={config}>
+      <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <Toaster />
           <Sonner />
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<Auth />} />
               <Route path="/about" element={<About />} />
               <Route path="/learn" element={<Learn />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
@@ -32,9 +41,9 @@ const App = () => (
             </Routes>
           </BrowserRouter>
         </TooltipProvider>
-      </AuthProvider>
-    </QueryClientProvider>
-  </WagmiProvider>
+      </QueryClientProvider>
+    </WagmiProvider>
+  </PrivyProvider>
 );
 
 export default App;
