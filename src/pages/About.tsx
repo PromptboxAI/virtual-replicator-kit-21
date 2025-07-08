@@ -138,6 +138,37 @@ const About = () => {
         </div>
       </section>
 
+      {/* $PROMPT Token Section */}
+      <section className="py-16 px-4">
+        <div className="container mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div className="text-center lg:text-left">
+              <h2 className="text-4xl font-bold mb-4">
+                <span className="bg-gradient-cyber bg-clip-text text-transparent">$PROMPT</span>
+              </h2>
+              <p className="text-xl text-muted-foreground mb-8">
+                The currency of AI Agents
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                <Button size="lg" className="bg-gradient-primary hover:opacity-90 shadow-glow-primary">
+                  Buy $PROMPT
+                </Button>
+                <Button size="lg" variant="outline" className="border-primary/50 hover:border-primary">
+                  Read our Whitepaper
+                </Button>
+              </div>
+            </div>
+            <div className="relative">
+              <Card className="p-8 bg-card/50 backdrop-blur-sm border-border">
+                <div className="aspect-square bg-gradient-to-br from-primary/20 to-primary/5 rounded-lg flex items-center justify-center">
+                  <div className="text-6xl font-bold text-primary/50">$PROMPT</div>
+                </div>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Vision Section */}
       <section className="py-16 px-4 bg-muted/20">
         <div className="container mx-auto text-center">
