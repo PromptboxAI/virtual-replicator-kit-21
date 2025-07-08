@@ -190,7 +190,7 @@ const About = () => {
       {/* CTA Section */}
       <section className="py-16 px-4 bg-white">
         <div className="container mx-auto">
-          <Card className="p-12 bg-gradient-to-br from-black to-white border-0 shadow-2xl">
+          <Card className="p-12 bg-gradient-to-br from-gray-900 to-gray-300 border-0 shadow-2xl">
             <div className="text-center">
               <h2 className="text-4xl font-bold mb-4 text-white">Ready to Get Started?</h2>
               <p className="text-white/80 text-lg mb-8 max-w-2xl mx-auto">
