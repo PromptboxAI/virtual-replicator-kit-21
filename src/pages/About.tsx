@@ -200,7 +200,7 @@ const About = () => {
                 <Button size="lg" className="bg-white text-primary hover:bg-white/90 font-semibold">
                   Join Waitlist
                 </Button>
-                <Button size="lg" className="bg-primary text-white hover:bg-primary/90 font-semibold">
+                <Button size="lg" className="bg-primary text-white hover:bg-primary/90 font-semibold border border-white">
                   Contact Us
                 </Button>
               </div>
