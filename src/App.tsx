@@ -23,7 +23,7 @@ const App = () => (
         logo: 'https://avatars.githubusercontent.com/u/108554348?s=280&v=4',
         showWalletLoginFirst: false,
       },
-      loginMethods: ['email', 'wallet'],
+      loginMethods: ['email', 'wallet', 'sms'],
       supportedChains: [
         {
           id: 1,
@@ -54,10 +54,11 @@ const App = () => (
         {
           name: 'mainnet-beta',
           rpcUrl: 'https://api.mainnet-beta.solana.com',
-        }
+        },
       ],
       embeddedWallets: {
         createOnLogin: 'users-without-wallets',
+        requireUserPasswordOnCreate: false,
       },
     }}
   >
