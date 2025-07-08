@@ -12,11 +12,9 @@ const About = () => {
       <section className="py-20 px-4 bg-gradient-hero">
         <div className="container mx-auto text-center">
           <h1 className="text-5xl md:text-7xl font-bold mb-6 text-white">
-            AI RUNS ON IP.
+            PROMPTBOX MAKES IP
             <br />
-            <span className="text-white/90">PROMPTBOX MAKES IP</span>
-            <br />
-            <span className="text-white">PROGRAMMABLE.</span>
+            <span className="text-white">INTELLIGENT</span>
           </h1>
           <p className="text-xl text-white/80 mb-8 max-w-3xl mx-auto">
             IP is the world's largest asset class and one that AI can't exist without.
