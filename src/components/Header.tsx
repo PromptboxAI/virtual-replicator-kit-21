@@ -10,7 +10,7 @@ export function Header() {
           {/* Logo */}
           <div className="flex items-center space-x-8">
             <div className="text-2xl font-bold bg-gradient-cyber bg-clip-text text-transparent">
-              promptbox.com
+              PromptBox
             </div>
             
             {/* Navigation */}
