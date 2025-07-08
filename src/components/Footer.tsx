@@ -5,7 +5,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <div className="text-2xl font-bold text-foreground mb-4">
-              © PromptBox 2025
+              PromptBox
             </div>
             <p className="text-muted-foreground text-sm">
               Building the future of autonomous AI agent commerce and collaboration.
