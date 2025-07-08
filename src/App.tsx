@@ -21,9 +21,9 @@ const App = () => (
         theme: 'dark',
         accentColor: '#10b981',
         logo: 'https://avatars.githubusercontent.com/u/108554348?s=280&v=4',
-        showWalletLoginFirst: true,
+        showWalletLoginFirst: false,
       },
-      loginMethods: ['wallet', 'email'],
+      loginMethods: ['email', 'wallet'],
       supportedChains: [
         {
           id: 1,
@@ -42,7 +42,6 @@ const App = () => (
         rpcUrls: { default: { http: ['https://rpc.ankr.com/eth'] } },
         blockExplorers: { default: { name: 'Etherscan', url: 'https://etherscan.io' } },
       },
-      // Remove walletConnectCloudProjectId for now - you can add it later if needed
       embeddedWallets: {
         createOnLogin: 'users-without-wallets',
       },

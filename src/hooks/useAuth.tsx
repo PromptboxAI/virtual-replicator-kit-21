@@ -19,25 +19,34 @@ export function useAuth() {
 
   // Sync Privy user with Supabase profiles
   useEffect(() => {
+    console.log('Auth state changed:', { ready, authenticated, user: user?.id });
+    
     if (!ready || !authenticated || !user) {
       setIsProcessing(false);
       return;
     }
 
     const syncUserProfile = async () => {
+      console.log('Starting profile sync for user:', user.id);
       setIsProcessing(true);
       try {
         // Use Privy's user ID directly (it's a string, not UUID)
         const userId = user.id;
         
         // Check if profile exists
-        const { data: existingProfile } = await supabase
+        const { data: existingProfile, error: selectError } = await supabase
           .from('profiles')
           .select('*')
           .eq('user_id', userId)
-          .single();
+          .maybeSingle();
+
+        if (selectError) {
+          console.error('Error checking profile:', selectError);
+          return;
+        }
 
         if (!existingProfile) {
+          console.log('Creating new profile for user:', userId);
           // Create new profile
           const { error } = await supabase
             .from('profiles')
@@ -50,8 +59,11 @@ export function useAuth() {
 
           if (error) {
             console.error('Error creating profile:', error);
+          } else {
+            console.log('Profile created successfully');
           }
         } else {
+          console.log('Profile exists, checking for updates');
           // Update existing profile with wallet if connected
           if (user.wallet?.address && existingProfile.wallet_address !== user.wallet.address) {
             const { error } = await supabase
@@ -61,12 +73,15 @@ export function useAuth() {
 
             if (error) {
               console.error('Error updating wallet address:', error);
+            } else {
+              console.log('Wallet address updated');
             }
           }
         }
       } catch (error) {
         console.error('Error syncing user profile:', error);
       } finally {
+        console.log('Profile sync completed');
         setIsProcessing(false);
       }
     };
