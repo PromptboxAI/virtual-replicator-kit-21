@@ -23,17 +23,7 @@ const App = () => (
         logo: 'https://avatars.githubusercontent.com/u/108554348?s=280&v=4',
         showWalletLoginFirst: true,
       },
-      loginMethods: ['wallet', 'email', 'google'],
-      supportedChains: [
-        {
-          id: 1,
-          name: 'Ethereum',
-          network: 'ethereum',
-          nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
-          rpcUrls: { default: { http: ['https://rpc.ankr.com/eth'] } },
-          blockExplorers: { default: { name: 'Etherscan', url: 'https://etherscan.io' } },
-        },
-      ],
+      loginMethods: ['wallet', 'email'],
       embeddedWallets: {
         createOnLogin: 'users-without-wallets',
       },
