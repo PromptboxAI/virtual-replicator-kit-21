@@ -72,10 +72,13 @@ export function NetworkVisualization({ className }: NetworkVisualizationProps) {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || loading || agents.length === 0) return;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
+    // Generate nodes once when agents load
+    const nodes = generateNodes();
 
     const updateCanvasSize = () => {
       const rect = canvas.getBoundingClientRect();
@@ -90,18 +93,6 @@ export function NetworkVisualization({ className }: NetworkVisualizationProps) {
     let time = 0;
     
     const animate = () => {
-      const nodes = generateNodes();
-      if (nodes.length === 0) {
-        // Show loading state
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#666666';
-        ctx.font = '14px Inter, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('Loading agents...', 200, 150);
-        animationRef.current = requestAnimationFrame(animate);
-        return;
-      }
-      
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       time += 0.02;
 
