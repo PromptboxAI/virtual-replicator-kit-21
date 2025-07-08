@@ -14,7 +14,264 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      agent_price_history: {
+        Row: {
+          agent_id: string
+          id: string
+          market_cap: number | null
+          price: number
+          timestamp: string
+          volume: number | null
+        }
+        Insert: {
+          agent_id: string
+          id?: string
+          market_cap?: number | null
+          price: number
+          timestamp?: string
+          volume?: number | null
+        }
+        Update: {
+          agent_id?: string
+          id?: string
+          market_cap?: number | null
+          price?: number
+          timestamp?: string
+          volume?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_price_history_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agents: {
+        Row: {
+          avatar_url: string | null
+          category: string | null
+          circulating_supply: number | null
+          created_at: string
+          current_price: number
+          description: string | null
+          id: string
+          is_active: boolean | null
+          market_cap: number | null
+          name: string
+          price_change_24h: number | null
+          symbol: string
+          total_supply: number | null
+          twitter_url: string | null
+          updated_at: string
+          volume_24h: number | null
+          website_url: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          category?: string | null
+          circulating_supply?: number | null
+          created_at?: string
+          current_price?: number
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          market_cap?: number | null
+          name: string
+          price_change_24h?: number | null
+          symbol: string
+          total_supply?: number | null
+          twitter_url?: string | null
+          updated_at?: string
+          volume_24h?: number | null
+          website_url?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          category?: string | null
+          circulating_supply?: number | null
+          created_at?: string
+          current_price?: number
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          market_cap?: number | null
+          name?: string
+          price_change_24h?: number | null
+          symbol?: string
+          total_supply?: number | null
+          twitter_url?: string | null
+          updated_at?: string
+          volume_24h?: number | null
+          website_url?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          total_portfolio_value: number | null
+          updated_at: string
+          user_id: string
+          username: string | null
+          wallet_address: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          total_portfolio_value?: number | null
+          updated_at?: string
+          user_id: string
+          username?: string | null
+          wallet_address?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          total_portfolio_value?: number | null
+          updated_at?: string
+          user_id?: string
+          username?: string | null
+          wallet_address?: string | null
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          agent_id: string
+          block_number: number | null
+          created_at: string
+          fees: number | null
+          id: string
+          price: number
+          quantity: number
+          status: string | null
+          total_amount: number
+          transaction_hash: string | null
+          transaction_type: string
+          user_id: string
+        }
+        Insert: {
+          agent_id: string
+          block_number?: number | null
+          created_at?: string
+          fees?: number | null
+          id?: string
+          price: number
+          quantity: number
+          status?: string | null
+          total_amount: number
+          transaction_hash?: string | null
+          transaction_type: string
+          user_id: string
+        }
+        Update: {
+          agent_id?: string
+          block_number?: number | null
+          created_at?: string
+          fees?: number | null
+          id?: string
+          price?: number
+          quantity?: number
+          status?: string | null
+          total_amount?: number
+          transaction_hash?: string | null
+          transaction_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_agent_holdings: {
+        Row: {
+          agent_id: string
+          average_buy_price: number | null
+          created_at: string
+          current_value: number | null
+          id: string
+          profit_loss: number | null
+          profit_loss_percentage: number | null
+          quantity: number
+          total_invested: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          agent_id: string
+          average_buy_price?: number | null
+          created_at?: string
+          current_value?: number | null
+          id?: string
+          profit_loss?: number | null
+          profit_loss_percentage?: number | null
+          quantity?: number
+          total_invested?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          agent_id?: string
+          average_buy_price?: number | null
+          created_at?: string
+          current_value?: number | null
+          id?: string
+          profit_loss?: number | null
+          profit_loss_percentage?: number | null
+          quantity?: number
+          total_invested?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_agent_holdings_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_follows: {
+        Row: {
+          created_at: string
+          follower_id: string
+          following_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          follower_id: string
+          following_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          follower_id?: string
+          following_id?: string
+          id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

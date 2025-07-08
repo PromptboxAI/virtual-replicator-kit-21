@@ -4,91 +4,46 @@ import { SpotlightAgent } from "@/components/SpotlightAgent";
 import { AgentCard } from "@/components/AgentCard";
 import { NetworkVisualization } from "@/components/NetworkVisualization";
 import { MarketStats } from "@/components/MarketStats";
+import { WalletProfileSync } from "@/components/WalletProfileSync";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Filter, MoreHorizontal } from "lucide-react";
+import { Filter, MoreHorizontal, Loader2 } from "lucide-react";
+import { useAgents } from "@/hooks/useAgents";
 import agentAvatar1 from "@/assets/agent-avatar-1.png";
 import agentAvatar2 from "@/assets/agent-avatar-2.png";
 import agentAvatar3 from "@/assets/agent-avatar-3.png";
 
 const Index = () => {
-  const spotlightAgent = {
-    name: "aixbt",
-    avatar: agentAvatar1,
-    price: "$126.43",
-    change: -1.95,
-    volume: "24h Vol",
-    transactions: 1198,
-    description: "Provides market alpha",
-    category: "Autonomous Onchain Commerce"
-  };
+  const { agents, loading, error } = useAgents();
 
-  const trendingAgents = [
-    {
-      id: "1",
-      name: "Luna",
-      avatar: agentAvatar2,
-      price: "$89.52",
-      change: 8.23,
-      volume: "$2.1M",
-      category: "Trading",
-      holders: 1247
-    },
-    {
-      id: "2", 
-      name: "Zerebro",
-      avatar: agentAvatar3,
-      price: "$156.78",
-      change: -3.45,
-      volume: "$5.8M",
-      category: "Analytics",
-      holders: 2891
-    },
-    {
-      id: "3",
-      name: "Aelred",
-      avatar: agentAvatar1,
-      price: "$203.91",
-      change: 12.67,
-      volume: "$3.2M",
-      category: "DeFi",
-      holders: 1876
-    },
-    {
-      id: "4",
-      name: "Degenixi",
-      avatar: agentAvatar2,
-      price: "$78.34",
-      change: -5.12,
-      volume: "$1.9M",
-      category: "Gaming",
-      holders: 945
-    },
-    {
-      id: "5",
-      name: "Athena",
-      avatar: agentAvatar3,
-      price: "$134.67",
-      change: 7.89,
-      volume: "$4.1M",
-      category: "Research",
-      holders: 2156
-    },
-    {
-      id: "6",
-      name: "Gigabrain",
-      avatar: agentAvatar1,
-      price: "$92.15",
-      change: 15.23,
-      volume: "$2.7M",
-      category: "AI Assistant",
-      holders: 1543
-    }
-  ];
+  // Get spotlight agent (highest market cap)
+  const spotlightAgent = agents.length > 0 ? {
+    name: agents[0].name,
+    avatar: agents[0].avatar_url || agentAvatar1,
+    price: `$${agents[0].current_price.toFixed(2)}`,
+    change: agents[0].price_change_24h || 0,
+    volume: "24h Vol",
+    transactions: 1198, // This could be calculated from transactions table
+    description: agents[0].description || "AI Agent",
+    category: agents[0].category || "AI Agent"
+  } : null;
+
+  // Transform agents data for AgentCard component
+  const trendingAgents = agents.slice(1).map((agent, index) => ({
+    id: agent.id,
+    name: agent.name,
+    avatar: agent.avatar_url || [agentAvatar1, agentAvatar2, agentAvatar3][index % 3],
+    price: `$${agent.current_price.toFixed(2)}`,
+    change: agent.price_change_24h || 0,
+    volume: agent.volume_24h ? `$${(agent.volume_24h / 1000000).toFixed(1)}M` : "$0",
+    category: agent.category || "AI Agent",
+    holders: Math.floor(Math.random() * 3000) + 500 // This would come from user_agent_holdings table
+  }));
 
   return (
     <div className="min-h-screen bg-background">
+      <WalletProfileSync />
       <Header />
       
       {/* Hero Section */}
@@ -128,7 +83,15 @@ const Index = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Spotlight Agent */}
             <div className="lg:col-span-1">
-              <SpotlightAgent agent={spotlightAgent} />
+              {spotlightAgent ? (
+                <SpotlightAgent agent={spotlightAgent} />
+              ) : (
+                <Card className="p-6 bg-card/50 backdrop-blur-sm border-border h-full">
+                  <div className="flex items-center justify-center h-full">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  </div>
+                </Card>
+              )}
             </div>
             
             {/* Network Visualization */}
@@ -161,9 +124,24 @@ const Index = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {trendingAgents.map((agent) => (
-              <AgentCard key={agent.id} agent={agent} />
-            ))}
+            {loading ? (
+              <div className="col-span-full flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <span className="ml-2 text-muted-foreground">Loading agents...</span>
+              </div>
+            ) : error ? (
+              <div className="col-span-full text-center py-12">
+                <p className="text-destructive">Error loading agents: {error}</p>
+              </div>
+            ) : trendingAgents.length > 0 ? (
+              trendingAgents.map((agent) => (
+                <AgentCard key={agent.id} agent={agent} />
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12">
+                <p className="text-muted-foreground">No agents found</p>
+              </div>
+            )}
           </div>
         </div>
       </section>

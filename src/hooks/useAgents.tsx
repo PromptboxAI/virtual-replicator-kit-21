@@ -1,0 +1,45 @@
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+
+export interface Agent {
+  id: string;
+  name: string;
+  symbol: string;
+  description: string | null;
+  category: string | null;
+  avatar_url: string | null;
+  current_price: number;
+  market_cap: number | null;
+  volume_24h: number | null;
+  price_change_24h: number | null;
+  is_active: boolean;
+}
+
+export function useAgents() {
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchAgents() {
+      try {
+        const { data, error } = await supabase
+          .from('agents')
+          .select('*')
+          .eq('is_active', true)
+          .order('market_cap', { ascending: false });
+
+        if (error) throw error;
+        setAgents(data || []);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchAgents();
+  }, []);
+
+  return { agents, loading, error };
+}
