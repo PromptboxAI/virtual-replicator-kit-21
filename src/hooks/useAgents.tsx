@@ -23,15 +23,20 @@ export function useAgents() {
   useEffect(() => {
     async function fetchAgents() {
       try {
+        console.log('Fetching agents...');
         const { data, error } = await supabase
           .from('agents')
           .select('*')
           .eq('is_active', true)
           .order('market_cap', { ascending: false });
 
+        console.log('Agents data:', data);
+        console.log('Agents error:', error);
+
         if (error) throw error;
         setAgents(data || []);
       } catch (err: any) {
+        console.error('Error fetching agents:', err);
         setError(err.message);
       } finally {
         setLoading(false);
