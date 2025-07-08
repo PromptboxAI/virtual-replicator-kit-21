@@ -21,7 +21,7 @@ export function Header() {
             {/* Navigation */}
             <nav className="hidden md:flex items-center space-x-8">
               <Link to="/" className="text-foreground hover:text-primary transition-colors font-medium">
-                Learn
+                AI Agents
               </Link>
               <a href="#" className="text-foreground hover:text-primary transition-colors font-medium">
                 Build
@@ -30,13 +30,10 @@ export function Header() {
                 Ecosystem
               </a>
               <a href="#" className="text-foreground hover:text-primary transition-colors font-medium">
-                Bridge
+                Learn
               </a>
               <a href="#" className="text-foreground hover:text-primary transition-colors font-medium">
                 Tools
-              </a>
-              <a href="#" className="text-foreground hover:text-primary transition-colors font-medium">
-                Blog
               </a>
               <Link to="/about" className="text-foreground hover:text-primary transition-colors font-medium">
                 About
