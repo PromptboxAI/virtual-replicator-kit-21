@@ -12,8 +12,9 @@ const Learn = () => {
       {/* Hero Section */}
       <section className="py-20 px-4">
         <div className="container mx-auto text-center">
-          <h1 className="text-6xl md:text-8xl font-bold mb-8 text-foreground">
-            LearnPromptBox
+          <h1 className="text-6xl md:text-8xl mb-8 text-foreground">
+            <span className="font-normal">LEARN </span>
+            <span className="font-bold">PROMPT</span>
           </h1>
           <h2 className="text-3xl md:text-4xl mb-6 text-foreground">
             Leverage the power
