@@ -26,7 +26,7 @@ const About = () => {
               Join the Revolution
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
-            <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10 hover:border-white/50">
+            <Button size="lg" variant="outline" className="bg-transparent border-white text-white hover:bg-white/10 hover:border-white/80">
               Learn More
             </Button>
           </div>
