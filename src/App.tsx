@@ -20,10 +20,23 @@ const App = () => (
       appearance: {
         theme: 'dark',
         accentColor: '#10b981',
-        logo: 'https://your-logo-url.com/logo.png',
+        logo: 'https://avatars.githubusercontent.com/u/108554348?s=280&v=4',
+        showWalletLoginFirst: true,
       },
-      loginMethods: ['wallet', 'email', 'google', 'twitter'],
-      walletConnectCloudProjectId: 'your-walletconnect-project-id',
+      loginMethods: ['wallet', 'email', 'google'],
+      supportedChains: [
+        {
+          id: 1,
+          name: 'Ethereum',
+          network: 'ethereum',
+          nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+          rpcUrls: { default: { http: ['https://rpc.ankr.com/eth'] } },
+          blockExplorers: { default: { name: 'Etherscan', url: 'https://etherscan.io' } },
+        },
+      ],
+      embeddedWallets: {
+        createOnLogin: 'users-without-wallets',
+      },
     }}
   >
     <WagmiProvider config={config}>
