@@ -1,0 +1,427 @@
+import { useState } from "react";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Upload, Sparkles, Coins, TrendingUp, Info } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
+
+interface AgentFormData {
+  name: string;
+  symbol: string;
+  description: string;
+  category: string;
+  website_url: string;
+  twitter_url: string;
+  avatar_url: string;
+  total_supply: number;
+  initial_price: number;
+}
+
+export default function CreateAgent() {
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const [isCreating, setIsCreating] = useState(false);
+  const [previewMode, setPreviewMode] = useState(false);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [formData, setFormData] = useState<AgentFormData>({
+    name: "",
+    symbol: "",
+    description: "",
+    category: "",
+    website_url: "",
+    twitter_url: "",
+    avatar_url: "",
+    total_supply: 1000000,
+    initial_price: 0.01,
+  });
+
+  const categories = [
+    "DeFi Assistant",
+    "Trading Bot", 
+    "Content Creator",
+    "Research Agent",
+    "Community Manager",
+    "Analytics Agent",
+    "Gaming Agent",
+    "Educational Agent",
+    "Other"
+  ];
+
+  const handleInputChange = (field: keyof AgentFormData, value: string | number) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleAvatarUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setAvatarFile(file);
+      // Create preview URL
+      const previewUrl = URL.createObjectURL(file);
+      setFormData(prev => ({ ...prev, avatar_url: previewUrl }));
+    }
+  };
+
+  const validateForm = () => {
+    if (!formData.name.trim()) {
+      toast({ title: "Error", description: "Agent name is required", variant: "destructive" });
+      return false;
+    }
+    if (!formData.symbol.trim()) {
+      toast({ title: "Error", description: "Token symbol is required", variant: "destructive" });
+      return false;
+    }
+    if (!formData.description.trim()) {
+      toast({ title: "Error", description: "Agent description is required", variant: "destructive" });
+      return false;
+    }
+    if (!formData.category) {
+      toast({ title: "Error", description: "Please select a category", variant: "destructive" });
+      return false;
+    }
+    return true;
+  };
+
+  const handleCreateAgent = async () => {
+    if (!validateForm()) return;
+    
+    setIsCreating(true);
+    try {
+      // Upload avatar if provided
+      let finalAvatarUrl = formData.avatar_url;
+      
+      if (avatarFile) {
+        const fileExt = avatarFile.name.split('.').pop();
+        const fileName = `${Date.now()}.${fileExt}`;
+        
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('agent-avatars')
+          .upload(fileName, avatarFile);
+
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+          toast({ title: "Error", description: "Failed to upload avatar", variant: "destructive" });
+          return;
+        }
+
+        // Get public URL
+        const { data: urlData } = supabase.storage
+          .from('agent-avatars')
+          .getPublicUrl(fileName);
+        
+        finalAvatarUrl = urlData.publicUrl;
+      }
+
+      // Create agent in database
+      const { data, error } = await supabase
+        .from('agents')
+        .insert([{
+          name: formData.name,
+          symbol: formData.symbol.toUpperCase(),
+          description: formData.description,
+          category: formData.category,
+          website_url: formData.website_url || null,
+          twitter_url: formData.twitter_url || null,
+          avatar_url: finalAvatarUrl,
+          total_supply: formData.total_supply,
+          current_price: formData.initial_price,
+          market_cap: formData.total_supply * formData.initial_price,
+          is_active: true,
+        }]);
+
+      if (error) {
+        console.error('Database error:', error);
+        toast({ title: "Error", description: "Failed to create agent", variant: "destructive" });
+        return;
+      }
+
+      toast({ 
+        title: "Success!", 
+        description: `${formData.name} has been created successfully!`,
+      });
+      
+      // Navigate back to home to see the new agent
+      navigate('/');
+      
+    } catch (error) {
+      console.error('Creation error:', error);
+      toast({ title: "Error", description: "Something went wrong", variant: "destructive" });
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const estimatedMarketCap = formData.total_supply * formData.initial_price;
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold mb-4">
+              <span className="bg-gradient-cyber bg-clip-text text-transparent">
+                Create AI Agent
+              </span>
+            </h1>
+            <p className="text-xl text-muted-foreground">
+              Launch your own AI agent and mint its token on the PromptBox platform
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Form */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Basic Information */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-primary" />
+                    Agent Details
+                  </CardTitle>
+                  <CardDescription>
+                    Define your AI agent's identity and purpose
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="name">Agent Name *</Label>
+                      <Input
+                        id="name"
+                        placeholder="e.g. AlphaTrader"
+                        value={formData.name}
+                        onChange={(e) => handleInputChange('name', e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="symbol">Token Symbol *</Label>
+                      <Input
+                        id="symbol"
+                        placeholder="e.g. ALPHA"
+                        value={formData.symbol}
+                        onChange={(e) => handleInputChange('symbol', e.target.value.toUpperCase())}
+                        maxLength={6}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="description">Description *</Label>
+                    <Textarea
+                      id="description"
+                      placeholder="Describe what your AI agent does, its capabilities, and unique features..."
+                      value={formData.description}
+                      onChange={(e) => handleInputChange('description', e.target.value)}
+                      rows={4}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="category">Category *</Label>
+                    <Select value={formData.category} onValueChange={(value) => handleInputChange('category', value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map((category) => (
+                          <SelectItem key={category} value={category}>
+                            {category}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="website">Website URL</Label>
+                      <Input
+                        id="website"
+                        placeholder="https://youragent.com"
+                        value={formData.website_url}
+                        onChange={(e) => handleInputChange('website_url', e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="twitter">Twitter URL</Label>
+                      <Input
+                        id="twitter"
+                        placeholder="https://twitter.com/youragent"
+                        value={formData.twitter_url}
+                        onChange={(e) => handleInputChange('twitter_url', e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="avatar">Agent Avatar</Label>
+                    <div className="mt-2 flex items-center gap-4">
+                      <input
+                        id="avatar"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAvatarUpload}
+                        className="hidden"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => document.getElementById('avatar')?.click()}
+                        className="flex items-center gap-2"
+                      >
+                        <Upload className="h-4 w-4" />
+                        Upload Avatar
+                      </Button>
+                      {formData.avatar_url && (
+                        <Avatar className="h-12 w-12">
+                          <AvatarImage src={formData.avatar_url} />
+                          <AvatarFallback>{formData.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Token Economics */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Coins className="h-5 w-5 text-primary" />
+                    Token Economics
+                  </CardTitle>
+                  <CardDescription>
+                    Configure your agent's token parameters
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="supply">Total Supply</Label>
+                      <Input
+                        id="supply"
+                        type="number"
+                        value={formData.total_supply}
+                        onChange={(e) => handleInputChange('total_supply', parseInt(e.target.value) || 0)}
+                        min="1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="price">Initial Price (USD)</Label>
+                      <Input
+                        id="price"
+                        type="number"
+                        step="0.001"
+                        value={formData.initial_price}
+                        onChange={(e) => handleInputChange('initial_price', parseFloat(e.target.value) || 0)}
+                        min="0.001"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <TrendingUp className="h-4 w-4 text-primary" />
+                      <span className="font-medium">Estimated Market Cap</span>
+                    </div>
+                    <p className="text-2xl font-bold text-primary">
+                      ${estimatedMarketCap.toLocaleString()}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Action Buttons */}
+              <div className="flex gap-4">
+                <Button
+                  onClick={() => setPreviewMode(!previewMode)}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  {previewMode ? "Edit" : "Preview"}
+                </Button>
+                <Button
+                  onClick={handleCreateAgent}
+                  disabled={isCreating}
+                  className="flex-1 bg-gradient-primary hover:opacity-90"
+                >
+                  {isCreating ? "Creating..." : "Create Agent"}
+                </Button>
+              </div>
+            </div>
+
+            {/* Preview */}
+            <div className="lg:col-span-1">
+              <Card className="sticky top-8">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Info className="h-5 w-5" />
+                    Agent Preview
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-12 w-12">
+                        <AvatarImage src={formData.avatar_url} />
+                        <AvatarFallback>
+                          {formData.name ? formData.name.slice(0, 2).toUpperCase() : "AG"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <h3 className="font-semibold">
+                          {formData.name || "Agent Name"}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          ${formData.symbol || "SYMBOL"}
+                        </p>
+                      </div>
+                    </div>
+
+                    {formData.category && (
+                      <Badge variant="secondary" className="w-fit">
+                        {formData.category}
+                      </Badge>
+                    )}
+
+                    <p className="text-sm text-muted-foreground">
+                      {formData.description || "Agent description will appear here..."}
+                    </p>
+
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span>Initial Price:</span>
+                        <span className="font-medium">${formData.initial_price}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Total Supply:</span>
+                        <span className="font-medium">{formData.total_supply.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Market Cap:</span>
+                        <span className="font-medium">${estimatedMarketCap.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <Footer />
+    </div>
+  );
+}

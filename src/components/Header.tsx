@@ -31,9 +31,9 @@ export function Header() {
               <Link to="/" className="text-foreground hover:text-primary transition-colors font-medium">
                 AI Agents
               </Link>
-              <a href="#" className="text-foreground hover:text-primary transition-colors font-medium">
-                Build
-              </a>
+              <Link to="/create" className="text-foreground hover:text-primary transition-colors font-medium">
+                Create Agent
+              </Link>
               <a href="#" className="text-foreground hover:text-primary transition-colors font-medium">
                 Ecosystem
               </a>
