@@ -188,7 +188,7 @@ const About = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 px-4 bg-white">
+      <section className="py-16 px-4 bg-gradient-to-br from-black to-gray-900">
         <div className="container mx-auto">
           <Card className="p-12 bg-gradient-hero border-0 shadow-2xl">
             <div className="text-center">
