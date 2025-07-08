@@ -208,7 +208,7 @@ const About = () => {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-4 bg-white border-t border-gray-100">
+      <footer className="py-12 px-4 border-t border-gray-100" style={{ backgroundColor: '#F5FFF9' }}>
         <div className="container mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
