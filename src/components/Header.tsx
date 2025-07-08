@@ -1,10 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { WalletConnect } from "@/components/WalletConnect";
 
 export function Header() {
+  const location = useLocation();
+  const isAboutPage = location.pathname === '/about';
+
   return (
     <header className="border-b border-border bg-card/50 backdrop-blur-md sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
@@ -34,15 +37,17 @@ export function Header() {
 
           {/* Search and Actions */}
           <div className="flex items-center space-x-4">
-            <div className="relative hidden md:block">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                placeholder="Search agents..."
-                className="pl-10 w-64 bg-muted/50 border-border"
-              />
-            </div>
+            {!isAboutPage && (
+              <div className="relative hidden md:block">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input
+                  placeholder="Search agents..."
+                  className="pl-10 w-64 bg-muted/50 border-border"
+                />
+              </div>
+            )}
             
-            <WalletConnect />
+            {!isAboutPage && <WalletConnect />}
           </div>
         </div>
       </div>
