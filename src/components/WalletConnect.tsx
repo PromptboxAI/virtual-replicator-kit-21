@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Wallet, LogOut, Copy, ExternalLink, AlertCircle, Download } from "lucide-react";
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
 import { injected } from 'wagmi/connectors';
+import { useAuth } from '@/hooks/useAuth';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,7 +18,13 @@ export function WalletConnect() {
   const { connect, error, isError, isPending } = useConnect();
   const { disconnect } = useDisconnect();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [isWalletInstalled, setIsWalletInstalled] = useState<boolean | null>(null);
+
+  // Don't show wallet connect if user is not authenticated
+  if (!user) {
+    return null;
+  }
 
   // Check if wallet is installed - be very strict
   useEffect(() => {
@@ -168,13 +175,13 @@ export function WalletConnect() {
             window.open('https://metamask.io/download/', '_blank');
           }}
           variant="outline" 
-          className="flex items-center space-x-2 border-destructive/50 hover:border-destructive hover:bg-destructive/10"
+          className="flex items-center space-x-2 border-primary/50 hover:border-primary"
         >
           <Download className="h-4 w-4" />
           <span>Install MetaMask</span>
         </Button>
         <div className="text-xs text-muted-foreground text-center max-w-56">
-          You need a web3 wallet like MetaMask to connect to PromptBox
+          Connect your wallet to start trading AI agents
         </div>
       </div>
     );
@@ -270,7 +277,7 @@ export function WalletConnect() {
       {isError ? (
         <>
           <AlertCircle className="h-4 w-4 text-destructive" />
-          <span>Retry Connection</span>
+          <span>Retry</span>
         </>
       ) : (
         <>
