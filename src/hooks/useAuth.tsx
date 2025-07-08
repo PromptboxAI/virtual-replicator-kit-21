@@ -16,6 +16,8 @@ export function useAuth() {
   } = usePrivy();
 
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [hasAcceptedTerms, setHasAcceptedTerms] = useState(false);
 
   // Handle authentication state changes and close modals
   useEffect(() => {
@@ -98,9 +100,17 @@ export function useAuth() {
             console.error('Error creating profile:', error);
           } else {
             console.log('Profile created successfully');
+            // Show terms modal for new users
+            setShowTermsModal(true);
           }
         } else {
           console.log('Profile exists, checking for updates');
+          // Check if user has accepted terms
+          if (!existingProfile.terms_accepted_at) {
+            setShowTermsModal(true);
+          } else {
+            setHasAcceptedTerms(true);
+          }
           // Update existing profile with wallet if connected
           if (user.wallet?.address && existingProfile.wallet_address !== user.wallet.address) {
             const { error } = await supabase
