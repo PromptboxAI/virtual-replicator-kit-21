@@ -29,9 +29,9 @@ export function Header() {
               <a href="#" className="text-foreground hover:text-primary transition-colors font-medium">
                 Ecosystem
               </a>
-              <a href="#" className="text-foreground hover:text-primary transition-colors font-medium">
+              <Link to="/learn" className="text-foreground hover:text-primary transition-colors font-medium">
                 Learn
-              </a>
+              </Link>
               <Link to="/about" className="text-foreground hover:text-primary transition-colors font-medium">
                 About
               </Link>
