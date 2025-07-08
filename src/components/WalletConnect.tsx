@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Wallet, LogOut, Copy, ExternalLink } from "lucide-react";
+import { Wallet, LogOut, Copy, ExternalLink, AlertCircle } from "lucide-react";
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
 import { injected } from 'wagmi/connectors';
 import {
@@ -10,15 +10,50 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
+import { useEffect } from 'react';
 
 export function WalletConnect() {
   const { address, isConnected } = useAccount();
-  const { connect } = useConnect();
+  const { connect, error, isError, isPending } = useConnect();
   const { disconnect } = useDisconnect();
   const { toast } = useToast();
 
-  const handleConnect = () => {
-    connect({ connector: injected() });
+  // Handle connection errors
+  useEffect(() => {
+    if (isError && error) {
+      console.error('Wallet connection error:', error);
+      toast({
+        title: "Connection Failed",
+        description: error.message || "Failed to connect wallet. Please try again.",
+        variant: "destructive",
+      });
+    }
+  }, [isError, error, toast]);
+
+  const handleConnect = async () => {
+    try {
+      console.log('Attempting to connect wallet...');
+      
+      // Check if wallet is installed
+      if (typeof window.ethereum === 'undefined') {
+        toast({
+          title: "Wallet Not Found",
+          description: "Please install MetaMask or another web3 wallet to continue.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      await connect({ connector: injected() });
+      console.log('Wallet connection initiated');
+    } catch (err) {
+      console.error('Connection error:', err);
+      toast({
+        title: "Connection Error",
+        description: "Failed to connect wallet. Please check your wallet and try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleDisconnect = () => {
@@ -82,11 +117,26 @@ export function WalletConnect() {
   return (
     <Button 
       onClick={handleConnect}
+      disabled={isPending}
       variant="outline" 
-      className="flex items-center space-x-2 border-primary/50 hover:border-primary hover:bg-primary/10"
+      className="flex items-center space-x-2 border-primary/50 hover:border-primary hover:bg-primary/10 disabled:opacity-50"
     >
-      <Wallet className="h-4 w-4" />
-      <span>Connect Wallet</span>
+      {isPending ? (
+        <>
+          <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <span>Connecting...</span>
+        </>
+      ) : isError ? (
+        <>
+          <AlertCircle className="h-4 w-4 text-destructive" />
+          <span>Retry Connection</span>
+        </>
+      ) : (
+        <>
+          <Wallet className="h-4 w-4" />
+          <span>Connect Wallet</span>
+        </>
+      )}
     </Button>
   );
 }
