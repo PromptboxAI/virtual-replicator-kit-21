@@ -20,13 +20,37 @@ export function useAuth() {
   // Handle authentication state changes and close modals
   useEffect(() => {
     if (ready && authenticated && user) {
-      // Force close any Privy modals when authenticated
-      setTimeout(() => {
-        const privyModal = document.querySelector('[data-privy-modal]');
-        const privyOverlay = document.querySelector('[data-privy-overlay]');
-        if (privyModal) privyModal.remove();
-        if (privyOverlay) privyOverlay.remove();
-      }, 100);
+      // Multiple attempts to close Privy modals with different selectors
+      const closeModals = () => {
+        const modalSelectors = [
+          '[data-privy-modal]',
+          '[data-privy-overlay]',
+          '.privy-modal',
+          '.privy-overlay',
+          '[role="dialog"]',
+          '.ReactModal__Overlay',
+          '[data-testid="privy-modal"]'
+        ];
+        
+        modalSelectors.forEach(selector => {
+          const elements = document.querySelectorAll(selector);
+          elements.forEach(el => {
+            if (el.parentNode) {
+              el.parentNode.removeChild(el);
+            }
+          });
+        });
+
+        // Also try to remove any backdrop/overlay elements
+        document.body.style.overflow = 'unset';
+        document.documentElement.style.overflow = 'unset';
+      };
+
+      // Try multiple times with different delays
+      setTimeout(closeModals, 50);
+      setTimeout(closeModals, 200);
+      setTimeout(closeModals, 500);
+      setTimeout(closeModals, 1000);
     }
   }, [ready, authenticated, user]);
 
