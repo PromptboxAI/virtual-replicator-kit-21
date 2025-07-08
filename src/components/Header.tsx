@@ -1,11 +1,8 @@
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, User, LogOut, Wallet } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { useWallet } from '@solana/wallet-adapter-react';
-import { WalletConnect } from './WalletConnect';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,17 +14,7 @@ import {
 export function Header() {
   const location = useLocation();
   const isAboutPage = location.pathname === '/about';
-  const { user, signOut, linkWallet } = useAuth();
-  const { wallet, disconnect, connected } = useWallet();
-
-  const handleDisconnect = () => {
-    if (user) {
-      signOut();
-    }
-    if (connected) {
-      disconnect();
-    }
-  };
+  const { user, signOut, signIn, linkWallet } = useAuth();
 
   return (
     <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
@@ -73,17 +60,15 @@ export function Header() {
             
             {!isAboutPage && (
               <>
-                {user || connected ? (
+                {user ? (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="outline" className="flex items-center space-x-2">
                         <User className="h-4 w-4" />
                         <span className="hidden md:inline">
-                          {user?.wallet?.address 
+                          {user.wallet?.address 
                             ? `${user.wallet.address.slice(0, 6)}...${user.wallet.address.slice(-4)}`
-                            : wallet?.adapter?.publicKey
-                            ? `${wallet.adapter.publicKey.toBase58().slice(0, 6)}...${wallet.adapter.publicKey.toBase58().slice(-4)}`
-                            : user?.email?.address || 'Account'
+                            : user.email?.address || 'Account'
                           }
                         </span>
                       </Button>
@@ -91,27 +76,29 @@ export function Header() {
                     <DropdownMenuContent align="end" className="w-56">
                       <DropdownMenuItem disabled>
                         <span className="text-muted-foreground">
-                          {user ? (user.email?.address || user.wallet?.address || 'Base Connected') : 'Solana Connected'}
+                          {user.email?.address || user.wallet?.address || 'Connected'}
                         </span>
                       </DropdownMenuItem>
-                      {user && !user.wallet && (
+                      {!user.wallet && (
                         <>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem onClick={linkWallet} className="cursor-pointer">
                             <Wallet className="mr-2 h-4 w-4" />
-                            Connect Base Wallet
+                            Connect Wallet
                           </DropdownMenuItem>
                         </>
                       )}
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={handleDisconnect} className="cursor-pointer text-destructive">
+                      <DropdownMenuItem onClick={signOut} className="cursor-pointer text-destructive">
                         <LogOut className="mr-2 h-4 w-4" />
-                        Disconnect
+                        Sign Out
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 ) : (
-                  <WalletConnect />
+                  <Button onClick={signIn} variant="outline">
+                    Connect Wallet
+                  </Button>
                 )}
               </>
             )}

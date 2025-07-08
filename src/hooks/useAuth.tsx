@@ -1,6 +1,4 @@
-
 import { usePrivy } from '@privy-io/react-auth';
-import { useWallet } from '@solana/wallet-adapter-react';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -17,21 +15,13 @@ export function useAuth() {
     unlinkWallet
   } = usePrivy();
 
-  const { wallet, connected } = useWallet();
   const [isProcessing, setIsProcessing] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [hasAcceptedTerms, setHasAcceptedTerms] = useState(false);
 
   // Handle authentication state changes and close modals
   useEffect(() => {
-    console.log('Auth state:', { 
-      privyReady: ready, 
-      privyAuthenticated: authenticated, 
-      privyUser: user,
-      solanaWallet: wallet?.adapter?.name,
-      solanaConnected: connected
-    });
-    
+    console.log('Privy state:', { ready, authenticated, user });
     if (ready && authenticated && user) {
       // Multiple attempts to close Privy modals with different selectors
       const closeModals = () => {
@@ -65,7 +55,7 @@ export function useAuth() {
       setTimeout(closeModals, 500);
       setTimeout(closeModals, 1000);
     }
-  }, [ready, authenticated, user, connected, wallet]);
+  }, [ready, authenticated, user]);
 
   // Sync Privy user with Supabase profiles
   useEffect(() => {
@@ -177,13 +167,10 @@ export function useAuth() {
     linkWallet,
     unlinkEmail,
     unlinkWallet,
-    authenticated: authenticated || connected,
+    authenticated,
     ready,
     showTermsModal,
     hasAcceptedTerms,
-    handleAcceptTerms,
-    // Solana wallet info
-    solanaWallet: wallet,
-    solanaConnected: connected
+    handleAcceptTerms
   };
 }
