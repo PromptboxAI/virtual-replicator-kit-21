@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Wallet } from "lucide-react";
+import { Search } from "lucide-react";
+import { WalletConnect } from "@/components/WalletConnect";
 
 export function Header() {
   return (
@@ -40,10 +41,7 @@ export function Header() {
               />
             </div>
             
-            <Button variant="outline" className="hidden md:flex items-center space-x-2">
-              <Wallet className="h-4 w-4" />
-              <span>Connect Wallet</span>
-            </Button>
+            <WalletConnect />
           </div>
         </div>
       </div>
