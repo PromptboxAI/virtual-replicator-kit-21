@@ -1,13 +1,11 @@
 import { http, createConfig } from 'wagmi'
-import { base, mainnet, optimism } from 'wagmi/chains'
-import { coinbaseWallet, injected, walletConnect } from 'wagmi/connectors'
+import { mainnet, base, optimism } from 'wagmi/chains'
+import { injected } from 'wagmi/connectors'
 
 export const config = createConfig({
   chains: [mainnet, base, optimism],
   connectors: [
-    injected(), // MetaMask and other injected wallets
-    coinbaseWallet(),
-    walletConnect({ projectId: 'your-project-id' }), // Replace with your WalletConnect project ID
+    injected(), // MetaMask and other injected wallets only
   ],
   transports: {
     [mainnet.id]: http(),
