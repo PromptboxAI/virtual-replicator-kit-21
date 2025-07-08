@@ -24,9 +24,9 @@ const Learn = () => {
             on the world's AI blockchain.
           </h2>
           <div className="flex justify-end">
-            <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-lg px-8 py-6">
-              Get Started with AI Agents
-              <ArrowRight className="w-5 h-5 ml-2" />
+            <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-8 py-6 flex flex-col items-center">
+              <span className="text-sm">GET STARTED WITH</span>
+              <span className="text-lg">AI Agents</span>
             </Button>
           </div>
         </div>
