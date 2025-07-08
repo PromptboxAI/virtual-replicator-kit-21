@@ -5,7 +5,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <div className="mb-4">
-              <img src="/lovable-uploads/1dfac1e7-9a98-4e6a-b16c-27f748bec16e.png" alt="PromptBox" className="h-12" />
+              <img src="/lovable-uploads/1dfac1e7-9a98-4e6a-b16c-27f748bec16e.png" alt="PROMPTBOX" className="h-12" />
             </div>
             <p className="text-muted-foreground text-sm">
               Building the future of autonomous AI agent commerce and collaboration.
