@@ -9,45 +9,60 @@ export function Header() {
   const isAboutPage = location.pathname === '/about';
 
   return (
-    <header className="border-b border-border bg-card/50 backdrop-blur-md sticky top-0 z-50">
+    <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center space-x-8">
-            <div className="text-2xl font-bold bg-gradient-cyber bg-clip-text text-transparent">
+            <div className="text-2xl font-bold text-foreground">
               PromptBox
             </div>
             
             {/* Navigation */}
-            <nav className="hidden md:flex items-center space-x-6">
-              <Link to="/" className="text-foreground hover:text-primary transition-colors">
-                AI Agents
+            <nav className="hidden md:flex items-center space-x-8">
+              <Link to="/" className="text-foreground hover:text-primary transition-colors font-medium">
+                Learn
               </Link>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                ACP
-              </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              <a href="#" className="text-foreground hover:text-primary transition-colors font-medium">
                 Build
               </a>
-              <Link to="/about" className="text-muted-foreground hover:text-foreground transition-colors">
+              <a href="#" className="text-foreground hover:text-primary transition-colors font-medium">
+                Ecosystem
+              </a>
+              <a href="#" className="text-foreground hover:text-primary transition-colors font-medium">
+                Bridge
+              </a>
+              <a href="#" className="text-foreground hover:text-primary transition-colors font-medium">
+                Tools
+              </a>
+              <a href="#" className="text-foreground hover:text-primary transition-colors font-medium">
+                Blog
+              </a>
+              <Link to="/about" className="text-foreground hover:text-primary transition-colors font-medium">
                 About
               </Link>
             </nav>
           </div>
 
-          {/* Search and Actions */}
+          {/* Actions */}
           <div className="flex items-center space-x-4">
             {!isAboutPage && (
               <div className="relative hidden md:block">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
                   placeholder="Search agents..."
-                  className="pl-10 w-64 bg-muted/50 border-border"
+                  className="pl-10 w-64 bg-gray-50 border-gray-200"
                 />
               </div>
             )}
             
             {!isAboutPage && <WalletConnect />}
+            
+            {isAboutPage && (
+              <Button className="bg-white border border-gray-300 text-foreground hover:bg-gray-50 font-medium">
+                Whitepaper
+              </Button>
+            )}
           </div>
         </div>
       </div>
