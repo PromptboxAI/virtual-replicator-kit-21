@@ -17,6 +17,19 @@ export function useAuth() {
 
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // Handle authentication state changes and close modals
+  useEffect(() => {
+    if (ready && authenticated && user) {
+      // Force close any Privy modals when authenticated
+      setTimeout(() => {
+        const privyModal = document.querySelector('[data-privy-modal]');
+        const privyOverlay = document.querySelector('[data-privy-overlay]');
+        if (privyModal) privyModal.remove();
+        if (privyOverlay) privyOverlay.remove();
+      }, 100);
+    }
+  }, [ready, authenticated, user]);
+
   // Sync Privy user with Supabase profiles
   useEffect(() => {
     console.log('Auth state changed:', { ready, authenticated, user: user?.id });
