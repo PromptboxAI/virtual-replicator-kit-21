@@ -25,8 +25,8 @@ export function WalletConnect() {
       console.log('=== STARTING WALLET DETECTION ===');
       
       if (typeof window !== 'undefined') {
-        // Force false for now to test the install flow
-        const forceNoWallet = true; // Set to true to test install button
+        // Now detect the real wallet state
+        const forceNoWallet = false; // Set back to false to detect MetaMask
         
         if (forceNoWallet) {
           console.log('FORCING NO WALLET FOR TESTING');
