@@ -224,7 +224,7 @@ const About = () => {
               <div className="space-y-2 text-sm text-muted-foreground">
                 <div>AI Agents</div>
                 <div>ACP Protocol</div>
-                <div>GAME Framework</div>
+                <div>PROMPT Framework</div>
                 <div>Governance</div>
               </div>
             </div>
