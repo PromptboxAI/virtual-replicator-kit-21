@@ -33,15 +33,29 @@ const App = () => (
           rpcUrls: { default: { http: ['https://rpc.ankr.com/eth'] } },
           blockExplorers: { default: { name: 'Etherscan', url: 'https://etherscan.io' } },
         },
+        {
+          id: 8453,
+          name: 'Base',
+          network: 'base',
+          nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+          rpcUrls: { default: { http: ['https://mainnet.base.org'] } },
+          blockExplorers: { default: { name: 'BaseScan', url: 'https://basescan.org' } },
+        },
       ],
       defaultChain: {
-        id: 1,
-        name: 'Ethereum',
-        network: 'ethereum',
+        id: 8453,
+        name: 'Base',
+        network: 'base',
         nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
-        rpcUrls: { default: { http: ['https://rpc.ankr.com/eth'] } },
-        blockExplorers: { default: { name: 'Etherscan', url: 'https://etherscan.io' } },
+        rpcUrls: { default: { http: ['https://mainnet.base.org'] } },
+        blockExplorers: { default: { name: 'BaseScan', url: 'https://basescan.org' } },
       },
+      solanaClusters: [
+        {
+          name: 'mainnet-beta',
+          rpcUrl: 'https://api.mainnet-beta.solana.com',
+        }
+      ],
       embeddedWallets: {
         createOnLogin: 'users-without-wallets',
       },
