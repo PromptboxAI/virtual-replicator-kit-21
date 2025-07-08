@@ -11,22 +11,24 @@ const Learn = () => {
       
       {/* Hero Section */}
       <section className="py-20 px-4">
-        <div className="container mx-auto text-center">
-          <h1 className="text-6xl md:text-8xl mb-8 text-foreground">
+        <div className="container mx-auto">
+          <h1 className="text-6xl md:text-8xl mb-8 text-foreground text-left">
             <span className="font-normal">LEARN </span>
             <span className="font-bold">PROMPT</span>
           </h1>
-          <h2 className="text-3xl md:text-4xl mb-6 text-foreground">
+          <h2 className="text-3xl md:text-4xl mb-6 text-foreground text-left">
             Leverage the power
             <br />
             of autonomous intelligence
             <br />
             on the world's AI blockchain.
           </h2>
-          <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-lg px-8 py-6">
-            Get Started with AI Agents
-            <ArrowRight className="w-5 h-5 ml-2" />
-          </Button>
+          <div className="flex justify-end">
+            <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-lg px-8 py-6">
+              Get Started with AI Agents
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
+          </div>
         </div>
       </section>
 
