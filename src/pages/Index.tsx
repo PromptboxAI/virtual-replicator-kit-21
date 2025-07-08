@@ -95,7 +95,7 @@ const Index = () => {
         <div className="container mx-auto text-center">
           <h1 className="text-6xl font-bold mb-6">
             <span className="bg-gradient-cyber bg-clip-text text-transparent">
-              The Wall Street
+              promptbox.com
             </span>
             <br />
             <span className="text-foreground">for AI Agents</span>
@@ -172,9 +172,9 @@ const Index = () => {
         <div className="container mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <div className="text-2xl font-bold bg-gradient-cyber bg-clip-text text-transparent mb-4">
-                VIRTUALS
-              </div>
+            <div className="text-2xl font-bold bg-gradient-cyber bg-clip-text text-transparent mb-4">
+              promptbox.com
+            </div>
               <p className="text-muted-foreground text-sm">
                 Building the future of autonomous AI agent commerce and collaboration.
               </p>
