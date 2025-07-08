@@ -138,6 +138,11 @@ export function WalletConnect() {
   console.log('isPending:', isPending);
   console.log('isConnected:', isConnected);
   console.log('isError:', isError);
+  
+  // Add manual reset if stuck
+  if (isPending) {
+    console.log('STUCK IN PENDING - Adding manual reset option');
+  }
   console.log('=========================');
 
   // Show install prompt if wallet is not detected
@@ -178,20 +183,30 @@ export function WalletConnect() {
     );
   }
 
-  // If wallet is connecting, show connecting state with instructions
+  // If wallet is connecting, show connecting state with reset option
   if (isPending) {
     return (
       <div className="flex flex-col items-center space-y-2">
-        <Button 
-          disabled
-          variant="outline" 
-          className="flex items-center space-x-2 border-primary/50 opacity-50"
-        >
-          <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-          <span>Connecting...</span>
-        </Button>
-        <div className="text-xs text-muted-foreground text-center max-w-48">
-          Check your wallet for a connection request
+        <div className="flex items-center space-x-2">
+          <Button 
+            disabled
+            variant="outline" 
+            className="flex items-center space-x-2 border-primary/50 opacity-50"
+          >
+            <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <span>Connecting...</span>
+          </Button>
+          <Button 
+            onClick={() => window.location.reload()}
+            variant="outline" 
+            size="sm"
+            className="border-destructive/50 hover:border-destructive text-destructive"
+          >
+            Reset
+          </Button>
+        </div>
+        <div className="text-xs text-muted-foreground text-center max-w-60">
+          If stuck, click Reset or try installing fresh MetaMask
         </div>
       </div>
     );
