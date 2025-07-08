@@ -32,9 +32,6 @@ export function Header() {
               <a href="#" className="text-foreground hover:text-primary transition-colors font-medium">
                 Learn
               </a>
-              <a href="#" className="text-foreground hover:text-primary transition-colors font-medium">
-                Tools
-              </a>
               <Link to="/about" className="text-foreground hover:text-primary transition-colors font-medium">
                 About
               </Link>
