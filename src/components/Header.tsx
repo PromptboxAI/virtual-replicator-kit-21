@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+import { Link } from "react-router-dom";
 import { WalletConnect } from "@/components/WalletConnect";
 
 export function Header() {
@@ -16,18 +17,18 @@ export function Header() {
             
             {/* Navigation */}
             <nav className="hidden md:flex items-center space-x-6">
-              <a href="#" className="text-foreground hover:text-primary transition-colors">
+              <Link to="/" className="text-foreground hover:text-primary transition-colors">
                 AI Agents
-              </a>
+              </Link>
               <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
                 ACP
               </a>
               <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
                 Build
               </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              <Link to="/about" className="text-muted-foreground hover:text-foreground transition-colors">
                 About
-              </a>
+              </Link>
             </nav>
           </div>
 
