@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Link } from "react-router-dom";
 import { useTokenBalance } from "@/hooks/useTokenBalance";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useAuth } from "@/hooks/useAuth";
 
 interface AgentFormData {
   name: string;
@@ -34,9 +35,8 @@ export default function CreateAgent() {
   const [isCreating, setIsCreating] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [user, setUser] = useState<any>(null);
-  const [authLoading, setAuthLoading] = useState(true);
   
+  const { user, loading: authLoading, signIn } = useAuth();
   const { balance, loading: balanceLoading, deductTokens } = useTokenBalance(user?.id);
   const CREATION_COST = 100;
 
@@ -51,23 +51,6 @@ export default function CreateAgent() {
     total_supply: 1000000,
     initial_price: 0.01,
   });
-
-  // Check authentication
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user || null);
-      setAuthLoading(false);
-    };
-
-    checkAuth();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user || null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
 
   const categories = [
     "DeFi Assistant",
@@ -222,13 +205,11 @@ export default function CreateAgent() {
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-2xl mx-auto text-center">
             <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h1 className="text-2xl font-bold mb-4">Authentication Required</h1>
+            <h1 className="text-2xl font-bold mb-4">Wallet Connection Required</h1>
             <p className="text-muted-foreground mb-6">
-              You need to be logged in to create an agent. Please sign in to continue.
+              You need to connect your wallet to create an agent. Click below to get started.
             </p>
-            <Link to="/auth">
-              <Button>Sign In</Button>
-            </Link>
+            <Button onClick={signIn}>Connect Wallet</Button>
           </div>
         </div>
         <Footer />
