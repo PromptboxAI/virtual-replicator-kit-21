@@ -116,11 +116,11 @@ export default function CreateAgent() {
 
   const validateForm = () => {
     if (!formData.avatar_url || !avatarFile) {
-      toast({ title: "Error", description: "Agent avatar is required", variant: "destructive" });
+      toast({ title: "Error", description: "AI Agent avatar is required", variant: "destructive" });
       return false;
     }
     if (!formData.name.trim()) {
-      toast({ title: "Error", description: "Agent name is required", variant: "destructive" });
+      toast({ title: "Error", description: "AI Agent name is required", variant: "destructive" });
       return false;
     }
     if (!formData.symbol.trim()) {
@@ -128,7 +128,7 @@ export default function CreateAgent() {
       return false;
     }
     if (!formData.description.trim()) {
-      toast({ title: "Error", description: "Agent description is required", variant: "destructive" });
+      toast({ title: "Error", description: "AI Agent description is required", variant: "destructive" });
       return false;
     }
     if (!formData.category) {
@@ -142,7 +142,7 @@ export default function CreateAgent() {
     if (!user) {
       toast({
         title: "Authentication Required",
-        description: "You must be logged in to create an agent",
+        description: "You must be logged in to create an AI Agent",
         variant: "destructive"
       });
       return;
@@ -171,7 +171,7 @@ export default function CreateAgent() {
           console.error('Upload error:', uploadError);
           toast({ 
             title: "Warning", 
-            description: "Avatar upload failed, but agent will be created without an avatar", 
+            description: "Avatar upload failed, but AI Agent will be created without an avatar", 
             variant: "default" 
           });
           // Continue without avatar instead of stopping
@@ -207,7 +207,7 @@ export default function CreateAgent() {
 
       if (error) {
         console.error('Database error:', error);
-        toast({ title: "Error", description: "Failed to create agent", variant: "destructive" });
+        toast({ title: "Error", description: "Failed to create AI Agent", variant: "destructive" });
         return;
       }
 
@@ -216,7 +216,7 @@ export default function CreateAgent() {
         description: `${formData.name} has been created successfully! (${CREATION_COST} tokens deducted)`,
       });
       
-      // Navigate back to home to see the new agent
+      // Navigate back to home to see the new AI Agent
       navigate('/');
       
     } catch (error) {
@@ -258,7 +258,7 @@ export default function CreateAgent() {
             <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h1 className="text-2xl font-bold mb-4">Wallet Connection Required</h1>
             <p className="text-muted-foreground mb-6">
-              You need to connect your wallet to create an agent. Click below to get started.
+              You need to connect your wallet to create an AI Agent. Click below to get started.
             </p>
             <Button onClick={signIn}>Connect Wallet</Button>
           </div>
@@ -272,7 +272,7 @@ export default function CreateAgent() {
 
   // Progress steps
   const steps = [
-    "Agent Details",
+    "AI Agent Details",
     "Project Pitch", 
     "Framework",
     "Socials",
@@ -289,7 +289,7 @@ export default function CreateAgent() {
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold mb-4">
               <span className="bg-gradient-cyber bg-clip-text text-transparent">
-                Create New Agent on Base
+                Create New AI Agent on Base
               </span>
             </h1>
             <p className="text-xl text-muted-foreground flex items-center justify-center gap-2">
@@ -382,15 +382,15 @@ export default function CreateAgent() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Sparkles className="h-5 w-5 text-primary" />
-                    Agent Details
+                    AI Agent Details
                   </CardTitle>
                   <CardDescription>
-                    Define your AI agent's identity and purpose
+                    Define your AI Agent's identity and purpose
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <Label htmlFor="avatar">Agent Avatar *</Label>
+                    <Label htmlFor="avatar">AI Agent Avatar *</Label>
                     <div className="mt-2 flex items-center gap-4">
                       <input
                         id="avatar"
@@ -419,7 +419,7 @@ export default function CreateAgent() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="name">Agent Name *</Label>
+                      <Label htmlFor="name">AI Agent Name *</Label>
                       <Input
                         id="name"
                         placeholder="e.g. AlphaTrader"
@@ -443,7 +443,7 @@ export default function CreateAgent() {
                     <Label htmlFor="description">Description *</Label>
                     <Textarea
                       id="description"
-                      placeholder="Describe what your AI agent does, its capabilities, and unique features..."
+                      placeholder="Describe what your AI Agent does, its capabilities, and unique features..."
                       value={formData.description}
                       onChange={(e) => handleInputChange('description', e.target.value)}
                       rows={4}
@@ -477,7 +477,7 @@ export default function CreateAgent() {
                     Socials
                   </CardTitle>
                   <CardDescription>
-                    Connect your agent's social presence
+                    Connect your AI Agent's social presence
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -486,7 +486,7 @@ export default function CreateAgent() {
                       <Label htmlFor="website">Website URL</Label>
                       <Input
                         id="website"
-                        placeholder="https://youragent.com"
+                        placeholder="https://youraiagent.com"
                         value={formData.website_url}
                         onChange={(e) => handleInputChange('website_url', e.target.value)}
                       />
@@ -572,7 +572,7 @@ export default function CreateAgent() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Info className="h-5 w-5" />
-                    Agent Preview
+                    AI Agent Preview
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -586,7 +586,7 @@ export default function CreateAgent() {
                       </Avatar>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold truncate">
-                          {formData.name || "Agent Name"}
+                          {formData.name || "AI Agent Name"}
                         </h3>
                         <p className="text-sm text-muted-foreground">
                           ${formData.symbol || "SYMBOL"}
@@ -601,7 +601,7 @@ export default function CreateAgent() {
                     )}
 
                     <p className="text-sm text-muted-foreground">
-                      {formData.description || "Agent description will appear here..."}
+                      {formData.description || "AI Agent description will appear here..."}
                     </p>
 
                   </div>
