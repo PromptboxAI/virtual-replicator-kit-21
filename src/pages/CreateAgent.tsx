@@ -311,6 +311,7 @@ export default function CreateAgent() {
     "AI Agent Details",
     "Project Pitch", 
     "Framework",
+    "Tokenomics",
     "Summary"
   ];
 
@@ -763,8 +764,106 @@ export default function CreateAgent() {
                 </>
               )}
 
-              {/* Step 3: Summary */}
+              {/* Step 3: Tokenomics */}
               {currentStep === 3 && (
+                <>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Coins className="h-5 w-5 text-primary" />
+                        Tokenomics
+                      </CardTitle>
+                      <CardDescription>
+                        Configure your AI Agent's token economics
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="total_supply">Total Supply *</Label>
+                          <Input
+                            id="total_supply"
+                            type="number"
+                            placeholder="1000000"
+                            value={formData.total_supply}
+                            onChange={(e) => handleInputChange('total_supply', parseInt(e.target.value) || 0)}
+                            min="1"
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Maximum number of tokens that will ever exist
+                          </p>
+                        </div>
+                        <div>
+                          <Label htmlFor="initial_price">Initial Price (USD) *</Label>
+                          <Input
+                            id="initial_price"
+                            type="number"
+                            step="0.01"
+                            placeholder="0.01"
+                            value={formData.initial_price}
+                            onChange={(e) => handleInputChange('initial_price', parseFloat(e.target.value) || 0)}
+                            min="0.01"
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Starting price per token
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Market Cap Preview */}
+                      <div className="p-4 bg-muted/50 rounded-lg border">
+                        <h4 className="font-medium mb-2">Token Economics Preview</h4>
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <p className="text-muted-foreground">Total Supply:</p>
+                            <p className="font-medium">{formData.total_supply.toLocaleString()} tokens</p>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground">Initial Price:</p>
+                            <p className="font-medium">${formData.initial_price}</p>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground">Initial Market Cap:</p>
+                            <p className="font-medium text-primary">${estimatedMarketCap.toLocaleString()}</p>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground">Network:</p>
+                            <p className="font-medium flex items-center gap-1">
+                              Base 
+                              <img 
+                                src="/lovable-uploads/653131a0-191a-4ba3-9126-6f9aef2d6a80.png" 
+                                alt="Base" 
+                                className="w-4 h-4"
+                              />
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Step 3 Action Buttons */}
+                  <div className="flex gap-4">
+                    <Button
+                      onClick={() => setCurrentStep(2)}
+                      variant="outline"
+                      className="flex-1"
+                    >
+                      Back
+                    </Button>
+                    <Button
+                      onClick={() => setCurrentStep(4)}
+                      disabled={!formData.total_supply || !formData.initial_price}
+                      className="flex-1 bg-gradient-primary hover:opacity-90"
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </>
+              )}
+
+              {/* Step 4: Summary */}
+              {currentStep === 4 && (
                 <>
                   <Card>
                     <CardHeader>
@@ -818,14 +917,14 @@ export default function CreateAgent() {
                     </CardContent>
                   </Card>
 
-                  {/* Step 3 Action Buttons */}
-                  <div className="flex gap-4">
-                    <Button
-                      onClick={() => setCurrentStep(2)}
-                      variant="outline"
-                      className="flex-1"
-                    >
-                      Back
+                   {/* Step 4 Action Buttons */}
+                   <div className="flex gap-4">
+                     <Button
+                       onClick={() => setCurrentStep(3)}
+                       variant="outline"
+                       className="flex-1"
+                     >
+                       Back
                     </Button>
                     <Button
                       onClick={handleCreateAgent}
