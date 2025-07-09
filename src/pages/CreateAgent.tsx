@@ -115,6 +115,10 @@ export default function CreateAgent() {
   };
 
   const validateForm = () => {
+    if (!formData.avatar_url || !avatarFile) {
+      toast({ title: "Error", description: "Agent avatar is required", variant: "destructive" });
+      return false;
+    }
     if (!formData.name.trim()) {
       toast({ title: "Error", description: "Agent name is required", variant: "destructive" });
       return false;
@@ -271,7 +275,7 @@ export default function CreateAgent() {
     "Agent Details",
     "Project Pitch", 
     "Framework",
-    "Tokenomics",
+    "Socials",
     "Summary"
   ];
 
@@ -421,6 +425,37 @@ export default function CreateAgent() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  <div>
+                    <Label htmlFor="avatar">Agent Avatar *</Label>
+                    <div className="mt-2 flex items-center gap-4">
+                      <input
+                        id="avatar"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAvatarUpload}
+                        className="hidden"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => document.getElementById('avatar')?.click()}
+                        className="flex items-center gap-2"
+                      >
+                        <Upload className="h-4 w-4" />
+                        Upload Avatar
+                      </Button>
+                      {formData.avatar_url && (
+                        <Avatar className="h-12 w-12">
+                          <AvatarImage src={formData.avatar_url} />
+                          <AvatarFallback>{formData.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Upload a profile image for your AI agent
+                    </p>
+                  </div>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="name">Agent Name *</Label>
@@ -469,7 +504,69 @@ export default function CreateAgent() {
                       </SelectContent>
                     </Select>
                   </div>
+                </CardContent>
+              </Card>
 
+              {/* Token Economics */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Coins className="h-5 w-5 text-primary" />
+                    Token Economics
+                  </CardTitle>
+                  <CardDescription>
+                    Configure your agent's token parameters
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="supply">Total Supply</Label>
+                      <Input
+                        id="supply"
+                        type="number"
+                        value={formData.total_supply}
+                        onChange={(e) => handleInputChange('total_supply', parseInt(e.target.value) || 0)}
+                        min="1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="price">Initial Price (USD)</Label>
+                      <Input
+                        id="price"
+                        type="number"
+                        step="0.001"
+                        value={formData.initial_price}
+                        onChange={(e) => handleInputChange('initial_price', parseFloat(e.target.value) || 0)}
+                        min="0.001"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <TrendingUp className="h-4 w-4 text-primary" />
+                      <span className="font-medium">Estimated Market Cap</span>
+                    </div>
+                    <p className="text-2xl font-bold text-primary">
+                      ${estimatedMarketCap.toLocaleString()}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Socials */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Link2 className="h-5 w-5 text-primary" />
+                    Socials
+                  </CardTitle>
+                  <CardDescription>
+                    Connect your agent's social presence
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="website">Website URL</Label>
@@ -532,82 +629,6 @@ export default function CreateAgent() {
                         </div>
                       )}
                     </div>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="avatar">Agent Avatar</Label>
-                    <div className="mt-2 flex items-center gap-4">
-                      <input
-                        id="avatar"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleAvatarUpload}
-                        className="hidden"
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => document.getElementById('avatar')?.click()}
-                        className="flex items-center gap-2"
-                      >
-                        <Upload className="h-4 w-4" />
-                        Upload Avatar
-                      </Button>
-                      {formData.avatar_url && (
-                        <Avatar className="h-12 w-12">
-                          <AvatarImage src={formData.avatar_url} />
-                          <AvatarFallback>{formData.name.slice(0, 2).toUpperCase()}</AvatarFallback>
-                        </Avatar>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Token Economics */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Coins className="h-5 w-5 text-primary" />
-                    Token Economics
-                  </CardTitle>
-                  <CardDescription>
-                    Configure your agent's token parameters
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="supply">Total Supply</Label>
-                      <Input
-                        id="supply"
-                        type="number"
-                        value={formData.total_supply}
-                        onChange={(e) => handleInputChange('total_supply', parseInt(e.target.value) || 0)}
-                        min="1"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="price">Initial Price (USD)</Label>
-                      <Input
-                        id="price"
-                        type="number"
-                        step="0.001"
-                        value={formData.initial_price}
-                        onChange={(e) => handleInputChange('initial_price', parseFloat(e.target.value) || 0)}
-                        min="0.001"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="p-4 bg-muted/50 rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <TrendingUp className="h-4 w-4 text-primary" />
-                      <span className="font-medium">Estimated Market Cap</span>
-                    </div>
-                    <p className="text-2xl font-bold text-primary">
-                      ${estimatedMarketCap.toLocaleString()}
-                    </p>
                   </div>
                 </CardContent>
               </Card>
