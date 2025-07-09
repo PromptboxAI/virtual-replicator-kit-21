@@ -96,7 +96,7 @@ export default function CreateAgent() {
     setIsCreating(true);
     try {
       // Upload avatar if provided
-      let finalAvatarUrl = formData.avatar_url;
+      let finalAvatarUrl = null;
       
       if (avatarFile) {
         const fileExt = avatarFile.name.split('.').pop();
@@ -108,16 +108,20 @@ export default function CreateAgent() {
 
         if (uploadError) {
           console.error('Upload error:', uploadError);
-          toast({ title: "Error", description: "Failed to upload avatar", variant: "destructive" });
-          return;
+          toast({ 
+            title: "Warning", 
+            description: "Avatar upload failed, but agent will be created without an avatar", 
+            variant: "default" 
+          });
+          // Continue without avatar instead of stopping
+        } else {
+          // Get public URL
+          const { data: urlData } = supabase.storage
+            .from('agent-avatars')
+            .getPublicUrl(fileName);
+          
+          finalAvatarUrl = urlData.publicUrl;
         }
-
-        // Get public URL
-        const { data: urlData } = supabase.storage
-          .from('agent-avatars')
-          .getPublicUrl(fileName);
-        
-        finalAvatarUrl = urlData.publicUrl;
       }
 
       // Create agent in database
