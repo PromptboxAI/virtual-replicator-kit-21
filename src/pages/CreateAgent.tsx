@@ -380,7 +380,7 @@ export default function CreateAgent() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Form */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className={`${currentStep === 0 ? 'lg:col-span-2' : 'lg:col-span-3'} space-y-6`}>
               
               {/* Step 0: AI Agent Details */}
               {currentStep === 0 && (
@@ -597,14 +597,14 @@ export default function CreateAgent() {
                         <Label htmlFor="short_pitch" className="flex items-center gap-1">
                           Short Pitch <span className="text-red-500">*</span>
                         </Label>
-                        <Textarea
+                         <Textarea
                           id="short_pitch"
                           placeholder="A concise, engaging summary of your AI Agent (max 500 characters)"
                           value={formData.short_pitch}
                           onChange={(e) => handleInputChange('short_pitch', e.target.value)}
-                          rows={3}
+                          rows={8}
                           maxLength={500}
-                          className="mt-2"
+                          className="mt-2 min-h-[200px]"
                         />
                         <div className="flex justify-between items-center mt-1">
                           <p className="text-xs text-muted-foreground">
@@ -623,13 +623,13 @@ export default function CreateAgent() {
                         <p className="text-sm text-muted-foreground mb-2">
                           Treat this as your whitepaper. Tell us more about this AI Agent. Include capability, roadmap, key partnership, if any.
                         </p>
-                        <Textarea
+                         <Textarea
                           id="agent_overview"
                           placeholder="Provide a detailed overview of your AI Agent..."
                           value={formData.agent_overview}
                           onChange={(e) => handleInputChange('agent_overview', e.target.value)}
-                          rows={10}
-                          className="mt-2"
+                          rows={12}
+                          className="mt-2 min-h-[300px]"
                         />
                       </div>
                     </CardContent>
@@ -657,58 +657,49 @@ export default function CreateAgent() {
 
             </div>
 
-            {/* Preview */}
-            <div className="lg:col-span-1">
-              <Card className="sticky top-8">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Info className="h-5 w-5" />
-                    AI Agent Preview
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-12 w-12">
-                        <AvatarImage src={formData.avatar_url} />
-                        <AvatarFallback>
-                          {formData.name ? formData.name.slice(0, 2).toUpperCase() : "AG"}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold truncate">
-                          {formData.name || "AI Agent Name"}
-                        </h3>
-                        <p className="text-sm text-muted-foreground">
-                          ${formData.symbol || "SYMBOL"}
-                        </p>
+            {/* Preview - Only show on step 0 */}
+            {currentStep === 0 && (
+              <div className="lg:col-span-1">
+                <Card className="sticky top-8">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Info className="h-5 w-5" />
+                      AI Agent Preview
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-12 w-12">
+                          <AvatarImage src={formData.avatar_url} />
+                          <AvatarFallback>
+                            {formData.name ? formData.name.slice(0, 2).toUpperCase() : "AG"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold truncate">
+                            {formData.name || "AI Agent Name"}
+                          </h3>
+                          <p className="text-sm text-muted-foreground">
+                            ${formData.symbol || "SYMBOL"}
+                          </p>
+                        </div>
                       </div>
+
+                      {formData.category && (
+                        <Badge variant="secondary" className="w-fit">
+                          {formData.category}
+                        </Badge>
+                      )}
+
+                      <p className="text-sm text-muted-foreground break-words">
+                        {formData.description || "AI Agent description will appear here..."}
+                      </p>
                     </div>
-
-                    {formData.category && (
-                      <Badge variant="secondary" className="w-fit">
-                        {formData.category}
-                      </Badge>
-                    )}
-
-                    <p className="text-sm text-muted-foreground break-words">
-                      {formData.description || "AI Agent description will appear here..."}
-                    </p>
-
-                    {/* Show pitch preview on step 1 */}
-                    {currentStep === 1 && formData.short_pitch && (
-                      <div className="border-t pt-4">
-                        <h4 className="font-medium text-sm mb-2">Short Pitch</h4>
-                        <p className="text-sm text-muted-foreground">
-                          {formData.short_pitch}
-                        </p>
-                      </div>
-                    )}
-
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
           </div>
         </div>
       </div>
