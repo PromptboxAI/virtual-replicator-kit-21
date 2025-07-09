@@ -270,7 +270,8 @@ export default function CreateAgent() {
   const steps = [
     "Agent Details",
     "Project Pitch", 
-    "Launch Details",
+    "Framework",
+    "Tokenomics",
     "Summary"
   ];
 
