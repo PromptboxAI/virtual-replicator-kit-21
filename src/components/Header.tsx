@@ -34,11 +34,6 @@ export function Header() {
               <Link to="/create" className="text-foreground hover:text-primary transition-colors font-medium">
                 Create Agent
               </Link>
-              {user && (
-                <Link to="/my-agents" className="text-foreground hover:text-primary transition-colors font-medium">
-                  My Agents
-                </Link>
-              )}
               <a href="#" className="text-foreground hover:text-primary transition-colors font-medium">
                 Ecosystem
               </a>
@@ -66,40 +61,39 @@ export function Header() {
             {!isAboutPage && (
               <>
                 {user ? (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" className="flex items-center space-x-2">
-                        <User className="h-4 w-4" />
-                        <span className="hidden md:inline">
-                          {user.wallet?.address 
-                            ? `${user.wallet.address.slice(0, 6)}...${user.wallet.address.slice(-4)}`
-                            : user.email?.address || 'Account'
-                          }
-                        </span>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56">
-                      <DropdownMenuItem disabled>
-                        <span className="text-muted-foreground">
-                          {user.email?.address || user.wallet?.address || 'Connected'}
-                        </span>
-                      </DropdownMenuItem>
-                      {!user.wallet && (
-                        <>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={linkWallet} className="cursor-pointer">
-                            <Wallet className="mr-2 h-4 w-4" />
-                            Connect Wallet
-                          </DropdownMenuItem>
-                        </>
-                      )}
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={signOut} className="cursor-pointer text-destructive">
-                        <LogOut className="mr-2 h-4 w-4" />
-                        Sign Out
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <div className="flex items-center space-x-2">
+                    <Button asChild variant="default">
+                      <Link to="/my-agents">Dashboard</Link>
+                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="icon">
+                          <User className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-56">
+                        <DropdownMenuItem disabled>
+                          <span className="text-muted-foreground">
+                            {user.email?.address || user.wallet?.address || 'Connected'}
+                          </span>
+                        </DropdownMenuItem>
+                        {!user.wallet && (
+                          <>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={linkWallet} className="cursor-pointer">
+                              <Wallet className="mr-2 h-4 w-4" />
+                              Connect Wallet
+                            </DropdownMenuItem>
+                          </>
+                        )}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={signOut} className="cursor-pointer text-destructive">
+                          <LogOut className="mr-2 h-4 w-4" />
+                          Sign Out
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 ) : (
                   <Button onClick={signIn} variant="outline">
                     Connect Wallet
