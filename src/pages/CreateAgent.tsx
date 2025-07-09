@@ -32,6 +32,7 @@ interface AgentFormData {
 export default function CreateAgent() {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [currentStep, setCurrentStep] = useState(0);
   const [isCreating, setIsCreating] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -187,6 +188,15 @@ export default function CreateAgent() {
     }
   };
 
+  const handleNext = () => {
+    if (!validateForm()) return;
+    setCurrentStep(1); // Move to Project Pitch step
+  };
+
+  const handleCancel = () => {
+    navigate('/');
+  };
+
   // Show loading state
   if (authLoading || balanceLoading) {
     return (
@@ -224,11 +234,10 @@ export default function CreateAgent() {
   // Progress steps
   const steps = [
     "Agent Details",
-    "Token Economics", 
+    "Project Pitch", 
     "Launch Details",
     "Summary"
   ];
-  const currentStep = 0; // Currently on first step
 
   return (
     <div className="min-h-screen bg-background">
@@ -519,20 +528,18 @@ export default function CreateAgent() {
               {/* Action Buttons */}
               <div className="flex gap-4">
                 <Button
-                  onClick={() => setPreviewMode(!previewMode)}
+                  onClick={handleCancel}
                   variant="outline"
                   className="flex-1"
                 >
-                  {previewMode ? "Edit" : "Preview"}
+                  Cancel
                 </Button>
                 <Button
-                  onClick={handleCreateAgent}
-                  disabled={isCreating || balance < CREATION_COST}
+                  onClick={handleNext}
+                  disabled={!formData.name || !formData.symbol || !formData.description || !formData.category}
                   className="flex-1 bg-gradient-primary hover:opacity-90"
                 >
-                  {isCreating ? "Creating..." : 
-                   balance < CREATION_COST ? `Need ${CREATION_COST - balance} more tokens` :
-                   "Create Agent"}
+                  Next
                 </Button>
               </div>
             </div>
