@@ -34,6 +34,11 @@ export function Header() {
               <Link to="/create" className="text-foreground hover:text-primary transition-colors font-medium">
                 Create Agent
               </Link>
+              {user && (
+                <Link to="/my-agents" className="text-foreground hover:text-primary transition-colors font-medium">
+                  My Agents
+                </Link>
+              )}
               <a href="#" className="text-foreground hover:text-primary transition-colors font-medium">
                 Ecosystem
               </a>

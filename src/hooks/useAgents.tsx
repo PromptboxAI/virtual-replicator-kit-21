@@ -13,6 +13,8 @@ export interface Agent {
   volume_24h: number | null;
   price_change_24h: number | null;
   is_active: boolean;
+  creator_id: string | null;
+  status: string | null;
 }
 
 export function useAgents() {

@@ -11,6 +11,7 @@ import Auth from "./pages/Auth";
 import About from "./pages/About";
 import Learn from "./pages/Learn";
 import CreateAgent from "./pages/CreateAgent";
+import MyAgents from "./pages/MyAgents";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -76,6 +77,7 @@ const App = () => (
               <Route path="/about" element={<About />} />
               <Route path="/learn" element={<Learn />} />
               <Route path="/create" element={<CreateAgent />} />
+              <Route path="/my-agents" element={<MyAgents />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

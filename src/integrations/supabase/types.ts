@@ -56,6 +56,7 @@ export type Database = {
           circulating_supply: number | null
           created_at: string
           creation_cost: number | null
+          creator_id: string | null
           current_price: number
           description: string | null
           id: string
@@ -63,6 +64,7 @@ export type Database = {
           market_cap: number | null
           name: string
           price_change_24h: number | null
+          status: string | null
           symbol: string
           total_supply: number | null
           twitter_url: string | null
@@ -76,6 +78,7 @@ export type Database = {
           circulating_supply?: number | null
           created_at?: string
           creation_cost?: number | null
+          creator_id?: string | null
           current_price?: number
           description?: string | null
           id?: string
@@ -83,6 +86,7 @@ export type Database = {
           market_cap?: number | null
           name: string
           price_change_24h?: number | null
+          status?: string | null
           symbol: string
           total_supply?: number | null
           twitter_url?: string | null
@@ -96,6 +100,7 @@ export type Database = {
           circulating_supply?: number | null
           created_at?: string
           creation_cost?: number | null
+          creator_id?: string | null
           current_price?: number
           description?: string | null
           id?: string
@@ -103,6 +108,7 @@ export type Database = {
           market_cap?: number | null
           name?: string
           price_change_24h?: number | null
+          status?: string | null
           symbol?: string
           total_supply?: number | null
           twitter_url?: string | null

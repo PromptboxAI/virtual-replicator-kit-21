@@ -161,6 +161,8 @@ export default function CreateAgent() {
           market_cap: formData.total_supply * formData.initial_price,
           creation_cost: CREATION_COST,
           is_active: true,
+          creator_id: user.id,
+          status: 'ACTIVATING',
         }]);
 
       if (error) {
