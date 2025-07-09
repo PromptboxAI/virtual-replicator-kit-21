@@ -6,6 +6,9 @@ export function useTokenBalance(userId?: string) {
   const [balance, setBalance] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  
+  // Test mode - automatically enabled for development
+  const isTestMode = true;
 
   useEffect(() => {
     if (userId) {
@@ -28,9 +31,10 @@ export function useTokenBalance(userId?: string) {
 
       if (error && error.code === 'PGRST116') {
         // User doesn't have a balance record, create one
+        const initialBalance = isTestMode ? 10000 : 1000; // Give more tokens in test mode
         const { data: newBalance, error: insertError } = await supabase
           .from('user_token_balances')
-          .insert([{ user_id: userId, balance: 1000 }])
+          .insert([{ user_id: userId, balance: initialBalance }])
           .select('balance')
           .single();
 
@@ -43,6 +47,14 @@ export function useTokenBalance(userId?: string) {
           });
           return;
         }
+        
+        if (isTestMode) {
+          toast({
+            title: "Test Mode Active",
+            description: `Welcome! You've been given ${initialBalance} test tokens for development.`,
+          });
+        }
+        
         userBalance = newBalance;
       } else if (error) {
         console.error('Error fetching token balance:', error);
@@ -105,10 +117,59 @@ export function useTokenBalance(userId?: string) {
     }
   };
 
+  const addTestTokens = async (amount: number = 5000): Promise<boolean> => {
+    if (!isTestMode) {
+      toast({
+        title: "Not Available",
+        description: "Test tokens are only available in development mode",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    if (!userId) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to get test tokens",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('user_token_balances')
+        .update({ balance: balance + amount })
+        .eq('user_id', userId);
+
+      if (error) {
+        console.error('Error adding test tokens:', error);
+        toast({
+          title: "Error",
+          description: "Failed to add test tokens",
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      setBalance(prev => prev + amount);
+      toast({
+        title: "Test Tokens Added!",
+        description: `Added ${amount} test tokens to your balance`,
+      });
+      return true;
+    } catch (error) {
+      console.error('Test token addition error:', error);
+      return false;
+    }
+  };
+
   return {
     balance,
     loading,
     deductTokens,
+    addTestTokens,
+    isTestMode,
     refetchBalance: fetchBalance
   };
 }

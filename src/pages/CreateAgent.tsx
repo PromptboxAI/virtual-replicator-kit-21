@@ -37,7 +37,7 @@ export default function CreateAgent() {
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   
   const { user, loading: authLoading, signIn } = useAuth();
-  const { balance, loading: balanceLoading, deductTokens } = useTokenBalance(user?.id);
+  const { balance, loading: balanceLoading, deductTokens, addTestTokens, isTestMode } = useTokenBalance(user?.id);
   const CREATION_COST = 100;
 
   const [formData, setFormData] = useState<AgentFormData>({
@@ -242,6 +242,7 @@ export default function CreateAgent() {
                 <Coins className="h-4 w-4" />
                 <AlertDescription>
                   <div className="flex items-center gap-4">
+                    {isTestMode && <span className="text-primary font-medium">TEST MODE</span>}
                     <span>Your Balance: <strong>{balance} tokens</strong></span>
                     <span>•</span>
                     <span>Creation Cost: <strong>{CREATION_COST} tokens</strong></span>
@@ -252,6 +253,19 @@ export default function CreateAgent() {
                 </AlertDescription>
               </Alert>
             </div>
+            
+            {/* Test Token Button */}
+            {isTestMode && balance < CREATION_COST && (
+              <div className="mt-4 flex justify-center">
+                <Button 
+                  onClick={() => addTestTokens(5000)}
+                  variant="outline" 
+                  className="text-primary border-primary hover:bg-primary/10"
+                >
+                  Get 5,000 Test Tokens
+                </Button>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
