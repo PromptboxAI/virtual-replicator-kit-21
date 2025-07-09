@@ -245,23 +245,11 @@ export default function CreateAgent() {
             </h1>
             <p className="text-xl text-muted-foreground flex items-center justify-center gap-2">
               Create your AI Agent on Base
-              <svg width='20' height='20' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'>
-                <g clipPath='url(#clip0_1045_16330)'>
-                  <mask id='mask0_1045_16330' style={{maskType: 'luminance'}} maskUnits='userSpaceOnUse' x='0' y='0' width='20' height='20'>
-                    <path d='M20 0H0V20H20V0Z' fill='white'/>
-                  </mask>
-                  <g mask='url(#mask0_1045_16330)'>
-                    <path d='M0 10C0 4.47716 4.47716 0 10 0C15.5228 0 20 4.47716 20 10C20 15.5228 15.5228 20 10 20C4.47716 20 0 15.5228 0 10Z' fill='#0052FF'/>
-                    <path d='M9.98456 16.25C13.4448 16.25 16.25 13.4518 16.25 9.99997C16.25 6.54822 13.4448 3.75 9.98456 3.75C6.73566 3.75 4.06434 6.21666 3.75 9.375H12.1845V10.625H3.75C4.06434 13.7833 6.73566 16.25 9.98456 16.25Z' fill='white'/>
-                  </g>
-                </g>
-                <rect x='0.5' y='0.5' width='19' height='19' rx='9.5' stroke='white'/>
-                <defs>
-                  <clipPath id='clip0_1045_16330'>
-                    <rect width='20' height='20' rx='10' fill='white'/>
-                  </clipPath>
-                </defs>
-              </svg>
+              <img 
+                src="/lovable-uploads/653131a0-191a-4ba3-9126-6f9aef2d6a80.png" 
+                alt="Base logo" 
+                className="w-5 h-5"
+              />
             </p>
           </div>
 
