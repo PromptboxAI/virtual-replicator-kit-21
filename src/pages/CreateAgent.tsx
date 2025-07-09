@@ -28,6 +28,8 @@ interface AgentFormData {
   avatar_url: string;
   total_supply: number;
   initial_price: number;
+  short_pitch: string;
+  agent_overview: string;
 }
 
 export default function CreateAgent() {
@@ -53,6 +55,8 @@ export default function CreateAgent() {
     avatar_url: "",
     total_supply: 1000000,
     initial_price: 0.01,
+    short_pitch: "",
+    agent_overview: "",
   });
 
   const categories = [
@@ -377,193 +381,274 @@ export default function CreateAgent() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Form */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Basic Information */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Sparkles className="h-5 w-5 text-primary" />
-                    AI Agent Details
-                  </CardTitle>
-                  <CardDescription>
-                    Define your AI Agent's identity and purpose
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Label htmlFor="avatar">AI Agent Avatar *</Label>
-                    <div className="mt-2 flex items-center gap-4">
-                      <input
-                        id="avatar"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleAvatarUpload}
-                        className="hidden"
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => document.getElementById('avatar')?.click()}
-                        className="flex items-center gap-2"
-                      >
-                        <Upload className="h-4 w-4" />
-                        Upload Avatar
-                      </Button>
-                      {formData.avatar_url && (
-                        <Avatar className="h-12 w-12">
-                          <AvatarImage src={formData.avatar_url} />
-                          <AvatarFallback>{formData.name.slice(0, 2).toUpperCase()}</AvatarFallback>
-                        </Avatar>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="name">AI Agent Name *</Label>
-                      <Input
-                        id="name"
-                        placeholder="e.g. AlphaTrader"
-                        value={formData.name}
-                        onChange={(e) => handleInputChange('name', e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="symbol">Token Symbol *</Label>
-                      <Input
-                        id="symbol"
-                        placeholder="e.g. ALPHA"
-                        value={formData.symbol}
-                        onChange={(e) => handleInputChange('symbol', e.target.value.toUpperCase())}
-                        maxLength={10}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="description">Description *</Label>
-                    <Textarea
-                      id="description"
-                      placeholder="Describe what your AI Agent does, its capabilities, and unique features..."
-                      value={formData.description}
-                      onChange={(e) => handleInputChange('description', e.target.value)}
-                      rows={4}
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="category">Category *</Label>
-                    <Select value={formData.category} onValueChange={(value) => handleInputChange('category', value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categories.map((category) => (
-                          <SelectItem key={category} value={category}>
-                            {category}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </CardContent>
-              </Card>
-
-
-              {/* Socials */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Link2 className="h-5 w-5 text-primary" />
-                    Socials
-                  </CardTitle>
-                  <CardDescription>
-                    Connect your AI Agent's social presence
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="website">Website URL</Label>
-                      <Input
-                        id="website"
-                        placeholder="https://youraiagent.com"
-                        value={formData.website_url}
-                        onChange={(e) => handleInputChange('website_url', e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <Label>Twitter/X</Label>
-                      {connectedAccount ? (
-                        <div className="mt-2 p-3 border rounded-lg bg-green-50 border-green-200">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <Avatar className="h-8 w-8">
-                                <AvatarImage src={connectedAccount.twitter_avatar_url} />
-                                <AvatarFallback>
-                                  <Twitter className="h-4 w-4" />
-                                </AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <p className="font-medium text-green-800">
-                                  @{connectedAccount.twitter_username}
-                                </p>
-                                <p className="text-sm text-green-600">
-                                  {connectedAccount.twitter_display_name}
-                                </p>
-                              </div>
-                            </div>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => user?.id && disconnectTwitter(user.id)}
-                              className="text-red-600 hover:text-red-700 hover:border-red-300"
-                            >
-                              <X className="h-4 w-4 mr-1" />
-                              Disconnect
-                            </Button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="mt-2">
+              
+              {/* Step 0: AI Agent Details */}
+              {currentStep === 0 && (
+                <>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Sparkles className="h-5 w-5 text-primary" />
+                        AI Agent Details
+                      </CardTitle>
+                      <CardDescription>
+                        Define your AI Agent's identity and purpose
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <Label htmlFor="avatar">AI Agent Avatar *</Label>
+                        <div className="mt-2 flex items-center gap-4">
+                          <input
+                            id="avatar"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleAvatarUpload}
+                            className="hidden"
+                          />
                           <Button
                             type="button"
                             variant="outline"
-                            onClick={() => user?.id && connectTwitter(user.id)}
-                            disabled={isConnecting}
-                            className="w-full flex items-center gap-2"
+                            onClick={() => document.getElementById('avatar')?.click()}
+                            className="flex items-center gap-2"
                           >
-                            {isConnecting ? (
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                            ) : (
-                              <Twitter className="h-4 w-4 text-blue-500" />
-                            )}
-                            {isConnecting ? 'Connecting...' : 'Connect X Account'}
+                            <Upload className="h-4 w-4" />
+                            Upload Avatar
                           </Button>
+                          {formData.avatar_url && (
+                            <Avatar className="h-12 w-12">
+                              <AvatarImage src={formData.avatar_url} />
+                              <AvatarFallback>{formData.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+                            </Avatar>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                      </div>
 
-              {/* Action Buttons */}
-              <div className="flex gap-4">
-                <Button
-                  onClick={handleCancel}
-                  variant="outline"
-                  className="flex-1"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleNext}
-                  disabled={!formData.name || !formData.symbol || !formData.description || !formData.category}
-                  className="flex-1 bg-gradient-primary hover:opacity-90"
-                >
-                  Next
-                </Button>
-              </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="name">AI Agent Name *</Label>
+                          <Input
+                            id="name"
+                            placeholder="e.g. AlphaTrader"
+                            value={formData.name}
+                            onChange={(e) => handleInputChange('name', e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="symbol">Token Symbol *</Label>
+                          <Input
+                            id="symbol"
+                            placeholder="e.g. ALPHA"
+                            value={formData.symbol}
+                            onChange={(e) => handleInputChange('symbol', e.target.value.toUpperCase())}
+                            maxLength={10}
+                          />
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="description">Description *</Label>
+                        <Textarea
+                          id="description"
+                          placeholder="Describe what your AI Agent does, its capabilities, and unique features..."
+                          value={formData.description}
+                          onChange={(e) => handleInputChange('description', e.target.value)}
+                          rows={4}
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="category">Category *</Label>
+                        <Select value={formData.category} onValueChange={(value) => handleInputChange('category', value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {categories.map((category) => (
+                              <SelectItem key={category} value={category}>
+                                {category}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Socials */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Link2 className="h-5 w-5 text-primary" />
+                        Socials
+                      </CardTitle>
+                      <CardDescription>
+                        Connect your AI Agent's social presence
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="website">Website URL</Label>
+                          <Input
+                            id="website"
+                            placeholder="https://youraiagent.com"
+                            value={formData.website_url}
+                            onChange={(e) => handleInputChange('website_url', e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <Label>Twitter/X</Label>
+                          {connectedAccount ? (
+                            <div className="mt-2 p-3 border rounded-lg bg-green-50 border-green-200">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <Avatar className="h-8 w-8">
+                                    <AvatarImage src={connectedAccount.twitter_avatar_url} />
+                                    <AvatarFallback>
+                                      <Twitter className="h-4 w-4" />
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div>
+                                    <p className="font-medium text-green-800">
+                                      @{connectedAccount.twitter_username}
+                                    </p>
+                                    <p className="text-sm text-green-600">
+                                      {connectedAccount.twitter_display_name}
+                                    </p>
+                                  </div>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => user?.id && disconnectTwitter(user.id)}
+                                  className="text-red-600 hover:text-red-700 hover:border-red-300"
+                                >
+                                  <X className="h-4 w-4 mr-1" />
+                                  Disconnect
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="mt-2">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => user?.id && connectTwitter(user.id)}
+                                disabled={isConnecting}
+                                className="w-full flex items-center gap-2"
+                              >
+                                {isConnecting ? (
+                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                                ) : (
+                                  <Twitter className="h-4 w-4 text-blue-500" />
+                                )}
+                                {isConnecting ? 'Connecting...' : 'Connect X Account'}
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Step 0 Action Buttons */}
+                  <div className="flex gap-4">
+                    <Button
+                      onClick={handleCancel}
+                      variant="outline"
+                      className="flex-1"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleNext}
+                      disabled={!formData.name || !formData.symbol || !formData.description || !formData.category}
+                      className="flex-1 bg-gradient-primary hover:opacity-90"
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </>
+              )}
+
+              {/* Step 1: Project Pitch */}
+              {currentStep === 1 && (
+                <>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Info className="h-5 w-5 text-primary" />
+                        Project Pitch
+                      </CardTitle>
+                      <CardDescription>
+                        Create a compelling pitch for your AI Agent
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div>
+                        <Label htmlFor="short_pitch" className="flex items-center gap-1">
+                          Short Pitch <span className="text-red-500">*</span>
+                        </Label>
+                        <Textarea
+                          id="short_pitch"
+                          placeholder="A concise, engaging summary of your AI Agent (max 500 characters)"
+                          value={formData.short_pitch}
+                          onChange={(e) => handleInputChange('short_pitch', e.target.value)}
+                          rows={3}
+                          maxLength={500}
+                          className="mt-2"
+                        />
+                        <div className="flex justify-between items-center mt-1">
+                          <p className="text-xs text-muted-foreground">
+                            Keep it concise and engaging
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {formData.short_pitch.length} / 500
+                          </p>
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="agent_overview" className="flex items-center gap-1">
+                          AI Agent Overview <span className="text-red-500">*</span>
+                        </Label>
+                        <p className="text-sm text-muted-foreground mb-2">
+                          Treat this as your whitepaper. Tell us more about this AI Agent. Include capability, roadmap, key partnership, if any.
+                        </p>
+                        <Textarea
+                          id="agent_overview"
+                          placeholder="Provide a detailed overview of your AI Agent..."
+                          value={formData.agent_overview}
+                          onChange={(e) => handleInputChange('agent_overview', e.target.value)}
+                          rows={10}
+                          className="mt-2"
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Step 1 Action Buttons */}
+                  <div className="flex gap-4">
+                    <Button
+                      onClick={() => setCurrentStep(0)}
+                      variant="outline"
+                      className="flex-1"
+                    >
+                      Back
+                    </Button>
+                    <Button
+                      onClick={() => setCurrentStep(2)}
+                      disabled={!formData.short_pitch.trim() || !formData.agent_overview.trim()}
+                      className="flex-1 bg-gradient-primary hover:opacity-90"
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </>
+              )}
+
             </div>
 
             {/* Preview */}
@@ -603,6 +688,16 @@ export default function CreateAgent() {
                     <p className="text-sm text-muted-foreground">
                       {formData.description || "AI Agent description will appear here..."}
                     </p>
+
+                    {/* Show pitch preview on step 1 */}
+                    {currentStep === 1 && formData.short_pitch && (
+                      <div className="border-t pt-4">
+                        <h4 className="font-medium text-sm mb-2">Short Pitch</h4>
+                        <p className="text-sm text-muted-foreground">
+                          {formData.short_pitch}
+                        </p>
+                      </div>
+                    )}
 
                   </div>
                 </CardContent>
