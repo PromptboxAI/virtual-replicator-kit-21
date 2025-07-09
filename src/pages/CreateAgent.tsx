@@ -287,7 +287,7 @@ export default function CreateAgent() {
           <div className="mb-8">
             <Card className="border-blue-200 bg-blue-50/50">
               <CardContent className="p-6">
-                <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center gap-2 mb-4">
                   <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
                     <Check className="h-4 w-4 text-white" />
                   </div>
