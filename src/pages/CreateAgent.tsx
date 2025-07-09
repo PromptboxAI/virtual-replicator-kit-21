@@ -342,42 +342,6 @@ export default function CreateAgent() {
             </div>
           </div>
 
-          {/* Standard Launch Info */}
-          <div className="mb-8">
-            <Card className="border-blue-200 bg-blue-50/50">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
-                    <Check className="h-4 w-4 text-white" />
-                  </div>
-                  <h3 className="text-lg font-semibold">Standard Launch</h3>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <h4 className="font-medium mb-2">Tokenomics</h4>
-                    <div className="space-y-1 text-sm text-muted-foreground">
-                      <div>87.5% (Public Sale)</div>
-                      <div>12.5% (Liquidity Pool)</div>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h4 className="font-medium mb-2">Mechanism</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Launch a brand new token directly. Your agent will be deployed on Base network with automated liquidity provisioning.
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="mt-4 p-3 bg-blue-100 rounded-lg">
-                  <p className="text-sm font-medium text-blue-800">
-                    {CREATION_COST} $PROMPT tokens non-refundable creation fee
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
 
           {/* Token Balance & Cost Display */}
           <div className="mb-8 flex justify-center">
