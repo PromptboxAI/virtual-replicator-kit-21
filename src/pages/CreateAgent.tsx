@@ -385,7 +385,7 @@ export default function CreateAgent() {
                         placeholder="e.g. ALPHA"
                         value={formData.symbol}
                         onChange={(e) => handleInputChange('symbol', e.target.value.toUpperCase())}
-                        maxLength={6}
+                        maxLength={10}
                       />
                     </div>
                   </div>
