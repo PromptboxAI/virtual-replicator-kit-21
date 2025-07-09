@@ -604,20 +604,6 @@ export default function CreateAgent() {
                       {formData.description || "Agent description will appear here..."}
                     </p>
 
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span>Initial Price:</span>
-                        <span className="font-medium">${formData.initial_price}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Total Supply:</span>
-                        <span className="font-medium">{formData.total_supply.toLocaleString()}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Market Cap:</span>
-                        <span className="font-medium">${estimatedMarketCap.toLocaleString()}</span>
-                      </div>
-                    </div>
                   </div>
                 </CardContent>
               </Card>
