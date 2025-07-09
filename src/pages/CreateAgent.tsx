@@ -73,6 +73,31 @@ export default function CreateAgent() {
     "Other"
   ];
 
+  const frameworks = {
+    "G.A.M.E.": "Virtuals Protocol native framework for creating autonomous AI agents with built-in tokenization and community governance.",
+    "Agentforce": "Salesforce's AI agent platform for building custom agents that automate business processes and customer interactions.",
+    "AiLice": "Open-source AI assistant framework focused on natural language understanding and conversational AI capabilities.",
+    "AutoGen": "Microsoft's multi-agent conversation framework enabling multiple AI agents to collaborate and solve complex tasks.",
+    "AutoGPT": "Autonomous AI agent that can perform tasks independently, break down goals into sub-tasks, and execute them.",
+    "BabyAGI": "Simple task-driven autonomous agent that creates, prioritizes, and executes tasks based on given objectives.",
+    "ChatDev": "Multi-agent framework simulating a software development company with specialized AI agents for different roles.",
+    "CrewAI": "Framework for orchestrating role-playing, autonomous AI agents working together as a cohesive team.",
+    "Devika": "AI software engineer capable of understanding high-level instructions and writing code autonomously.",
+    "Eliza": "Extensible AI agent framework inspired by the classic chatbot, focused on conversational AI and personality.",
+    "Goat": "Goal-oriented autonomous agent framework designed for task planning and execution in complex environments.",
+    "Hugging Face Smolagents": "Lightweight agent framework from Hugging Face for building and deploying small, efficient AI agents.",
+    "Jarvis": "Personal AI assistant framework designed to help with daily tasks, scheduling, and information management.",
+    "MetaGPT": "Multi-agent framework that assigns different roles to GPTs to form a collaborative software entity.",
+    "Mindextension": "Cognitive AI framework focused on extending human decision-making capabilities through intelligent agents.",
+    "Open AI Swarm": "OpenAI's experimental multi-agent orchestration framework for coordinating multiple AI agents.",
+    "Open Interpreter": "Local code-running AI assistant that can execute code, browse the web, and control your computer.",
+    "Own Framework": "Custom-built framework tailored specifically for your unique AI agent requirements and use cases.",
+    "PydanticAI": "Production-ready agent framework built on Pydantic for type-safe AI agent development in Python.",
+    "Qwen-Agent": "Alibaba's agent framework based on the Qwen large language model for building intelligent assistants.",
+    "Rig": "Rust-based agent framework for building high-performance, memory-safe AI agents and applications.",
+    "ZerePy": "Python framework for creating zero-configuration AI agents with minimal setup and maximum flexibility."
+  };
+
   // Load existing Twitter connection
   useEffect(() => {
     const loadTwitterConnection = async () => {
@@ -677,35 +702,44 @@ export default function CreateAgent() {
                     <CardContent className="space-y-4">
                       <div>
                         <Label htmlFor="framework">AI Agent Framework *</Label>
-                        <Select value={formData.framework} onValueChange={(value) => handleInputChange('framework', value)}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a framework" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="G.A.M.E.">G.A.M.E.</SelectItem>
-                            <SelectItem value="Agentforce">Agentforce</SelectItem>
-                            <SelectItem value="AiLice">AiLice</SelectItem>
-                            <SelectItem value="AutoGen">AutoGen</SelectItem>
-                            <SelectItem value="AutoGPT">AutoGPT</SelectItem>
-                            <SelectItem value="BabyAGI">BabyAGI</SelectItem>
-                            <SelectItem value="ChatDev">ChatDev</SelectItem>
-                            <SelectItem value="CrewAI">CrewAI</SelectItem>
-                            <SelectItem value="Devika">Devika</SelectItem>
-                            <SelectItem value="Eliza">Eliza</SelectItem>
-                            <SelectItem value="Goat">Goat</SelectItem>
-                            <SelectItem value="Hugging Face Smolagents">Hugging Face Smolagents</SelectItem>
-                            <SelectItem value="Jarvis">Jarvis</SelectItem>
-                            <SelectItem value="MetaGPT">MetaGPT</SelectItem>
-                            <SelectItem value="Mindextension">Mindextension</SelectItem>
-                            <SelectItem value="Open AI Swarm">Open AI Swarm</SelectItem>
-                            <SelectItem value="Open Interpreter">Open Interpreter</SelectItem>
-                            <SelectItem value="Own Framework">Own Framework</SelectItem>
-                            <SelectItem value="PydanticAI">PydanticAI</SelectItem>
-                            <SelectItem value="Qwen-Agent">Qwen-Agent</SelectItem>
-                            <SelectItem value="Rig">Rig</SelectItem>
-                            <SelectItem value="ZerePy">ZerePy</SelectItem>
-                          </SelectContent>
-                        </Select>
+                         <Select value={formData.framework} onValueChange={(value) => handleInputChange('framework', value)}>
+                           <SelectTrigger>
+                             <SelectValue placeholder="Select a framework" />
+                           </SelectTrigger>
+                           <SelectContent>
+                             <SelectItem value="G.A.M.E.">G.A.M.E.</SelectItem>
+                             <SelectItem value="Agentforce">Agentforce</SelectItem>
+                             <SelectItem value="AiLice">AiLice</SelectItem>
+                             <SelectItem value="AutoGen">AutoGen</SelectItem>
+                             <SelectItem value="AutoGPT">AutoGPT</SelectItem>
+                             <SelectItem value="BabyAGI">BabyAGI</SelectItem>
+                             <SelectItem value="ChatDev">ChatDev</SelectItem>
+                             <SelectItem value="CrewAI">CrewAI</SelectItem>
+                             <SelectItem value="Devika">Devika</SelectItem>
+                             <SelectItem value="Eliza">Eliza</SelectItem>
+                             <SelectItem value="Goat">Goat</SelectItem>
+                             <SelectItem value="Hugging Face Smolagents">Hugging Face Smolagents</SelectItem>
+                             <SelectItem value="Jarvis">Jarvis</SelectItem>
+                             <SelectItem value="MetaGPT">MetaGPT</SelectItem>
+                             <SelectItem value="Mindextension">Mindextension</SelectItem>
+                             <SelectItem value="Open AI Swarm">Open AI Swarm</SelectItem>
+                             <SelectItem value="Open Interpreter">Open Interpreter</SelectItem>
+                             <SelectItem value="Own Framework">Own Framework</SelectItem>
+                             <SelectItem value="PydanticAI">PydanticAI</SelectItem>
+                             <SelectItem value="Qwen-Agent">Qwen-Agent</SelectItem>
+                             <SelectItem value="Rig">Rig</SelectItem>
+                             <SelectItem value="ZerePy">ZerePy</SelectItem>
+                           </SelectContent>
+                         </Select>
+                         
+                         {/* Framework Description */}
+                         {formData.framework && frameworks[formData.framework as keyof typeof frameworks] && (
+                           <div className="mt-3 p-3 bg-muted/50 rounded-lg border">
+                             <p className="text-sm text-muted-foreground">
+                               {frameworks[formData.framework as keyof typeof frameworks]}
+                             </p>
+                           </div>
+                         )}
                       </div>
                     </CardContent>
                   </Card>
