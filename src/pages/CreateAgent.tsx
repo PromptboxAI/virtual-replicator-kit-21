@@ -472,7 +472,7 @@ export default function CreateAgent() {
                       />
                     </div>
                     <div>
-                      <Label>Twitter Connection</Label>
+                      <Label>Twitter/X</Label>
                       {connectedAccount ? (
                         <div className="mt-2 p-3 border rounded-lg bg-green-50 border-green-200">
                           <div className="flex items-center justify-between">
@@ -505,7 +505,7 @@ export default function CreateAgent() {
                           </div>
                         </div>
                       ) : (
-                        <div className="mt-2 space-y-3">
+                        <div className="mt-2">
                           <Button
                             type="button"
                             variant="outline"
@@ -518,19 +518,8 @@ export default function CreateAgent() {
                             ) : (
                               <Twitter className="h-4 w-4 text-blue-500" />
                             )}
-                            {isConnecting ? 'Connecting...' : 'Connect Twitter Account'}
+                            {isConnecting ? 'Connecting...' : 'Connect X Account'}
                           </Button>
-                          <div className="text-center text-sm text-muted-foreground">or</div>
-                          <div>
-                            <Input
-                              placeholder="https://twitter.com/youragent"
-                              value={formData.twitter_url}
-                              onChange={(e) => handleInputChange('twitter_url', e.target.value)}
-                            />
-                            <p className="text-xs text-muted-foreground mt-1">
-                              Enter Twitter URL manually
-                            </p>
-                          </div>
                         </div>
                       )}
                     </div>
