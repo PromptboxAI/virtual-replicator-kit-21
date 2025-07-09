@@ -555,8 +555,8 @@ export default function CreateAgent() {
                           {formData.name ? formData.name.slice(0, 2).toUpperCase() : "AG"}
                         </AvatarFallback>
                       </Avatar>
-                      <div>
-                        <h3 className="font-semibold">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold truncate">
                           {formData.name || "Agent Name"}
                         </h3>
                         <p className="text-sm text-muted-foreground">
