@@ -303,28 +303,36 @@ export default function CreateAgent() {
             <div className="flex items-center justify-center mb-4">
               {steps.map((step, index) => (
                 <div key={step} className="flex items-center">
-                  <div className={`flex items-center justify-center w-8 h-8 rounded-full border-2 ${
-                    index <= currentStep 
-                      ? 'bg-primary border-primary text-primary-foreground' 
-                      : 'border-muted-foreground/30 text-muted-foreground'
-                  }`}>
-                    {index < currentStep ? (
-                      <Check className="h-4 w-4" />
-                    ) : (
-                      <span className="text-sm font-medium">{index + 1}</span>
-                    )}
+                  <div className="flex flex-col items-center">
+                    <div className={`flex items-center justify-center w-8 h-8 rounded-full border-2 ${
+                      index <= currentStep 
+                        ? 'bg-primary border-primary text-primary-foreground' 
+                        : 'border-muted-foreground/30 text-muted-foreground'
+                    }`}>
+                      {index < currentStep ? (
+                        <Check className="h-4 w-4" />
+                      ) : (
+                        <span className="text-sm font-medium">{index + 1}</span>
+                      )}
+                    </div>
+                    <div className="mt-2 text-center">
+                      <p className={`text-sm font-medium ${
+                        index === currentStep ? 'text-primary' : 'text-muted-foreground'
+                      }`}>
+                        {step}
+                      </p>
+                    </div>
                   </div>
                   {index < steps.length - 1 && (
-                    <div className={`w-16 h-0.5 mx-2 ${
+                    <div className={`w-16 h-0.5 mx-2 mt-[-16px] ${
                       index < currentStep ? 'bg-primary' : 'bg-muted-foreground/30'
                     }`} />
                   )}
                 </div>
               ))}
             </div>
-            <div className="flex justify-center">
+            <div className="flex justify-center mt-4">
               <div className="text-center">
-                <p className="text-sm font-medium">{steps[currentStep]}</p>
                 <p className="text-xs text-muted-foreground">Step {currentStep + 1} of {steps.length}</p>
               </div>
             </div>
