@@ -410,7 +410,7 @@ export default function CreateAgent() {
                             type="button"
                             variant="outline"
                             onClick={() => document.getElementById('avatar')?.click()}
-                            className="flex items-center gap-2"
+                            className="flex items-center gap-2 bg-primary/10 border-primary/20 text-primary hover:bg-primary hover:text-primary-foreground hover:border-primary"
                           >
                             <Upload className="h-4 w-4" />
                             Upload Avatar
