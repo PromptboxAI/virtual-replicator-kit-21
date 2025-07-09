@@ -468,53 +468,6 @@ export default function CreateAgent() {
                 </CardContent>
               </Card>
 
-              {/* Token Economics */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Coins className="h-5 w-5 text-primary" />
-                    Token Economics
-                  </CardTitle>
-                  <CardDescription>
-                    Configure your agent's token parameters
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="supply">Total Supply</Label>
-                      <Input
-                        id="supply"
-                        type="number"
-                        value={formData.total_supply}
-                        onChange={(e) => handleInputChange('total_supply', parseInt(e.target.value) || 0)}
-                        min="1"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="price">Initial Price (USD)</Label>
-                      <Input
-                        id="price"
-                        type="number"
-                        step="0.001"
-                        value={formData.initial_price}
-                        onChange={(e) => handleInputChange('initial_price', parseFloat(e.target.value) || 0)}
-                        min="0.001"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="p-4 bg-muted/50 rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <TrendingUp className="h-4 w-4 text-primary" />
-                      <span className="font-medium">Estimated Market Cap</span>
-                    </div>
-                    <p className="text-2xl font-bold text-primary">
-                      ${estimatedMarketCap.toLocaleString()}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
 
               {/* Socials */}
               <Card>
