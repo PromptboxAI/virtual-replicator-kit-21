@@ -1,6 +1,7 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { ArrowRight, Target, Shield, Zap, Users, Globe, TrendingUp } from "lucide-react";
 
@@ -192,9 +193,11 @@ const About = () => {
                 Join our community and be among the first to experience the future of AI agent ownership
               </p>
               <div className="flex justify-center">
-                <Button size="lg" className="bg-white text-primary hover:bg-white/90 font-semibold">
-                  Create Agent
-                </Button>
+                <Link to="/create">
+                  <Button size="lg" className="bg-white text-primary hover:bg-white/90 font-semibold">
+                    Create Agent
+                  </Button>
+                </Link>
               </div>
             </div>
           </Card>
