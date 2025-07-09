@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, Sparkles, Coins, TrendingUp, Info, AlertCircle } from "lucide-react";
+import { Upload, Sparkles, Coins, TrendingUp, Info, AlertCircle, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Link } from "react-router-dom";
@@ -221,6 +221,15 @@ export default function CreateAgent() {
 
   const estimatedMarketCap = formData.total_supply * formData.initial_price;
 
+  // Progress steps
+  const steps = [
+    "Agent Details",
+    "Token Economics", 
+    "Launch Details",
+    "Summary"
+  ];
+  const currentStep = 0; // Currently on first step
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -229,46 +238,118 @@ export default function CreateAgent() {
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold mb-4">
+            <h1 className="text-4xl font-bold mb-4 flex items-center justify-center gap-3">
               <span className="bg-gradient-cyber bg-clip-text text-transparent">
-                Create AI Agent
+                Create New Agent on Base
               </span>
+              <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                <span className="text-white font-bold text-lg">⚡</span>
+              </div>
             </h1>
             <p className="text-xl text-muted-foreground">
-              Launch your own AI agent and mint its token on the PromptBox platform
+              Create your AI agent with onchain token functionality
             </p>
-            
-            {/* Token Balance & Cost Display */}
-            <div className="mt-6 flex justify-center">
-              <Alert className="w-fit">
-                <Coins className="h-4 w-4" />
-                <AlertDescription>
-                  <div className="flex items-center gap-4">
-                    {isTestMode && <span className="text-primary font-medium">TEST MODE</span>}
-                    <span>Your Balance: <strong>{balance} tokens</strong></span>
-                    <span>•</span>
-                    <span>Creation Cost: <strong>{CREATION_COST} tokens</strong></span>
-                    {balance < CREATION_COST && (
-                      <span className="text-destructive">• Insufficient tokens!</span>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="mb-8">
+            <div className="flex items-center justify-center mb-4">
+              {steps.map((step, index) => (
+                <div key={step} className="flex items-center">
+                  <div className={`flex items-center justify-center w-8 h-8 rounded-full border-2 ${
+                    index <= currentStep 
+                      ? 'bg-primary border-primary text-primary-foreground' 
+                      : 'border-muted-foreground/30 text-muted-foreground'
+                  }`}>
+                    {index < currentStep ? (
+                      <Check className="h-4 w-4" />
+                    ) : (
+                      <span className="text-sm font-medium">{index + 1}</span>
                     )}
                   </div>
-                </AlertDescription>
-              </Alert>
+                  {index < steps.length - 1 && (
+                    <div className={`w-16 h-0.5 mx-2 ${
+                      index < currentStep ? 'bg-primary' : 'bg-muted-foreground/30'
+                    }`} />
+                  )}
+                </div>
+              ))}
             </div>
-            
-            {/* Test Token Button */}
-            {isTestMode && balance < CREATION_COST && (
-              <div className="mt-4 flex justify-center">
-                <Button 
-                  onClick={() => addTestTokens(5000)}
-                  variant="outline" 
-                  className="text-primary border-primary hover:bg-primary/10"
-                >
-                  Get 5,000 Test Tokens
-                </Button>
+            <div className="flex justify-center">
+              <div className="text-center">
+                <p className="text-sm font-medium">{steps[currentStep]}</p>
+                <p className="text-xs text-muted-foreground">Step {currentStep + 1} of {steps.length}</p>
               </div>
-            )}
+            </div>
           </div>
+
+          {/* Standard Launch Info */}
+          <div className="mb-8">
+            <Card className="border-blue-200 bg-blue-50/50">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
+                    <Check className="h-4 w-4 text-white" />
+                  </div>
+                  <h3 className="text-lg font-semibold">Standard Launch</h3>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="font-medium mb-2">Tokenomics</h4>
+                    <div className="space-y-1 text-sm text-muted-foreground">
+                      <div>87.5% (Public Sale)</div>
+                      <div>12.5% (Liquidity Pool)</div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-medium mb-2">Mechanism</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Launch a brand new token directly. Your agent will be deployed on Base network with automated liquidity provisioning.
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="mt-4 p-3 bg-blue-100 rounded-lg">
+                  <p className="text-sm font-medium text-blue-800">
+                    {CREATION_COST} tokens non-refundable creation fee
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Token Balance & Cost Display */}
+          <div className="mb-8 flex justify-center">
+            <Alert className="w-fit">
+              <Coins className="h-4 w-4" />
+              <AlertDescription>
+                <div className="flex items-center gap-4">
+                  {isTestMode && <span className="text-primary font-medium">TEST MODE</span>}
+                  <span>Your Balance: <strong>{balance} tokens</strong></span>
+                  <span>•</span>
+                  <span>Creation Cost: <strong>{CREATION_COST} tokens</strong></span>
+                  {balance < CREATION_COST && (
+                    <span className="text-destructive">• Insufficient tokens!</span>
+                  )}
+                </div>
+              </AlertDescription>
+            </Alert>
+          </div>
+          
+          {/* Test Token Button */}
+          {isTestMode && balance < CREATION_COST && (
+            <div className="mb-8 flex justify-center">
+              <Button 
+                onClick={() => addTestTokens(5000)}
+                variant="outline" 
+                className="text-primary border-primary hover:bg-primary/10"
+              >
+                Get 5,000 Test Tokens
+              </Button>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Form */}
