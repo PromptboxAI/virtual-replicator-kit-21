@@ -315,7 +315,7 @@ export default function CreateAgent() {
                 
                 <div className="mt-4 p-3 bg-blue-100 rounded-lg">
                   <p className="text-sm font-medium text-blue-800">
-                    {CREATION_COST} tokens non-refundable creation fee
+                    {CREATION_COST} $PROMPT tokens non-refundable creation fee
                   </p>
                 </div>
               </CardContent>
