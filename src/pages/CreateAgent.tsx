@@ -454,7 +454,13 @@ export default function CreateAgent() {
                           value={formData.description}
                           onChange={(e) => handleInputChange('description', e.target.value)}
                           rows={4}
+                          maxLength={100}
                         />
+                        <div className="flex justify-end mt-1">
+                          <p className="text-xs text-muted-foreground">
+                            {formData.description.length} / 100
+                          </p>
+                        </div>
                       </div>
 
                       <div>
@@ -685,7 +691,7 @@ export default function CreateAgent() {
                       </Badge>
                     )}
 
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground break-words">
                       {formData.description || "AI Agent description will appear here..."}
                     </p>
 
