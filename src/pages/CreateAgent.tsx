@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -9,10 +9,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, Sparkles, Coins, TrendingUp, Info } from "lucide-react";
+import { Upload, Sparkles, Coins, TrendingUp, Info, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { useTokenBalance } from "@/hooks/useTokenBalance";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface AgentFormData {
   name: string;
@@ -32,6 +34,12 @@ export default function CreateAgent() {
   const [isCreating, setIsCreating] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [user, setUser] = useState<any>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  
+  const { balance, loading: balanceLoading, deductTokens } = useTokenBalance(user?.id);
+  const CREATION_COST = 100;
+
   const [formData, setFormData] = useState<AgentFormData>({
     name: "",
     symbol: "",
@@ -43,6 +51,23 @@ export default function CreateAgent() {
     total_supply: 1000000,
     initial_price: 0.01,
   });
+
+  // Check authentication
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setUser(session?.user || null);
+      setAuthLoading(false);
+    };
+
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user || null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const categories = [
     "DeFi Assistant",
@@ -91,7 +116,20 @@ export default function CreateAgent() {
   };
 
   const handleCreateAgent = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "You must be logged in to create an agent",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (!validateForm()) return;
+    
+    // Check token balance and deduct tokens
+    const success = await deductTokens(CREATION_COST);
+    if (!success) return;
     
     setIsCreating(true);
     try {
@@ -138,6 +176,7 @@ export default function CreateAgent() {
           total_supply: formData.total_supply,
           current_price: formData.initial_price,
           market_cap: formData.total_supply * formData.initial_price,
+          creation_cost: CREATION_COST,
           is_active: true,
         }]);
 
@@ -149,7 +188,7 @@ export default function CreateAgent() {
 
       toast({ 
         title: "Success!", 
-        description: `${formData.name} has been created successfully!`,
+        description: `${formData.name} has been created successfully! (${CREATION_COST} tokens deducted)`,
       });
       
       // Navigate back to home to see the new agent
@@ -162,6 +201,40 @@ export default function CreateAgent() {
       setIsCreating(false);
     }
   };
+
+  // Show loading state
+  if (authLoading || balanceLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-2 text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show login required state
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-2xl mx-auto text-center">
+            <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h1 className="text-2xl font-bold mb-4">Authentication Required</h1>
+            <p className="text-muted-foreground mb-6">
+              You need to be logged in to create an agent. Please sign in to continue.
+            </p>
+            <Link to="/auth">
+              <Button>Sign In</Button>
+            </Link>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   const estimatedMarketCap = formData.total_supply * formData.initial_price;
 
@@ -181,6 +254,23 @@ export default function CreateAgent() {
             <p className="text-xl text-muted-foreground">
               Launch your own AI agent and mint its token on the PromptBox platform
             </p>
+            
+            {/* Token Balance & Cost Display */}
+            <div className="mt-6 flex justify-center">
+              <Alert className="w-fit">
+                <Coins className="h-4 w-4" />
+                <AlertDescription>
+                  <div className="flex items-center gap-4">
+                    <span>Your Balance: <strong>{balance} tokens</strong></span>
+                    <span>•</span>
+                    <span>Creation Cost: <strong>{CREATION_COST} tokens</strong></span>
+                    {balance < CREATION_COST && (
+                      <span className="text-destructive">• Insufficient tokens!</span>
+                    )}
+                  </div>
+                </AlertDescription>
+              </Alert>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -357,10 +447,12 @@ export default function CreateAgent() {
                 </Button>
                 <Button
                   onClick={handleCreateAgent}
-                  disabled={isCreating}
+                  disabled={isCreating || balance < CREATION_COST}
                   className="flex-1 bg-gradient-primary hover:opacity-90"
                 >
-                  {isCreating ? "Creating..." : "Create Agent"}
+                  {isCreating ? "Creating..." : 
+                   balance < CREATION_COST ? `Need ${CREATION_COST - balance} more tokens` :
+                   "Create Agent"}
                 </Button>
               </div>
             </div>

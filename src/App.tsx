@@ -7,7 +7,7 @@ import { WagmiProvider } from 'wagmi';
 import { config } from './lib/wagmi';
 import { PrivyProvider } from '@privy-io/react-auth';
 import Index from "./pages/Index";
-import About from "./pages/About";
+import Auth from "./pages/Auth";
 import Learn from "./pages/Learn";
 import CreateAgent from "./pages/CreateAgent";
 import NotFound from "./pages/NotFound";
@@ -71,7 +71,7 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Index />} />
-              <Route path="/about" element={<About />} />
+              <Route path="/auth" element={<Auth />} />
               <Route path="/learn" element={<Learn />} />
               <Route path="/create" element={<CreateAgent />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

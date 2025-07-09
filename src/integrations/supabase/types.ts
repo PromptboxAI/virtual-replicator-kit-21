@@ -55,6 +55,7 @@ export type Database = {
           category: string | null
           circulating_supply: number | null
           created_at: string
+          creation_cost: number | null
           current_price: number
           description: string | null
           id: string
@@ -74,6 +75,7 @@ export type Database = {
           category?: string | null
           circulating_supply?: number | null
           created_at?: string
+          creation_cost?: number | null
           current_price?: number
           description?: string | null
           id?: string
@@ -93,6 +95,7 @@ export type Database = {
           category?: string | null
           circulating_supply?: number | null
           created_at?: string
+          creation_cost?: number | null
           current_price?: number
           description?: string | null
           id?: string
@@ -272,6 +275,30 @@ export type Database = {
           follower_id?: string
           following_id?: string
           id?: string
+        }
+        Relationships: []
+      }
+      user_token_balances: {
+        Row: {
+          balance: number
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

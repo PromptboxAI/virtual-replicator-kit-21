@@ -1,8 +1,9 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, User, LogOut, Wallet } from "lucide-react";
+import { Search, User, LogOut, LogIn } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +15,26 @@ import {
 export function Header() {
   const location = useLocation();
   const isAboutPage = location.pathname === '/about';
-  const { user, signOut, signIn, linkWallet } = useAuth();
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setUser(session?.user || null);
+    };
+
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user || null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+  };
 
   return (
     <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
@@ -66,39 +86,30 @@ export function Header() {
                       <Button variant="outline" className="flex items-center space-x-2">
                         <User className="h-4 w-4" />
                         <span className="hidden md:inline">
-                          {user.wallet?.address 
-                            ? `${user.wallet.address.slice(0, 6)}...${user.wallet.address.slice(-4)}`
-                            : user.email?.address || 'Account'
-                          }
+                          {user.email || 'Account'}
                         </span>
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56">
                       <DropdownMenuItem disabled>
                         <span className="text-muted-foreground">
-                          {user.email?.address || user.wallet?.address || 'Connected'}
+                          {user.email || 'Connected'}
                         </span>
                       </DropdownMenuItem>
-                      {!user.wallet && (
-                        <>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={linkWallet} className="cursor-pointer">
-                            <Wallet className="mr-2 h-4 w-4" />
-                            Connect Wallet
-                          </DropdownMenuItem>
-                        </>
-                      )}
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={signOut} className="cursor-pointer text-destructive">
+                      <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive">
                         <LogOut className="mr-2 h-4 w-4" />
                         Sign Out
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 ) : (
-                  <Button onClick={signIn} variant="outline">
-                    Connect Wallet
-                  </Button>
+                  <Link to="/auth">
+                    <Button variant="outline" className="flex items-center space-x-2">
+                      <LogIn className="h-4 w-4" />
+                      <span>Sign In</span>
+                    </Button>
+                  </Link>
                 )}
               </>
             )}
