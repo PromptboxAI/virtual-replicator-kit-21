@@ -23,6 +23,7 @@ interface AgentFormData {
   symbol: string;
   description: string;
   category: string;
+  framework: string;
   website_url: string;
   twitter_url: string;
   avatar_url: string;
@@ -50,6 +51,7 @@ export default function CreateAgent() {
     symbol: "",
     description: "",
     category: "",
+    framework: "G.A.M.E.",
     website_url: "",
     twitter_url: "",
     avatar_url: "",
@@ -139,6 +141,10 @@ export default function CreateAgent() {
       toast({ title: "Error", description: "Please select a category", variant: "destructive" });
       return false;
     }
+    if (!formData.framework) {
+      toast({ title: "Error", description: "Please select a framework", variant: "destructive" });
+      return false;
+    }
     return true;
   };
 
@@ -197,6 +203,7 @@ export default function CreateAgent() {
           symbol: formData.symbol.toUpperCase(),
           description: formData.description,
           category: formData.category,
+          framework: formData.framework,
           website_url: formData.website_url || null,
           twitter_url: formData.twitter_url || null,
           avatar_url: finalAvatarUrl,
@@ -279,7 +286,6 @@ export default function CreateAgent() {
     "AI Agent Details",
     "Project Pitch", 
     "Framework",
-    "Socials",
     "Summary"
   ];
 
@@ -650,6 +656,156 @@ export default function CreateAgent() {
                       className="flex-1 bg-gradient-primary hover:opacity-90"
                     >
                       Next
+                    </Button>
+                  </div>
+                </>
+              )}
+
+              {/* Step 2: Framework */}
+              {currentStep === 2 && (
+                <>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Sparkles className="h-5 w-5 text-primary" />
+                        Framework
+                      </CardTitle>
+                      <CardDescription>
+                        Select the framework your AI Agent is built with
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <Label htmlFor="framework">AI Agent Framework *</Label>
+                        <Select value={formData.framework} onValueChange={(value) => handleInputChange('framework', value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a framework" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="G.A.M.E.">G.A.M.E.</SelectItem>
+                            <SelectItem value="Agentforce">Agentforce</SelectItem>
+                            <SelectItem value="AiLice">AiLice</SelectItem>
+                            <SelectItem value="AutoGen">AutoGen</SelectItem>
+                            <SelectItem value="AutoGPT">AutoGPT</SelectItem>
+                            <SelectItem value="BabyAGI">BabyAGI</SelectItem>
+                            <SelectItem value="ChatDev">ChatDev</SelectItem>
+                            <SelectItem value="CrewAI">CrewAI</SelectItem>
+                            <SelectItem value="Devika">Devika</SelectItem>
+                            <SelectItem value="Eliza">Eliza</SelectItem>
+                            <SelectItem value="Goat">Goat</SelectItem>
+                            <SelectItem value="Hugging Face Smolagents">Hugging Face Smolagents</SelectItem>
+                            <SelectItem value="Jarvis">Jarvis</SelectItem>
+                            <SelectItem value="MetaGPT">MetaGPT</SelectItem>
+                            <SelectItem value="Mindextension">Mindextension</SelectItem>
+                            <SelectItem value="Open AI Swarm">Open AI Swarm</SelectItem>
+                            <SelectItem value="Open Interpreter">Open Interpreter</SelectItem>
+                            <SelectItem value="Own Framework">Own Framework</SelectItem>
+                            <SelectItem value="PydanticAI">PydanticAI</SelectItem>
+                            <SelectItem value="Qwen-Agent">Qwen-Agent</SelectItem>
+                            <SelectItem value="Rig">Rig</SelectItem>
+                            <SelectItem value="ZerePy">ZerePy</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Step 2 Action Buttons */}
+                  <div className="flex gap-4">
+                    <Button
+                      onClick={() => setCurrentStep(1)}
+                      variant="outline"
+                      className="flex-1"
+                    >
+                      Back
+                    </Button>
+                    <Button
+                      onClick={() => setCurrentStep(3)}
+                      className="flex-1 bg-gradient-primary hover:opacity-90"
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </>
+              )}
+
+              {/* Step 3: Summary */}
+              {currentStep === 3 && (
+                <>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <TrendingUp className="h-5 w-5 text-primary" />
+                        Summary & Launch
+                      </CardTitle>
+                      <CardDescription>
+                        Review your AI Agent details and launch it
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      {/* AI Agent Summary */}
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-16 w-16">
+                            <AvatarImage src={formData.avatar_url} />
+                            <AvatarFallback>{formData.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <h3 className="text-xl font-bold">{formData.name}</h3>
+                            <p className="text-muted-foreground">${formData.symbol}</p>
+                            <Badge variant="secondary">{formData.category}</Badge>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <p className="font-medium">Framework:</p>
+                            <p className="text-muted-foreground">{formData.framework}</p>
+                          </div>
+                          <div>
+                            <p className="font-medium">Total Supply:</p>
+                            <p className="text-muted-foreground">{formData.total_supply.toLocaleString()}</p>
+                          </div>
+                          <div>
+                            <p className="font-medium">Initial Price:</p>
+                            <p className="text-muted-foreground">${formData.initial_price}</p>
+                          </div>
+                          <div>
+                            <p className="font-medium">Est. Market Cap:</p>
+                            <p className="text-muted-foreground">${estimatedMarketCap.toLocaleString()}</p>
+                          </div>
+                        </div>
+
+                        <div>
+                          <p className="font-medium mb-2">Description:</p>
+                          <p className="text-sm text-muted-foreground break-words">{formData.description}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Step 3 Action Buttons */}
+                  <div className="flex gap-4">
+                    <Button
+                      onClick={() => setCurrentStep(2)}
+                      variant="outline"
+                      className="flex-1"
+                    >
+                      Back
+                    </Button>
+                    <Button
+                      onClick={handleCreateAgent}
+                      disabled={isCreating || balance < CREATION_COST}
+                      className="flex-1 bg-gradient-primary hover:opacity-90"
+                    >
+                      {isCreating ? (
+                        <div className="flex items-center gap-2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground"></div>
+                          Creating...
+                        </div>
+                      ) : (
+                        `Launch AI Agent (${CREATION_COST} tokens)`
+                      )}
                     </Button>
                   </div>
                 </>

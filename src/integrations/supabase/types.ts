@@ -59,6 +59,7 @@ export type Database = {
           creator_id: string | null
           current_price: number
           description: string | null
+          framework: string | null
           id: string
           is_active: boolean | null
           market_cap: number | null
@@ -81,6 +82,7 @@ export type Database = {
           creator_id?: string | null
           current_price?: number
           description?: string | null
+          framework?: string | null
           id?: string
           is_active?: boolean | null
           market_cap?: number | null
@@ -103,6 +105,7 @@ export type Database = {
           creator_id?: string | null
           current_price?: number
           description?: string | null
+          framework?: string | null
           id?: string
           is_active?: boolean | null
           market_cap?: number | null
