@@ -191,12 +191,9 @@ const About = () => {
               <p className="text-white/80 text-lg mb-8 max-w-2xl mx-auto">
                 Join our community and be among the first to experience the future of AI agent ownership
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <div className="flex justify-center">
                 <Button size="lg" className="bg-white text-primary hover:bg-white/90 font-semibold">
-                  Join Waitlist
-                </Button>
-                <Button size="lg" className="bg-primary text-white hover:bg-primary/90 font-semibold border border-white">
-                  Contact Us
+                  Create Agent
                 </Button>
               </div>
             </div>
