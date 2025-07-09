@@ -127,6 +127,12 @@ export type Database = {
           id: string
           terms_accepted_at: string | null
           total_portfolio_value: number | null
+          twitter_access_token: string | null
+          twitter_access_token_secret: string | null
+          twitter_avatar_url: string | null
+          twitter_display_name: string | null
+          twitter_id: string | null
+          twitter_username: string | null
           updated_at: string
           user_id: string
           username: string | null
@@ -140,6 +146,12 @@ export type Database = {
           id?: string
           terms_accepted_at?: string | null
           total_portfolio_value?: number | null
+          twitter_access_token?: string | null
+          twitter_access_token_secret?: string | null
+          twitter_avatar_url?: string | null
+          twitter_display_name?: string | null
+          twitter_id?: string | null
+          twitter_username?: string | null
           updated_at?: string
           user_id: string
           username?: string | null
@@ -153,6 +165,12 @@ export type Database = {
           id?: string
           terms_accepted_at?: string | null
           total_portfolio_value?: number | null
+          twitter_access_token?: string | null
+          twitter_access_token_secret?: string | null
+          twitter_avatar_url?: string | null
+          twitter_display_name?: string | null
+          twitter_id?: string | null
+          twitter_username?: string | null
           updated_at?: string
           user_id?: string
           username?: string | null

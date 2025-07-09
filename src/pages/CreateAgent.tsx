@@ -9,13 +9,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, Sparkles, Coins, TrendingUp, Info, AlertCircle, Check } from "lucide-react";
+import { Upload, Sparkles, Coins, TrendingUp, Info, AlertCircle, Check, Twitter, Link2, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Link } from "react-router-dom";
 import { useTokenBalance } from "@/hooks/useTokenBalance";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/hooks/useAuth";
+import { useTwitterAuth } from "@/hooks/useTwitterAuth";
 
 interface AgentFormData {
   name: string;
@@ -39,6 +40,7 @@ export default function CreateAgent() {
   
   const { user, loading: authLoading, signIn } = useAuth();
   const { balance, loading: balanceLoading, deductTokens, addTestTokens, isTestMode } = useTokenBalance(user?.id);
+  const { connectTwitter, disconnectTwitter, isConnecting, connectedAccount, setConnectedAccount } = useTwitterAuth();
   const CREATION_COST = 100;
 
   const [formData, setFormData] = useState<AgentFormData>({
@@ -64,6 +66,39 @@ export default function CreateAgent() {
     "Educational Agent",
     "Other"
   ];
+
+  // Load existing Twitter connection
+  useEffect(() => {
+    const loadTwitterConnection = async () => {
+      if (!user?.id) return;
+      
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('twitter_id, twitter_username, twitter_display_name, twitter_avatar_url')
+        .eq('user_id', user.id)
+        .single();
+
+      if (profile?.twitter_id) {
+        setConnectedAccount({
+          twitter_id: profile.twitter_id,
+          twitter_username: profile.twitter_username,
+          twitter_display_name: profile.twitter_display_name,
+          twitter_avatar_url: profile.twitter_avatar_url,
+          access_token: '',
+          access_token_secret: ''
+        });
+        // Auto-populate Twitter URL if connected
+        if (profile.twitter_username) {
+          setFormData(prev => ({ 
+            ...prev, 
+            twitter_url: `https://twitter.com/${profile.twitter_username}` 
+          }));
+        }
+      }
+    };
+
+    loadTwitterConnection();
+  }, [user?.id, setConnectedAccount]);
 
   const handleInputChange = (field: keyof AgentFormData, value: string | number) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -437,13 +472,67 @@ export default function CreateAgent() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="twitter">Twitter URL</Label>
-                      <Input
-                        id="twitter"
-                        placeholder="https://twitter.com/youragent"
-                        value={formData.twitter_url}
-                        onChange={(e) => handleInputChange('twitter_url', e.target.value)}
-                      />
+                      <Label>Twitter Connection</Label>
+                      {connectedAccount ? (
+                        <div className="mt-2 p-3 border rounded-lg bg-green-50 border-green-200">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <Avatar className="h-8 w-8">
+                                <AvatarImage src={connectedAccount.twitter_avatar_url} />
+                                <AvatarFallback>
+                                  <Twitter className="h-4 w-4" />
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <p className="font-medium text-green-800">
+                                  @{connectedAccount.twitter_username}
+                                </p>
+                                <p className="text-sm text-green-600">
+                                  {connectedAccount.twitter_display_name}
+                                </p>
+                              </div>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => user?.id && disconnectTwitter(user.id)}
+                              className="text-red-600 hover:text-red-700 hover:border-red-300"
+                            >
+                              <X className="h-4 w-4 mr-1" />
+                              Disconnect
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="mt-2 space-y-3">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => user?.id && connectTwitter(user.id)}
+                            disabled={isConnecting}
+                            className="w-full flex items-center gap-2"
+                          >
+                            {isConnecting ? (
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                            ) : (
+                              <Twitter className="h-4 w-4 text-blue-500" />
+                            )}
+                            {isConnecting ? 'Connecting...' : 'Connect Twitter Account'}
+                          </Button>
+                          <div className="text-center text-sm text-muted-foreground">or</div>
+                          <div>
+                            <Input
+                              placeholder="https://twitter.com/youragent"
+                              value={formData.twitter_url}
+                              onChange={(e) => handleInputChange('twitter_url', e.target.value)}
+                            />
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Enter Twitter URL manually
+                            </p>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
 
