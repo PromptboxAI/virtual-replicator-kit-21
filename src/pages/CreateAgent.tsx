@@ -10,7 +10,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, Sparkles, Coins, TrendingUp, Info, AlertCircle, Check, Twitter, Link2, X, Code, Rocket, ExternalLink, Settings, Users, Brain, Shield, Zap } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Upload, Sparkles, Coins, TrendingUp, Info, AlertCircle, Check, Twitter, Link2, X, Code, Rocket, ExternalLink, Settings, Users, Brain, Shield, Zap, HelpCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Link } from "react-router-dom";
@@ -38,6 +39,65 @@ interface AgentFormData {
 
 export default function CreateAgent() {
   const { toast } = useToast();
+
+  // Framework recommendations based on agent category
+  const frameworkRecommendations: Record<string, {
+    primary: string[];
+    secondary: string[];
+    explanation: string;
+  }> = {
+    "Trading Bot": {
+      primary: ["PROMPT"],
+      secondary: ["AutoGen", "CrewAI"],
+      explanation: "PROMPT with G.A.M.E. integration provides bonding curves, autonomous trading, and market analysis - perfect for trading bots."
+    },
+    "DeFi Assistant": {
+      primary: ["PROMPT", "LangChain"],
+      secondary: ["AutoGen"],
+      explanation: "PROMPT offers tokenization and DeFi integrations, while LangChain excels at complex financial data processing."
+    },
+    "Content Creator": {
+      primary: ["Eliza", "PROMPT"],
+      secondary: ["CrewAI"],
+      explanation: "Eliza provides advanced conversational AI, while PROMPT offers social media integration and token incentives."
+    },
+    "Community Manager": {
+      primary: ["Eliza", "PROMPT"],
+      secondary: ["Swarm", "AutoGen"],
+      explanation: "Eliza for engaging conversations and PROMPT for social media management with tokenized communities."
+    },
+    "Analytics Agent": {
+      primary: ["LangChain", "PROMPT"],
+      secondary: ["AutoGen", "CrewAI"],
+      explanation: "LangChain for data processing and PROMPT for market analysis with real-time trading insights."
+    },
+    "Gaming Agent": {
+      primary: ["PROMPT", "Eliza"],
+      secondary: ["AutoGen"],
+      explanation: "PROMPT offers tokenization for gaming economies, while Eliza provides immersive character interactions."
+    },
+    "NFT Agent": {
+      primary: ["PROMPT"],
+      secondary: ["LangChain", "Eliza"],
+      explanation: "PROMPT's tokenization and bonding curves are ideal for NFT market analysis and trading."
+    },
+    "Research Assistant": {
+      primary: ["LangChain", "AutoGen"],
+      secondary: ["CrewAI", "PROMPT"],
+      explanation: "LangChain excels at complex research tasks, while AutoGen provides multi-agent collaboration."
+    }
+  };
+
+  const getRecommendedFrameworks = (category: string) => {
+    return frameworkRecommendations[category] || { primary: [], secondary: [], explanation: "" };
+  };
+
+  const isRecommendedFramework = (framework: string, category: string, type: 'primary' | 'secondary' = 'primary') => {
+    const recommendations = getRecommendedFrameworks(category);
+    return type === 'primary' 
+      ? recommendations.primary.includes(framework)
+      : recommendations.secondary.includes(framework);
+  };
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
   const [isCreating, setIsCreating] = useState(false);
@@ -738,18 +798,81 @@ export default function CreateAgent() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div>
-                        <Label htmlFor="framework">AI Agent Framework *</Label>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Label htmlFor="framework">AI Agent Framework *</Label>
+                          {formData.category && (
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <button className="text-muted-foreground hover:text-primary">
+                                  <HelpCircle className="h-4 w-4" />
+                                </button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-80 p-4">
+                                <div className="space-y-3">
+                                  <h4 className="font-semibold text-sm">Recommended for {formData.category}</h4>
+                                  <p className="text-sm text-muted-foreground">
+                                    {getRecommendedFrameworks(formData.category).explanation}
+                                  </p>
+                                  
+                                  {getRecommendedFrameworks(formData.category).primary.length > 0 && (
+                                    <div>
+                                      <p className="text-xs font-medium text-green-600 mb-1">Best Match:</p>
+                                      <div className="flex flex-wrap gap-1">
+                                        {getRecommendedFrameworks(formData.category).primary.map((fw) => (
+                                          <Badge key={fw} variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                                            {fw}
+                                          </Badge>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                                  
+                                  {getRecommendedFrameworks(formData.category).secondary.length > 0 && (
+                                    <div>
+                                      <p className="text-xs font-medium text-blue-600 mb-1">Also Good:</p>
+                                      <div className="flex flex-wrap gap-1">
+                                        {getRecommendedFrameworks(formData.category).secondary.map((fw) => (
+                                          <Badge key={fw} variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                                            {fw}
+                                          </Badge>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              </PopoverContent>
+                            </Popover>
+                          )}
+                        </div>
+                        
                          <Select value={formData.framework} onValueChange={(value) => handleInputChange('framework', value)}>
                            <SelectTrigger>
                              <SelectValue placeholder="Select a framework" />
                            </SelectTrigger>
-                             <SelectContent>
-                               {Object.keys(allFrameworks).map((framework) => (
-                                 <SelectItem key={framework} value={framework}>
-                                   {framework}
-                                 </SelectItem>
-                               ))}
-                            </SelectContent>
+                              <SelectContent>
+                                {Object.keys(allFrameworks).map((framework) => {
+                                  const isPrimary = formData.category && isRecommendedFramework(framework, formData.category);
+                                  const isSecondary = formData.category && !isPrimary && isRecommendedFramework(framework, formData.category, 'secondary');
+                                  
+                                  return (
+                                    <SelectItem key={framework} value={framework}>
+                                      <div className="flex items-center gap-2 w-full">
+                                        <span>{framework}</span>
+                                        {isPrimary && (
+                                          <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                                            Recommended
+                                          </Badge>
+                                        )}
+                                        {isSecondary && (
+                                          <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                                            Good Match
+                                          </Badge>
+                                        )}
+                                      </div>
+                                    </SelectItem>
+                                  );
+                                })}
+                             </SelectContent>
                          </Select>
                          
                           {/* Framework Description & SDK Status */}
