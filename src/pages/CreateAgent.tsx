@@ -763,59 +763,13 @@ export default function CreateAgent() {
                            <SelectTrigger>
                              <SelectValue placeholder="Select a framework" />
                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="PROMPT">
-                                <div className="flex flex-col">
-                                  <span className="font-medium">PROMPT (PromptBox Native)</span>
-                                  <span className="text-sm text-muted-foreground">PromptBox native framework for autonomous AI agents with real deployment</span>
-                                </div>
-                              </SelectItem>
-                              <SelectItem value="G.A.M.E.">
-                                <div className="flex flex-col">
-                                  <span className="font-medium">G.A.M.E.</span>
-                                  <span className="text-sm text-muted-foreground">Virtuals Protocol's framework for AI agents in virtual worlds and gaming environments</span>
-                                </div>
-                              </SelectItem>
-                              <SelectItem value="Eliza">
-                                <div className="flex flex-col">
-                                  <span className="font-medium">Eliza</span>
-                                  <span className="text-sm text-muted-foreground">Extensible AI agent framework focused on conversational AI and personality</span>
-                                </div>
-                              </SelectItem>
-                              <SelectItem value="CrewAI">
-                                <div className="flex flex-col">
-                                  <span className="font-medium">CrewAI</span>
-                                  <span className="text-sm text-muted-foreground">Framework for orchestrating role-playing AI agents working as a team</span>
-                                </div>
-                              </SelectItem>
-                              <SelectItem value="AutoGen">
-                                <div className="flex flex-col">
-                                  <span className="font-medium">AutoGen</span>
-                                  <span className="text-sm text-muted-foreground">Microsoft's multi-agent conversation framework for complex task collaboration</span>
-                                </div>
-                              </SelectItem>
-                              <SelectItem value="AutoGPT">
-                                <div className="flex flex-col">
-                                  <span className="font-medium">AutoGPT</span>
-                                  <span className="text-sm text-muted-foreground">Autonomous AI agent that performs tasks independently with goal decomposition</span>
-                                </div>
-                              </SelectItem>
-                              <SelectItem value="Open AI Swarm">
-                                <div className="flex flex-col">
-                                  <span className="font-medium">Open AI Swarm</span>
-                                  <span className="text-sm text-muted-foreground">OpenAI's experimental multi-agent orchestration framework</span>
-                                </div>
-                              </SelectItem>
-                             <SelectItem value="MetaGPT">MetaGPT</SelectItem>
-                             <SelectItem value="Mindextension">Mindextension</SelectItem>
-                             <SelectItem value="Open AI Swarm">Open AI Swarm</SelectItem>
-                             <SelectItem value="Open Interpreter">Open Interpreter</SelectItem>
-                             <SelectItem value="Own Framework">Own Framework</SelectItem>
-                             <SelectItem value="PydanticAI">PydanticAI</SelectItem>
-                             <SelectItem value="Qwen-Agent">Qwen-Agent</SelectItem>
-                             <SelectItem value="Rig">Rig</SelectItem>
-                             <SelectItem value="ZerePy">ZerePy</SelectItem>
-                           </SelectContent>
+                             <SelectContent>
+                               {Object.keys(allFrameworks).map((framework) => (
+                                 <SelectItem key={framework} value={framework}>
+                                   {framework}
+                                 </SelectItem>
+                               ))}
+                            </SelectContent>
                          </Select>
                          
                           {/* Framework Description & SDK Status */}
