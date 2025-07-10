@@ -28,14 +28,14 @@ export interface DeploymentResult {
 
 // Framework configurations with actual integration capabilities
 export const FRAMEWORK_CONFIGS: Record<string, FrameworkConfig> = {
-  "G.A.M.E.": {
-    name: "G.A.M.E.",
-    description: "Modular agentic framework for autonomous AI agents with real deployment capabilities",
-    requiresAPIKey: true,
-    deploymentEndpoint: "/api/deploy-game-agent",
+  "PROMPT": {
+    name: "PROMPT",
+    description: "PromptBox native framework for autonomous AI agents with real deployment",
+    requiresAPIKey: false,
+    deploymentEndpoint: "/api/deploy-prompt-agent",
     sdkType: "cloud",
-    supportedFeatures: ["autonomous-planning", "modular-workers", "custom-functions", "goal-driven", "twitter-integration", "real-deployment"],
-    documentationUrl: "https://docs.game.virtuals.io/"
+    supportedFeatures: ["autonomous-planning", "modular-workers", "custom-functions", "goal-driven", "twitter-integration", "promptbox-native"],
+    documentationUrl: "/docs"
   },
   "Eliza": {
     name: "Eliza", 
@@ -121,8 +121,8 @@ export class FrameworkSDKService {
           return await this.deployToOpenAISwarm(config);
         case "Eliza":
           return await this.deployToEliza(config);
-        case "G.A.M.E.":
-          return await this.deployToGAME(config);
+        case "PROMPT":
+          return await this.deployToPROMPT(config);
         default:
           // Fallback to simulation for other frameworks
           console.log(`Deploying agent to ${config.framework}...`, config);
@@ -153,8 +153,8 @@ export class FrameworkSDKService {
     }
   }
 
-  // Real G.A.M.E. deployment
-  private static async deployToGAME(config: AgentDeploymentConfig): Promise<DeploymentResult> {
+  // PROMPT deployment (our native framework using Virtuals SDK)
+  private static async deployToPROMPT(config: AgentDeploymentConfig): Promise<DeploymentResult> {
     try {
       const response = await fetch('https://cjzazuuwapsliacmjxfg.supabase.co/functions/v1/deploy-agent', {
         method: 'POST',
@@ -162,7 +162,7 @@ export class FrameworkSDKService {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          framework: 'G.A.M.E.',
+          framework: 'PROMPT',
           agentConfig: config
         })
       });
@@ -177,7 +177,7 @@ export class FrameworkSDKService {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'G.A.M.E. deployment failed'
+        error: error instanceof Error ? error.message : 'PROMPT deployment failed'
       };
     }
   }
@@ -252,8 +252,8 @@ export class FrameworkSDKService {
         return this.generateElizaCode(agentConfig);
       case "CrewAI":
         return this.generateCrewAICode(agentConfig);
-      case "G.A.M.E.":
-        return this.generateGameCode(agentConfig);
+      case "PROMPT":
+        return this.generatePromptCode(agentConfig);
       case "AutoGen":
         return this.generateAutoGenCode(agentConfig);
       default:
@@ -313,36 +313,37 @@ crew = Crew(
 `;
   }
 
-  private static generateGameCode(config: AgentDeploymentConfig): string {
+  private static generatePromptCode(config: AgentDeploymentConfig): string {
     return `
-// G.A.M.E. Agent Configuration
+// PROMPT Agent Configuration (powered by Virtuals SDK)
 import { Agent, Worker, Function } from '@virtuals-protocol/game';
 
-// Define custom functions
+// Define custom functions for PromptBox
 const functions = [
   new Function({
     name: 'analyze_data',
     description: 'Analyze and process incoming data',
     execute: async (data) => {
-      // Custom logic here
-      return { processed: true, data };
+      // Custom logic for PromptBox agents
+      return { processed: true, data, platform: 'PromptBox' };
     }
   })
 ];
 
 // Define workers
-const dataWorker = new Worker({
-  name: 'DataProcessor',
-  description: 'Worker responsible for data analysis and processing',
+const promptWorker = new Worker({
+  name: 'PromptProcessor',
+  description: 'Worker responsible for processing prompts and executing tasks',
   functions
 });
 
-// Define the main agent
+// Define the PROMPT agent
 const agent = new Agent({
   goal: "${config.description}",
-  description: "An autonomous AI agent powered by G.A.M.E. framework",
-  workers: [dataWorker],
-  model: 'Llama-3.1-405B-Instruct' // Default G.A.M.E. model
+  description: "An autonomous AI agent deployed on PromptBox platform",
+  workers: [promptWorker],
+  model: 'Llama-3.1-405B-Instruct',
+  platform: 'PromptBox'
 });
 
 export default agent;

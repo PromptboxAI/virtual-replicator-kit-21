@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Bot, Brain, Target, Twitter, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-interface GameAgentConfig {
+interface PromptAgentConfig {
   name: string;
   description: string;
   goal: string;
@@ -18,11 +18,11 @@ interface GameAgentConfig {
   autonomousTrading: boolean;
 }
 
-interface GameAgentBuilderProps {
-  onDeploy: (config: GameAgentConfig & { apiKey: string }) => Promise<void>;
+interface PromptAgentBuilderProps {
+  onDeploy: (config: PromptAgentConfig) => Promise<void>;
 }
 
-const GAME_MODELS = [
+const PROMPT_MODELS = [
   "Llama-3.1-405B-Instruct",
   "Llama-3.3-70B-Instruct", 
   "DeepSeek-R1",
@@ -30,8 +30,8 @@ const GAME_MODELS = [
   "Qwen-2.5-72B-Instruct"
 ];
 
-export function GameAgentBuilder({ onDeploy }: GameAgentBuilderProps) {
-  const [config, setConfig] = useState<GameAgentConfig>({
+export function PromptAgentBuilder({ onDeploy }: PromptAgentBuilderProps) {
+  const [config, setConfig] = useState<PromptAgentConfig>({
     name: '',
     description: '',
     goal: '',
@@ -39,7 +39,6 @@ export function GameAgentBuilder({ onDeploy }: GameAgentBuilderProps) {
     twitterIntegration: false,
     autonomousTrading: false
   });
-  const [apiKey, setApiKey] = useState('');
   const [isDeploying, setIsDeploying] = useState(false);
   const { toast } = useToast();
 
@@ -53,21 +52,12 @@ export function GameAgentBuilder({ onDeploy }: GameAgentBuilderProps) {
       return;
     }
 
-    if (!apiKey) {
-      toast({
-        title: "API Key Required",
-        description: "Please provide your G.A.M.E. API key",
-        variant: "destructive"
-      });
-      return;
-    }
-
     setIsDeploying(true);
     try {
-      await onDeploy({ ...config, apiKey });
+      await onDeploy(config);
       toast({
         title: "Agent Deployed!",
-        description: "Your G.A.M.E. agent has been successfully deployed",
+        description: "Your PROMPT agent has been successfully deployed to PromptBox",
       });
     } catch (error) {
       toast({
@@ -85,10 +75,10 @@ export function GameAgentBuilder({ onDeploy }: GameAgentBuilderProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Bot className="h-6 w-6" />
-          G.A.M.E. Agent Builder
+          PROMPT Agent Builder
         </CardTitle>
         <CardDescription>
-          Create an autonomous AI agent using the G.A.M.E. framework with real deployment capabilities
+          Create an autonomous AI agent using PromptBox native framework powered by Virtuals Protocol SDK
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -135,7 +125,7 @@ export function GameAgentBuilder({ onDeploy }: GameAgentBuilderProps) {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {GAME_MODELS.map((model) => (
+              {PROMPT_MODELS.map((model) => (
                 <SelectItem key={model} value={model}>
                   {model}
                 </SelectItem>
@@ -158,7 +148,7 @@ export function GameAgentBuilder({ onDeploy }: GameAgentBuilderProps) {
             </Badge>
             <Badge variant="outline" className="flex items-center gap-1">
               <Zap className="h-3 w-3" />
-              Custom Functions
+              PromptBox Native
             </Badge>
             {config.twitterIntegration && (
               <Badge className="flex items-center gap-1">
@@ -194,36 +184,13 @@ export function GameAgentBuilder({ onDeploy }: GameAgentBuilderProps) {
           </div>
         </div>
 
-        {/* API Key */}
-        <div>
-          <Label htmlFor="apiKey">G.A.M.E. API Key *</Label>
-          <Input
-            id="apiKey"
-            type="password"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            placeholder="Enter your G.A.M.E. API key"
-          />
-          <p className="text-xs text-muted-foreground mt-1">
-            Get your API key from{' '}
-            <a 
-              href="https://console.game.virtuals.io/" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-primary hover:underline"
-            >
-              G.A.M.E. Console
-            </a>
-          </p>
-        </div>
-
         {/* Deploy Button */}
         <Button 
           onClick={handleDeploy} 
           disabled={isDeploying}
           className="w-full"
         >
-          {isDeploying ? 'Deploying Agent...' : 'Deploy G.A.M.E. Agent'}
+          {isDeploying ? 'Deploying Agent...' : 'Deploy PROMPT Agent'}
         </Button>
       </CardContent>
     </Card>
