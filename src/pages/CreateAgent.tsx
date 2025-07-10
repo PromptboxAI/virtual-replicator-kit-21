@@ -238,9 +238,22 @@ export default function CreateAgent() {
     }
 
     if (!validateForm()) return;
+
+    const totalCost = CREATION_COST + formData.prebuy_amount;
+    
+    // Check if user has sufficient balance
+    if (balance < totalCost) {
+      const shortfall = totalCost - balance;
+      toast({
+        title: "Insufficient Balance",
+        description: `You need ${shortfall} more $PROMPT tokens. Please reduce your pre-buy amount or add more tokens to your wallet.`,
+        variant: "destructive"
+      });
+      return;
+    }
     
     // Check token balance and deduct tokens
-    const success = await deductTokens(CREATION_COST);
+    const success = await deductTokens(totalCost);
     if (!success) return;
     
     setIsCreating(true);
@@ -1106,44 +1119,6 @@ export default function CreateAgent() {
                         </div>
                       </div>
 
-                      <div className="space-y-4">
-                        <div>
-                          <h4 className="font-medium mb-2">Pre-buy Token (Optional)</h4>
-                          <p className="text-sm text-muted-foreground mb-4">
-                            Purchasing a small amount of your token is optional but can help protect your coin from snipers.
-                          </p>
-                          
-                          <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                              <Label htmlFor="prebuy_amount">Buy ${formData.symbol || 'TOKEN'} with $PROMPT</Label>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => handleInputChange('prebuy_amount', 1000)}
-                              >
-                                Max
-                              </Button>
-                            </div>
-                            <Input
-                              id="prebuy_amount"
-                              type="number"
-                              placeholder="0"
-                              value={formData.prebuy_amount}
-                              onChange={(e) => handleInputChange('prebuy_amount', parseFloat(e.target.value) || 0)}
-                              min="0"
-                              max="1000"
-                            />
-                            <div className="text-sm text-muted-foreground">
-                              Amount in $PROMPT (Max: 1,000)
-                            </div>
-                            {formData.prebuy_amount > 0 && (
-                              <div className="text-sm text-muted-foreground">
-                                You will receive ~{(formData.prebuy_amount * 1000).toLocaleString()} ${formData.symbol || 'TOKEN'}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
 
                       <Alert>
                         <Info className="h-4 w-4" />
@@ -1227,6 +1202,125 @@ export default function CreateAgent() {
                           <p className="text-sm text-muted-foreground break-words">{formData.description}</p>
                         </div>
                       </div>
+
+                      {/* Pre-buy Section */}
+                      <div className="border-t pt-6">
+                        <div className="mb-4">
+                          <h3 className="text-lg font-semibold mb-2">Pre-buy Your Token (Optional)</h3>
+                          <p className="text-sm text-muted-foreground">
+                            Purchase your agent's tokens at launch price before they become available to others.
+                          </p>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="space-y-4">
+                            {!user ? (
+                              <div className="p-4 border border-dashed rounded-lg text-center">
+                                <p className="text-sm text-muted-foreground mb-3">
+                                  Wallet connection required for pre-buy
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  You can connect when launching your agent
+                                </p>
+                              </div>
+                            ) : (
+                              <div className="space-y-3">
+                                <div className="p-3 bg-muted rounded-lg">
+                                  <div className="text-sm text-muted-foreground">Your $PROMPT Balance</div>
+                                  <div className="text-lg font-semibold">
+                                    {isTestMode && (
+                                      <span className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded mr-2">
+                                        TEST MODE
+                                      </span>
+                                    )}
+                                    {balance.toLocaleString()} $PROMPT
+                                  </div>
+                                  {isTestMode && (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => addTestTokens()}
+                                      className="mt-2"
+                                    >
+                                      Add 5,000 Test Tokens
+                                    </Button>
+                                  )}
+                                </div>
+                                
+                                <div className="space-y-3">
+                                  <div className="flex items-center justify-between">
+                                    <Label htmlFor="prebuy_amount">Buy ${formData.symbol || 'TOKEN'} with $PROMPT</Label>
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => handleInputChange('prebuy_amount', Math.min(1000, Math.max(0, balance - 100)))}
+                                    >
+                                      Max
+                                    </Button>
+                                  </div>
+                                  <Input
+                                    id="prebuy_amount"
+                                    type="number"
+                                    value={formData.prebuy_amount}
+                                    onChange={(e) => handleInputChange('prebuy_amount', parseInt(e.target.value) || 0)}
+                                    placeholder="0"
+                                    min="0"
+                                    max={Math.min(1000, Math.max(0, balance - 100))}
+                                  />
+                                  <div className="text-sm text-muted-foreground">
+                                    Amount in $PROMPT (Max: {Math.min(1000, Math.max(0, balance - 100))})
+                                  </div>
+                                  {formData.prebuy_amount > 0 && (
+                                    <div className="text-sm text-muted-foreground">
+                                      You'll receive: ~{(formData.prebuy_amount * 1000).toLocaleString()} ${formData.symbol}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                          
+                          <div className="space-y-4">
+                            <div className="p-4 bg-muted rounded-lg">
+                              <h4 className="font-medium mb-2">Pre-buy Benefits</h4>
+                              <ul className="text-sm text-muted-foreground space-y-1">
+                                <li>• Get tokens at the initial launch price</li>
+                                <li>• Secure your position before public launch</li>
+                                <li>• Support your agent's initial liquidity</li>
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Payment Summary */}
+                      <div className="border-t pt-6">
+                        <h3 className="text-lg font-semibold mb-4">Payment Summary</h3>
+                        <div className="p-4 border rounded-lg">
+                          <div className="space-y-3 text-sm">
+                            <div className="flex justify-between">
+                              <span>Agent Creation Fee:</span>
+                              <span className="font-medium">100 $PROMPT</span>
+                            </div>
+                            {formData.prebuy_amount > 0 && (
+                              <div className="flex justify-between">
+                                <span>Pre-buy Amount:</span>
+                                <span className="font-medium">{formData.prebuy_amount} $PROMPT</span>
+                              </div>
+                            )}
+                            <hr />
+                            <div className="flex justify-between font-medium text-base">
+                              <span>Total Required:</span>
+                              <span>{100 + formData.prebuy_amount} $PROMPT</span>
+                            </div>
+                            {user && balance < (100 + formData.prebuy_amount) && (
+                              <div className="text-red-500 text-xs mt-2">
+                                Insufficient balance. You need {(100 + formData.prebuy_amount) - balance} more $PROMPT.
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
 
@@ -1239,20 +1333,20 @@ export default function CreateAgent() {
                      >
                        Back
                     </Button>
-                    <Button
-                      onClick={handleCreateAgent}
-                      disabled={isCreating || balanceLoading || balance < CREATION_COST}
-                      className="flex-1 bg-gradient-primary hover:opacity-90"
-                    >
-                      {isCreating ? (
-                        <div className="flex items-center gap-2">
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground"></div>
-                          Creating...
-                        </div>
-                      ) : (
-                        `Launch AI Agent (${CREATION_COST} tokens)`
-                      )}
-                    </Button>
+                     <Button
+                       onClick={handleCreateAgent}
+                       disabled={isCreating || balanceLoading}
+                       className="flex-1 bg-gradient-primary hover:opacity-90"
+                     >
+                       {isCreating ? (
+                         <div className="flex items-center gap-2">
+                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground"></div>
+                           Creating...
+                         </div>
+                       ) : (
+                         `Launch Agent (${100 + formData.prebuy_amount} $PROMPT)`
+                       )}
+                     </Button>
                   </div>
                 </>
               )}
