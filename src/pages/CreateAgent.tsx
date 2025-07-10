@@ -1149,7 +1149,7 @@ export default function CreateAgent() {
                         <Info className="h-4 w-4" />
                         <AlertDescription>
                           <strong>PROMPT PROTOCOL:</strong> Your agent launches with a fixed 1B token supply on a bonding curve. 
-                          Once 42k $PROMPT is accumulated, it graduates to a liquidity pool with 10-year. 
+                          Graduates at 42k $PROMPT volume. 
                           All launches are fair with no insider allocations.
                         </AlertDescription>
                       </Alert>
