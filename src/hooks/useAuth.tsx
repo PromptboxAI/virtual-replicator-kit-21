@@ -18,6 +18,7 @@ export function useAuth() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [hasAcceptedTerms, setHasAcceptedTerms] = useState(false);
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   // Handle authentication state changes and close modals
   useEffect(() => {
@@ -63,18 +64,21 @@ export function useAuth() {
     }
   }, [ready, authenticated, user]);
 
-  // Sync Privy user with Supabase profiles
+  // Sync Privy user with Supabase profiles (optimized to prevent duplicate runs)
   useEffect(() => {
-    console.log('Auth state changed:', { ready, authenticated, user: user?.id });
+    console.log('Auth state changed:', { ready, authenticated, user: user?.id, hasInitialized });
     
-    if (!ready || !authenticated || !user) {
-      setIsProcessing(false);
+    if (!ready || !authenticated || !user || hasInitialized) {
+      if (!ready || !authenticated || !user) {
+        setIsProcessing(false);
+        setHasInitialized(false);
+      }
       return;
     }
 
+    // Run profile sync in background without blocking UI
     const syncUserProfile = async () => {
       console.log('Starting profile sync for user:', user.id);
-      setIsProcessing(true);
       try {
         // Use Privy's user ID directly (it's a string, not UUID)
         const userId = user.id;
@@ -136,12 +140,15 @@ export function useAuth() {
         console.error('Error syncing user profile:', error);
       } finally {
         console.log('Profile sync completed');
-        setIsProcessing(false);
+        setHasInitialized(true);
       }
     };
 
+    // Mark as non-processing immediately to not block UI
+    setIsProcessing(false);
+    // Run sync in background
     syncUserProfile();
-  }, [ready, authenticated, user]);
+  }, [ready, authenticated, user, hasInitialized]);
 
   const handleAcceptTerms = async () => {
     if (!user) return;
