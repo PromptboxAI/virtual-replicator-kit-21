@@ -818,9 +818,6 @@ export default function CreateAgent() {
                                    </SelectItem>
                                  ))}
                               </SelectContent>
-                                 </SelectItem>
-                                })}
-                             </SelectContent>
                          </Select>
                          
                           {/* Framework Description & SDK Status */}
