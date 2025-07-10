@@ -871,7 +871,12 @@ export default function CreateAgent() {
                                <SelectValue placeholder="Select a framework">
                                  {formData.framework && (
                                    <div className="flex items-center gap-2">
-                                     <span>{formData.framework}</span>
+                                     <span>
+                                       {formData.framework === "PROMPT" 
+                                         ? "PROMPT (Default Framework)" 
+                                         : formData.framework
+                                       }
+                                     </span>
                                      {formData.framework === "PROMPT" && (
                                        <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
                                          Recommended
