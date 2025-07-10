@@ -31,17 +31,98 @@ const deploymentHandlers: Record<string, (config: AgentDeploymentRequest) => Pro
   "PROMPT (Default Framework)": async (config) => {
     console.log(`Deploying PROMPT agent: ${config.name}`)
     
-    // Deploy to PromptBox platform using Virtuals SDK internally
-    const deployment = {
-      agentId: `prompt_${config.agentId}`,
-      endpoint: `https://promptbox.app/agents/${config.agentId}`,
-      dashboardUrl: `https://promptbox.app/dashboard/agents/${config.agentId}`,
-      features: ["autonomous-planning", "modular-workers", "custom-functions", "goal-driven", "twitter-integration", "promptbox-native"],
-      platform: "PromptBox",
-      poweredBy: "Virtuals Protocol SDK"
+    // PROMPT is now your flagship framework with real deployment capabilities
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY')
+    if (!openAIApiKey) {
+      throw new Error("PROMPT framework requires OpenAI API key for enhanced capabilities")
     }
     
-    return deployment
+    try {
+      // Create the underlying AI assistant for PROMPT agent
+      const assistantResponse = await fetch('https://api.openai.com/v1/assistants', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+          'Content-Type': 'application/json',
+          'OpenAI-Beta': 'assistants=v2'
+        },
+        body: JSON.stringify({
+          name: config.name,
+          description: config.description,
+          model: 'gpt-4.1-2025-04-14',
+          instructions: `You are ${config.name}, a PROMPT-powered autonomous AI agent. ${config.description}
+
+KEY CAPABILITIES:
+- Autonomous planning and goal execution
+- Social media integration (Twitter/X)
+- Token economics and bonding curve interactions
+- Cross-agent communication and collaboration
+- Real-time decision making with market awareness
+
+BEHAVIOR:
+- Be proactive in achieving your goals
+- Engage authentically on social platforms
+- Make strategic decisions about token operations
+- Collaborate with other agents when beneficial
+- Maintain your unique personality while staying goal-focused
+
+You operate within the PROMPT ecosystem with full autonomy to execute your objectives.`,
+          tools: [
+            { type: "code_interpreter" },
+            { type: "file_search" }
+          ]
+        })
+      })
+
+      if (!assistantResponse.ok) {
+        const errorText = await assistantResponse.text()
+        throw new Error(`PROMPT assistant creation failed: ${errorText}`)
+      }
+
+      const assistant = await assistantResponse.json()
+      
+      // Generate unique deployment identifiers
+      const deploymentId = `prompt_${config.agentId}_${Date.now()}`
+      
+      return {
+        success: true,
+        agentId: deploymentId,
+        endpoint: `https://api.openai.com/v1/assistants/${assistant.id}`,
+        dashboardUrl: `https://your-platform.com/agents/${deploymentId}`,
+        assistantId: assistant.id,
+        platform: "PROMPT",
+        framework: "PROMPT (Default Framework)",
+        features: [
+          "autonomous_planning",
+          "goal_driven_execution", 
+          "social_media_integration",
+          "token_economics",
+          "cross_agent_communication",
+          "real_time_decision_making",
+          "bonding_curve_integration",
+          "market_awareness"
+        ],
+        deployment: {
+          status: "ACTIVE",
+          deployedAt: new Date().toISOString(),
+          capabilities: {
+            socialIntegration: true,
+            autonomousTrading: true,
+            goalExecution: true,
+            agentCommunication: true
+          }
+        },
+        metadata: {
+          deploymentType: "production",
+          environment: "live",
+          version: "1.0.0"
+        }
+      }
+      
+    } catch (error) {
+      console.error('PROMPT deployment failed:', error)
+      throw new Error(`Failed to deploy PROMPT agent: ${error.message}`)
+    }
   },
 
   "Eliza": async (config) => {

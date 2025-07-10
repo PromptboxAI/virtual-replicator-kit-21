@@ -37,15 +37,6 @@ export const FRAMEWORK_CONFIGS: Record<string, FrameworkConfig> = {
     supportedFeatures: ["autonomous-planning", "modular-workers", "custom-functions", "goal-driven", "twitter-integration", "promptbox-native"],
     documentationUrl: "/docs"
   },
-  "G.A.M.E.": {
-    name: "G.A.M.E.",
-    description: "Virtuals Protocol's framework for AI agents in virtual worlds and gaming environments",
-    requiresAPIKey: false,
-    deploymentEndpoint: "/api/deploy-game-agent",
-    sdkType: "cloud",
-    supportedFeatures: ["virtual-world", "gaming", "avatar-control", "game-mechanics"],
-    documentationUrl: "https://docs.virtuals.io"
-  },
   "Eliza": {
     name: "Eliza", 
     description: "Extensible AI agent framework inspired by the classic chatbot, focused on conversational AI and personality.",
