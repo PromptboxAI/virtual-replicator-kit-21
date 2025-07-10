@@ -40,63 +40,18 @@ interface AgentFormData {
 export default function CreateAgent() {
   const { toast } = useToast();
 
-  // Framework recommendations based on agent category
-  const frameworkRecommendations: Record<string, {
-    primary: string[];
-    secondary: string[];
-    explanation: string;
-  }> = {
-    "Trading Bot": {
-      primary: ["PROMPT"],
-      secondary: ["AutoGen", "CrewAI"],
-      explanation: "PROMPT with G.A.M.E. integration provides bonding curves, autonomous trading, and market analysis - perfect for trading bots."
-    },
-    "DeFi Assistant": {
-      primary: ["PROMPT", "LangChain"],
-      secondary: ["AutoGen"],
-      explanation: "PROMPT offers tokenization and DeFi integrations, while LangChain excels at complex financial data processing."
-    },
-    "Content Creator": {
-      primary: ["Eliza", "PROMPT"],
-      secondary: ["CrewAI"],
-      explanation: "Eliza provides advanced conversational AI, while PROMPT offers social media integration and token incentives."
-    },
-    "Community Manager": {
-      primary: ["Eliza", "PROMPT"],
-      secondary: ["Swarm", "AutoGen"],
-      explanation: "Eliza for engaging conversations and PROMPT for social media management with tokenized communities."
-    },
-    "Analytics Agent": {
-      primary: ["LangChain", "PROMPT"],
-      secondary: ["AutoGen", "CrewAI"],
-      explanation: "LangChain for data processing and PROMPT for market analysis with real-time trading insights."
-    },
-    "Gaming Agent": {
-      primary: ["PROMPT", "Eliza"],
-      secondary: ["AutoGen"],
-      explanation: "PROMPT offers tokenization for gaming economies, while Eliza provides immersive character interactions."
-    },
-    "NFT Agent": {
-      primary: ["PROMPT"],
-      secondary: ["LangChain", "Eliza"],
-      explanation: "PROMPT's tokenization and bonding curves are ideal for NFT market analysis and trading."
-    },
-    "Research Assistant": {
-      primary: ["LangChain", "AutoGen"],
-      secondary: ["CrewAI", "PROMPT"],
-      explanation: "LangChain excels at complex research tasks, while AutoGen provides multi-agent collaboration."
-    }
-  };
-
+  // Simplified framework recommendations - PROMPT is always recommended for MVP
   const getRecommendedFrameworks = (category: string) => {
-    return frameworkRecommendations[category] || { primary: [], secondary: [], explanation: "" };
+    return {
+      primary: ["PROMPT"],
+      secondary: [],
+      explanation: "PROMPT with G.A.M.E. integration offers tokenization, bonding curves, autonomous execution, and social media integration - perfect for any AI agent category."
+    };
   };
 
   const isRecommendedFramework = (framework: string, category: string, type: 'primary' | 'secondary' = 'primary') => {
-    const recommendations = getRecommendedFrameworks(category);
-    return type === 'primary' 
-      ? recommendations.primary.includes(framework)
-      : recommendations.secondary.includes(framework);
+    // Always recommend PROMPT for MVP
+    return framework === "PROMPT" && type === 'primary';
   };
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
