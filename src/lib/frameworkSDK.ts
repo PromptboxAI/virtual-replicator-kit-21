@@ -30,12 +30,12 @@ export interface DeploymentResult {
 export const FRAMEWORK_CONFIGS: Record<string, FrameworkConfig> = {
   "G.A.M.E.": {
     name: "G.A.M.E.",
-    description: "Virtuals Protocol native framework for creating autonomous AI agents with built-in tokenization and community governance.",
+    description: "Modular agentic framework for autonomous AI agents with real deployment capabilities",
     requiresAPIKey: true,
     deploymentEndpoint: "/api/deploy-game-agent",
     sdkType: "cloud",
-    supportedFeatures: ["tokenization", "governance", "autonomous_trading", "community_management"],
-    documentationUrl: "https://docs.virtuals.io"
+    supportedFeatures: ["autonomous-planning", "modular-workers", "custom-functions", "goal-driven", "twitter-integration", "real-deployment"],
+    documentationUrl: "https://docs.game.virtuals.io/"
   },
   "Eliza": {
     name: "Eliza", 
@@ -121,6 +121,8 @@ export class FrameworkSDKService {
           return await this.deployToOpenAISwarm(config);
         case "Eliza":
           return await this.deployToEliza(config);
+        case "G.A.M.E.":
+          return await this.deployToGAME(config);
         default:
           // Fallback to simulation for other frameworks
           console.log(`Deploying agent to ${config.framework}...`, config);
@@ -147,6 +149,35 @@ export class FrameworkSDKService {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown deployment error'
+      };
+    }
+  }
+
+  // Real G.A.M.E. deployment
+  private static async deployToGAME(config: AgentDeploymentConfig): Promise<DeploymentResult> {
+    try {
+      const response = await fetch('https://cjzazuuwapsliacmjxfg.supabase.co/functions/v1/deploy-agent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          framework: 'G.A.M.E.',
+          agentConfig: config
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Deployment failed: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      return result;
+      
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'G.A.M.E. deployment failed'
       };
     }
   }
@@ -285,22 +316,33 @@ crew = Crew(
   private static generateGameCode(config: AgentDeploymentConfig): string {
     return `
 // G.A.M.E. Agent Configuration
-import { GameAgent, TokenConfig } from '@virtuals/game-sdk';
+import { Agent, Worker, Function } from '@virtuals-protocol/game';
 
-const tokenConfig: TokenConfig = {
-  name: "${config.name}",
-  symbol: "AGENT",
-  description: "${config.description}",
-  governance: true,
-  tradeable: true
-};
+// Define custom functions
+const functions = [
+  new Function({
+    name: 'analyze_data',
+    description: 'Analyze and process incoming data',
+    execute: async (data) => {
+      // Custom logic here
+      return { processed: true, data };
+    }
+  })
+];
 
-const agent = new GameAgent({
-  name: "${config.name}",
-  description: "${config.description}",
-  tokenConfig,
-  autonomousTrading: true,
-  communityGovernance: true
+// Define workers
+const dataWorker = new Worker({
+  name: 'DataProcessor',
+  description: 'Worker responsible for data analysis and processing',
+  functions
+});
+
+// Define the main agent
+const agent = new Agent({
+  goal: "${config.description}",
+  description: "An autonomous AI agent powered by G.A.M.E. framework",
+  workers: [dataWorker],
+  model: 'Llama-3.1-405B-Instruct' // Default G.A.M.E. model
 });
 
 export default agent;

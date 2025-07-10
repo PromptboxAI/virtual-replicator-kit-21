@@ -31,17 +31,67 @@ const deploymentHandlers: Record<string, (config: AgentDeploymentRequest) => Pro
   "G.A.M.E.": async (config) => {
     console.log(`Deploying G.A.M.E. agent: ${config.name}`)
     
-    // Simulate G.A.M.E. deployment
-    const deployment = {
-      agentId: `game_${config.agentId}`,
-      endpoint: `https://virtuals.io/agents/${config.agentId}`,
-      tokenAddress: `0x${Math.random().toString(16).substr(2, 40)}`,
-      governanceContract: `0x${Math.random().toString(16).substr(2, 40)}`,
-      features: ["tokenization", "governance", "autonomous_trading"]
+    const gameApiKey = config.apiKey || Deno.env.get('GAME_API_KEY')
+    if (!gameApiKey) {
+      throw new Error("G.A.M.E. API key not provided")
     }
     
-    // In real implementation, this would integrate with Virtuals Protocol API
-    return deployment
+    try {
+      // Real G.A.M.E. agent deployment using the API
+      const response = await fetch('https://console.game.virtuals.io/api/agents', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${gameApiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: config.name,
+          description: config.description,
+          goal: config.description,
+          model: 'Llama-3.1-405B-Instruct',
+          settings: {
+            autonomous: true,
+            twitter_integration: true,
+            ...config.environment
+          }
+        })
+      })
+      
+      if (!response.ok) {
+        // Fallback to simulation if API is not available
+        console.log('G.A.M.E. API not available, using simulation')
+        return {
+          agentId: `game_${config.agentId}`,
+          endpoint: `https://console.game.virtuals.io/agents/${config.agentId}`,
+          gameConsoleUrl: `https://console.game.virtuals.io/agents/${config.agentId}`,
+          features: ["autonomous-planning", "modular-workers", "custom-functions", "goal-driven", "twitter-integration"],
+          status: 'simulated'
+        }
+      }
+      
+      const result = await response.json()
+      
+      return {
+        agentId: `game_${config.agentId}`,
+        endpoint: result.endpoint || `https://console.game.virtuals.io/agents/${result.id}`,
+        gameConsoleUrl: `https://console.game.virtuals.io/agents/${result.id}`,
+        realAgentId: result.id,
+        features: ["autonomous-planning", "modular-workers", "custom-functions", "goal-driven", "twitter-integration"],
+        status: 'deployed'
+      }
+      
+    } catch (error) {
+      console.error('G.A.M.E. deployment error:', error)
+      // Fallback to simulation
+      return {
+        agentId: `game_${config.agentId}`,
+        endpoint: `https://console.game.virtuals.io/agents/${config.agentId}`,
+        gameConsoleUrl: `https://console.game.virtuals.io/agents/${config.agentId}`,
+        features: ["autonomous-planning", "modular-workers", "custom-functions", "goal-driven", "twitter-integration"],
+        status: 'simulated',
+        error: error.message
+      }
+    }
   },
 
   "Eliza": async (config) => {
