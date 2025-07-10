@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, Sparkles, Coins, TrendingUp, Info, AlertCircle, Check, Twitter, Link2, X } from "lucide-react";
+import { Upload, Sparkles, Coins, TrendingUp, Info, AlertCircle, Check, Twitter, Link2, X, Code, Rocket } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Link } from "react-router-dom";
@@ -17,6 +17,8 @@ import { useTokenBalance } from "@/hooks/useTokenBalance";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/hooks/useAuth";
 import { useTwitterAuth } from "@/hooks/useTwitterAuth";
+import { FrameworkSDKService, FRAMEWORK_CONFIGS } from "@/lib/frameworkSDK";
+import { FrameworkIntegration } from "@/components/FrameworkIntegration";
 
 interface AgentFormData {
   name: string;
@@ -73,23 +75,24 @@ export default function CreateAgent() {
     "Other"
   ];
 
-  const frameworks = {
-    "G.A.M.E.": "Virtuals Protocol native framework for creating autonomous AI agents with built-in tokenization and community governance.",
+  // Get frameworks from SDK with fallback descriptions
+  const frameworks = Object.keys(FRAMEWORK_CONFIGS).reduce((acc, key) => {
+    acc[key] = FRAMEWORK_CONFIGS[key].description;
+    return acc;
+  }, {} as Record<string, string>);
+
+  // Add frameworks not in SDK but still supported
+  const additionalFrameworks = {
     "Agentforce": "Salesforce's AI agent platform for building custom agents that automate business processes and customer interactions.",
     "AiLice": "Open-source AI assistant framework focused on natural language understanding and conversational AI capabilities.",
-    "AutoGen": "Microsoft's multi-agent conversation framework enabling multiple AI agents to collaborate and solve complex tasks.",
-    "AutoGPT": "Autonomous AI agent that can perform tasks independently, break down goals into sub-tasks, and execute them.",
     "BabyAGI": "Simple task-driven autonomous agent that creates, prioritizes, and executes tasks based on given objectives.",
     "ChatDev": "Multi-agent framework simulating a software development company with specialized AI agents for different roles.",
-    "CrewAI": "Framework for orchestrating role-playing, autonomous AI agents working together as a cohesive team.",
     "Devika": "AI software engineer capable of understanding high-level instructions and writing code autonomously.",
-    "Eliza": "Extensible AI agent framework inspired by the classic chatbot, focused on conversational AI and personality.",
     "Goat": "Goal-oriented autonomous agent framework designed for task planning and execution in complex environments.",
     "Hugging Face Smolagents": "Lightweight agent framework from Hugging Face for building and deploying small, efficient AI agents.",
     "Jarvis": "Personal AI assistant framework designed to help with daily tasks, scheduling, and information management.",
     "MetaGPT": "Multi-agent framework that assigns different roles to GPTs to form a collaborative software entity.",
     "Mindextension": "Cognitive AI framework focused on extending human decision-making capabilities through intelligent agents.",
-    "Open AI Swarm": "OpenAI's experimental multi-agent orchestration framework for coordinating multiple AI agents.",
     "Open Interpreter": "Local code-running AI assistant that can execute code, browse the web, and control your computer.",
     "Own Framework": "Custom-built framework tailored specifically for your unique AI agent requirements and use cases.",
     "PydanticAI": "Production-ready agent framework built on Pydantic for type-safe AI agent development in Python.",
@@ -97,6 +100,9 @@ export default function CreateAgent() {
     "Rig": "Rust-based agent framework for building high-performance, memory-safe AI agents and applications.",
     "ZerePy": "Python framework for creating zero-configuration AI agents with minimal setup and maximum flexibility."
   };
+
+  // Merge both sets of frameworks
+  const allFrameworks = { ...frameworks, ...additionalFrameworks };
 
   // Load existing Twitter connection
   useEffect(() => {
@@ -239,12 +245,61 @@ export default function CreateAgent() {
           is_active: true,
           creator_id: user.id,
           status: 'ACTIVATING',
-        }]);
+        }])
+        .select()
+        .single();
 
       if (error) {
         console.error('Database error:', error);
         toast({ title: "Error", description: "Failed to create AI Agent", variant: "destructive" });
         return;
+      }
+
+      const agentId = data.id;
+
+      // Deploy agent to framework if SDK integration is available
+      const frameworkConfig = FrameworkSDKService.getFrameworkConfig(formData.framework);
+      if (frameworkConfig) {
+        try {
+          toast({
+            title: "Deploying Agent",
+            description: `Deploying ${formData.name} to ${formData.framework}...`,
+          });
+
+          const { data: deployResult, error: deployError } = await supabase.functions.invoke('deploy-agent', {
+            body: {
+              agentId,
+              framework: formData.framework,
+              name: formData.name,
+              description: formData.description,
+              environment: {
+                totalSupply: formData.total_supply,
+                initialPrice: formData.initial_price
+              }
+            }
+          });
+
+          if (deployError) {
+            console.error('Deployment error:', deployError);
+            toast({
+              title: "Warning",
+              description: `Agent created but deployment to ${formData.framework} failed. You can retry deployment later.`,
+              variant: "destructive"
+            });
+          } else if (deployResult?.success) {
+            toast({
+              title: "Deployment Successful!",
+              description: `${formData.name} has been successfully deployed to ${formData.framework}`,
+            });
+          }
+        } catch (deploymentError) {
+          console.error('Deployment error:', deploymentError);
+          toast({
+            title: "Warning",
+            description: `Agent created but deployment to ${formData.framework} failed. You can retry deployment later.`,
+            variant: "destructive"
+          });
+        }
       }
 
       toast({ 
@@ -733,19 +788,70 @@ export default function CreateAgent() {
                            </SelectContent>
                          </Select>
                          
-                         {/* Framework Description */}
-                         {formData.framework && frameworks[formData.framework as keyof typeof frameworks] && (
-                           <div className="mt-3 p-3 bg-muted/50 rounded-lg border">
-                             <p className="text-sm text-muted-foreground">
-                               {frameworks[formData.framework as keyof typeof frameworks]}
-                             </p>
-                           </div>
-                         )}
+                          {/* Framework Description & SDK Status */}
+                          {formData.framework && allFrameworks[formData.framework as keyof typeof allFrameworks] && (
+                            <div className="mt-3 space-y-3">
+                              <div className="p-3 bg-muted/50 rounded-lg border">
+                                <p className="text-sm text-muted-foreground">
+                                  {allFrameworks[formData.framework as keyof typeof allFrameworks]}
+                                </p>
+                              </div>
+                              
+                              {/* SDK Integration Status */}
+                              {FRAMEWORK_CONFIGS[formData.framework] && (
+                                <div className="p-3 bg-primary/5 rounded-lg border border-primary/20">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <Rocket className="h-4 w-4 text-primary" />
+                                    <span className="text-sm font-medium text-primary">SDK Integration Available</span>
+                                  </div>
+                                  <div className="space-y-2">
+                                    <div className="flex items-center gap-2">
+                                      <Badge variant="outline" className="text-xs">
+                                        {FRAMEWORK_CONFIGS[formData.framework].sdkType}
+                                      </Badge>
+                                      {FRAMEWORK_CONFIGS[formData.framework].requiresAPIKey && (
+                                        <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">
+                                          API Key Required
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    <div className="flex flex-wrap gap-1">
+                                      {FRAMEWORK_CONFIGS[formData.framework].supportedFeatures.slice(0, 3).map((feature) => (
+                                        <Badge key={feature} variant="secondary" className="text-xs">
+                                          {feature.replace('_', ' ')}
+                                        </Badge>
+                                      ))}
+                                      {FRAMEWORK_CONFIGS[formData.framework].supportedFeatures.length > 3 && (
+                                        <Badge variant="secondary" className="text-xs">
+                                          +{FRAMEWORK_CONFIGS[formData.framework].supportedFeatures.length - 3} more
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <Code className="h-3 w-3 text-muted-foreground" />
+                                      <span className="text-xs text-muted-foreground">
+                                        Auto-generates deployment code
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
                       </div>
                     </CardContent>
-                  </Card>
+                   </Card>
 
-                  {/* Step 2 Action Buttons */}
+                   {/* Framework Integration Preview */}
+                   {formData.framework && FRAMEWORK_CONFIGS[formData.framework] && (
+                     <FrameworkIntegration 
+                       framework={formData.framework}
+                       agentName={formData.name}
+                       agentDescription={formData.description}
+                     />
+                   )}
+
+                   {/* Step 2 Action Buttons */}
                   <div className="flex gap-4">
                     <Button
                       onClick={() => setCurrentStep(1)}

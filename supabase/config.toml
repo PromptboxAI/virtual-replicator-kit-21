@@ -1,1 +1,4 @@
 project_id = "cjzazuuwapsliacmjxfg"
+
+[functions.deploy-agent]
+verify_jwt = false
