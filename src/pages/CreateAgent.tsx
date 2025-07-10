@@ -6,10 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, Sparkles, Coins, TrendingUp, Info, AlertCircle, Check, Twitter, Link2, X, Code, Rocket, ExternalLink } from "lucide-react";
+import { Upload, Sparkles, Coins, TrendingUp, Info, AlertCircle, Check, Twitter, Link2, X, Code, Rocket, ExternalLink, Settings, Users, Brain, Shield, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Link } from "react-router-dom";
@@ -778,32 +779,85 @@ export default function CreateAgent() {
                                         </Badge>
                                       )}
                                     </div>
-                                    <div className="flex flex-wrap gap-1">
-                                      {FRAMEWORK_CONFIGS[formData.framework].supportedFeatures.slice(0, 3).map((feature) => (
-                                        <Badge key={feature} variant="secondary" className="text-xs">
-                                          {feature.replace('_', ' ')}
-                                        </Badge>
-                                      ))}
-                                      {FRAMEWORK_CONFIGS[formData.framework].supportedFeatures.length > 3 && (
-                                        <Badge variant="secondary" className="text-xs">
-                                          +{FRAMEWORK_CONFIGS[formData.framework].supportedFeatures.length - 3} more
-                                        </Badge>
-                                      )}
-                                    </div>
-                                     <div className="flex items-center justify-between">
-                                       <div className="flex items-center gap-2">
-                                         <Code className="h-3 w-3 text-muted-foreground" />
-                                         <span className="text-xs text-muted-foreground">
-                                           Auto-generates deployment code
-                                         </span>
-                                       </div>
-                                       <Button variant="outline" size="sm" asChild>
-                                         <a href={FRAMEWORK_CONFIGS[formData.framework].documentationUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
-                                           <ExternalLink className="h-3 w-3" />
-                                           <span className="text-xs">Docs</span>
-                                         </a>
-                                       </Button>
+                                     <div className="flex flex-wrap gap-1">
+                                       {FRAMEWORK_CONFIGS[formData.framework].supportedFeatures.map((feature) => {
+                                         const getFeatureIcon = (feature: string) => {
+                                           switch (feature) {
+                                             case 'tokenization':
+                                             case 'governance': 
+                                               return <Shield className="h-3 w-3" />;
+                                             case 'multi_agent':
+                                             case 'team_collaboration':
+                                               return <Users className="h-3 w-3" />;
+                                             case 'conversation':
+                                             case 'personality':
+                                               return <Brain className="h-3 w-3" />;
+                                             case 'autonomous_execution':
+                                             case 'autonomous_trading':
+                                               return <Zap className="h-3 w-3" />;
+                                             default:
+                                               return <Settings className="h-3 w-3" />;
+                                           }
+                                         };
+                                         
+                                         return (
+                                           <Badge key={feature} variant="secondary" className="text-xs">
+                                             <span className="flex items-center gap-1">
+                                               {getFeatureIcon(feature)}
+                                               {feature.replace(/_/g, ' ')}
+                                             </span>
+                                           </Badge>
+                                         );
+                                       })}
                                      </div>
+                                     
+                                     {/* API Key Requirement */}
+                                     {FRAMEWORK_CONFIGS[formData.framework].requiresAPIKey && (
+                                       <div className="p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
+                                         ⚠️ This framework requires an API key for deployment
+                                       </div>
+                                     )}
+                                       <div className="flex items-center justify-between">
+                                         <div className="flex items-center gap-2">
+                                           <Code className="h-3 w-3 text-muted-foreground" />
+                                           <span className="text-xs text-muted-foreground">
+                                             Auto-generates deployment code
+                                           </span>
+                                         </div>
+                                         <div className="flex gap-2">
+                                           <Dialog>
+                                             <DialogTrigger asChild>
+                                               <Button variant="outline" size="sm">
+                                                 <Code className="h-3 w-3 mr-1" />
+                                                 <span className="text-xs">View Code</span>
+                                               </Button>
+                                             </DialogTrigger>
+                                             <DialogContent className="max-w-2xl">
+                                               <DialogHeader>
+                                                 <DialogTitle>Generated {formData.framework} Agent Code</DialogTitle>
+                                                 <DialogDescription>
+                                                   This code will be automatically generated and deployed for your agent
+                                                 </DialogDescription>
+                                               </DialogHeader>
+                                               <div className="mt-4">
+                                                 <pre className="bg-gray-100 p-4 rounded-lg text-xs overflow-auto max-h-96">
+                                                   <code>{FrameworkSDKService.generateAgentCode(formData.framework, {
+                                                     name: formData.name,
+                                                     description: formData.description,
+                                                     framework: formData.framework
+                                                   })}</code>
+                                                 </pre>
+                                               </div>
+                                             </DialogContent>
+                                           </Dialog>
+                                           <Button variant="outline" size="sm" asChild>
+                                             <a href={FRAMEWORK_CONFIGS[formData.framework].documentationUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
+                                               <ExternalLink className="h-3 w-3" />
+                                               <span className="text-xs">Docs</span>
+                                             </a>
+                                           </Button>
+                                         </div>
+                                       </div>
                                   </div>
                                 </div>
                               )}
