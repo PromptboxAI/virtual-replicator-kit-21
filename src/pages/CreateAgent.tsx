@@ -857,9 +857,20 @@ export default function CreateAgent() {
                         </div>
                         
                          <Select value={formData.framework} onValueChange={(value) => handleInputChange('framework', value)}>
-                           <SelectTrigger>
-                              <SelectValue placeholder="Select a framework" />
-                            </SelectTrigger>
+                            <SelectTrigger>
+                               <SelectValue placeholder="Select a framework">
+                                 {formData.framework && (
+                                   <div className="flex items-center gap-2">
+                                     <span>{formData.framework}</span>
+                                     {formData.framework === "PROMPT" && (
+                                       <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                                         Recommended
+                                       </Badge>
+                                     )}
+                                   </div>
+                                 )}
+                               </SelectValue>
+                             </SelectTrigger>
                                <SelectContent>
                                  {Object.keys(allFrameworks).map((framework) => {                               
                                    return (
