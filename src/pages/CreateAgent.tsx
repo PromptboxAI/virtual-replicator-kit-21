@@ -1149,27 +1149,6 @@ export default function CreateAgent() {
                             </div>
                           </div>
                         </div>
-                        <div className="bg-muted/50 p-4 rounded-lg">
-                          <h4 className="font-medium mb-2">Protocol Overview</h4>
-                          <div className="space-y-2 text-sm">
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">Total Supply:</span>
-                              <span className="font-medium">1B tokens</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">Creation Cost:</span>
-                              <span className="font-medium">{CREATION_COST} $PROMPT</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">Graduation Target:</span>
-                              <span className="font-medium">42k $PROMPT</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">Initial Price:</span>
-                              <span className="font-medium">Auto-determined by bonding curve</span>
-                            </div>
-                          </div>
-                        </div>
                       </div>
 
                       <Alert>
