@@ -20,7 +20,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/hooks/useAuth";
 import { useTwitterAuth } from "@/hooks/useTwitterAuth";
 import { FrameworkSDKService, FRAMEWORK_CONFIGS } from "@/lib/frameworkSDK";
-import { PromptAgentBuilder } from "@/components/PromptAgentBuilder";
 
 interface AgentFormData {
   name: string;
@@ -982,34 +981,6 @@ export default function CreateAgent() {
                     </CardContent>
                    </Card>
 
-                   {/* PROMPT Agent Builder */}
-                   {formData.framework === "PROMPT" && (
-                     <div className="space-y-6">
-                       <PromptAgentBuilder 
-                         onDeploy={async (config) => {
-                           // Update form data with PROMPT agent configuration
-                           handleInputChange('name', config.name);
-                           handleInputChange('description', config.description);
-                           // Deploy using our existing SDK
-                           const deployResult = await FrameworkSDKService.deployAgent({
-                             name: config.name,
-                             description: config.description,
-                             framework: 'PROMPT',
-                             environment: {
-                               goal: config.goal,
-                               model: config.model,
-                               twitterIntegration: config.twitterIntegration,
-                               autonomousTrading: config.autonomousTrading
-                             }
-                           });
-                           
-                           if (!deployResult.success) {
-                             throw new Error(deployResult.error || 'Deployment failed');
-                           }
-                         }}
-                       />
-                     </div>
-                   )}
 
 
                    {/* Step 2 Action Buttons */}
