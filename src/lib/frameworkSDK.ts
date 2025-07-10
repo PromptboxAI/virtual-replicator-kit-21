@@ -58,7 +58,7 @@ export const FRAMEWORK_CONFIGS: Record<string, FrameworkConfig> = {
   "CrewAI": {
     name: "CrewAI",
     description: "Framework for orchestrating role-playing, autonomous AI agents working together as a cohesive team.",
-    requiresAPIKey: true,
+    requiresAPIKey: false,
     deploymentEndpoint: "/api/deploy-crew-agent",
     sdkType: "cloud",
     supportedFeatures: ["multi_agent", "role_playing", "task_orchestration", "team_collaboration"],
@@ -67,7 +67,7 @@ export const FRAMEWORK_CONFIGS: Record<string, FrameworkConfig> = {
   "AutoGen": {
     name: "AutoGen",
     description: "Microsoft's multi-agent conversation framework enabling multiple AI agents to collaborate and solve complex tasks.",
-    requiresAPIKey: true,
+    requiresAPIKey: false,
     deploymentEndpoint: "/api/deploy-autogen-agent",
     sdkType: "cloud",
     supportedFeatures: ["multi_agent_conversation", "task_collaboration", "code_execution", "reasoning"],
@@ -76,7 +76,7 @@ export const FRAMEWORK_CONFIGS: Record<string, FrameworkConfig> = {
   "AutoGPT": {
     name: "AutoGPT",
     description: "Autonomous AI agent that can perform tasks independently, break down goals into sub-tasks, and execute them.",
-    requiresAPIKey: true,
+    requiresAPIKey: false,
     deploymentEndpoint: "/api/deploy-autogpt-agent",
     sdkType: "cloud", 
     supportedFeatures: ["autonomous_execution", "goal_decomposition", "web_browsing", "file_operations"],

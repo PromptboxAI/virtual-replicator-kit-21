@@ -80,12 +80,6 @@ export const FrameworkIntegration: React.FC<FrameworkIntegrationProps> = ({
           </div>
         </div>
 
-        {/* Requirements */}
-        {config.requiresAPIKey && (
-          <div className="p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
-            ⚠️ This framework requires an API key for deployment
-          </div>
-        )}
 
         {/* Actions */}
         <div className="flex gap-2">
