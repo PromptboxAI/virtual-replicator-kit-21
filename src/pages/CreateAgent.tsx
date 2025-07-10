@@ -1115,13 +1115,13 @@ export default function CreateAgent() {
                           
                           <div className="space-y-3">
                             <div className="flex items-center justify-between">
-                              <Label htmlFor="prebuy_amount">Buy ${formData.symbol || 'TOKEN'}</Label>
+                              <Label htmlFor="prebuy_amount">Spend $PROMPT</Label>
                               <Button 
                                 variant="outline" 
                                 size="sm"
-                                onClick={() => handleInputChange('prebuy_amount', Math.floor(formData.total_supply * 0.8))}
+                                onClick={() => handleInputChange('prebuy_amount', 1000)}
                               >
-                                Max (80%)
+                                Max
                               </Button>
                             </div>
                             <Input
@@ -1131,22 +1131,16 @@ export default function CreateAgent() {
                               value={formData.prebuy_amount}
                               onChange={(e) => handleInputChange('prebuy_amount', parseFloat(e.target.value) || 0)}
                               min="0"
-                              max={Math.floor(formData.total_supply * 0.8)}
+                              max="1000"
                             />
-                            <div className="text-sm text-muted-foreground mt-1">
-                              Max: {Math.floor(formData.total_supply * 0.8).toLocaleString()} tokens (80% of supply)
-                            </div>
-                            <div className="text-right text-sm text-muted-foreground">
-                              $PROMPT
+                            <div className="text-sm text-muted-foreground">
+                              Max: 1,000 $PROMPT
                             </div>
                             {formData.prebuy_amount > 0 && (
                               <div className="text-sm text-muted-foreground">
-                                You will receive ~{(formData.prebuy_amount * 1000).toLocaleString()} tokens
+                                You will receive ~{(formData.prebuy_amount * 1000).toLocaleString()} ${formData.symbol || 'TOKEN'}
                               </div>
                             )}
-                            <div className="text-sm text-muted-foreground">
-                              Trading Fee: 1% (70% to creator, 30% to protocol)
-                            </div>
                           </div>
                         </div>
                       </div>
