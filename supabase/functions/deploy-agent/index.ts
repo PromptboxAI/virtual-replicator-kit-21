@@ -617,6 +617,150 @@ PERSONALITY: Be proactive, strategic, and goal-focused while maintaining your un
     }
   },
 
+  "AutoGen": async (config) => {
+    console.log(`Deploying AutoGen agent: ${config.name}`)
+    
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY')
+    if (!openAIApiKey) {
+      throw new Error("AutoGen requires OpenAI API key not configured in environment")
+    }
+    
+    try {
+      // Create AutoGen agent using OpenAI assistant
+      const response = await fetch('https://api.openai.com/v1/assistants', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+          'Content-Type': 'application/json',
+          'OpenAI-Beta': 'assistants=v2'
+        },
+        body: JSON.stringify({
+          name: config.name,
+          description: config.description,
+          model: 'gpt-4.1-2025-04-14',
+          instructions: `You are ${config.name}. ${config.description}. You are an AutoGen agent specialized in multi-agent conversation frameworks. You can collaborate with other AI agents, execute code, and engage in complex reasoning tasks through structured conversations.`,
+          tools: [
+            { type: "code_interpreter" },
+            { type: "file_search" }
+          ]
+        })
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`AutoGen API error: ${errorText}`)
+      }
+
+      const assistant = await response.json()
+      
+      return {
+        agentId: `autogen_${config.agentId}`,
+        endpoint: `https://api.openai.com/v1/assistants/${assistant.id}`,
+        assistantId: assistant.id,
+        features: ["multi_agent_conversation", "task_collaboration", "code_execution", "reasoning"]
+      }
+    } catch (error) {
+      console.error('AutoGen deployment failed:', error)
+      throw new Error(`Failed to deploy to AutoGen: ${error.message}`)
+    }
+  },
+
+  "AutoGPT": async (config) => {
+    console.log(`Deploying AutoGPT agent: ${config.name}`)
+    
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY')
+    if (!openAIApiKey) {
+      throw new Error("AutoGPT requires OpenAI API key not configured in environment")
+    }
+    
+    try {
+      // Create AutoGPT agent using OpenAI assistant
+      const response = await fetch('https://api.openai.com/v1/assistants', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+          'Content-Type': 'application/json',
+          'OpenAI-Beta': 'assistants=v2'
+        },
+        body: JSON.stringify({
+          name: config.name,
+          description: config.description,
+          model: 'gpt-4.1-2025-04-14',
+          instructions: `You are ${config.name}. ${config.description}. You are an AutoGPT agent that performs tasks independently, breaks down goals into sub-tasks, and executes them autonomously. You can browse the web, manipulate files, and think through complex multi-step problems.`,
+          tools: [
+            { type: "code_interpreter" },
+            { type: "file_search" }
+          ]
+        })
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`AutoGPT API error: ${errorText}`)
+      }
+
+      const assistant = await response.json()
+      
+      return {
+        agentId: `autogpt_${config.agentId}`,
+        endpoint: `https://api.openai.com/v1/assistants/${assistant.id}`,
+        assistantId: assistant.id,
+        features: ["autonomous_execution", "goal_decomposition", "web_browsing", "file_operations"]
+      }
+    } catch (error) {
+      console.error('AutoGPT deployment failed:', error)
+      throw new Error(`Failed to deploy to AutoGPT: ${error.message}`)
+    }
+  },
+
+  "Open AI Swarm": async (config) => {
+    console.log(`Deploying Open AI Swarm agent: ${config.name}`)
+    
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY')
+    if (!openAIApiKey) {
+      throw new Error("Open AI Swarm requires OpenAI API key not configured in environment")
+    }
+    
+    try {
+      // Create Swarm agent using OpenAI assistant
+      const response = await fetch('https://api.openai.com/v1/assistants', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+          'Content-Type': 'application/json',
+          'OpenAI-Beta': 'assistants=v2'
+        },
+        body: JSON.stringify({
+          name: config.name,
+          description: config.description,
+          model: 'gpt-4.1-2025-04-14',
+          instructions: `You are ${config.name}. ${config.description}. You are an OpenAI Swarm agent that specializes in multi-agent orchestration. You can coordinate with other agents, manage handoffs, share context, and orchestrate complex multi-agent workflows using experimental features.`,
+          tools: [
+            { type: "code_interpreter" },
+            { type: "file_search" }
+          ]
+        })
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`Open AI Swarm API error: ${errorText}`)
+      }
+
+      const assistant = await response.json()
+      
+      return {
+        agentId: `swarm_${config.agentId}`,
+        endpoint: `https://api.openai.com/v1/assistants/${assistant.id}`,
+        assistantId: assistant.id,
+        features: ["agent_orchestration", "handoffs", "context_sharing", "experimental_features"]
+      }
+    } catch (error) {
+      console.error('Open AI Swarm deployment failed:', error)
+      throw new Error(`Failed to deploy to Open AI Swarm: ${error.message}`)
+    }
+  }
+
 }
 
 serve(async (req) => {
