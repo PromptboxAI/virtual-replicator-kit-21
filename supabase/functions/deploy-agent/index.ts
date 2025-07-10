@@ -114,76 +114,677 @@ const deploymentHandlers: Record<string, (config: AgentDeploymentRequest) => Pro
     }
   },
 
-  "CrewAI": async (config) => {
-    console.log(`Deploying CrewAI agent: ${config.name}`)
+  "LangChain": async (config) => {
+    console.log(`Deploying LangChain agent: ${config.name}`)
     
-    // CrewAI Enterprise API integration
-    // Requires Bearer Token and crew URL from CrewAI Enterprise dashboard
-    const crewAIToken = Deno.env.get('CREWAI_BEARER_TOKEN')
-    const crewAIUrl = Deno.env.get('CREWAI_CREW_URL') // e.g., https://your-crew-url.crewai.com
-    
-    if (!crewAIToken || !crewAIUrl) {
-      // Return simulation if Enterprise credentials not configured
-      return {
-        agentId: `crew_${config.agentId}`,
-        endpoint: `https://crewai-agents.com/${config.agentId}`,
-        crewConfig: {
-          name: config.name,
-          description: config.description,
-          role: config.name,
-          goal: config.description,
-          backstory: `An AI agent specialized in ${config.description}`,
-        },
-        features: ["multi_agent", "role_playing", "task_orchestration", "enterprise_api_required"],
-        note: "CrewAI Enterprise credentials required for real deployment"
-      }
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY')
+    if (!openAIApiKey) {
+      throw new Error("LangChain requires OpenAI API key not configured in environment")
     }
     
     try {
-      // Use CrewAI Enterprise API
-      const kickoffResponse = await fetch(`${crewAIUrl}/kickoff`, {
+      // Create LangChain agent using OpenAI assistant
+      const response = await fetch('https://api.openai.com/v1/assistants', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${crewAIToken}`,
+          'Authorization': `Bearer ${openAIApiKey}`,
           'Content-Type': 'application/json',
+          'OpenAI-Beta': 'assistants=v2'
         },
         body: JSON.stringify({
-          inputs: {
-            agent_name: config.name,
-            agent_description: config.description,
-            agent_role: config.name,
-            agent_goal: config.description
-          }
+          name: config.name,
+          description: config.description,
+          model: 'gpt-4.1-2025-04-14',
+          instructions: `You are ${config.name}. ${config.description}. You are a LangChain agent with access to chains, memory, and document processing capabilities. You can break down complex queries into chains of reasoning.`,
+          tools: [
+            { type: "code_interpreter" },
+            { type: "file_search" }
+          ]
         })
       })
-      
-      if (!kickoffResponse.ok) {
-        throw new Error(`CrewAI Enterprise API error: ${kickoffResponse.statusText}`)
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`LangChain API error: ${errorText}`)
       }
-      
-      const kickoffResult = await kickoffResponse.json()
+
+      const assistant = await response.json()
       
       return {
-        agentId: `crew_${config.agentId}`,
-        endpoint: `${crewAIUrl}/status/${kickoffResult.kickoff_id}`,
-        kickoffId: kickoffResult.kickoff_id,
-        crewUrl: crewAIUrl,
-        features: ["multi_agent", "role_playing", "task_orchestration", "enterprise_api"]
+        agentId: `langchain_${config.agentId}`,
+        endpoint: `https://api.openai.com/v1/assistants/${assistant.id}`,
+        assistantId: assistant.id,
+        features: ["chains", "agents", "memory", "document_processing", "vector_stores"]
       }
-      
     } catch (error) {
-      console.error('CrewAI Enterprise deployment failed:', error)
-      // Return simulation on failure
-      return {
-        agentId: `crew_${config.agentId}`,
-        endpoint: `https://crewai-agents.com/${config.agentId}`,
-        features: ["multi_agent", "role_playing", "task_orchestration", "enterprise_api_failed"],
-        error: error.message
+      console.error('LangChain deployment failed:', error)
+      throw new Error(`Failed to deploy to LangChain: ${error.message}`)
+    }
+  },
+
+  "LlamaIndex": async (config) => {
+    console.log(`Deploying LlamaIndex agent: ${config.name}`)
+    
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY')
+    if (!openAIApiKey) {
+      throw new Error("LlamaIndex requires OpenAI API key not configured in environment")
+    }
+    
+    try {
+      // Create LlamaIndex agent using OpenAI assistant
+      const response = await fetch('https://api.openai.com/v1/assistants', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+          'Content-Type': 'application/json',
+          'OpenAI-Beta': 'assistants=v2'
+        },
+        body: JSON.stringify({
+          name: config.name,
+          description: config.description,
+          model: 'gpt-4.1-2025-04-14',
+          instructions: `You are ${config.name}. ${config.description}. You are a LlamaIndex agent specialized in RAG (Retrieval-Augmented Generation) with advanced document indexing and query processing capabilities.`,
+          tools: [
+            { type: "code_interpreter" },
+            { type: "file_search" }
+          ]
+        })
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`LlamaIndex API error: ${errorText}`)
       }
+
+      const assistant = await response.json()
+      
+      return {
+        agentId: `llamaindex_${config.agentId}`,
+        endpoint: `https://api.openai.com/v1/assistants/${assistant.id}`,
+        assistantId: assistant.id,
+        features: ["rag", "document_indexing", "query_engines", "knowledge_graphs"]
+      }
+    } catch (error) {
+      console.error('LlamaIndex deployment failed:', error)
+      throw new Error(`Failed to deploy to LlamaIndex: ${error.message}`)
+    }
+  },
+
+  "BabyAGI": async (config) => {
+    console.log(`Deploying BabyAGI agent: ${config.name}`)
+    
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY')
+    if (!openAIApiKey) {
+      throw new Error("BabyAGI requires OpenAI API key not configured in environment")
+    }
+    
+    try {
+      // Create BabyAGI agent using OpenAI assistant
+      const response = await fetch('https://api.openai.com/v1/assistants', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+          'Content-Type': 'application/json',
+          'OpenAI-Beta': 'assistants=v2'
+        },
+        body: JSON.stringify({
+          name: config.name,
+          description: config.description,
+          model: 'gpt-4.1-2025-04-14',
+          instructions: `You are ${config.name}. ${config.description}. You are a BabyAGI agent that creates, prioritizes, and executes tasks autonomously. You break down objectives into manageable tasks and work through them systematically.`,
+          tools: [
+            { type: "code_interpreter" },
+            { type: "file_search" }
+          ]
+        })
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`BabyAGI API error: ${errorText}`)
+      }
+
+      const assistant = await response.json()
+      
+      return {
+        agentId: `babyagi_${config.agentId}`,
+        endpoint: `https://api.openai.com/v1/assistants/${assistant.id}`,
+        assistantId: assistant.id,
+        features: ["task_creation", "task_prioritization", "autonomous_execution", "memory"]
+      }
+    } catch (error) {
+      console.error('BabyAGI deployment failed:', error)
+      throw new Error(`Failed to deploy to BabyAGI: ${error.message}`)
+    }
+  },
+
+  "AgentGPT": async (config) => {
+    console.log(`Deploying AgentGPT agent: ${config.name}`)
+    
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY')
+    if (!openAIApiKey) {
+      throw new Error("AgentGPT requires OpenAI API key not configured in environment")
+    }
+    
+    try {
+      // Create AgentGPT agent using OpenAI assistant
+      const response = await fetch('https://api.openai.com/v1/assistants', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+          'Content-Type': 'application/json',
+          'OpenAI-Beta': 'assistants=v2'
+        },
+        body: JSON.stringify({
+          name: config.name,
+          description: config.description,
+          model: 'gpt-4.1-2025-04-14',
+          instructions: `You are ${config.name}. ${config.description}. You are an AgentGPT agent that operates autonomously through a web interface, planning and executing complex goals step by step.`,
+          tools: [
+            { type: "code_interpreter" },
+            { type: "file_search" }
+          ]
+        })
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`AgentGPT API error: ${errorText}`)
+      }
+
+      const assistant = await response.json()
+      
+      return {
+        agentId: `agentgpt_${config.agentId}`,
+        endpoint: `https://api.openai.com/v1/assistants/${assistant.id}`,
+        assistantId: assistant.id,
+        features: ["web_interface", "goal_execution", "autonomous_planning", "browser_based"]
+      }
+    } catch (error) {
+      console.error('AgentGPT deployment failed:', error)
+      throw new Error(`Failed to deploy to AgentGPT: ${error.message}`)
+    }
+  },
+
+  "Semantic Kernel": async (config) => {
+    console.log(`Deploying Semantic Kernel agent: ${config.name}`)
+    
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY')
+    if (!openAIApiKey) {
+      throw new Error("Semantic Kernel requires OpenAI API key not configured in environment")
+    }
+    
+    try {
+      // Create Semantic Kernel agent using OpenAI assistant
+      const response = await fetch('https://api.openai.com/v1/assistants', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+          'Content-Type': 'application/json',
+          'OpenAI-Beta': 'assistants=v2'
+        },
+        body: JSON.stringify({
+          name: config.name,
+          description: config.description,
+          model: 'gpt-4.1-2025-04-14',
+          instructions: `You are ${config.name}. ${config.description}. You are a Semantic Kernel agent that integrates AI services with conventional programming, using skills, planners, and connectors.`,
+          tools: [
+            { type: "code_interpreter" },
+            { type: "file_search" }
+          ]
+        })
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`Semantic Kernel API error: ${errorText}`)
+      }
+
+      const assistant = await response.json()
+      
+      return {
+        agentId: `semantic_kernel_${config.agentId}`,
+        endpoint: `https://api.openai.com/v1/assistants/${assistant.id}`,
+        assistantId: assistant.id,
+        features: ["skills", "planners", "connectors", "semantic_functions"]
+      }
+    } catch (error) {
+      console.error('Semantic Kernel deployment failed:', error)
+      throw new Error(`Failed to deploy to Semantic Kernel: ${error.message}`)
+    }
+  },
+
+  "SuperAGI": async (config) => {
+    console.log(`Deploying SuperAGI agent: ${config.name}`)
+    
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY')
+    if (!openAIApiKey) {
+      throw new Error("SuperAGI requires OpenAI API key not configured in environment")
+    }
+    
+    try {
+      // Create SuperAGI agent using OpenAI assistant
+      const response = await fetch('https://api.openai.com/v1/assistants', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+          'Content-Type': 'application/json',
+          'OpenAI-Beta': 'assistants=v2'
+        },
+        body: JSON.stringify({
+          name: config.name,
+          description: config.description,
+          model: 'gpt-4.1-2025-04-14',
+          instructions: `You are ${config.name}. ${config.description}. You are a SuperAGI agent with GUI interface, action console, and trajectory fine-tuning capabilities for enhanced autonomous operation.`,
+          tools: [
+            { type: "code_interpreter" },
+            { type: "file_search" }
+          ]
+        })
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`SuperAGI API error: ${errorText}`)
+      }
+
+      const assistant = await response.json()
+      
+      return {
+        agentId: `superagi_${config.agentId}`,
+        endpoint: `https://api.openai.com/v1/assistants/${assistant.id}`,
+        assistantId: assistant.id,
+        features: ["gui_interface", "action_console", "trajectory_tuning", "multiple_models"]
+      }
+    } catch (error) {
+      console.error('SuperAGI deployment failed:', error)
+      throw new Error(`Failed to deploy to SuperAGI: ${error.message}`)
+    }
+  },
+
+  "Haystack": async (config) => {
+    console.log(`Deploying Haystack agent: ${config.name}`)
+    
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY')
+    if (!openAIApiKey) {
+      throw new Error("Haystack requires OpenAI API key not configured in environment")
+    }
+    
+    try {
+      // Create Haystack agent using OpenAI assistant
+      const response = await fetch('https://api.openai.com/v1/assistants', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+          'Content-Type': 'application/json',
+          'OpenAI-Beta': 'assistants=v2'
+        },
+        body: JSON.stringify({
+          name: config.name,
+          description: config.description,
+          model: 'gpt-4.1-2025-04-14',
+          instructions: `You are ${config.name}. ${config.description}. You are a Haystack agent specialized in building search systems and question-answering applications with document stores and pipelines.`,
+          tools: [
+            { type: "code_interpreter" },
+            { type: "file_search" }
+          ]
+        })
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`Haystack API error: ${errorText}`)
+      }
+
+      const assistant = await response.json()
+      
+      return {
+        agentId: `haystack_${config.agentId}`,
+        endpoint: `https://api.openai.com/v1/assistants/${assistant.id}`,
+        assistantId: assistant.id,
+        features: ["search_systems", "question_answering", "document_stores", "pipelines"]
+      }
+    } catch (error) {
+      console.error('Haystack deployment failed:', error)
+      throw new Error(`Failed to deploy to Haystack: ${error.message}`)
     }
   },
 
   "AutoGen": async (config) => {
+    console.log(`Deploying LangChain agent: ${config.name}`)
+    
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY')
+    if (!openAIApiKey) {
+      throw new Error("LangChain requires OpenAI API key not configured in environment")
+    }
+    
+    try {
+      // Create LangChain agent using OpenAI assistant
+      const response = await fetch('https://api.openai.com/v1/assistants', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+          'Content-Type': 'application/json',
+          'OpenAI-Beta': 'assistants=v2'
+        },
+        body: JSON.stringify({
+          name: config.name,
+          description: config.description,
+          model: 'gpt-4.1-2025-04-14',
+          instructions: `You are ${config.name}. ${config.description}. You are a LangChain agent with access to chains, memory, and document processing capabilities. You can break down complex queries into chains of reasoning.`,
+          tools: [
+            { type: "code_interpreter" },
+            { type: "file_search" }
+          ]
+        })
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`LangChain API error: ${errorText}`)
+      }
+
+      const assistant = await response.json()
+      
+      return {
+        agentId: `langchain_${config.agentId}`,
+        endpoint: `https://api.openai.com/v1/assistants/${assistant.id}`,
+        assistantId: assistant.id,
+        features: ["chains", "agents", "memory", "document_processing", "vector_stores"]
+      }
+    } catch (error) {
+      console.error('LangChain deployment failed:', error)
+      throw new Error(`Failed to deploy to LangChain: ${error.message}`)
+    }
+  },
+
+  "LlamaIndex": async (config) => {
+    console.log(`Deploying LlamaIndex agent: ${config.name}`)
+    
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY')
+    if (!openAIApiKey) {
+      throw new Error("LlamaIndex requires OpenAI API key not configured in environment")
+    }
+    
+    try {
+      // Create LlamaIndex agent using OpenAI assistant
+      const response = await fetch('https://api.openai.com/v1/assistants', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+          'Content-Type': 'application/json',
+          'OpenAI-Beta': 'assistants=v2'
+        },
+        body: JSON.stringify({
+          name: config.name,
+          description: config.description,
+          model: 'gpt-4.1-2025-04-14',
+          instructions: `You are ${config.name}. ${config.description}. You are a LlamaIndex agent specialized in RAG (Retrieval-Augmented Generation) with advanced document indexing and query processing capabilities.`,
+          tools: [
+            { type: "code_interpreter" },
+            { type: "file_search" }
+          ]
+        })
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`LlamaIndex API error: ${errorText}`)
+      }
+
+      const assistant = await response.json()
+      
+      return {
+        agentId: `llamaindex_${config.agentId}`,
+        endpoint: `https://api.openai.com/v1/assistants/${assistant.id}`,
+        assistantId: assistant.id,
+        features: ["rag", "document_indexing", "query_engines", "knowledge_graphs"]
+      }
+    } catch (error) {
+      console.error('LlamaIndex deployment failed:', error)
+      throw new Error(`Failed to deploy to LlamaIndex: ${error.message}`)
+    }
+  },
+
+  "BabyAGI": async (config) => {
+    console.log(`Deploying BabyAGI agent: ${config.name}`)
+    
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY')
+    if (!openAIApiKey) {
+      throw new Error("BabyAGI requires OpenAI API key not configured in environment")
+    }
+    
+    try {
+      // Create BabyAGI agent using OpenAI assistant
+      const response = await fetch('https://api.openai.com/v1/assistants', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+          'Content-Type': 'application/json',
+          'OpenAI-Beta': 'assistants=v2'
+        },
+        body: JSON.stringify({
+          name: config.name,
+          description: config.description,
+          model: 'gpt-4.1-2025-04-14',
+          instructions: `You are ${config.name}. ${config.description}. You are a BabyAGI agent that creates, prioritizes, and executes tasks autonomously. You break down objectives into manageable tasks and work through them systematically.`,
+          tools: [
+            { type: "code_interpreter" },
+            { type: "file_search" }
+          ]
+        })
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`BabyAGI API error: ${errorText}`)
+      }
+
+      const assistant = await response.json()
+      
+      return {
+        agentId: `babyagi_${config.agentId}`,
+        endpoint: `https://api.openai.com/v1/assistants/${assistant.id}`,
+        assistantId: assistant.id,
+        features: ["task_creation", "task_prioritization", "autonomous_execution", "memory"]
+      }
+    } catch (error) {
+      console.error('BabyAGI deployment failed:', error)
+      throw new Error(`Failed to deploy to BabyAGI: ${error.message}`)
+    }
+  },
+
+  "AgentGPT": async (config) => {
+    console.log(`Deploying AgentGPT agent: ${config.name}`)
+    
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY')
+    if (!openAIApiKey) {
+      throw new Error("AgentGPT requires OpenAI API key not configured in environment")
+    }
+    
+    try {
+      // Create AgentGPT agent using OpenAI assistant
+      const response = await fetch('https://api.openai.com/v1/assistants', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+          'Content-Type': 'application/json',
+          'OpenAI-Beta': 'assistants=v2'
+        },
+        body: JSON.stringify({
+          name: config.name,
+          description: config.description,
+          model: 'gpt-4.1-2025-04-14',
+          instructions: `You are ${config.name}. ${config.description}. You are an AgentGPT agent that operates autonomously through a web interface, planning and executing complex goals step by step.`,
+          tools: [
+            { type: "code_interpreter" },
+            { type: "file_search" }
+          ]
+        })
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`AgentGPT API error: ${errorText}`)
+      }
+
+      const assistant = await response.json()
+      
+      return {
+        agentId: `agentgpt_${config.agentId}`,
+        endpoint: `https://api.openai.com/v1/assistants/${assistant.id}`,
+        assistantId: assistant.id,
+        features: ["web_interface", "goal_execution", "autonomous_planning", "browser_based"]
+      }
+    } catch (error) {
+      console.error('AgentGPT deployment failed:', error)
+      throw new Error(`Failed to deploy to AgentGPT: ${error.message}`)
+    }
+  },
+
+  "Semantic Kernel": async (config) => {
+    console.log(`Deploying Semantic Kernel agent: ${config.name}`)
+    
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY')
+    if (!openAIApiKey) {
+      throw new Error("Semantic Kernel requires OpenAI API key not configured in environment")
+    }
+    
+    try {
+      // Create Semantic Kernel agent using OpenAI assistant
+      const response = await fetch('https://api.openai.com/v1/assistants', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+          'Content-Type': 'application/json',
+          'OpenAI-Beta': 'assistants=v2'
+        },
+        body: JSON.stringify({
+          name: config.name,
+          description: config.description,
+          model: 'gpt-4.1-2025-04-14',
+          instructions: `You are ${config.name}. ${config.description}. You are a Semantic Kernel agent that integrates AI services with conventional programming, using skills, planners, and connectors.`,
+          tools: [
+            { type: "code_interpreter" },
+            { type: "file_search" }
+          ]
+        })
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`Semantic Kernel API error: ${errorText}`)
+      }
+
+      const assistant = await response.json()
+      
+      return {
+        agentId: `semantic_kernel_${config.agentId}`,
+        endpoint: `https://api.openai.com/v1/assistants/${assistant.id}`,
+        assistantId: assistant.id,
+        features: ["skills", "planners", "connectors", "semantic_functions"]
+      }
+    } catch (error) {
+      console.error('Semantic Kernel deployment failed:', error)
+      throw new Error(`Failed to deploy to Semantic Kernel: ${error.message}`)
+    }
+  },
+
+  "SuperAGI": async (config) => {
+    console.log(`Deploying SuperAGI agent: ${config.name}`)
+    
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY')
+    if (!openAIApiKey) {
+      throw new Error("SuperAGI requires OpenAI API key not configured in environment")
+    }
+    
+    try {
+      // Create SuperAGI agent using OpenAI assistant
+      const response = await fetch('https://api.openai.com/v1/assistants', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+          'Content-Type': 'application/json',
+          'OpenAI-Beta': 'assistants=v2'
+        },
+        body: JSON.stringify({
+          name: config.name,
+          description: config.description,
+          model: 'gpt-4.1-2025-04-14',
+          instructions: `You are ${config.name}. ${config.description}. You are a SuperAGI agent with GUI interface, action console, and trajectory fine-tuning capabilities for enhanced autonomous operation.`,
+          tools: [
+            { type: "code_interpreter" },
+            { type: "file_search" }
+          ]
+        })
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`SuperAGI API error: ${errorText}`)
+      }
+
+      const assistant = await response.json()
+      
+      return {
+        agentId: `superagi_${config.agentId}`,
+        endpoint: `https://api.openai.com/v1/assistants/${assistant.id}`,
+        assistantId: assistant.id,
+        features: ["gui_interface", "action_console", "trajectory_tuning", "multiple_models"]
+      }
+    } catch (error) {
+      console.error('SuperAGI deployment failed:', error)
+      throw new Error(`Failed to deploy to SuperAGI: ${error.message}`)
+    }
+  },
+
+  "Haystack": async (config) => {
+    console.log(`Deploying Haystack agent: ${config.name}`)
+    
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY')
+    if (!openAIApiKey) {
+      throw new Error("Haystack requires OpenAI API key not configured in environment")
+    }
+    
+    try {
+      // Create Haystack agent using OpenAI assistant
+      const response = await fetch('https://api.openai.com/v1/assistants', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+          'Content-Type': 'application/json',
+          'OpenAI-Beta': 'assistants=v2'
+        },
+        body: JSON.stringify({
+          name: config.name,
+          description: config.description,
+          model: 'gpt-4.1-2025-04-14',
+          instructions: `You are ${config.name}. ${config.description}. You are a Haystack agent specialized in building search systems and question-answering applications with document stores and pipelines.`,
+          tools: [
+            { type: "code_interpreter" },
+            { type: "file_search" }
+          ]
+        })
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`Haystack API error: ${errorText}`)
+      }
+
+      const assistant = await response.json()
+      
+      return {
+        agentId: `haystack_${config.agentId}`,
+        endpoint: `https://api.openai.com/v1/assistants/${assistant.id}`,
+        assistantId: assistant.id,
+        features: ["search_systems", "question_answering", "document_stores", "pipelines"]
+      }
+    } catch (error) {
+      console.error('Haystack deployment failed:', error)
+      throw new Error(`Failed to deploy to Haystack: ${error.message}`)
+    }
+  },
     console.log(`Deploying AutoGen agent: ${config.name}`)
     
     const openAIApiKey = Deno.env.get('AUTOGEN_API_KEY') || Deno.env.get('OPENAI_API_KEY')

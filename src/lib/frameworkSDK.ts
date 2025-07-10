@@ -55,14 +55,68 @@ export const FRAMEWORK_CONFIGS: Record<string, FrameworkConfig> = {
     supportedFeatures: ["conversation", "personality", "memory", "extensible_plugins"],
     documentationUrl: "https://github.com/elizaOS/eliza"
   },
-  "CrewAI": {
-    name: "CrewAI",
-    description: "Framework for orchestrating role-playing, autonomous AI agents working together as a cohesive team.",
+  "LangChain": {
+    name: "LangChain",
+    description: "Popular framework for building applications with LLMs, featuring chains, agents, and memory.",
     requiresAPIKey: false,
-    deploymentEndpoint: "/api/deploy-crew-agent",
+    deploymentEndpoint: "/api/deploy-langchain-agent",
+    sdkType: "api",
+    supportedFeatures: ["chains", "agents", "memory", "document_processing", "vector_stores"],
+    documentationUrl: "https://docs.langchain.com"
+  },
+  "LlamaIndex": {
+    name: "LlamaIndex",
+    description: "Framework for building context-augmented LLM applications with advanced RAG capabilities.",
+    requiresAPIKey: false,
+    deploymentEndpoint: "/api/deploy-llamaindex-agent",
+    sdkType: "api",
+    supportedFeatures: ["rag", "document_indexing", "query_engines", "knowledge_graphs"],
+    documentationUrl: "https://docs.llamaindex.ai"
+  },
+  "BabyAGI": {
+    name: "BabyAGI",
+    description: "Task-driven autonomous agent system that uses OpenAI to create, prioritize, and execute tasks.",
+    requiresAPIKey: false,
+    deploymentEndpoint: "/api/deploy-babyagi-agent",
+    sdkType: "api",
+    supportedFeatures: ["task_creation", "task_prioritization", "autonomous_execution", "memory"],
+    documentationUrl: "https://github.com/yoheinakajima/babyagi"
+  },
+  "AgentGPT": {
+    name: "AgentGPT",
+    description: "Browser-based autonomous AI agents that can be deployed in the cloud and execute complex goals.",
+    requiresAPIKey: false,
+    deploymentEndpoint: "/api/deploy-agentgpt-agent",
     sdkType: "cloud",
-    supportedFeatures: ["multi_agent", "role_playing", "task_orchestration", "team_collaboration"],
-    documentationUrl: "https://docs.crewai.com"
+    supportedFeatures: ["web_interface", "goal_execution", "autonomous_planning", "browser_based"],
+    documentationUrl: "https://docs.agentgpt.reworkd.ai"
+  },
+  "Semantic Kernel": {
+    name: "Semantic Kernel",
+    description: "Microsoft's SDK for integrating AI services like OpenAI with conventional programming languages.",
+    requiresAPIKey: false,
+    deploymentEndpoint: "/api/deploy-semantic-kernel-agent",
+    sdkType: "api",
+    supportedFeatures: ["skills", "planners", "connectors", "semantic_functions"],
+    documentationUrl: "https://docs.microsoft.com/en-us/semantic-kernel"
+  },
+  "SuperAGI": {
+    name: "SuperAGI",
+    description: "Open-source autonomous AI agent framework with GUI, Action Console, and Agent Trajectory Fine-Tuning.",
+    requiresAPIKey: false,
+    deploymentEndpoint: "/api/deploy-superagi-agent",
+    sdkType: "cloud",
+    supportedFeatures: ["gui_interface", "action_console", "trajectory_tuning", "multiple_models"],
+    documentationUrl: "https://docs.superagi.com"
+  },
+  "Haystack": {
+    name: "Haystack",
+    description: "NLP framework for building search systems and question-answering applications with LLMs.",
+    requiresAPIKey: false,
+    deploymentEndpoint: "/api/deploy-haystack-agent",
+    sdkType: "api",
+    supportedFeatures: ["search_systems", "question_answering", "document_stores", "pipelines"],
+    documentationUrl: "https://docs.haystack.deepset.ai"
   },
   "AutoGen": {
     name: "AutoGen",
