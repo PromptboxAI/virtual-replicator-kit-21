@@ -19,6 +19,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTwitterAuth } from "@/hooks/useTwitterAuth";
 import { FrameworkSDKService, FRAMEWORK_CONFIGS } from "@/lib/frameworkSDK";
 import { FrameworkIntegration } from "@/components/FrameworkIntegration";
+import { PromptAgentBuilder } from "@/components/PromptAgentBuilder";
 
 interface AgentFormData {
   name: string;
@@ -53,7 +54,7 @@ export default function CreateAgent() {
     symbol: "",
     description: "",
     category: "",
-    framework: "G.A.M.E.",
+    framework: "PROMPT",
     website_url: "",
     twitter_url: "",
     avatar_url: "",
@@ -763,7 +764,8 @@ export default function CreateAgent() {
                              <SelectValue placeholder="Select a framework" />
                            </SelectTrigger>
                            <SelectContent>
-                             <SelectItem value="G.A.M.E.">G.A.M.E.</SelectItem>
+                              <SelectItem value="PROMPT">PROMPT (PromptBox Native)</SelectItem>
+                              <SelectItem value="G.A.M.E.">G.A.M.E.</SelectItem>
                              <SelectItem value="Agentforce">Agentforce</SelectItem>
                              <SelectItem value="AiLice">AiLice</SelectItem>
                              <SelectItem value="AutoGen">AutoGen</SelectItem>
@@ -842,14 +844,43 @@ export default function CreateAgent() {
                     </CardContent>
                    </Card>
 
-                   {/* Framework Integration Preview */}
-                   {formData.framework && FRAMEWORK_CONFIGS[formData.framework] && (
-                     <FrameworkIntegration 
-                       framework={formData.framework}
-                       agentName={formData.name}
-                       agentDescription={formData.description}
-                     />
+                   {/* PROMPT Agent Builder */}
+                   {formData.framework === "PROMPT" && (
+                     <div className="space-y-6">
+                       <PromptAgentBuilder 
+                         onDeploy={async (config) => {
+                           // Update form data with PROMPT agent configuration
+                           handleInputChange('name', config.name);
+                           handleInputChange('description', config.description);
+                           // Deploy using our existing SDK
+                           const deployResult = await FrameworkSDKService.deployAgent({
+                             name: config.name,
+                             description: config.description,
+                             framework: 'PROMPT',
+                             environment: {
+                               goal: config.goal,
+                               model: config.model,
+                               twitterIntegration: config.twitterIntegration,
+                               autonomousTrading: config.autonomousTrading
+                             }
+                           });
+                           
+                           if (!deployResult.success) {
+                             throw new Error(deployResult.error || 'Deployment failed');
+                           }
+                         }}
+                       />
+                     </div>
                    )}
+
+                   {/* Framework Integration Preview */}
+                   {formData.framework && formData.framework !== "PROMPT" && FRAMEWORK_CONFIGS[formData.framework] && (
+                      <FrameworkIntegration 
+                        framework={formData.framework}
+                        agentName={formData.name}
+                        agentDescription={formData.description}
+                      />
+                    )}
 
                    {/* Step 2 Action Buttons */}
                   <div className="flex gap-4">
