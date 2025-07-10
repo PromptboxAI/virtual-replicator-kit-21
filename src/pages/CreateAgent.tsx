@@ -1119,9 +1119,9 @@ export default function CreateAgent() {
                               <Button 
                                 variant="outline" 
                                 size="sm"
-                                onClick={() => handleInputChange('prebuy_amount', 100)}
+                                onClick={() => handleInputChange('prebuy_amount', Math.floor(formData.total_supply * 0.8))}
                               >
-                                Max
+                                Max (80%)
                               </Button>
                             </div>
                             <Input
@@ -1131,7 +1131,11 @@ export default function CreateAgent() {
                               value={formData.prebuy_amount}
                               onChange={(e) => handleInputChange('prebuy_amount', parseFloat(e.target.value) || 0)}
                               min="0"
+                              max={Math.floor(formData.total_supply * 0.8)}
                             />
+                            <div className="text-sm text-muted-foreground mt-1">
+                              Max: {Math.floor(formData.total_supply * 0.8).toLocaleString()} tokens (80% of supply)
+                            </div>
                             <div className="text-right text-sm text-muted-foreground">
                               $PROMPT
                             </div>
