@@ -40,18 +40,63 @@ interface AgentFormData {
 export default function CreateAgent() {
   const { toast } = useToast();
 
-  // Simplified framework recommendations - PROMPT is always recommended for MVP
-  const getRecommendedFrameworks = (category: string) => {
-    return {
+  // Framework recommendations based on agent category
+  const frameworkRecommendations: Record<string, {
+    primary: string[];
+    secondary: string[];
+    explanation: string;
+  }> = {
+    "Trading Bot": {
       primary: ["PROMPT"],
-      secondary: [],
-      explanation: "PROMPT with G.A.M.E. integration offers tokenization, bonding curves, autonomous execution, and social media integration - perfect for any AI agent category."
-    };
+      secondary: ["AutoGen", "CrewAI"],
+      explanation: "PROMPT with G.A.M.E. integration provides bonding curves, autonomous trading, and market analysis - perfect for trading bots."
+    },
+    "DeFi Assistant": {
+      primary: ["PROMPT", "LangChain"],
+      secondary: ["AutoGen"],
+      explanation: "PROMPT offers tokenization and DeFi integrations, while LangChain excels at complex financial data processing."
+    },
+    "Content Creator": {
+      primary: ["Eliza", "PROMPT"],
+      secondary: ["CrewAI"],
+      explanation: "Eliza provides advanced conversational AI, while PROMPT offers social media integration and token incentives."
+    },
+    "Community Manager": {
+      primary: ["Eliza", "PROMPT"],
+      secondary: ["Swarm", "AutoGen"],
+      explanation: "Eliza for engaging conversations and PROMPT for social media management with tokenized communities."
+    },
+    "Analytics Agent": {
+      primary: ["LangChain", "PROMPT"],
+      secondary: ["AutoGen", "CrewAI"],
+      explanation: "LangChain for data processing and PROMPT for market analysis with real-time trading insights."
+    },
+    "Gaming Agent": {
+      primary: ["PROMPT", "Eliza"],
+      secondary: ["AutoGen"],
+      explanation: "PROMPT offers tokenization for gaming economies, while Eliza provides immersive character interactions."
+    },
+    "NFT Agent": {
+      primary: ["PROMPT"],
+      secondary: ["LangChain", "Eliza"],
+      explanation: "PROMPT's tokenization and bonding curves are ideal for NFT market analysis and trading."
+    },
+    "Research Assistant": {
+      primary: ["LangChain", "AutoGen"],
+      secondary: ["CrewAI", "PROMPT"],
+      explanation: "LangChain excels at complex research tasks, while AutoGen provides multi-agent collaboration."
+    }
+  };
+
+  const getRecommendedFrameworks = (category: string) => {
+    return frameworkRecommendations[category] || { primary: [], secondary: [], explanation: "" };
   };
 
   const isRecommendedFramework = (framework: string, category: string, type: 'primary' | 'secondary' = 'primary') => {
-    // Always recommend PROMPT for MVP
-    return framework === "PROMPT" && type === 'primary';
+    const recommendations = getRecommendedFrameworks(category);
+    return type === 'primary' 
+      ? recommendations.primary.includes(framework)
+      : recommendations.secondary.includes(framework);
   };
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
@@ -69,7 +114,7 @@ export default function CreateAgent() {
     symbol: "",
     description: "",
     category: "",
-    framework: "PROMPT",
+    framework: "PROMPT (Default Framework)",
     website_url: "",
     twitter_url: "",
     avatar_url: "",
@@ -804,20 +849,30 @@ export default function CreateAgent() {
                            <SelectTrigger>
                              <SelectValue placeholder="Select a framework" />
                            </SelectTrigger>
-                               <SelectContent>
-                                 {Object.keys(allFrameworks).map((framework) => (
-                                   <SelectItem key={framework} value={framework}>
-                                     <div className="flex items-center gap-2 w-full">
-                                       <span>{framework}</span>
-                                       {framework === "PROMPT" && (
-                                         <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-                                           Recommended
-                                         </Badge>
-                                       )}
-                                     </div>
-                                   </SelectItem>
-                                 ))}
-                              </SelectContent>
+                              <SelectContent>
+                                {Object.keys(allFrameworks).map((framework) => {
+                                  const isPrimary = formData.category && isRecommendedFramework(framework, formData.category);
+                                  const isSecondary = formData.category && !isPrimary && isRecommendedFramework(framework, formData.category, 'secondary');
+                                  
+                                  return (
+                                    <SelectItem key={framework} value={framework}>
+                                      <div className="flex items-center gap-2 w-full">
+                                        <span>{framework}</span>
+                                        {isPrimary && (
+                                          <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                                            Recommended
+                                          </Badge>
+                                        )}
+                                        {isSecondary && (
+                                          <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                                            Good Match
+                                          </Badge>
+                                        )}
+                                      </div>
+                                    </SelectItem>
+                                  );
+                                })}
+                             </SelectContent>
                          </Select>
                          
                           {/* Framework Description & SDK Status */}
