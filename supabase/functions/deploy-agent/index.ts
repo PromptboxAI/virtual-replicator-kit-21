@@ -101,18 +101,51 @@ const deploymentHandlers: Record<string, (config: AgentDeploymentRequest) => Pro
   "Open AI Swarm": async (config) => {
     console.log(`Deploying OpenAI Swarm agent: ${config.name}`)
     
-    if (!config.apiKey) {
-      throw new Error("OpenAI API key required for Swarm deployment")
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY')
+    if (!openAIApiKey) {
+      throw new Error("OpenAI API key not configured in environment")
     }
     
-    const deployment = {
-      agentId: `swarm_${config.agentId}`,
-      endpoint: `https://api.openai.com/v1/swarm/${config.agentId}`,
-      swarmId: `swarm_${Date.now()}`,
-      features: ["agent_orchestration", "handoffs", "context_sharing"]
+    try {
+      // Create an OpenAI Assistant (used by Swarm framework)
+      const response = await fetch('https://api.openai.com/v1/assistants', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+          'Content-Type': 'application/json',
+          'OpenAI-Beta': 'assistants=v2'
+        },
+        body: JSON.stringify({
+          name: config.name,
+          description: config.description,
+          model: 'gpt-4.1-2025-04-14',
+          instructions: `You are ${config.name}. ${config.description}. You are part of an OpenAI Swarm multi-agent system that can collaborate with other agents through handoffs and context sharing.`,
+          tools: [
+            { type: "code_interpreter" },
+            { type: "file_search" }
+          ]
+        })
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`OpenAI API error: ${errorText}`)
+      }
+
+      const assistant = await response.json()
+      
+      return {
+        agentId: `swarm_${config.agentId}`,
+        endpoint: `https://api.openai.com/v1/assistants/${assistant.id}`,
+        assistantId: assistant.id,
+        model: assistant.model,
+        features: ["agent_orchestration", "handoffs", "context_sharing", "real_openai_integration"]
+      }
+      
+    } catch (error) {
+      console.error('OpenAI Swarm deployment failed:', error)
+      throw new Error(`Failed to deploy to OpenAI Swarm: ${error.message}`)
     }
-    
-    return deployment
   }
 }
 

@@ -115,35 +115,98 @@ export class FrameworkSDKService {
     }
 
     try {
-      // For now, we'll simulate deployment to show the integration concept
-      // In a real implementation, each framework would have its specific deployment logic
-      
-      console.log(`Deploying agent to ${config.framework}...`, config);
-      
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Mock successful deployment
-      const agentId = `${config.framework.toLowerCase()}_${Date.now()}`;
-      const endpoint = frameworkConfig.deploymentEndpoint 
-        ? `https://api.example.com${frameworkConfig.deploymentEndpoint}/${agentId}`
-        : undefined;
+      // Route to specific deployment handlers
+      switch (config.framework) {
+        case "Open AI Swarm":
+          return await this.deployToOpenAISwarm(config);
+        case "Eliza":
+          return await this.deployToEliza(config);
+        default:
+          // Fallback to simulation for other frameworks
+          console.log(`Deploying agent to ${config.framework}...`, config);
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          
+          const agentId = `${config.framework.toLowerCase()}_${Date.now()}`;
+          const endpoint = frameworkConfig.deploymentEndpoint 
+            ? `https://api.example.com${frameworkConfig.deploymentEndpoint}/${agentId}`
+            : undefined;
 
-      return {
-        success: true,
-        agentId,
-        endpoint,
-        metadata: {
-          framework: config.framework,
-          deployedAt: new Date().toISOString(),
-          features: frameworkConfig.supportedFeatures
-        }
-      };
+          return {
+            success: true,
+            agentId,
+            endpoint,
+            metadata: {
+              framework: config.framework,
+              deployedAt: new Date().toISOString(),
+              features: frameworkConfig.supportedFeatures
+            }
+          };
+      }
       
     } catch (error) {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown deployment error'
+      };
+    }
+  }
+
+  // Real OpenAI Swarm deployment
+  private static async deployToOpenAISwarm(config: AgentDeploymentConfig): Promise<DeploymentResult> {
+    try {
+      // This would be called via edge function that has access to OpenAI API key
+      const response = await fetch('https://cjzazuuwapsliacmjxfg.supabase.co/functions/v1/deploy-agent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          framework: 'Open AI Swarm',
+          agentConfig: config
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Deployment failed: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      return result;
+      
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'OpenAI Swarm deployment failed'
+      };
+    }
+  }
+
+  // Real Eliza deployment  
+  private static async deployToEliza(config: AgentDeploymentConfig): Promise<DeploymentResult> {
+    try {
+      // This would deploy to actual Eliza framework
+      const response = await fetch('https://cjzazuuwapsliacmjxfg.supabase.co/functions/v1/deploy-agent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          framework: 'Eliza',
+          agentConfig: config
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Deployment failed: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      return result;
+      
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Eliza deployment failed'
       };
     }
   }
