@@ -117,22 +117,69 @@ const deploymentHandlers: Record<string, (config: AgentDeploymentRequest) => Pro
   "CrewAI": async (config) => {
     console.log(`Deploying CrewAI agent: ${config.name}`)
     
-    // CrewAI simulation - api.crewai.com is not available
-    // Replace with real API when CrewAI provides working endpoints
+    // CrewAI Enterprise API integration
+    // Requires Bearer Token and crew URL from CrewAI Enterprise dashboard
+    const crewAIToken = Deno.env.get('CREWAI_BEARER_TOKEN')
+    const crewAIUrl = Deno.env.get('CREWAI_CREW_URL') // e.g., https://your-crew-url.crewai.com
     
-    return {
-      agentId: `crew_${config.agentId}`,
-      endpoint: `https://crewai-agents.com/${config.agentId}`,
-      crewConfig: {
-        name: config.name,
-        description: config.description,
-        role: config.name,
-        goal: config.description,
-        backstory: `An AI agent specialized in ${config.description}`,
-        verbose: true,
-        allow_delegation: false
-      },
-      features: ["multi_agent", "role_playing", "task_orchestration", "simulated"]
+    if (!crewAIToken || !crewAIUrl) {
+      // Return simulation if Enterprise credentials not configured
+      return {
+        agentId: `crew_${config.agentId}`,
+        endpoint: `https://crewai-agents.com/${config.agentId}`,
+        crewConfig: {
+          name: config.name,
+          description: config.description,
+          role: config.name,
+          goal: config.description,
+          backstory: `An AI agent specialized in ${config.description}`,
+        },
+        features: ["multi_agent", "role_playing", "task_orchestration", "enterprise_api_required"],
+        note: "CrewAI Enterprise credentials required for real deployment"
+      }
+    }
+    
+    try {
+      // Use CrewAI Enterprise API
+      const kickoffResponse = await fetch(`${crewAIUrl}/kickoff`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${crewAIToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          inputs: {
+            agent_name: config.name,
+            agent_description: config.description,
+            agent_role: config.name,
+            agent_goal: config.description
+          }
+        })
+      })
+      
+      if (!kickoffResponse.ok) {
+        throw new Error(`CrewAI Enterprise API error: ${kickoffResponse.statusText}`)
+      }
+      
+      const kickoffResult = await kickoffResponse.json()
+      
+      return {
+        agentId: `crew_${config.agentId}`,
+        endpoint: `${crewAIUrl}/status/${kickoffResult.kickoff_id}`,
+        kickoffId: kickoffResult.kickoff_id,
+        crewUrl: crewAIUrl,
+        features: ["multi_agent", "role_playing", "task_orchestration", "enterprise_api"]
+      }
+      
+    } catch (error) {
+      console.error('CrewAI Enterprise deployment failed:', error)
+      // Return simulation on failure
+      return {
+        agentId: `crew_${config.agentId}`,
+        endpoint: `https://crewai-agents.com/${config.agentId}`,
+        features: ["multi_agent", "role_playing", "task_orchestration", "enterprise_api_failed"],
+        error: error.message
+      }
     }
   },
 
