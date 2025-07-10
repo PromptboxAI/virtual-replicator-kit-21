@@ -1148,8 +1148,8 @@ export default function CreateAgent() {
                       <Alert>
                         <Info className="h-4 w-4" />
                         <AlertDescription>
-                          <strong>Virtuals Protocol:</strong> Your agent launches with a fixed 1B token supply on a bonding curve. 
-                          Once 42k $VIRTUAL is accumulated, it graduates to a liquidity pool with 10-year lock. 
+                          <strong>PROMPT PROTOCOL:</strong> Your agent launches with a fixed 1B token supply on a bonding curve. 
+                          Once 42k $PROMPT is accumulated, it graduates to a liquidity pool with 10-year. 
                           All launches are fair with no insider allocations.
                         </AlertDescription>
                       </Alert>
