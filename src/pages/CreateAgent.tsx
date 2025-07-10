@@ -31,9 +31,9 @@ interface AgentFormData {
   twitter_url: string;
   avatar_url: string;
   total_supply: number;
-  initial_price: number;
   short_pitch: string;
   agent_overview: string;
+  prebuy_amount: number;
 }
 
 export default function CreateAgent() {
@@ -126,9 +126,9 @@ export default function CreateAgent() {
     twitter_url: "",
     avatar_url: "",
     total_supply: 1000000000, // Fixed at 1 billion tokens per Virtuals protocol
-    initial_price: 0.01,
     short_pitch: "",
     agent_overview: "",
+    prebuy_amount: 0,
   });
 
   const categories = [
@@ -287,8 +287,8 @@ export default function CreateAgent() {
           twitter_url: formData.twitter_url || null,
           avatar_url: finalAvatarUrl,
           total_supply: formData.total_supply,
-          current_price: formData.initial_price,
-          market_cap: formData.total_supply * formData.initial_price,
+          current_price: 0.00001, // Fixed initial price for all tokens
+          market_cap: 0, // Will be calculated based on trading
           creation_cost: CREATION_COST,
           is_active: true,
           creator_id: user.id,
@@ -322,7 +322,7 @@ export default function CreateAgent() {
               description: formData.description,
               environment: {
                 totalSupply: formData.total_supply,
-                initialPrice: formData.initial_price
+                prebuyAmount: formData.prebuy_amount
               }
             }
           });
@@ -411,7 +411,7 @@ export default function CreateAgent() {
 
   console.log('Rendering main CreateAgent form');
 
-  const estimatedMarketCap = formData.total_supply * formData.initial_price;
+  const estimatedMarketCap = 0; // Will be determined by bonding curve
 
   // Progress steps
   const steps = [
@@ -1106,21 +1106,44 @@ export default function CreateAgent() {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-4">
                         <div>
-                          <Label htmlFor="initial_price">Initial Bonding Curve Price (USD) *</Label>
-                          <Input
-                            id="initial_price"
-                            type="number"
-                            step="0.00001"
-                            placeholder="0.00001"
-                            value={formData.initial_price}
-                            onChange={(e) => handleInputChange('initial_price', parseFloat(e.target.value) || 0)}
-                            min="0.00001"
-                          />
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Starting price on the bonding curve
+                          <h4 className="font-medium mb-2">Pre-buy Token (Optional)</h4>
+                          <p className="text-sm text-muted-foreground mb-4">
+                            Purchasing a small amount of your token is optional but can help protect your coin from snipers.
                           </p>
+                          
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                              <Label htmlFor="prebuy_amount">Buy ${formData.symbol || 'TOKEN'}</Label>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleInputChange('prebuy_amount', 100)}
+                              >
+                                Max
+                              </Button>
+                            </div>
+                            <Input
+                              id="prebuy_amount"
+                              type="number"
+                              placeholder="0"
+                              value={formData.prebuy_amount}
+                              onChange={(e) => handleInputChange('prebuy_amount', parseFloat(e.target.value) || 0)}
+                              min="0"
+                            />
+                            <div className="text-right text-sm text-muted-foreground">
+                              $PROMPT
+                            </div>
+                            {formData.prebuy_amount > 0 && (
+                              <div className="text-sm text-muted-foreground">
+                                You will receive ~{(formData.prebuy_amount * 1000).toLocaleString()} tokens
+                              </div>
+                            )}
+                            <div className="text-sm text-muted-foreground">
+                              Trading Fee: 1% (70% to creator, 30% to protocol)
+                            </div>
+                          </div>
                         </div>
                         <div className="bg-muted/50 p-4 rounded-lg">
                           <h4 className="font-medium mb-2">Protocol Overview</h4>
@@ -1139,7 +1162,7 @@ export default function CreateAgent() {
                             </div>
                             <div className="flex justify-between">
                               <span className="text-muted-foreground">Initial Price:</span>
-                              <span className="font-medium">${formData.initial_price}</span>
+                              <span className="font-medium">Auto-determined by bonding curve</span>
                             </div>
                           </div>
                         </div>
@@ -1167,7 +1190,6 @@ export default function CreateAgent() {
                     </Button>
                     <Button
                       onClick={() => setCurrentStep(4)}
-                      disabled={!formData.initial_price}
                       className="flex-1 bg-gradient-primary hover:opacity-90"
                     >
                       Next
@@ -1215,11 +1237,11 @@ export default function CreateAgent() {
                           </div>
                           <div>
                             <p className="font-medium">Initial Price:</p>
-                            <p className="text-muted-foreground">${formData.initial_price}</p>
+                            <p className="text-muted-foreground">Auto-determined</p>
                           </div>
                           <div>
-                            <p className="font-medium">Est. Market Cap:</p>
-                            <p className="text-muted-foreground">${estimatedMarketCap.toLocaleString()}</p>
+                            <p className="font-medium">Pre-buy Amount:</p>
+                            <p className="text-muted-foreground">{formData.prebuy_amount} $PROMPT</p>
                           </div>
                         </div>
 
