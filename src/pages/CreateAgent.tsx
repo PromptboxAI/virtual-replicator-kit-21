@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, Sparkles, Coins, TrendingUp, Info, AlertCircle, Check, Twitter, Link2, X, Code, Rocket } from "lucide-react";
+import { Upload, Sparkles, Coins, TrendingUp, Info, AlertCircle, Check, Twitter, Link2, X, Code, Rocket, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Link } from "react-router-dom";
@@ -18,7 +18,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/hooks/useAuth";
 import { useTwitterAuth } from "@/hooks/useTwitterAuth";
 import { FrameworkSDKService, FRAMEWORK_CONFIGS } from "@/lib/frameworkSDK";
-import { FrameworkIntegration } from "@/components/FrameworkIntegration";
 import { PromptAgentBuilder } from "@/components/PromptAgentBuilder";
 
 interface AgentFormData {
@@ -791,12 +790,20 @@ export default function CreateAgent() {
                                         </Badge>
                                       )}
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                      <Code className="h-3 w-3 text-muted-foreground" />
-                                      <span className="text-xs text-muted-foreground">
-                                        Auto-generates deployment code
-                                      </span>
-                                    </div>
+                                     <div className="flex items-center justify-between">
+                                       <div className="flex items-center gap-2">
+                                         <Code className="h-3 w-3 text-muted-foreground" />
+                                         <span className="text-xs text-muted-foreground">
+                                           Auto-generates deployment code
+                                         </span>
+                                       </div>
+                                       <Button variant="outline" size="sm" asChild>
+                                         <a href={FRAMEWORK_CONFIGS[formData.framework].documentationUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
+                                           <ExternalLink className="h-3 w-3" />
+                                           <span className="text-xs">Docs</span>
+                                         </a>
+                                       </Button>
+                                     </div>
                                   </div>
                                 </div>
                               )}
@@ -835,14 +842,6 @@ export default function CreateAgent() {
                      </div>
                    )}
 
-                   {/* Framework Integration Preview */}
-                   {formData.framework && formData.framework !== "PROMPT" && FRAMEWORK_CONFIGS[formData.framework] && (
-                      <FrameworkIntegration 
-                        framework={formData.framework}
-                        agentName={formData.name}
-                        agentDescription={formData.description}
-                      />
-                    )}
 
                    {/* Step 2 Action Buttons */}
                   <div className="flex gap-4">
