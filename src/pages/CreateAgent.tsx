@@ -1047,10 +1047,10 @@ export default function CreateAgent() {
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Coins className="h-5 w-5 text-primary" />
-                        Tokenomics - Virtuals Protocol
+                        Tokenomics
                       </CardTitle>
                       <CardDescription>
-                        Your agent follows Virtuals protocol fair launch principles
+                        Your agent follows PROMPT Agentic Framework's fair launch principles
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
