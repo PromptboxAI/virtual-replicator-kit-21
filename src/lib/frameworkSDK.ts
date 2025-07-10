@@ -85,7 +85,7 @@ export const FRAMEWORK_CONFIGS: Record<string, FrameworkConfig> = {
   "Open AI Swarm": {
     name: "Open AI Swarm",
     description: "OpenAI's experimental multi-agent orchestration framework for coordinating multiple AI agents.",
-    requiresAPIKey: true,
+    requiresAPIKey: false,
     deploymentEndpoint: "/api/deploy-swarm-agent",
     sdkType: "api",
     supportedFeatures: ["agent_orchestration", "handoffs", "context_sharing", "experimental_features"],
