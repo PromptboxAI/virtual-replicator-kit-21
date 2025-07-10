@@ -38,8 +38,14 @@ export function useAuth() {
         modalSelectors.forEach(selector => {
           const elements = document.querySelectorAll(selector);
           elements.forEach(el => {
-            if (el.parentNode) {
-              el.parentNode.removeChild(el);
+            try {
+              // Check if element still exists and has a parent before removing
+              if (el && el.parentNode && el.parentNode.contains(el)) {
+                el.parentNode.removeChild(el);
+              }
+            } catch (error) {
+              // Safely ignore DOM manipulation errors
+              console.warn('Failed to remove modal element:', error);
             }
           });
         });
