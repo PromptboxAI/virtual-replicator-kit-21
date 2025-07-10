@@ -846,9 +846,9 @@ export default function CreateAgent() {
                         
                          <Select value={formData.framework} onValueChange={(value) => handleInputChange('framework', value)}>
                            <SelectTrigger>
-                             <SelectValue placeholder="Select a framework" />
-                           </SelectTrigger>
-                              <SelectContent>
+                              <SelectValue placeholder="Select a framework" />
+                            </SelectTrigger>
+                               <SelectContent>
                                  {Object.keys(allFrameworks).map((framework) => {                               
                                    return (
                                      <SelectItem key={framework} value={framework}>
