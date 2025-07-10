@@ -117,46 +117,22 @@ const deploymentHandlers: Record<string, (config: AgentDeploymentRequest) => Pro
   "CrewAI": async (config) => {
     console.log(`Deploying CrewAI agent: ${config.name}`)
     
-    const crewAIApiKey = Deno.env.get('CREWAI_API_KEY')
-    if (!crewAIApiKey) {
-      throw new Error("CrewAI API key not configured in environment")
-    }
+    // CrewAI simulation - api.crewai.com is not available
+    // Replace with real API when CrewAI provides working endpoints
     
-    try {
-      // Create CrewAI agent via their API
-      const response = await fetch('https://api.crewai.com/v1/agents', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${crewAIApiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: config.name,
-          description: config.description,
-          role: config.name,
-          goal: config.description,
-          backstory: `An AI agent specialized in ${config.description}`,
-          verbose: true,
-          allow_delegation: false
-        })
-      })
-
-      if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(`CrewAI API error: ${errorText}`)
-      }
-
-      const agent = await response.json()
-      
-      return {
-        agentId: `crew_${config.agentId}`,
-        endpoint: `https://crewai.com/agents/${agent.id}`,
-        crewId: agent.id,
-        features: ["multi_agent", "role_playing", "task_orchestration", "real_crewai_integration"]
-      }
-    } catch (error) {
-      console.error('CrewAI deployment failed:', error)
-      throw new Error(`Failed to deploy to CrewAI: ${error.message}`)
+    return {
+      agentId: `crew_${config.agentId}`,
+      endpoint: `https://crewai-agents.com/${config.agentId}`,
+      crewConfig: {
+        name: config.name,
+        description: config.description,
+        role: config.name,
+        goal: config.description,
+        backstory: `An AI agent specialized in ${config.description}`,
+        verbose: true,
+        allow_delegation: false
+      },
+      features: ["multi_agent", "role_playing", "task_orchestration", "simulated"]
     }
   },
 
