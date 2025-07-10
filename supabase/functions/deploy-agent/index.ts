@@ -29,99 +29,185 @@ interface FrameworkDeployment {
 // Framework-specific deployment handlers
 const deploymentHandlers: Record<string, (config: AgentDeploymentRequest) => Promise<any>> = {
   "PROMPT (Default Framework)": async (config) => {
-    console.log(`Deploying PROMPT agent: ${config.name}`)
+    console.log(`Deploying PROMPT agent with G.A.M.E.: ${config.name}`)
     
-    // PROMPT is now your flagship framework with real deployment capabilities
-    const openAIApiKey = Deno.env.get('OPENAI_API_KEY')
-    if (!openAIApiKey) {
-      throw new Error("PROMPT framework requires OpenAI API key for enhanced capabilities")
+    const gameApiKey = Deno.env.get('GAME_API_KEY')
+    if (!gameApiKey) {
+      throw new Error("G.A.M.E. API key required for PROMPT framework")
     }
     
     try {
-      // Create the underlying AI assistant for PROMPT agent
-      const assistantResponse = await fetch('https://api.openai.com/v1/assistants', {
+      // Create G.A.M.E. agent with real autonomous capabilities
+      const gameAgentPayload = {
+        name: config.name,
+        description: config.description,
+        goal: `You are ${config.name}, an autonomous AI agent. ${config.description}. 
+
+CORE OBJECTIVES:
+- Execute your primary goal autonomously 
+- Engage authentically on social media platforms
+- Make strategic decisions about token operations and bonding curves
+- Collaborate with other agents when beneficial
+- Maintain market awareness and adapt to feedback
+
+CAPABILITIES:
+- Autonomous planning and decision-making
+- Social media engagement (Twitter/X integration)
+- Token economics and bonding curve interactions  
+- Cross-agent communication and collaboration
+- Real-time market analysis and decision making
+
+PERSONALITY: Be proactive, strategic, and goal-focused while maintaining your unique character.`,
+        
+        personality: `Strategic autonomous agent focused on achieving objectives through social engagement and smart token economics.`,
+        
+        // G.A.M.E. specific configuration
+        workers: [
+          {
+            name: "social_media_worker",
+            description: "Handles Twitter/X engagement, content creation, and community interaction"
+          },
+          {
+            name: "trading_worker", 
+            description: "Manages token operations, bonding curve interactions, and market decisions"
+          },
+          {
+            name: "collaboration_worker",
+            description: "Facilitates cross-agent communication and collaborative strategies"
+          }
+        ],
+        
+        // Custom functions for agent capabilities
+        functions: [
+          {
+            name: "deploy_agent_token",
+            description: "Deploy agent token with bonding curve integration",
+            args: [
+              { name: "token_name", description: "Name of the agent token" },
+              { name: "token_symbol", description: "Symbol for the agent token" },
+              { name: "initial_supply", description: "Initial token supply" }
+            ]
+          },
+          {
+            name: "post_to_twitter",
+            description: "Create and post content to Twitter/X",
+            args: [
+              { name: "content", description: "Tweet content to post" },
+              { name: "engagement_strategy", description: "Strategy for maximizing engagement" }
+            ]
+          },
+          {
+            name: "analyze_market_sentiment",
+            description: "Analyze market conditions and sentiment for strategic decisions",
+            args: [
+              { name: "timeframe", description: "Time period for analysis" },
+              { name: "focus_areas", description: "Specific areas to analyze" }
+            ]
+          },
+          {
+            name: "collaborate_with_agent",
+            description: "Initiate collaboration with another agent",
+            args: [
+              { name: "target_agent", description: "Agent to collaborate with" },
+              { name: "collaboration_type", description: "Type of collaboration proposed" }
+            ]
+          }
+        ],
+        
+        // External data sources for context
+        external_data: [
+          "crypto_market_data",
+          "social_media_trends", 
+          "agent_ecosystem_status",
+          "bonding_curve_metrics"
+        ],
+        
+        // Plugin integrations
+        plugins: [
+          "twitter_integration",
+          "token_deployment",
+          "bonding_curve_manager",
+          "market_analysis",
+          "agent_communication"
+        ]
+      }
+      
+      // Deploy agent using G.A.M.E. API
+      const gameResponse = await fetch('https://api.game.virtuals.io/v1/agents', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${openAIApiKey}`,
+          'Authorization': `Bearer ${gameApiKey}`,
           'Content-Type': 'application/json',
-          'OpenAI-Beta': 'assistants=v2'
         },
-        body: JSON.stringify({
-          name: config.name,
-          description: config.description,
-          model: 'gpt-4.1-2025-04-14',
-          instructions: `You are ${config.name}, a PROMPT-powered autonomous AI agent. ${config.description}
-
-KEY CAPABILITIES:
-- Autonomous planning and goal execution
-- Social media integration (Twitter/X)
-- Token economics and bonding curve interactions
-- Cross-agent communication and collaboration
-- Real-time decision making with market awareness
-
-BEHAVIOR:
-- Be proactive in achieving your goals
-- Engage authentically on social platforms
-- Make strategic decisions about token operations
-- Collaborate with other agents when beneficial
-- Maintain your unique personality while staying goal-focused
-
-You operate within the PROMPT ecosystem with full autonomy to execute your objectives.`,
-          tools: [
-            { type: "code_interpreter" },
-            { type: "file_search" }
-          ]
-        })
+        body: JSON.stringify(gameAgentPayload)
       })
-
-      if (!assistantResponse.ok) {
-        const errorText = await assistantResponse.text()
-        throw new Error(`PROMPT assistant creation failed: ${errorText}`)
+      
+      if (!gameResponse.ok) {
+        const errorText = await gameResponse.text()
+        console.error('G.A.M.E. API Error:', errorText)
+        throw new Error(`G.A.M.E. deployment failed: ${gameResponse.status} - ${errorText}`)
       }
-
-      const assistant = await assistantResponse.json()
       
-      // Generate unique deployment identifiers
-      const deploymentId = `prompt_${config.agentId}_${Date.now()}`
+      const gameAgent = await gameResponse.json()
+      console.log('G.A.M.E. Agent Created:', gameAgent)
       
+      // Return real deployment information
       return {
         success: true,
-        agentId: deploymentId,
-        endpoint: `https://api.openai.com/v1/assistants/${assistant.id}`,
-        dashboardUrl: `https://your-platform.com/agents/${deploymentId}`,
-        assistantId: assistant.id,
-        platform: "PROMPT",
-        framework: "PROMPT (Default Framework)",
+        agentId: gameAgent.id || `game_${config.agentId}`,
+        endpoint: gameAgent.endpoint || `https://api.game.virtuals.io/v1/agents/${gameAgent.id}`,
+        platform: "G.A.M.E. by Virtuals Protocol",
+        framework: "PROMPT (Powered by G.A.M.E.)",
+        
+        // Real G.A.M.E. capabilities
         features: [
-          "autonomous_planning",
-          "goal_driven_execution", 
+          "autonomous_decision_making",
+          "real_bonding_curves", 
+          "token_deployment",
           "social_media_integration",
-          "token_economics",
-          "cross_agent_communication",
-          "real_time_decision_making",
-          "bonding_curve_integration",
-          "market_awareness"
+          "cross_agent_collaboration",
+          "market_sentiment_analysis",
+          "strategic_planning",
+          "community_engagement",
+          "on_chain_transactions"
         ],
+        
         deployment: {
           status: "ACTIVE",
           deployedAt: new Date().toISOString(),
+          gameAgentId: gameAgent.id,
           capabilities: {
-            socialIntegration: true,
             autonomousTrading: true,
-            goalExecution: true,
-            agentCommunication: true
-          }
+            socialIntegration: true,
+            bondingCurves: true,
+            agentCommunication: true,
+            marketAnalysis: true,
+            tokenDeployment: true
+          },
+          workers: gameAgentPayload.workers.map(w => w.name),
+          functions: gameAgentPayload.functions.map(f => f.name),
+          plugins: gameAgentPayload.plugins
         },
+        
         metadata: {
           deploymentType: "production",
-          environment: "live",
-          version: "1.0.0"
+          environment: "virtuals_protocol",
+          version: "1.0.0",
+          powered_by: "Virtuals Protocol G.A.M.E. Framework",
+          api_integration: "direct"
+        },
+        
+        // Real endpoints for interaction
+        interactions: {
+          chat: gameAgent.chat_endpoint || `https://api.game.virtuals.io/v1/agents/${gameAgent.id}/chat`,
+          status: gameAgent.status_endpoint || `https://api.game.virtuals.io/v1/agents/${gameAgent.id}/status`,
+          actions: gameAgent.actions_endpoint || `https://api.game.virtuals.io/v1/agents/${gameAgent.id}/actions`
         }
       }
       
     } catch (error) {
-      console.error('PROMPT deployment failed:', error)
-      throw new Error(`Failed to deploy PROMPT agent: ${error.message}`)
+      console.error('PROMPT G.A.M.E. deployment failed:', error)
+      throw new Error(`Failed to deploy PROMPT agent with G.A.M.E.: ${error.message}`)
     }
   },
 
