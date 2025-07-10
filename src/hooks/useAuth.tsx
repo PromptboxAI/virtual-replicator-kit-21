@@ -64,15 +64,28 @@ export function useAuth() {
     }
   }, [ready, authenticated, user]);
 
-  // Sync Privy user with Supabase profiles (optimized to prevent duplicate runs)
+  // Sync Privy user with Supabase profiles (optimized with localStorage cache)
   useEffect(() => {
-    console.log('Auth state changed:', { ready, authenticated, user: user?.id, hasInitialized });
+    if (!ready || !authenticated || !user) {
+      setIsProcessing(false);
+      return;
+    }
+
+    // Check if we've already initialized this user in this session
+    const cacheKey = `profile_initialized_${user.id}`;
+    const alreadyInitialized = sessionStorage.getItem(cacheKey) === 'true';
     
-    if (!ready || !authenticated || !user || hasInitialized) {
-      if (!ready || !authenticated || !user) {
-        setIsProcessing(false);
-        setHasInitialized(false);
-      }
+    console.log('Auth effect triggered:', { 
+      ready, 
+      authenticated, 
+      user: user?.id, 
+      alreadyInitialized,
+      cacheKey
+    });
+    
+    if (alreadyInitialized) {
+      setIsProcessing(false);
+      setHasInitialized(true);
       return;
     }
 
@@ -140,6 +153,8 @@ export function useAuth() {
         console.error('Error syncing user profile:', error);
       } finally {
         console.log('Profile sync completed');
+        // Cache that we've initialized this user
+        sessionStorage.setItem(cacheKey, 'true');
         setHasInitialized(true);
       }
     };
@@ -148,7 +163,7 @@ export function useAuth() {
     setIsProcessing(false);
     // Run sync in background
     syncUserProfile();
-  }, [ready, authenticated, user, hasInitialized]);
+  }, [ready, authenticated, user]);
 
   const handleAcceptTerms = async () => {
     if (!user) return;
