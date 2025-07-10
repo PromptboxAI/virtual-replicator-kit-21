@@ -375,8 +375,8 @@ export default function CreateAgent() {
     navigate('/');
   };
 
-  // Show loading state
-  if (authLoading || balanceLoading) {
+  // Show loading state only for authentication
+  if (authLoading) {
     console.log('Showing loading state', { authLoading, balanceLoading });
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -493,10 +493,20 @@ export default function CreateAgent() {
               <AlertDescription>
                 <div className="flex items-center gap-4">
                   {isTestMode && <span className="text-primary font-medium">TEST MODE</span>}
-                  <span>Your Balance: <strong>{balance} tokens</strong></span>
+                  <span>
+                    Your Balance: 
+                    {balanceLoading ? (
+                      <span className="inline-flex items-center gap-1 ml-1">
+                        <div className="animate-spin rounded-full h-3 w-3 border-b border-current"></div>
+                        <strong>Loading...</strong>
+                      </span>
+                    ) : (
+                      <strong> {balance} tokens</strong>
+                    )}
+                  </span>
                   <span>•</span>
                   <span>Creation Cost: <strong>{CREATION_COST} tokens</strong></span>
-                  {balance < CREATION_COST && (
+                  {!balanceLoading && balance < CREATION_COST && (
                     <span className="text-destructive">• Insufficient tokens!</span>
                   )}
                 </div>
@@ -505,7 +515,7 @@ export default function CreateAgent() {
           </div>
           
           {/* Test Token Button */}
-          {isTestMode && balance < CREATION_COST && (
+          {isTestMode && !balanceLoading && balance < CREATION_COST && (
             <div className="mb-8 flex justify-center">
               <Button 
                 onClick={() => addTestTokens(5000)}
@@ -1227,7 +1237,7 @@ export default function CreateAgent() {
                     </Button>
                     <Button
                       onClick={handleCreateAgent}
-                      disabled={isCreating || balance < CREATION_COST}
+                      disabled={isCreating || balanceLoading || balance < CREATION_COST}
                       className="flex-1 bg-gradient-primary hover:opacity-90"
                     >
                       {isCreating ? (
