@@ -58,7 +58,7 @@ export default function CreateAgent() {
     website_url: "",
     twitter_url: "",
     avatar_url: "",
-    total_supply: 1000000,
+    total_supply: 1000000000, // Fixed at 1 billion tokens per Virtuals protocol
     initial_price: 0.01,
     short_pitch: "",
     agent_overview: "",
@@ -923,74 +923,112 @@ export default function CreateAgent() {
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Coins className="h-5 w-5 text-primary" />
-                        Tokenomics
+                        Tokenomics - Virtuals Protocol
                       </CardTitle>
                       <CardDescription>
-                        Configure your AI Agent's token economics
+                        Your agent follows Virtuals protocol fair launch principles
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="total_supply">Total Supply *</Label>
-                          <Input
-                            id="total_supply"
-                            type="number"
-                            placeholder="1000000"
-                            value={formData.total_supply}
-                            onChange={(e) => handleInputChange('total_supply', parseInt(e.target.value) || 0)}
-                            min="1"
-                          />
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Maximum number of tokens that will ever exist
-                          </p>
-                        </div>
-                        <div>
-                          <Label htmlFor="initial_price">Initial Price (USD) *</Label>
-                          <Input
-                            id="initial_price"
-                            type="number"
-                            step="0.01"
-                            placeholder="0.01"
-                            value={formData.initial_price}
-                            onChange={(e) => handleInputChange('initial_price', parseFloat(e.target.value) || 0)}
-                            min="0.01"
-                          />
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Starting price per token
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Market Cap Preview */}
-                      <div className="p-4 bg-muted/50 rounded-lg border">
-                        <h4 className="font-medium mb-2">Token Economics Preview</h4>
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div>
-                            <p className="text-muted-foreground">Total Supply:</p>
-                            <p className="font-medium">{formData.total_supply.toLocaleString()} tokens</p>
+                      <div className="bg-gradient-to-br from-primary/5 to-primary/10 p-6 rounded-lg border border-primary/20">
+                        <h4 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                          <Shield className="h-5 w-5 text-primary" />
+                          Fair Launch Protocol
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-2">
+                              <Check className="h-4 w-4 text-green-500" />
+                              <span className="text-sm font-medium">Fixed Total Supply</span>
+                            </div>
+                            <p className="text-sm text-muted-foreground ml-6">
+                              1,000,000,000 tokens (non-configurable)
+                            </p>
+                            
+                            <div className="flex items-center gap-2">
+                              <Check className="h-4 w-4 text-green-500" />
+                              <span className="text-sm font-medium">No Pre-Mine</span>
+                            </div>
+                            <p className="text-sm text-muted-foreground ml-6">
+                              All tokens added to liquidity pool
+                            </p>
+                            
+                            <div className="flex items-center gap-2">
+                              <Check className="h-4 w-4 text-green-500" />
+                              <span className="text-sm font-medium">Liquidity Locked</span>
+                            </div>
+                            <p className="text-sm text-muted-foreground ml-6">
+                              10-year lock for stability
+                            </p>
                           </div>
-                          <div>
-                            <p className="text-muted-foreground">Initial Price:</p>
-                            <p className="font-medium">${formData.initial_price}</p>
-                          </div>
-                          <div>
-                            <p className="text-muted-foreground">Initial Market Cap:</p>
-                            <p className="font-medium text-primary">${estimatedMarketCap.toLocaleString()}</p>
-                          </div>
-                          <div>
-                            <p className="text-muted-foreground">Network:</p>
-                            <p className="font-medium flex items-center gap-1">
-                              Base 
-                              <img 
-                                src="/lovable-uploads/653131a0-191a-4ba3-9126-6f9aef2d6a80.png" 
-                                alt="Base" 
-                                className="w-4 h-4"
-                              />
+                          
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-2">
+                              <TrendingUp className="h-4 w-4 text-primary" />
+                              <span className="text-sm font-medium">Bonding Curve</span>
+                            </div>
+                            <p className="text-sm text-muted-foreground ml-6">
+                              Graduates at 42k $VIRTUAL volume
+                            </p>
+                            
+                            <div className="flex items-center gap-2">
+                              <Zap className="h-4 w-4 text-primary" />
+                              <span className="text-sm font-medium">Trading Tax</span>
+                            </div>
+                            <p className="text-sm text-muted-foreground ml-6">
+                              1% fee (70% to creator, 30% to protocol)
                             </p>
                           </div>
                         </div>
                       </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="initial_price">Initial Bonding Curve Price (USD) *</Label>
+                          <Input
+                            id="initial_price"
+                            type="number"
+                            step="0.00001"
+                            placeholder="0.00001"
+                            value={formData.initial_price}
+                            onChange={(e) => handleInputChange('initial_price', parseFloat(e.target.value) || 0)}
+                            min="0.00001"
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Starting price on the bonding curve
+                          </p>
+                        </div>
+                        <div className="bg-muted/50 p-4 rounded-lg">
+                          <h4 className="font-medium mb-2">Protocol Overview</h4>
+                          <div className="space-y-2 text-sm">
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Total Supply:</span>
+                              <span className="font-medium">1B tokens</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Creation Cost:</span>
+                              <span className="font-medium">{CREATION_COST} $VIRTUAL</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Graduation Target:</span>
+                              <span className="font-medium">42k $VIRTUAL</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Initial Price:</span>
+                              <span className="font-medium">${formData.initial_price}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <Alert>
+                        <Info className="h-4 w-4" />
+                        <AlertDescription>
+                          <strong>Virtuals Protocol:</strong> Your agent launches with a fixed 1B token supply on a bonding curve. 
+                          Once 42k $VIRTUAL is accumulated, it graduates to a liquidity pool with 10-year lock. 
+                          All launches are fair with no insider allocations.
+                        </AlertDescription>
+                      </Alert>
                     </CardContent>
                   </Card>
 
@@ -1005,7 +1043,7 @@ export default function CreateAgent() {
                     </Button>
                     <Button
                       onClick={() => setCurrentStep(4)}
-                      disabled={!formData.total_supply || !formData.initial_price}
+                      disabled={!formData.initial_price}
                       className="flex-1 bg-gradient-primary hover:opacity-90"
                     >
                       Next
