@@ -1115,7 +1115,7 @@ export default function CreateAgent() {
                           
                           <div className="space-y-3">
                             <div className="flex items-center justify-between">
-                              <Label htmlFor="prebuy_amount">Spend $PROMPT</Label>
+                              <Label htmlFor="prebuy_amount">Buy ${formData.symbol || 'TOKEN'} with $PROMPT</Label>
                               <Button 
                                 variant="outline" 
                                 size="sm"
@@ -1134,7 +1134,7 @@ export default function CreateAgent() {
                               max="1000"
                             />
                             <div className="text-sm text-muted-foreground">
-                              Max: 1,000 $PROMPT
+                              Amount in $PROMPT (Max: 1,000)
                             </div>
                             {formData.prebuy_amount > 0 && (
                               <div className="text-sm text-muted-foreground">
