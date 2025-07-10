@@ -82,28 +82,8 @@ export default function CreateAgent() {
     return acc;
   }, {} as Record<string, string>);
 
-  // Add frameworks not in SDK but still supported
-  const additionalFrameworks = {
-    "Agentforce": "Salesforce's AI agent platform for building custom agents that automate business processes and customer interactions.",
-    "AiLice": "Open-source AI assistant framework focused on natural language understanding and conversational AI capabilities.",
-    "BabyAGI": "Simple task-driven autonomous agent that creates, prioritizes, and executes tasks based on given objectives.",
-    "ChatDev": "Multi-agent framework simulating a software development company with specialized AI agents for different roles.",
-    "Devika": "AI software engineer capable of understanding high-level instructions and writing code autonomously.",
-    "Goat": "Goal-oriented autonomous agent framework designed for task planning and execution in complex environments.",
-    "Hugging Face Smolagents": "Lightweight agent framework from Hugging Face for building and deploying small, efficient AI agents.",
-    "Jarvis": "Personal AI assistant framework designed to help with daily tasks, scheduling, and information management.",
-    "MetaGPT": "Multi-agent framework that assigns different roles to GPTs to form a collaborative software entity.",
-    "Mindextension": "Cognitive AI framework focused on extending human decision-making capabilities through intelligent agents.",
-    "Open Interpreter": "Local code-running AI assistant that can execute code, browse the web, and control your computer.",
-    "Own Framework": "Custom-built framework tailored specifically for your unique AI agent requirements and use cases.",
-    "PydanticAI": "Production-ready agent framework built on Pydantic for type-safe AI agent development in Python.",
-    "Qwen-Agent": "Alibaba's agent framework based on the Qwen large language model for building intelligent assistants.",
-    "Rig": "Rust-based agent framework for building high-performance, memory-safe AI agents and applications.",
-    "ZerePy": "Python framework for creating zero-configuration AI agents with minimal setup and maximum flexibility."
-  };
-
-  // Merge both sets of frameworks
-  const allFrameworks = { ...frameworks, ...additionalFrameworks };
+  // Only use frameworks from SDK that have actual deployment handlers
+  const allFrameworks = frameworks;
 
   // Load existing Twitter connection
   useEffect(() => {
