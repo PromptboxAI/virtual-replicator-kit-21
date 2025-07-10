@@ -28,7 +28,7 @@ interface FrameworkDeployment {
 
 // Framework-specific deployment handlers
 const deploymentHandlers: Record<string, (config: AgentDeploymentRequest) => Promise<any>> = {
-  "PROMPT": async (config) => {
+  "PROMPT (Default Framework)": async (config) => {
     console.log(`Deploying PROMPT agent: ${config.name}`)
     
     // Deploy to PromptBox platform using Virtuals SDK internally

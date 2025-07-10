@@ -54,7 +54,7 @@ export default function CreateAgent() {
     symbol: "",
     description: "",
     category: "",
-    framework: "PROMPT",
+    framework: "PROMPT (Default Framework)",
     website_url: "",
     twitter_url: "",
     avatar_url: "",

@@ -28,8 +28,8 @@ export interface DeploymentResult {
 
 // Framework configurations with actual integration capabilities
 export const FRAMEWORK_CONFIGS: Record<string, FrameworkConfig> = {
-  "PROMPT": {
-    name: "PROMPT",
+  "PROMPT (Default Framework)": {
+    name: "PROMPT (Default Framework)",
     description: "PromptBox native framework for autonomous AI agents with real deployment",
     requiresAPIKey: false,
     deploymentEndpoint: "/api/deploy-prompt-agent",
@@ -130,7 +130,7 @@ export class FrameworkSDKService {
           return await this.deployToOpenAISwarm(config);
         case "Eliza":
           return await this.deployToEliza(config);
-        case "PROMPT":
+        case "PROMPT (Default Framework)":
           return await this.deployToPROMPT(config);
         default:
           // Fallback to simulation for other frameworks
@@ -171,7 +171,7 @@ export class FrameworkSDKService {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          framework: 'PROMPT',
+          framework: 'PROMPT (Default Framework)',
           agentConfig: config
         })
       });
