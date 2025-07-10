@@ -69,7 +69,7 @@ export default function CreateAgent() {
     symbol: "",
     description: "",
     category: "",
-    framework: "PROMPT (Default Framework)",
+    framework: "PROMPT",
     website_url: "",
     twitter_url: "",
     avatar_url: "",
@@ -804,28 +804,21 @@ export default function CreateAgent() {
                            <SelectTrigger>
                              <SelectValue placeholder="Select a framework" />
                            </SelectTrigger>
-                              <SelectContent>
-                                {Object.keys(allFrameworks).map((framework) => {
-                                  const isPrimary = formData.category && isRecommendedFramework(framework, formData.category);
-                                  const isSecondary = formData.category && !isPrimary && isRecommendedFramework(framework, formData.category, 'secondary');
-                                  
-                                  return (
-                                    <SelectItem key={framework} value={framework}>
-                                      <div className="flex items-center gap-2 w-full">
-                                        <span>{framework}</span>
-                                        {isPrimary && (
-                                          <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
-                                            Recommended
-                                          </Badge>
-                                        )}
-                                        {isSecondary && (
-                                          <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-                                            Good Match
-                                          </Badge>
-                                        )}
-                                      </div>
-                                    </SelectItem>
-                                  );
+                               <SelectContent>
+                                 {Object.keys(allFrameworks).map((framework) => (
+                                   <SelectItem key={framework} value={framework}>
+                                     <div className="flex items-center gap-2 w-full">
+                                       <span>{framework}</span>
+                                       {framework === "PROMPT" && (
+                                         <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                                           Recommended
+                                         </Badge>
+                                       )}
+                                     </div>
+                                   </SelectItem>
+                                 ))}
+                              </SelectContent>
+                                 </SelectItem>
                                 })}
                              </SelectContent>
                          </Select>
