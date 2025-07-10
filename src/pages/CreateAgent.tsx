@@ -1344,7 +1344,7 @@ export default function CreateAgent() {
                            Creating...
                          </div>
                        ) : (
-                         `Launch Agent (${100 + formData.prebuy_amount} $PROMPT)`
+                         "Launch Agent"
                        )}
                      </Button>
                   </div>
