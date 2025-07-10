@@ -1092,7 +1092,7 @@ export default function CreateAgent() {
                               <span className="text-sm font-medium">Bonding Curve</span>
                             </div>
                             <p className="text-sm text-muted-foreground ml-6">
-                              Graduates at 42k $VIRTUAL volume
+                              Graduates at 42k $PROMPT volume
                             </p>
                             
                             <div className="flex items-center gap-2">
@@ -1131,11 +1131,11 @@ export default function CreateAgent() {
                             </div>
                             <div className="flex justify-between">
                               <span className="text-muted-foreground">Creation Cost:</span>
-                              <span className="font-medium">{CREATION_COST} $VIRTUAL</span>
+                              <span className="font-medium">{CREATION_COST} $PROMPT</span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-muted-foreground">Graduation Target:</span>
-                              <span className="font-medium">42k $VIRTUAL</span>
+                              <span className="font-medium">42k $PROMPT</span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-muted-foreground">Initial Price:</span>
