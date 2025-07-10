@@ -1261,8 +1261,21 @@ export default function CreateAgent() {
                                   <Input
                                     id="prebuy_amount"
                                     type="number"
-                                    value={formData.prebuy_amount}
-                                    onChange={(e) => handleInputChange('prebuy_amount', parseInt(e.target.value) || 0)}
+                                    value={formData.prebuy_amount === 0 ? "" : formData.prebuy_amount.toString()}
+                                    onChange={(e) => {
+                                      const value = e.target.value;
+                                      if (value === "") {
+                                        handleInputChange('prebuy_amount', 0);
+                                      } else {
+                                        const numValue = parseInt(value) || 0;
+                                        handleInputChange('prebuy_amount', numValue);
+                                      }
+                                    }}
+                                    onFocus={(e) => {
+                                      if (formData.prebuy_amount === 0) {
+                                        e.target.select();
+                                      }
+                                    }}
                                     placeholder="0"
                                     min="0"
                                     max={Math.min(1000, Math.max(0, balance - 100))}
