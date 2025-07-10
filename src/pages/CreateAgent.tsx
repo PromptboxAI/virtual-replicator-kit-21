@@ -108,6 +108,14 @@ export default function CreateAgent() {
   const { connectTwitter, disconnectTwitter, isConnecting, connectedAccount, setConnectedAccount } = useTwitterAuth();
   const CREATION_COST = 100;
 
+  console.log('CreateAgent Debug:', {
+    user: !!user,
+    authLoading,
+    balanceLoading,
+    balance,
+    currentStep
+  });
+
   const [formData, setFormData] = useState<AgentFormData>({
     name: "",
     symbol: "",
@@ -369,6 +377,7 @@ export default function CreateAgent() {
 
   // Show loading state
   if (authLoading || balanceLoading) {
+    console.log('Showing loading state', { authLoading, balanceLoading });
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -381,6 +390,7 @@ export default function CreateAgent() {
 
   // Show login required state
   if (!user) {
+    console.log('No user found, showing login');
     return (
       <div className="min-h-screen bg-background">
         <Header />
@@ -398,6 +408,8 @@ export default function CreateAgent() {
       </div>
     );
   }
+
+  console.log('Rendering main CreateAgent form');
 
   const estimatedMarketCap = formData.total_supply * formData.initial_price;
 
