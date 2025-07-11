@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAppMode } from './useAppMode';
 
 export function useTokenBalance(userId?: string) {
   const [balance, setBalance] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  
-  // Test mode - automatically enabled for development
-  const isTestMode = true;
+  const { isTestMode } = useAppMode();
 
   useEffect(() => {
     if (userId) {

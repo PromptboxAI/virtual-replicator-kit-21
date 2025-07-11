@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Search, User, LogOut, Wallet } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { AppModeToggle } from "./AppModeToggle";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -48,6 +49,8 @@ export function Header() {
 
           {/* Actions */}
           <div className="flex items-center space-x-4">
+            <AppModeToggle />
+            
             {!isAboutPage && (
               <div className="relative hidden md:block">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />

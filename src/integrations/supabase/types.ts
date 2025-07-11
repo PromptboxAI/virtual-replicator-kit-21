@@ -67,6 +67,7 @@ export type Database = {
           price_change_24h: number | null
           status: string | null
           symbol: string
+          test_mode: boolean | null
           total_supply: number | null
           twitter_url: string | null
           updated_at: string
@@ -90,6 +91,7 @@ export type Database = {
           price_change_24h?: number | null
           status?: string | null
           symbol: string
+          test_mode?: boolean | null
           total_supply?: number | null
           twitter_url?: string | null
           updated_at?: string
@@ -113,6 +115,7 @@ export type Database = {
           price_change_24h?: number | null
           status?: string | null
           symbol?: string
+          test_mode?: boolean | null
           total_supply?: number | null
           twitter_url?: string | null
           updated_at?: string
@@ -305,11 +308,33 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_token_balances: {
         Row: {
           balance: number
           created_at: string
           id: string
+          test_mode: boolean | null
           updated_at: string
           user_id: string
         }
@@ -317,6 +342,7 @@ export type Database = {
           balance?: number
           created_at?: string
           id?: string
+          test_mode?: boolean | null
           updated_at?: string
           user_id: string
         }
@@ -324,6 +350,7 @@ export type Database = {
           balance?: number
           created_at?: string
           id?: string
+          test_mode?: boolean | null
           updated_at?: string
           user_id?: string
         }
@@ -338,9 +365,20 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      has_role: {
+        Args: {
+          _user_id: string
+          _role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: boolean
+      }
+      set_admin_by_email: {
+        Args: { _email: string }
+        Returns: undefined
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -467,6 +505,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const
