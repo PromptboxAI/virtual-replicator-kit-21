@@ -49,9 +49,151 @@ export type Database = {
           },
         ]
       }
+      agent_price_snapshots: {
+        Row: {
+          agent_id: string
+          circulating_supply: number | null
+          holders_count: number | null
+          id: string
+          market_cap: number | null
+          price: number
+          prompt_raised: number | null
+          timestamp: string | null
+          volume_24h: number | null
+        }
+        Insert: {
+          agent_id: string
+          circulating_supply?: number | null
+          holders_count?: number | null
+          id?: string
+          market_cap?: number | null
+          price: number
+          prompt_raised?: number | null
+          timestamp?: string | null
+          volume_24h?: number | null
+        }
+        Update: {
+          agent_id?: string
+          circulating_supply?: number | null
+          holders_count?: number | null
+          id?: string
+          market_cap?: number | null
+          price?: number
+          prompt_raised?: number | null
+          timestamp?: string | null
+          volume_24h?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_price_snapshots_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_token_holders: {
+        Row: {
+          agent_id: string
+          average_buy_price: number | null
+          created_at: string | null
+          id: string
+          realized_profit_loss: number | null
+          token_balance: number
+          total_invested: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          agent_id: string
+          average_buy_price?: number | null
+          created_at?: string | null
+          id?: string
+          realized_profit_loss?: number | null
+          token_balance?: number
+          total_invested?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          agent_id?: string
+          average_buy_price?: number | null
+          created_at?: string | null
+          id?: string
+          realized_profit_loss?: number | null
+          token_balance?: number
+          total_invested?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_token_holders_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_token_transactions: {
+        Row: {
+          agent_id: string
+          block_number: number | null
+          created_at: string | null
+          id: string
+          price_per_token: number
+          prompt_amount: number
+          status: string | null
+          token_amount: number
+          transaction_hash: string | null
+          transaction_type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          agent_id: string
+          block_number?: number | null
+          created_at?: string | null
+          id?: string
+          price_per_token: number
+          prompt_amount: number
+          status?: string | null
+          token_amount: number
+          transaction_hash?: string | null
+          transaction_type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          agent_id?: string
+          block_number?: number | null
+          created_at?: string | null
+          id?: string
+          price_per_token?: number
+          prompt_amount?: number
+          status?: string | null
+          token_amount?: number
+          transaction_hash?: string | null
+          transaction_type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_token_transactions_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agents: {
         Row: {
           avatar_url: string | null
+          bonding_curve_supply: number | null
           category: string | null
           circulating_supply: number | null
           created_at: string
@@ -65,9 +207,13 @@ export type Database = {
           market_cap: number | null
           name: string
           price_change_24h: number | null
+          prompt_raised: number | null
           status: string | null
           symbol: string
           test_mode: boolean | null
+          token_address: string | null
+          token_graduated: boolean | null
+          token_holders: number | null
           total_supply: number | null
           twitter_url: string | null
           updated_at: string
@@ -76,6 +222,7 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          bonding_curve_supply?: number | null
           category?: string | null
           circulating_supply?: number | null
           created_at?: string
@@ -89,9 +236,13 @@ export type Database = {
           market_cap?: number | null
           name: string
           price_change_24h?: number | null
+          prompt_raised?: number | null
           status?: string | null
           symbol: string
           test_mode?: boolean | null
+          token_address?: string | null
+          token_graduated?: boolean | null
+          token_holders?: number | null
           total_supply?: number | null
           twitter_url?: string | null
           updated_at?: string
@@ -100,6 +251,7 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          bonding_curve_supply?: number | null
           category?: string | null
           circulating_supply?: number | null
           created_at?: string
@@ -113,9 +265,13 @@ export type Database = {
           market_cap?: number | null
           name?: string
           price_change_24h?: number | null
+          prompt_raised?: number | null
           status?: string | null
           symbol?: string
           test_mode?: boolean | null
+          token_address?: string | null
+          token_graduated?: boolean | null
+          token_holders?: number | null
           total_supply?: number | null
           twitter_url?: string | null
           updated_at?: string
