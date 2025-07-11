@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAppMode } from './useAppMode';
 
 export interface Agent {
   id: string;
@@ -15,12 +16,14 @@ export interface Agent {
   is_active: boolean;
   creator_id: string | null;
   status: string | null;
+  test_mode: boolean | null;
 }
 
 export function useAgents() {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { isTestMode } = useAppMode();
 
   useEffect(() => {
     async function fetchAgents() {
@@ -30,6 +33,7 @@ export function useAgents() {
           .from('agents')
           .select('*')
           .eq('is_active', true)
+          .eq('test_mode', isTestMode)
           .order('market_cap', { ascending: false });
 
         console.log('Agents data:', data);
@@ -46,7 +50,7 @@ export function useAgents() {
     }
 
     fetchAgents();
-  }, []);
+  }, [isTestMode]);
 
   return { agents, loading, error };
 }
