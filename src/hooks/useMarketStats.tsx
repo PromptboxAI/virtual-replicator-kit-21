@@ -23,6 +23,8 @@ export function useMarketStats() {
   useEffect(() => {
     async function fetchMarketStats() {
       try {
+        console.log('fetchMarketStats - isTestMode:', isTestMode);
+        
         // Get market stats from agents
         const { data: marketData, error: marketError } = await supabase
           .from('agents')
@@ -30,6 +32,7 @@ export function useMarketStats() {
           .eq('is_active', true)
           .eq('test_mode', isTestMode);
 
+        console.log('marketData result:', marketData?.length, 'agents found');
         if (marketError) throw marketError;
 
         // Count active agents
@@ -45,18 +48,30 @@ export function useMarketStats() {
         const agentIds = marketData?.map(agent => agent.id) || [];
         let holdersCount = 0;
         
+        console.log('agentIds for holders query:', agentIds.length);
+        
         if (agentIds.length > 0) {
           const { count, error: holdersError } = await supabase
             .from('user_agent_holdings')
             .select('user_id', { count: 'exact', head: true })
             .in('agent_id', agentIds);
           
+          console.log('holders query result:', count);
           if (holdersError) throw holdersError;
           holdersCount = count || 0;
+        } else {
+          console.log('No agent IDs found, setting holdersCount to 0');
         }
 
         const totalMarketCap = marketData?.reduce((sum, agent) => sum + (agent.market_cap || 0), 0) || 0;
         const totalVolume = marketData?.reduce((sum, agent) => sum + (agent.volume_24h || 0), 0) || 0;
+
+        console.log('Final stats:', {
+          totalMarketCap,
+          activeAgents: agentCount || 0,
+          totalVolume,
+          totalHolders: holdersCount
+        });
 
         setStats({
           totalMarketCap,
