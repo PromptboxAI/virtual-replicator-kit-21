@@ -12,9 +12,12 @@ export const useUserRole = () => {
   useEffect(() => {
     const fetchUserRole = async () => {
       if (!user) {
+        console.log('useUserRole - no user, setting loading false');
         setIsLoading(false);
         return;
       }
+
+      console.log('useUserRole - fetching role for user:', user.id);
 
       try {
         // Check if user has admin role
@@ -25,11 +28,15 @@ export const useUserRole = () => {
           .eq('role', 'admin')
           .maybeSingle();
 
+        console.log('useUserRole - query result:', { data, error });
+
         if (error) {
           console.error('Error fetching user role:', error);
         }
 
-        setRole(data ? 'admin' : 'user');
+        const newRole = data ? 'admin' : 'user';
+        console.log('useUserRole - setting role to:', newRole);
+        setRole(newRole);
       } catch (error) {
         console.error('Error in fetchUserRole:', error);
         setRole('user');
