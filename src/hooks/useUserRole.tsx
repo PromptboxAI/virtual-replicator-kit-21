@@ -21,6 +21,7 @@ export const useUserRole = () => {
 
       try {
         // Check if user has admin role
+        console.log('useUserRole - about to query with user_id:', user.id);
         const { data, error } = await supabase
           .from('user_roles')
           .select('role')
@@ -28,7 +29,7 @@ export const useUserRole = () => {
           .eq('role', 'admin')
           .maybeSingle();
 
-        console.log('useUserRole - query result:', { data, error });
+        console.log('useUserRole - query result:', { data, error, userId: user.id });
 
         if (error) {
           console.error('Error fetching user role:', error);
