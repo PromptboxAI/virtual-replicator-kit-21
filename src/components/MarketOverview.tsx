@@ -43,18 +43,6 @@ export function MarketOverview({ agents = [] }: MarketOverviewProps) {
           </div>
         )}
       </div>
-
-      {/* Footer Links */}
-      <div className="flex items-center justify-center gap-4 pt-8 border-t">
-        <Button variant="link" size="sm">
-          <ExternalLink className="h-3 w-3 mr-1" />
-          View on Base Scanner
-        </Button>
-        <Button variant="link" size="sm">
-          <ExternalLink className="h-3 w-3 mr-1" />
-          Uniswap Analytics
-        </Button>
-      </div>
     </div>
   );
 }
