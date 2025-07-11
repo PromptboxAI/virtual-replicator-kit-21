@@ -20,6 +20,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/hooks/useAuth";
 import { useTwitterAuth } from "@/hooks/useTwitterAuth";
 import { useAppMode } from "@/hooks/useAppMode";
+import { useUserRole } from "@/hooks/useUserRole";
 import { FrameworkSDKService, FRAMEWORK_CONFIGS } from "@/lib/frameworkSDK";
 
 interface AgentFormData {
@@ -108,6 +109,7 @@ export default function CreateAgent() {
   const { balance, loading: balanceLoading, deductTokens, addTestTokens, isTestMode } = useTokenBalance(user?.id);
   const { connectTwitter, disconnectTwitter, isConnecting, connectedAccount, setConnectedAccount } = useTwitterAuth();
   const { isTestMode: appIsTestMode } = useAppMode();
+  const { isAdmin } = useUserRole();
   const CREATION_COST = 100;
 
   console.log('CreateAgent Debug:', {
@@ -520,8 +522,8 @@ export default function CreateAgent() {
               <Coins className="h-4 w-4" />
               <AlertDescription>
                 <div className="flex items-center gap-4">
-                  {appIsTestMode && <span className="text-primary font-medium">TEST MODE</span>}
-                  {!appIsTestMode && <span className="text-green-600 font-medium">PRODUCTION MODE</span>}
+                  {isAdmin && appIsTestMode && <span className="text-primary font-medium">TEST MODE</span>}
+                  {isAdmin && !appIsTestMode && <span className="text-green-600 font-medium">PRODUCTION MODE</span>}
                   <span>
                     {appIsTestMode ? (
                       <>
@@ -1252,9 +1254,11 @@ export default function CreateAgent() {
                                     <>
                                       <div className="text-sm text-muted-foreground">Your $PROMPT Balance</div>
                                       <div className="text-lg font-semibold">
-                                        <span className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded mr-2">
-                                          TEST MODE
-                                        </span>
+                                        {isAdmin && (
+                                          <span className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded mr-2">
+                                            TEST MODE
+                                          </span>
+                                        )}
                                         {balance.toLocaleString()} $PROMPT
                                       </div>
                                       <Button
@@ -1268,11 +1272,15 @@ export default function CreateAgent() {
                                     </>
                                   ) : (
                                     <>
-                                      <div className="text-sm text-muted-foreground">Production Mode</div>
+                                      <div className="text-sm text-muted-foreground">
+                                        {isAdmin ? "Production Mode" : "Wallet Required"}
+                                      </div>
                                       <div className="text-lg font-semibold text-green-600">
-                                        <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded mr-2">
-                                          PRODUCTION
-                                        </span>
+                                        {isAdmin && (
+                                          <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded mr-2">
+                                            PRODUCTION
+                                          </span>
+                                        )}
                                         Wallet Connection Required
                                       </div>
                                       <p className="text-sm text-muted-foreground mt-2">
