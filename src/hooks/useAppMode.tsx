@@ -8,11 +8,13 @@ export const useAppMode = () => {
   const { user } = useAuth();
   const { isAdmin } = useUserRole();
   const [mode, setMode] = useState<AppMode>('test');
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // For non-admin users, always use test mode
     if (!isAdmin) {
       setMode('test');
+      setIsLoading(false);
       return;
     }
 
@@ -21,6 +23,7 @@ export const useAppMode = () => {
     if (savedMode && (savedMode === 'test' || savedMode === 'production')) {
       setMode(savedMode);
     }
+    setIsLoading(false);
   }, [isAdmin]);
 
   const setAppMode = (newMode: AppMode) => {
@@ -42,5 +45,6 @@ export const useAppMode = () => {
     isProductionMode,
     setAppMode,
     canChangeMode: isAdmin,
+    isLoading,
   };
 };

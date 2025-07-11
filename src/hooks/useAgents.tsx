@@ -23,9 +23,11 @@ export function useAgents() {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { isTestMode } = useAppMode();
+  const { isTestMode, isLoading: appModeLoading } = useAppMode();
 
   useEffect(() => {
+    // Don't fetch until app mode is determined
+    if (appModeLoading) return;
     async function fetchAgents() {
       try {
         console.log('Fetching agents with isTestMode:', isTestMode);
@@ -50,7 +52,7 @@ export function useAgents() {
     }
 
     fetchAgents();
-  }, [isTestMode]);
+  }, [isTestMode, appModeLoading]);
 
   return { agents, loading, error };
 }

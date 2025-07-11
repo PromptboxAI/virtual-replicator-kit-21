@@ -10,7 +10,7 @@ export interface MarketStats {
 }
 
 export function useMarketStats() {
-  const { isTestMode } = useAppMode();
+  const { isTestMode, isLoading: appModeLoading } = useAppMode();
   const [stats, setStats] = useState<MarketStats>({
     totalMarketCap: 0,
     activeAgents: 0,
@@ -21,6 +21,8 @@ export function useMarketStats() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Don't fetch until app mode is determined
+    if (appModeLoading) return;
     async function fetchMarketStats() {
       try {
         console.log('fetchMarketStats - isTestMode:', isTestMode);
@@ -87,7 +89,7 @@ export function useMarketStats() {
     }
 
     fetchMarketStats();
-  }, [isTestMode]);
+  }, [isTestMode, appModeLoading]);
 
   return { stats, loading, error };
 }
