@@ -22,6 +22,11 @@ export const useUserRole = () => {
       try {
         // Check if user has admin role
         console.log('useUserRole - about to query with user_id:', user.id);
+        
+        // Check Supabase auth context
+        const { data: { user: supabaseUser } } = await supabase.auth.getUser();
+        console.log('useUserRole - supabase auth user:', supabaseUser);
+        
         const { data, error } = await supabase
           .from('user_roles')
           .select('role')
