@@ -23,16 +23,12 @@ export const useUserRole = () => {
         // Check if user has admin role
         console.log('useUserRole - about to query with user_id:', user.id);
         
-        // Check Supabase auth context
-        const { data: { user: supabaseUser } } = await supabase.auth.getUser();
-        console.log('useUserRole - supabase auth user:', supabaseUser);
-        
-        const { data, error } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id)
-          .eq('role', 'admin')
-          .maybeSingle();
+        // Since we're using Privy auth (not Supabase auth), we need to bypass RLS
+        // by using a direct function call instead of the table query
+        const { data, error } = await supabase.rpc('has_role', {
+          _user_id: user.id,
+          _role: 'admin'
+        });
 
         console.log('useUserRole - query result:', { data, error, userId: user.id });
 
