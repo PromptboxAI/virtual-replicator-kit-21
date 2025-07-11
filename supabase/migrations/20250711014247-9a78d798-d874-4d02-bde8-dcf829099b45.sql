@@ -1,0 +1,1 @@
+UPDATE user_roles SET user_id = 'did:privy:cmcv31k3o029jjs0mgixqhmvz' WHERE user_id = '06826c2d-d233-4e88-8498-699cc099d052' AND role = 'admin';
