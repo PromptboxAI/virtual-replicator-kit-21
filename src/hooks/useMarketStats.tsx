@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAppMode } from './useAppMode';
 
 export interface MarketStats {
   totalMarketCap: number;
@@ -9,6 +10,7 @@ export interface MarketStats {
 }
 
 export function useMarketStats() {
+  const { isTestMode } = useAppMode();
   const [stats, setStats] = useState<MarketStats>({
     totalMarketCap: 0,
     activeAgents: 0,
@@ -25,7 +27,8 @@ export function useMarketStats() {
         const { data: marketData, error: marketError } = await supabase
           .from('agents')
           .select('market_cap, volume_24h')
-          .eq('is_active', true);
+          .eq('is_active', true)
+          .eq('test_mode', isTestMode);
 
         if (marketError) throw marketError;
 
@@ -33,7 +36,8 @@ export function useMarketStats() {
         const { count: agentCount, error: countError } = await supabase
           .from('agents')
           .select('*', { count: 'exact', head: true })
-          .eq('is_active', true);
+          .eq('is_active', true)
+          .eq('test_mode', isTestMode);
 
         if (countError) throw countError;
 
@@ -61,7 +65,7 @@ export function useMarketStats() {
     }
 
     fetchMarketStats();
-  }, []);
+  }, [isTestMode]);
 
   return { stats, loading, error };
 }
