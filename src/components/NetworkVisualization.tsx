@@ -166,9 +166,11 @@ export function NetworkVisualization({ className }: NetworkVisualizationProps) {
         className="w-full h-full"
         style={{ background: 'transparent' }}
       />
-      <div className="absolute top-4 left-4 text-sm text-foreground font-medium">
-        Agent Network
-      </div>
+      {!loading && agents.length > 0 && (
+        <div className="absolute top-4 left-4 text-sm text-foreground font-medium">
+          Agent Network
+        </div>
+      )}
     </div>
   );
 }
