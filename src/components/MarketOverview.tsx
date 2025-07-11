@@ -65,71 +65,9 @@ export function MarketOverview({ agents = [] }: MarketOverviewProps) {
 
   return (
     <div className="space-y-6">
-      {/* Market Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-primary" />
-              <div>
-                <p className="text-xs text-muted-foreground">Total Market Cap</p>
-                <p className="text-lg font-semibold">
-                  ${(totalMarketCap / 1000000).toFixed(2)}M
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4 text-primary" />
-              <div>
-                <p className="text-xs text-muted-foreground">24h Volume</p>
-                <p className="text-lg font-semibold">
-                  ${(totalVolume / 1000).toFixed(0)}K
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <Activity className="h-4 w-4 text-primary" />
-              <div>
-                <p className="text-xs text-muted-foreground">Active Agents</p>
-                <p className="text-lg font-semibold">{totalAgents}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-primary" />
-              <div>
-                <p className="text-xs text-muted-foreground">Graduated</p>
-                <p className="text-lg font-semibold">{graduatedAgents}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Agent Grid */}
       <div>
         <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-2xl font-bold">Trading Markets</h2>
-            <p className="text-muted-foreground">
-              Discover and trade AI agent tokens
-            </p>
-          </div>
-          
           <Button onClick={() => navigate('/create')} className="gap-2">
             <Activity className="h-4 w-4" />
             Create Agent
