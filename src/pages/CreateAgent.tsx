@@ -22,6 +22,8 @@ import { useTwitterAuth } from "@/hooks/useTwitterAuth";
 import { useAppMode } from "@/hooks/useAppMode";
 import { useUserRole } from "@/hooks/useUserRole";
 import { FrameworkSDKService, FRAMEWORK_CONFIGS } from "@/lib/frameworkSDK";
+import { useAgentTokenFactory } from "@/hooks/useAgentTokens";
+import { useAccount } from 'wagmi';
 
 interface AgentFormData {
   name: string;
