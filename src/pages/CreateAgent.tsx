@@ -239,12 +239,22 @@ export default function CreateAgent() {
       return;
     }
 
+    // In production mode, require wallet connection
+    if (!appIsTestMode) {
+      toast({
+        title: "Wallet Connection Required",
+        description: "Please connect your wallet to create agents in production mode",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (!validateForm()) return;
 
     const totalCost = CREATION_COST + formData.prebuy_amount;
     
-    // Check if user has sufficient balance
-    if (balance < totalCost) {
+    // Check if user has sufficient balance (only in test mode)
+    if (appIsTestMode && balance < totalCost) {
       const shortfall = totalCost - balance;
       toast({
         title: "Insufficient Balance",
@@ -254,9 +264,11 @@ export default function CreateAgent() {
       return;
     }
     
-    // Check token balance and deduct tokens
-    const success = await deductTokens(totalCost);
-    if (!success) return;
+    // Check token balance and deduct tokens (only in test mode)
+    if (appIsTestMode) {
+      const success = await deductTokens(totalCost);
+      if (!success) return;
+    }
     
     setIsCreating(true);
     try {
@@ -308,7 +320,7 @@ export default function CreateAgent() {
           is_active: true,
           creator_id: user.id,
           status: 'ACTIVATING',
-          test_mode: isTestMode, // Set based on current app mode
+          test_mode: appIsTestMode, // Set based on current app mode
         }])
         .select()
         .single();
@@ -508,21 +520,28 @@ export default function CreateAgent() {
               <Coins className="h-4 w-4" />
               <AlertDescription>
                 <div className="flex items-center gap-4">
-                  {isTestMode && <span className="text-primary font-medium">TEST MODE</span>}
+                  {appIsTestMode && <span className="text-primary font-medium">TEST MODE</span>}
+                  {!appIsTestMode && <span className="text-green-600 font-medium">PRODUCTION MODE</span>}
                   <span>
-                    Your Balance: 
-                    {balanceLoading ? (
-                      <span className="inline-flex items-center gap-1 ml-1">
-                        <div className="animate-spin rounded-full h-3 w-3 border-b border-current"></div>
-                        <strong>Loading...</strong>
-                      </span>
+                    {appIsTestMode ? (
+                      <>
+                        Your Balance: 
+                        {balanceLoading ? (
+                          <span className="inline-flex items-center gap-1 ml-1">
+                            <div className="animate-spin rounded-full h-3 w-3 border-b border-current"></div>
+                            <strong>Loading...</strong>
+                          </span>
+                        ) : (
+                          <strong> {balance} tokens</strong>
+                        )}
+                      </>
                     ) : (
-                      <strong> {balance} tokens</strong>
+                      <strong>Wallet Connection Required</strong>
                     )}
                   </span>
                   <span>•</span>
                   <span>Creation Cost: <strong>{CREATION_COST} tokens</strong></span>
-                  {!balanceLoading && balance < CREATION_COST && (
+                  {appIsTestMode && !balanceLoading && balance < CREATION_COST && (
                     <span className="text-destructive">• Insufficient tokens!</span>
                   )}
                 </div>
@@ -531,7 +550,7 @@ export default function CreateAgent() {
           </div>
           
           {/* Test Token Button */}
-          {isTestMode && !balanceLoading && balance < CREATION_COST && (
+          {appIsTestMode && !balanceLoading && balance < CREATION_COST && (
             <div className="mb-8 flex justify-center">
               <Button 
                 onClick={() => addTestTokens(5000)}
