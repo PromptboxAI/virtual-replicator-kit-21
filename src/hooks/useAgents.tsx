@@ -28,7 +28,7 @@ export function useAgents() {
   useEffect(() => {
     async function fetchAgents() {
       try {
-        console.log('Fetching agents...');
+        console.log('Fetching agents with isTestMode:', isTestMode);
         const { data, error } = await supabase
           .from('agents')
           .select('*')
@@ -36,7 +36,7 @@ export function useAgents() {
           .eq('test_mode', isTestMode)
           .order('market_cap', { ascending: false });
 
-        console.log('Agents data:', data);
+        console.log('Agents query result - isTestMode:', isTestMode, 'data count:', data?.length || 0);
         console.log('Agents error:', error);
 
         if (error) throw error;
