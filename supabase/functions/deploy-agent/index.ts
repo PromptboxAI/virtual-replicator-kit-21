@@ -769,16 +769,28 @@ serve(async (req) => {
   }
 
   try {
-    const { agentId, framework, name, description, apiKey, environment }: AgentDeploymentRequest = await req.json()
+    console.log('=== DEPLOY AGENT FUNCTION STARTED ===')
+    console.log('Request headers:', Object.fromEntries(req.headers.entries()))
+    
+    const body = await req.json()
+    console.log('Raw request body:', JSON.stringify(body, null, 2))
+    
+    const { agentId, framework, name, description, apiKey, environment }: AgentDeploymentRequest = body
 
     if (!agentId || !framework) {
+      console.error('Missing required fields - agentId:', agentId, 'framework:', framework)
       return new Response(
         JSON.stringify({ error: 'Agent ID and framework are required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    console.log(`Starting deployment for agent ${agentId} on framework ${framework}`)
+    console.log(`=== STARTING DEPLOYMENT ===`)
+    console.log(`Agent ID: ${agentId}`)
+    console.log(`Framework: ${framework}`)
+    console.log(`Name: ${name}`)
+    console.log(`Description: ${description}`)
+    console.log(`Environment:`, environment)
 
     // Check if framework is supported
     const deployHandler = deploymentHandlers[framework]
@@ -799,18 +811,27 @@ serve(async (req) => {
       environment
     })
 
+    console.log('=== DEPLOYMENT COMPLETED ===')
+    console.log('Deployment result:', JSON.stringify(deploymentResult, null, 2))
+
     // Update agent record with deployment information
-    const { error: updateError } = await supabase
+    console.log(`Updating database: setting agent ${agentId} status to ACTIVE...`)
+    const { data: updateData, error: updateError } = await supabase
       .from('agents')
       .update({
         status: 'ACTIVE',
         updated_at: new Date().toISOString(),
-        // Store deployment metadata in a JSON field if available
       })
       .eq('id', agentId)
+      .select()
 
     if (updateError) {
-      console.error('Failed to update agent status:', updateError)
+      console.error('=== DATABASE UPDATE FAILED ===')
+      console.error('Update error:', updateError)
+      console.error('Agent ID used for update:', agentId)
+    } else {
+      console.log('=== DATABASE UPDATE SUCCESS ===')
+      console.log('Updated agent data:', updateData)
     }
 
     console.log(`Successfully deployed agent ${agentId}:`, deploymentResult)
