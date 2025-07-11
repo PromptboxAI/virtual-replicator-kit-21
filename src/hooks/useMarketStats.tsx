@@ -26,7 +26,7 @@ export function useMarketStats() {
         // Get market stats from agents
         const { data: marketData, error: marketError } = await supabase
           .from('agents')
-          .select('market_cap, volume_24h')
+          .select('id, market_cap, volume_24h')
           .eq('is_active', true)
           .eq('test_mode', isTestMode);
 
@@ -41,12 +41,19 @@ export function useMarketStats() {
 
         if (countError) throw countError;
 
-        // Count total unique holders (mock data for now since we don't have real transactions yet)
-        const { count: holdersCount, error: holdersError } = await supabase
-          .from('user_agent_holdings')
-          .select('user_id', { count: 'exact', head: true });
-
-        if (holdersError) throw holdersError;
+        // Count total unique holders - need to join with agents to filter by test_mode
+        const agentIds = marketData?.map(agent => agent.id) || [];
+        let holdersCount = 0;
+        
+        if (agentIds.length > 0) {
+          const { count, error: holdersError } = await supabase
+            .from('user_agent_holdings')
+            .select('user_id', { count: 'exact', head: true })
+            .in('agent_id', agentIds);
+          
+          if (holdersError) throw holdersError;
+          holdersCount = count || 0;
+        }
 
         const totalMarketCap = marketData?.reduce((sum, agent) => sum + (agent.market_cap || 0), 0) || 0;
         const totalVolume = marketData?.reduce((sum, agent) => sum + (agent.volume_24h || 0), 0) || 0;
@@ -55,7 +62,7 @@ export function useMarketStats() {
           totalMarketCap,
           activeAgents: agentCount || 0,
           totalVolume,
-          totalHolders: holdersCount || 0
+          totalHolders: holdersCount
         });
       } catch (err: any) {
         setError(err.message);

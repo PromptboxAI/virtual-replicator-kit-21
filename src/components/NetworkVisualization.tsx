@@ -72,10 +72,16 @@ export function NetworkVisualization({ className }: NetworkVisualizationProps) {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || loading || agents.length === 0) return;
+    if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
+    // Clear canvas if no agents
+    if (loading || agents.length === 0) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      return;
+    }
 
     // Generate nodes once when agents load
     const nodes = generateNodes();
