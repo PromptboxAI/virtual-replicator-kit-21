@@ -306,7 +306,7 @@ export default function CreateAgent() {
           is_active: true,
           creator_id: user.id,
           status: 'ACTIVATING',
-          test_mode: !isTestMode, // Set based on current app mode (inverted because isTestMode means we're in test)
+          test_mode: isTestMode, // Set based on current app mode
         }])
         .select()
         .single();
