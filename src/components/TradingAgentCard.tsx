@@ -89,11 +89,15 @@ export function TradingAgentCard({ agent }: AgentCardProps) {
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {agent.description && (
-          <p className="text-sm text-muted-foreground line-clamp-2">
-            {agent.description}
-          </p>
-        )}
+        <div className="min-h-[2.5rem]">
+          {agent.description ? (
+            <p className="text-sm text-muted-foreground line-clamp-2">
+              {agent.description}
+            </p>
+          ) : (
+            <p className="text-sm text-muted-foreground/60">No description available</p>
+          )}
+        </div>
 
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
