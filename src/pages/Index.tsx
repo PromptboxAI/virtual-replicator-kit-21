@@ -4,6 +4,7 @@ import { SpotlightAgent } from "@/components/SpotlightAgent";
 import { AgentCard } from "@/components/AgentCard";
 import { NetworkVisualization } from "@/components/NetworkVisualization";
 import { MarketStats } from "@/components/MarketStats";
+import { MarketOverview } from "@/components/MarketOverview";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -31,8 +32,8 @@ const Index = () => {
     category: agents[0].category || "AI Agent"
   } : null;
 
-  // Transform agents data for AgentCard component
-  const trendingAgents = agents.slice(1).map((agent, index) => ({
+  // Transform agents data for AgentCard component (limit to top 4)
+  const trendingAgents = agents.slice(1, 5).map((agent, index) => ({
     id: agent.id,
     name: agent.name,
     avatar: agent.avatar_url || [agentAvatar1, agentAvatar2, agentAvatar3][index % 3],
@@ -144,6 +145,20 @@ const Index = () => {
               </div>
             )}
           </div>
+        </div>
+      </section>
+
+      {/* Trading Markets */}
+      <section className="py-8 px-4">
+        <div className="container mx-auto">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-3xl font-bold text-foreground mb-2">Trading Markets</h2>
+              <p className="text-muted-foreground">Trade AI agent tokens on Base with unique bonding curve mechanics</p>
+            </div>
+          </div>
+          
+          <MarketOverview agents={agents} />
         </div>
       </section>
 
