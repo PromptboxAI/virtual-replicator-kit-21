@@ -11,6 +11,7 @@ export function useTokenBalance(userId?: string) {
 
   useEffect(() => {
     if (userId) {
+      setLoading(true); // Reset loading state when mode changes
       fetchBalance();
     } else {
       setLoading(false);
