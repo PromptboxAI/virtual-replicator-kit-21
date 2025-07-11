@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Filter, MoreHorizontal, Loader2 } from "lucide-react";
 import { useAgents } from "@/hooks/useAgents";
+import { useAppMode } from "@/hooks/useAppMode";
 import { useAuth } from "@/hooks/useAuth";
 import { TermsModal } from "@/components/TermsModal";
 import agentAvatar1 from "@/assets/agent-avatar-1.png";
@@ -18,6 +19,7 @@ import agentAvatar3 from "@/assets/agent-avatar-3.png";
 
 const Index = () => {
   const { agents, loading, error } = useAgents();
+  const { isTestMode } = useAppMode();
   const { showTermsModal, handleAcceptTerms } = useAuth();
 
   // Get spotlight agent (highest market cap)
@@ -153,7 +155,15 @@ const Index = () => {
         <div className="container mx-auto">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-3xl font-bold text-foreground mb-2">Trading Markets</h2>
+              <div className="flex items-center gap-3 mb-2">
+                <h2 className="text-3xl font-bold text-foreground">Trading Markets</h2>
+                <div className="flex items-center gap-1.5 px-2 py-1 bg-muted rounded-md">
+                  <div className={`w-2 h-2 rounded-full ${isTestMode ? 'bg-orange-500' : 'bg-green-500'}`}></div>
+                  <span className="text-xs font-medium text-muted-foreground">
+                    {isTestMode ? 'TEST MODE' : 'LIVE MODE'}
+                  </span>
+                </div>
+              </div>
               <p className="text-muted-foreground">Trade AI agent tokens on Base with unique bonding curve mechanics</p>
             </div>
           </div>
