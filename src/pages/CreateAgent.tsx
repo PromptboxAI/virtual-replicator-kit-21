@@ -19,6 +19,7 @@ import { useTokenBalance } from "@/hooks/useTokenBalance";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/hooks/useAuth";
 import { useTwitterAuth } from "@/hooks/useTwitterAuth";
+import { useAppMode } from "@/hooks/useAppMode";
 import { FrameworkSDKService, FRAMEWORK_CONFIGS } from "@/lib/frameworkSDK";
 
 interface AgentFormData {
@@ -106,6 +107,7 @@ export default function CreateAgent() {
   const { user, loading: authLoading, signIn } = useAuth();
   const { balance, loading: balanceLoading, deductTokens, addTestTokens, isTestMode } = useTokenBalance(user?.id);
   const { connectTwitter, disconnectTwitter, isConnecting, connectedAccount, setConnectedAccount } = useTwitterAuth();
+  const { isTestMode: appIsTestMode } = useAppMode();
   const CREATION_COST = 100;
 
   console.log('CreateAgent Debug:', {
@@ -1227,24 +1229,37 @@ export default function CreateAgent() {
                             ) : (
                               <div className="space-y-3">
                                 <div className="p-3 bg-muted rounded-lg">
-                                  <div className="text-sm text-muted-foreground">Your $PROMPT Balance</div>
-                                  <div className="text-lg font-semibold">
-                                    {isTestMode && (
-                                      <span className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded mr-2">
-                                        TEST MODE
-                                      </span>
-                                    )}
-                                    {balance.toLocaleString()} $PROMPT
-                                  </div>
-                                  {isTestMode && (
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => addTestTokens()}
-                                      className="mt-2"
-                                    >
-                                      Add 5,000 Test Tokens
-                                    </Button>
+                                  {appIsTestMode ? (
+                                    <>
+                                      <div className="text-sm text-muted-foreground">Your $PROMPT Balance</div>
+                                      <div className="text-lg font-semibold">
+                                        <span className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded mr-2">
+                                          TEST MODE
+                                        </span>
+                                        {balance.toLocaleString()} $PROMPT
+                                      </div>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => addTestTokens()}
+                                        className="mt-2"
+                                      >
+                                        Add 5,000 Test Tokens
+                                      </Button>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <div className="text-sm text-muted-foreground">Production Mode</div>
+                                      <div className="text-lg font-semibold text-green-600">
+                                        <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded mr-2">
+                                          PRODUCTION
+                                        </span>
+                                        Wallet Connection Required
+                                      </div>
+                                      <p className="text-sm text-muted-foreground mt-2">
+                                        Connect your wallet to use real $PROMPT tokens for agent creation.
+                                      </p>
+                                    </>
                                   )}
                                 </div>
                                 
