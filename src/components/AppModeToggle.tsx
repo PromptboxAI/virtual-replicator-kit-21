@@ -15,28 +15,26 @@ export const AppModeToggle = () => {
   }
 
   return (
-    <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-      <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 px-3 py-2 bg-muted rounded-md">
+      <div className="flex items-center gap-1.5">
         {isTestMode ? (
-          <TestTube className="h-4 w-4 text-orange-500" />
+          <TestTube className="h-3.5 w-3.5 text-orange-500" />
         ) : (
-          <Zap className="h-4 w-4 text-green-500" />
+          <Zap className="h-3.5 w-3.5 text-green-500" />
         )}
-        <Badge variant={isTestMode ? "secondary" : "default"} className={isTestMode ? "bg-orange-100 text-orange-800" : "bg-green-100 text-green-800"}>
-          {isTestMode ? "TEST MODE" : "PRODUCTION"}
+        <Badge 
+          variant={isTestMode ? "secondary" : "default"} 
+          className={`text-xs px-1.5 py-0.5 ${isTestMode ? "bg-orange-100 text-orange-800" : "bg-green-100 text-green-800"}`}
+        >
+          {isTestMode ? "TEST" : "LIVE"}
         </Badge>
       </div>
       
-      <div className="flex items-center space-x-2">
-        <Label htmlFor="mode-toggle" className="text-sm">
-          Production Mode
-        </Label>
-        <Switch
-          id="mode-toggle"
-          checked={!isTestMode}
-          onCheckedChange={(checked) => setAppMode(checked ? 'production' : 'test')}
-        />
-      </div>
+      <Switch
+        checked={!isTestMode}
+        onCheckedChange={(checked) => setAppMode(checked ? 'production' : 'test')}
+        className="scale-75"
+      />
     </div>
   );
 };

@@ -15,7 +15,7 @@ export function useTokenBalance(userId?: string) {
     } else {
       setLoading(false);
     }
-  }, [userId]);
+  }, [userId, isTestMode]); // React to mode changes
 
   const fetchBalance = async () => {
     if (!userId) return;

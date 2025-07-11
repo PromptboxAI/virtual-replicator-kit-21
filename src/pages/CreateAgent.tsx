@@ -522,8 +522,6 @@ export default function CreateAgent() {
               <Coins className="h-4 w-4" />
               <AlertDescription>
                 <div className="flex items-center gap-4">
-                  {isAdmin && appIsTestMode && <span className="text-primary font-medium">TEST MODE</span>}
-                  {isAdmin && !appIsTestMode && <span className="text-green-600 font-medium">PRODUCTION MODE</span>}
                   <span>
                     {appIsTestMode ? (
                       <>
@@ -1254,11 +1252,6 @@ export default function CreateAgent() {
                                     <>
                                       <div className="text-sm text-muted-foreground">Your $PROMPT Balance</div>
                                       <div className="text-lg font-semibold">
-                                        {isAdmin && (
-                                          <span className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded mr-2">
-                                            TEST MODE
-                                          </span>
-                                        )}
                                         {balance.toLocaleString()} $PROMPT
                                       </div>
                                       <Button
@@ -1272,15 +1265,8 @@ export default function CreateAgent() {
                                     </>
                                   ) : (
                                     <>
-                                      <div className="text-sm text-muted-foreground">
-                                        {isAdmin ? "Production Mode" : "Wallet Required"}
-                                      </div>
+                                      <div className="text-sm text-muted-foreground">Wallet Required</div>
                                       <div className="text-lg font-semibold text-green-600">
-                                        {isAdmin && (
-                                          <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded mr-2">
-                                            PRODUCTION
-                                          </span>
-                                        )}
                                         Wallet Connection Required
                                       </div>
                                       <p className="text-sm text-muted-foreground mt-2">
