@@ -7,7 +7,10 @@ import { TestTube, Zap } from 'lucide-react';
 export const AppModeToggle = () => {
   const { mode, setAppMode, canChangeMode, isTestMode } = useAppMode();
 
+  console.log('AppModeToggle - canChangeMode:', canChangeMode, 'isTestMode:', isTestMode, 'mode:', mode);
+
   if (!canChangeMode) {
+    console.log('AppModeToggle - returning null because canChangeMode is false');
     return null;
   }
 
