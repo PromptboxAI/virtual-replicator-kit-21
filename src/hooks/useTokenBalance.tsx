@@ -12,7 +12,14 @@ export function useTokenBalance(userId?: string) {
   useEffect(() => {
     if (userId) {
       setLoading(true); // Reset loading state when mode changes
-      fetchBalance();
+      if (!isTestMode) {
+        // In production mode, reset balance to 0 immediately
+        setBalance(0);
+        setLoading(false);
+      } else {
+        // In test mode, fetch the actual balance
+        fetchBalance();
+      }
     } else {
       setLoading(false);
     }

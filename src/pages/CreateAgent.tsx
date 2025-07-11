@@ -106,7 +106,7 @@ export default function CreateAgent() {
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   
   const { user, loading: authLoading, signIn } = useAuth();
-  const { balance, loading: balanceLoading, deductTokens, addTestTokens, isTestMode } = useTokenBalance(user?.id);
+  const { balance, loading: balanceLoading, deductTokens, addTestTokens } = useTokenBalance(user?.id);
   const { connectTwitter, disconnectTwitter, isConnecting, connectedAccount, setConnectedAccount } = useTwitterAuth();
   const { isTestMode: appIsTestMode } = useAppMode();
   const { isAdmin } = useUserRole();
