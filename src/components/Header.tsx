@@ -32,9 +32,6 @@ export function Header() {
               <Link to="/" className="text-foreground hover:text-primary transition-colors font-medium">
                 AI Agents
               </Link>
-              <Link to="/market" className="text-foreground hover:text-primary transition-colors font-medium">
-                Market
-              </Link>
               <Link to="/create" className="text-foreground hover:text-primary transition-colors font-medium">
                 Create Agent
               </Link>
