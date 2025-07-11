@@ -31,6 +31,8 @@ export function useAgents() {
     async function fetchAgents() {
       try {
         console.log('Fetching agents with isTestMode:', isTestMode);
+        console.log('Query params: is_active=true, test_mode=', isTestMode);
+        
         const { data, error } = await supabase
           .from('agents')
           .select('*')
@@ -39,6 +41,7 @@ export function useAgents() {
           .order('market_cap', { ascending: false });
 
         console.log('Agents query result - isTestMode:', isTestMode, 'data count:', data?.length || 0);
+        console.log('Sample agent test_mode values:', data?.slice(0, 3).map(a => ({ name: a.name, test_mode: a.test_mode })));
         console.log('Agents error:', error);
 
         if (error) throw error;
