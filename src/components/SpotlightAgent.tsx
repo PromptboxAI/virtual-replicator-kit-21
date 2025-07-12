@@ -23,13 +23,15 @@ interface SpotlightAgentProps {
 export function SpotlightAgent({ agent }: SpotlightAgentProps) {
   const isPositive = (agent.price_change_24h || 0) > 0;
   
-  const formatPrice = (price: number) => {
+  const formatPrice = (price?: number) => {
+    if (typeof price !== 'number' || isNaN(price)) return '$0.00';
     if (price < 0.000001) return price.toExponential(3);
     if (price < 0.01) return price.toFixed(6);
     return price.toFixed(4);
   };
 
-  const formatMarketCap = (marketCap: number) => {
+  const formatMarketCap = (marketCap?: number) => {
+    if (typeof marketCap !== 'number' || isNaN(marketCap)) return 'N/A';
     if (marketCap >= 1000000) return `$${(marketCap / 1000000).toFixed(1)}M`;
     if (marketCap >= 1000) return `$${(marketCap / 1000).toFixed(1)}K`;
     return `$${marketCap.toFixed(0)}`;
