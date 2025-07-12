@@ -22,17 +22,8 @@ const Index = () => {
   const { isTestMode } = useAppMode();
   const { showTermsModal, handleAcceptTerms } = useAuth();
 
-  // Get spotlight agent (highest market cap)
-  const spotlightAgent = agents.length > 0 ? {
-    name: agents[0].name,
-    avatar: agents[0].avatar_url || agentAvatar1,
-    price: `$${agents[0].current_price.toFixed(2)}`,
-    change: agents[0].price_change_24h || 0,
-    volume: "24h Vol",
-    transactions: 1198, // This could be calculated from transactions table
-    description: agents[0].description || "AI Agent",
-    category: agents[0].category || "AI Agent"
-  } : null;
+  // Use first agent directly for spotlight
+  const spotlightAgent = agents.length > 0 ? agents[0] : null;
 
   // Transform agents data for AgentCard component (limit to top 4)
   const trendingAgents = agents.slice(1, 5).map((agent, index) => ({

@@ -132,20 +132,31 @@ export function TradingAgentCard({ agent }: AgentCardProps) {
           </div>
         </div>
 
-        {/* Bonding Curve Progress */}
-        {!agent.token_graduated && agent.prompt_raised !== undefined && (
+        {/* Bonding Curve Progress / Live Status */}
+        {agent.token_graduated ? (
           <div className="space-y-2">
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>Bonding Curve Progress</span>
-              <span>{agent.prompt_raised.toLocaleString()} / 42,000</span>
+            <div className="flex justify-between text-xs">
+              <span className="text-green-600 font-medium">LIVE</span>
             </div>
             <div className="w-full bg-muted rounded-full h-1.5">
-              <div 
-                className="bg-primary h-1.5 rounded-full transition-all"
-                style={{ width: `${Math.min((agent.prompt_raised / 42000) * 100, 100)}%` }}
-              />
+              <div className="bg-green-600 h-1.5 rounded-full transition-all w-full" />
             </div>
           </div>
+        ) : (
+          agent.prompt_raised !== undefined && (
+            <div className="space-y-2">
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>Bonding Curve Progress</span>
+                <span>{agent.prompt_raised.toLocaleString()} / 42,000</span>
+              </div>
+              <div className="w-full bg-muted rounded-full h-1.5">
+                <div 
+                  className="bg-primary h-1.5 rounded-full transition-all"
+                  style={{ width: `${Math.min((agent.prompt_raised / 42000) * 100, 100)}%` }}
+                />
+              </div>
+            </div>
+          )
         )}
 
         <Button 
