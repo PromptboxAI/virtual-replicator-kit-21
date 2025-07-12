@@ -138,7 +138,7 @@ export function TradingInterface({
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Price</p>
               <div className="flex items-center gap-2">
-                <p className="text-lg font-semibold">${metrics.currentPrice.toFixed(2)}</p>
+                <p className="text-lg font-semibold">${metrics.currentPrice >= 1 ? metrics.currentPrice.toFixed(2) : metrics.currentPrice.toFixed(6)}</p>
                 <Badge variant={metrics.priceChange24h >= 0 ? "default" : "destructive"}>
                   {metrics.priceChange24h >= 0 ? (
                     <TrendingUp className="h-3 w-3 mr-1" />

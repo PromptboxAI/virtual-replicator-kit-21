@@ -106,7 +106,7 @@ export default function TradingPage() {
             </div>
             <div className="text-right">
               <div className="text-2xl font-bold">
-                ${Number(agent.current_price).toFixed(2)}
+                ${Number(agent.current_price) >= 1 ? Number(agent.current_price).toFixed(2) : Number(agent.current_price).toFixed(6)}
               </div>
               <div className={`text-sm ${
                 (agent.price_change_24h || 0) >= 0 
