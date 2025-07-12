@@ -25,6 +25,15 @@ interface TradingInterfaceProps {
   tokenAddress?: string;
   onConnect?: () => void;
   isConnected: boolean;
+  // Pass real agent data instead of fetching mock data
+  currentPrice: number;
+  marketCap: number;
+  volume24h: number;
+  priceChange24h: number;
+  promptRaised: number;
+  tokenHolders: number;
+  circulatingSupply: number;
+  tokenGraduated: boolean;
 }
 
 export function TradingInterface({ 
@@ -33,7 +42,15 @@ export function TradingInterface({
   agentSymbol, 
   tokenAddress,
   onConnect,
-  isConnected 
+  isConnected,
+  currentPrice,
+  marketCap,
+  volume24h,
+  priceChange24h,
+  promptRaised,
+  tokenHolders,
+  circulatingSupply,
+  tokenGraduated
 }: TradingInterfaceProps) {
   const [metrics, setMetrics] = useState<AgentMetrics | null>(null);
   const [buyAmount, setBuyAmount] = useState('');
@@ -43,23 +60,18 @@ export function TradingInterface({
   const { toast } = useToast();
 
   useEffect(() => {
-    // Load metrics for all agents (test and live)
-    fetchTokenMetrics();
-  }, [agentId]);
-
-  const fetchTokenMetrics = async () => {
-    // Mock data for now - will be replaced with actual contract calls
+    // Use real agent data instead of mock data
     setMetrics({
-      promptRaised: 25000,
-      currentPrice: 0.02716,
-      marketCap: 27640,
-      circulatingSupply: 1018000,
-      graduated: false,
-      holders: 27483,
-      volume24h: 613200,
-      priceChange24h: -2.15
+      promptRaised,
+      currentPrice,
+      marketCap,
+      circulatingSupply,
+      graduated: tokenGraduated,
+      holders: tokenHolders,
+      volume24h,
+      priceChange24h
     });
-  };
+  }, [currentPrice, marketCap, volume24h, priceChange24h, promptRaised, tokenHolders, circulatingSupply, tokenGraduated]);
 
   const handleBuy = async () => {
     if (!isConnected) {

@@ -127,6 +127,14 @@ export default function TradingPage() {
             tokenAddress={agent.token_address}
             onConnect={signIn}
             isConnected={!!user}
+            currentPrice={agent.current_price}
+            marketCap={agent.market_cap || 0}
+            volume24h={agent.volume_24h || 0}
+            priceChange24h={agent.price_change_24h || 0}
+            promptRaised={agent.prompt_raised || 0}
+            tokenHolders={agent.token_holders || 0}
+            circulatingSupply={agent.circulating_supply || 0}
+            tokenGraduated={agent.token_graduated || false}
           />
         </div>
       </main>
