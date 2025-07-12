@@ -27,7 +27,7 @@ export function SpotlightAgent({ agent }: SpotlightAgentProps) {
     if (typeof price !== 'number' || isNaN(price)) return '$0.00';
     if (price < 0.000001) return price.toExponential(3);
     if (price < 0.01) return price.toFixed(6);
-    return price.toFixed(4);
+    return price.toFixed(2);
   };
 
   const formatMarketCap = (marketCap?: number) => {
@@ -151,26 +151,6 @@ export function SpotlightAgent({ agent }: SpotlightAgentProps) {
             </div>
           )
         )}
-        
-        {/* Performance Chart Placeholder */}
-        <div className="h-20 bg-muted/20 rounded-lg border border-border relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent"></div>
-          <svg className="w-full h-full" viewBox="0 0 300 80">
-            <polyline
-              fill="none"
-              stroke="url(#gradient)"
-              strokeWidth="2"
-              points="0,60 30,45 60,50 90,30 120,35 150,20 180,25 210,15 240,20 270,10 300,15"
-            />
-            <defs>
-              <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.3" />
-                <stop offset="50%" stopColor="hsl(var(--secondary))" stopOpacity="0.8" />
-                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.3" />
-              </linearGradient>
-            </defs>
-          </svg>
-        </div>
       </Card>
     </div>
   );
