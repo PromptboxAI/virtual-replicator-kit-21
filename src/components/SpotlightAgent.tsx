@@ -1,6 +1,8 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, Activity } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { TrendingUp, TrendingDown, Activity, BarChart3 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface SpotlightAgentProps {
   agent: {
@@ -21,7 +23,12 @@ interface SpotlightAgentProps {
 }
 
 export function SpotlightAgent({ agent }: SpotlightAgentProps) {
+  const navigate = useNavigate();
   const isPositive = (agent.price_change_24h || 0) > 0;
+  
+  const handleTradeClick = () => {
+    navigate(`/trade/${agent.id}`);
+  };
   
   const formatPrice = (price?: number) => {
     if (typeof price !== 'number' || isNaN(price)) return '$0.00';
@@ -151,6 +158,14 @@ export function SpotlightAgent({ agent }: SpotlightAgentProps) {
             </div>
           )
         )}
+
+        <Button 
+          onClick={handleTradeClick}
+          className="w-full mt-4"
+        >
+          <BarChart3 className="h-4 w-4 mr-2" />
+          Trade {agent.symbol}
+        </Button>
       </Card>
     </div>
   );
