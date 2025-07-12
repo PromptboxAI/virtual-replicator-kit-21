@@ -60,18 +60,77 @@ export function TradingInterface({
   const { toast } = useToast();
 
   useEffect(() => {
-    // Use real agent data instead of mock data
-    setMetrics({
-      promptRaised,
-      currentPrice,
-      marketCap,
-      circulatingSupply,
-      graduated: tokenGraduated,
-      holders: tokenHolders,
-      volume24h,
-      priceChange24h
-    });
-  }, [currentPrice, marketCap, volume24h, priceChange24h, promptRaised, tokenHolders, circulatingSupply, tokenGraduated]);
+    // Fetch real-time data from Moralis for graduated tokens, use agent data for others
+    if (tokenGraduated && tokenAddress) {
+      fetchLiveTokenData();
+    } else {
+      // Use agent data for bonding curve tokens
+      setMetrics({
+        promptRaised,
+        currentPrice,
+        marketCap,
+        circulatingSupply,
+        graduated: tokenGraduated,
+        holders: tokenHolders,
+        volume24h,
+        priceChange24h
+      });
+    }
+  }, [tokenGraduated, tokenAddress, currentPrice, marketCap, volume24h, priceChange24h, promptRaised, tokenHolders, circulatingSupply]);
+
+  const fetchLiveTokenData = async () => {
+    try {
+      const response = await fetch('/functions/v1/fetch-token-data', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          tokenAddress,
+          chain: 'base'
+        })
+      });
+
+      if (response.ok) {
+        const liveData = await response.json();
+        setMetrics({
+          promptRaised,
+          currentPrice: liveData.currentPrice,
+          marketCap: liveData.marketCap,
+          circulatingSupply: liveData.circulatingSupply,
+          graduated: tokenGraduated,
+          holders: liveData.holders,
+          volume24h: liveData.volume24h,
+          priceChange24h: liveData.priceChange24h
+        });
+      } else {
+        // Fallback to agent data if API fails
+        setMetrics({
+          promptRaised,
+          currentPrice,
+          marketCap,
+          circulatingSupply,
+          graduated: tokenGraduated,
+          holders: tokenHolders,
+          volume24h,
+          priceChange24h
+        });
+      }
+    } catch (error) {
+      console.error('Failed to fetch live token data:', error);
+      // Fallback to agent data
+      setMetrics({
+        promptRaised,
+        currentPrice,
+        marketCap,
+        circulatingSupply,
+        graduated: tokenGraduated,
+        holders: tokenHolders,
+        volume24h,
+        priceChange24h
+      });
+    }
+  };
 
   const handleBuy = async () => {
     if (!isConnected) {
