@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, TrendingDown, BarChart3, Users, Activity } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { TradingChart } from './TradingChart';
 
 interface AgentMetrics {
   promptRaised: number;
@@ -194,6 +195,140 @@ export function TradingInterface({
     );
   }
 
+  // Different layout for graduated vs bonding curve tokens
+  if (metrics.graduated && tokenAddress) {
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+        {/* Chart Section - Takes up 2/3 of the width */}
+        <div className="lg:col-span-2">
+          <TradingChart
+            tokenAddress={tokenAddress}
+            agentSymbol={agentSymbol}
+            currentPrice={metrics.currentPrice}
+            priceChange24h={metrics.priceChange24h}
+          />
+        </div>
+
+        {/* Trading Section - Takes up 1/3 of the width */}
+        <div className="space-y-6">
+          {/* Swap Interface */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Swap</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="buy">Buy</TabsTrigger>
+                  <TabsTrigger value="sell">Sell</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="buy" className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">From ETH</label>
+                    <Input
+                      type="number"
+                      placeholder="0.0"
+                      value={buyAmount}
+                      onChange={(e) => setBuyAmount(e.target.value)}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">To {agentSymbol}</label>
+                    <Input
+                      type="number"
+                      placeholder="0.0"
+                      disabled
+                      value={buyAmount ? (parseFloat(buyAmount) / metrics.currentPrice).toFixed(6) : ''}
+                    />
+                  </div>
+                  
+                  <Button 
+                    onClick={handleBuy}
+                    disabled={!buyAmount || loading}
+                    className="w-full"
+                  >
+                    {loading ? "Processing..." : isConnected ? "Swap" : "Connect Wallet"}
+                  </Button>
+                </TabsContent>
+                
+                <TabsContent value="sell" className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">From {agentSymbol}</label>
+                    <Input
+                      type="number"
+                      placeholder="0.0"
+                      value={sellAmount}
+                      onChange={(e) => setSellAmount(e.target.value)}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">To ETH</label>
+                    <Input
+                      type="number"
+                      placeholder="0.0"
+                      disabled
+                      value={sellAmount ? (parseFloat(sellAmount) * metrics.currentPrice).toFixed(6) : ''}
+                    />
+                  </div>
+                  
+                  <Button 
+                    onClick={handleSell}
+                    disabled={!sellAmount || loading}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    {loading ? "Processing..." : isConnected ? "Swap" : "Connect Wallet"}
+                  </Button>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+
+          {/* Bridge Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Bridge</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">From</span>
+                  <Badge variant="outline">Base</Badge>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">To</span>
+                  <Badge variant="outline">Virtual</Badge>
+                </div>
+                <Button variant="outline" className="w-full" disabled>
+                  Coming Soon
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* DEX Options */}
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <Activity className="h-4 w-4" />
+                  <span className="text-sm">Powered by OKX DEX</span>
+                </div>
+                <Button variant="link" size="sm">
+                  Swap on Uniswap Instead
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // Original layout for bonding curve tokens
   return (
     <div className="space-y-6">
       {/* Token Metrics */}
@@ -209,7 +344,7 @@ export function TradingInterface({
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Price</p>
               <div className="flex items-center gap-2">
-                <p className="text-lg font-semibold">${metrics.currentPrice >= 1 ? metrics.currentPrice.toFixed(2) : metrics.currentPrice.toFixed(6)}</p>
+                <p className="text-lg font-semibold">${metrics.currentPrice >= 0.01 ? metrics.currentPrice.toFixed(2) : metrics.currentPrice.toFixed(6)}</p>
                 <Badge variant={metrics.priceChange24h >= 0 ? "default" : "destructive"}>
                   {metrics.priceChange24h >= 0 ? (
                     <TrendingUp className="h-3 w-3 mr-1" />
@@ -243,30 +378,28 @@ export function TradingInterface({
       </Card>
 
       {/* Bonding Curve Progress */}
-      {!metrics.graduated && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Bonding Curve Progress</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex justify-between text-sm">
-                <span>PROMPT Raised</span>
-                <span>{metrics.promptRaised.toLocaleString()} / 42,000</span>
-              </div>
-              <div className="w-full bg-muted rounded-full h-2">
-                <div 
-                  className="bg-primary h-2 rounded-full transition-all"
-                  style={{ width: `${(metrics.promptRaised / 42000) * 100}%` }}
-                />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                When 42,000 PROMPT is raised, this token will graduate to Uniswap
-              </p>
+      <Card>
+        <CardHeader>
+          <CardTitle>Bonding Curve Progress</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            <div className="flex justify-between text-sm">
+              <span>PROMPT Raised</span>
+              <span>{metrics.promptRaised.toLocaleString()} / 42,000</span>
             </div>
-          </CardContent>
-        </Card>
-      )}
+            <div className="w-full bg-muted rounded-full h-2">
+              <div 
+                className="bg-primary h-2 rounded-full transition-all"
+                style={{ width: `${(metrics.promptRaised / 42000) * 100}%` }}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              When 42,000 PROMPT is raised, this token will graduate to Uniswap
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Trading Interface */}
       <Card>
