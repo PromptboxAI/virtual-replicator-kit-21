@@ -175,12 +175,8 @@ export default function AllAgents() {
                   )}
                   <div>
                     <div className="font-medium text-foreground">{agent.name}</div>
-                    <div className="text-xs text-muted-foreground flex items-center gap-2">
+                    <div className="text-xs text-muted-foreground">
                       ${agent.symbol}
-                      <Badge variant="secondary" className="text-xs py-0 px-1">
-                        <div className="w-1 h-1 bg-green-500 rounded-full mr-1" />
-                        Lvl 1
-                      </Badge>
                     </div>
                   </div>
                 </div>
