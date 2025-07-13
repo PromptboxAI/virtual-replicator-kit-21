@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { TrendingUp, TrendingDown, BarChart3, Users, Activity } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { TradingChart } from './TradingChart';
+import { OKXDEXWidget } from './OKXDEXWidget';
 
 interface AgentMetrics {
   promptRaised: number;
@@ -211,81 +212,13 @@ export function TradingInterface({
 
         {/* Trading Section - Takes up 1/3 of the width */}
         <div className="space-y-6">
-          {/* Swap Interface */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Swap</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="buy">Buy</TabsTrigger>
-                  <TabsTrigger value="sell">Sell</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="buy" className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">From ETH</label>
-                    <Input
-                      type="number"
-                      placeholder="0.0"
-                      value={buyAmount}
-                      onChange={(e) => setBuyAmount(e.target.value)}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">To {agentSymbol}</label>
-                    <Input
-                      type="number"
-                      placeholder="0.0"
-                      disabled
-                      value={buyAmount ? (parseFloat(buyAmount) / metrics.currentPrice).toFixed(6) : ''}
-                    />
-                  </div>
-                  
-                  <Button 
-                    onClick={handleBuy}
-                    disabled={!buyAmount || loading}
-                    className="w-full"
-                  >
-                    {loading ? "Processing..." : isConnected ? "Swap" : "Connect Wallet"}
-                  </Button>
-                </TabsContent>
-                
-                <TabsContent value="sell" className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">From {agentSymbol}</label>
-                    <Input
-                      type="number"
-                      placeholder="0.0"
-                      value={sellAmount}
-                      onChange={(e) => setSellAmount(e.target.value)}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">To ETH</label>
-                    <Input
-                      type="number"
-                      placeholder="0.0"
-                      disabled
-                      value={sellAmount ? (parseFloat(sellAmount) * metrics.currentPrice).toFixed(6) : ''}
-                    />
-                  </div>
-                  
-                  <Button 
-                    onClick={handleSell}
-                    disabled={!sellAmount || loading}
-                    variant="outline"
-                    className="w-full"
-                  >
-                    {loading ? "Processing..." : isConnected ? "Swap" : "Connect Wallet"}
-                  </Button>
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
+          {/* OKX DEX Widget */}
+          <OKXDEXWidget
+            tokenAddress={tokenAddress}
+            agentSymbol={agentSymbol}
+            onConnect={onConnect}
+            isConnected={isConnected}
+          />
 
           {/* Bridge Section */}
           <Card>
