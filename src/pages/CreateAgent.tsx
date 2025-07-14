@@ -24,7 +24,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { FrameworkSDKService, FRAMEWORK_CONFIGS } from "@/lib/frameworkSDK";
 import { useAgentTokenFactory } from "@/hooks/useAgentTokens";
 import { useAccount } from 'wagmi';
-import { BuilderRouter } from "@/components/builders/BuilderRouter";
+
 
 interface AgentFormData {
   name: string;
@@ -195,25 +195,6 @@ export default function CreateAgent() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleCategoryBuilderNext = (builderConfig: any) => {
-    // Store the category-specific builder config
-    console.log('Category builder config:', builderConfig);
-    
-    // Update form data with category-specific configuration
-    setFormData(prev => ({
-      ...prev,
-      // The builderConfig contains category-specific settings
-      // This will be used later for agent deployment
-      ...builderConfig
-    }));
-    
-    // Move to project pitch step
-    setCurrentStep(2);
-  };
-
-  const handleBackToCategory = () => {
-    setFormData(prev => ({ ...prev, category: '' }));
-  };
 
   const handleAvatarUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -485,13 +466,13 @@ export default function CreateAgent() {
 
   const estimatedMarketCap = 0; // Will be determined by bonding curve
 
-  // Progress steps
+  // Progress steps - Simplified flow for speed
   const steps = [
-    "AI Agent Details",
+    "Basic Details",
     "Project Pitch", 
     "Framework",
     "Tokenomics",
-    "Summary"
+    "Launch"
   ];
 
   return (
@@ -805,16 +786,121 @@ export default function CreateAgent() {
                 </>
               )}
 
-              {/* Step 1: Category-Specific Builder */}
+              {/* Step 1: Project Pitch */}
               {currentStep === 1 && (
-                <BuilderRouter
-                  selectedCategory={formData.category}
-                  onBack={() => setCurrentStep(0)}
-                  onNext={handleCategoryBuilderNext}
-                />
+                <>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Info className="h-5 w-5 text-primary" />
+                        Project Pitch
+                      </CardTitle>
+                      <CardDescription>
+                        Create a compelling pitch for your AI Agent
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div>
+                        <Label htmlFor="short_pitch" className="flex items-center gap-1">
+                          Short Pitch <span className="text-red-500">*</span>
+                        </Label>
+                         <Textarea
+                          id="short_pitch"
+                          placeholder="A concise, engaging summary of your AI Agent (max 500 characters)"
+                          value={formData.short_pitch}
+                          onChange={(e) => handleInputChange('short_pitch', e.target.value)}
+                          rows={8}
+                          maxLength={500}
+                          className="mt-2 min-h-[300px]"
+                        />
+                        <div className="flex justify-between items-center mt-1">
+                          <p className="text-xs text-muted-foreground">
+                            Keep it concise and engaging
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {formData.short_pitch.length} / 500
+                          </p>
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="agent_overview" className="flex items-center gap-1">
+                          AI Agent Whitepaper <span className="text-red-500">*</span>
+                        </Label>
+                        <div className="space-y-2 mb-4">
+                          <p className="text-sm text-muted-foreground">
+                            <strong>This is your agent's whitepaper.</strong> Provide comprehensive details about your AI Agent:
+                          </p>
+                          <ul className="text-xs text-muted-foreground space-y-1 ml-4">
+                            <li>• <strong>Capabilities:</strong> What can your agent do? What problems does it solve?</li>
+                            <li>• <strong>Technology:</strong> How does it work? What frameworks or models does it use?</li>
+                            <li>• <strong>Roadmap:</strong> What are your development plans and milestones?</li>
+                            <li>• <strong>Partnerships:</strong> Any strategic collaborations or integrations?</li>
+                            <li>• <strong>Tokenomics:</strong> How does your token create value for holders?</li>
+                            <li>• <strong>Use Cases:</strong> Real-world applications and target markets</li>
+                          </ul>
+                        </div>
+                         <Textarea
+                          id="agent_overview"
+                          placeholder="**AI Agent Whitepaper**
+
+## Overview
+Provide a comprehensive overview of your AI Agent...
+
+## Capabilities
+- What can your agent do?
+- What problems does it solve?
+- Key features and functionalities
+
+## Technology Stack
+- Frameworks and models used
+- Technical architecture
+- AI/ML capabilities
+
+## Roadmap
+- Development milestones
+- Future features
+- Timeline for implementation
+
+## Partnerships & Integrations
+- Strategic collaborations
+- API integrations
+- Ecosystem partnerships
+
+## Tokenomics
+- How tokens create value
+- Revenue distribution
+- Success metrics"
+                          value={formData.agent_overview}
+                          onChange={(e) => handleInputChange('agent_overview', e.target.value)}
+                          rows={20}
+                          className="mt-2 min-h-[500px] text-sm"
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Step 1 Action Buttons */}
+                  <div className="flex gap-4">
+                    <Button
+                      onClick={() => setCurrentStep(0)}
+                      variant="outline"
+                      className="flex-1"
+                    >
+                      Back
+                    </Button>
+                    <Button
+                      onClick={() => setCurrentStep(2)}
+                      disabled={!formData.short_pitch.trim() || !formData.agent_overview.trim()}
+                      className="flex-1 bg-gradient-primary hover:opacity-90"
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </>
               )}
 
-              {/* Step 2: Project Pitch */}
+              {/* Step 2: Framework */}
               {currentStep === 2 && (
                 <>
                   <Card>
@@ -913,23 +999,6 @@ Provide a comprehensive overview of your AI Agent...
                     </CardContent>
                   </Card>
 
-                  {/* Step 2 Action Buttons */}
-                  <div className="flex gap-4">
-                    <Button
-                      onClick={() => setCurrentStep(1)}
-                      variant="outline"
-                      className="flex-1"
-                    >
-                      Back
-                    </Button>
-                    <Button
-                      onClick={() => setCurrentStep(3)}
-                      disabled={!formData.short_pitch.trim() || !formData.agent_overview.trim()}
-                      className="flex-1 bg-gradient-primary hover:opacity-90"
-                    >
-                      Next
-                    </Button>
-                  </div>
                 </>
               )}
 
@@ -1273,10 +1342,10 @@ Provide a comprehensive overview of your AI Agent...
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <TrendingUp className="h-5 w-5 text-primary" />
-                        Summary & Launch
+                        Launch
                       </CardTitle>
                       <CardDescription>
-                        Review your AI Agent details and launch it
+                        Launch your AI Agent on the bonding curve
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
