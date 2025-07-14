@@ -142,7 +142,6 @@ export default function AgentManagement() {
                 <Badge variant={agent.is_active ? "default" : "secondary"}>
                   {agent.is_active ? "Active" : "Inactive"}
                 </Badge>
-                <Badge variant="outline">{agent.status || 'AVAILABLE'}</Badge>
                 {agent.twitter_api_configured && (
                   <Badge variant="outline" className="text-blue-500">
                     <Twitter className="w-3 h-3 mr-1" />
