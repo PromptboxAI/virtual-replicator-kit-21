@@ -14,6 +14,126 @@ export type Database = {
   }
   public: {
     Tables: {
+      agent_activities: {
+        Row: {
+          activity_type: string
+          agent_id: string
+          created_at: string
+          description: string | null
+          id: string
+          metadata: Json | null
+          result: Json | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          activity_type: string
+          agent_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          result?: Json | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          activity_type?: string
+          agent_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          result?: Json | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_activities_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_interactions: {
+        Row: {
+          agent_id: string
+          content: string
+          created_at: string
+          id: string
+          message_type: string
+          metadata: Json | null
+          user_id: string
+        }
+        Insert: {
+          agent_id: string
+          content: string
+          created_at?: string
+          id?: string
+          message_type: string
+          metadata?: Json | null
+          user_id: string
+        }
+        Update: {
+          agent_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          message_type?: string
+          metadata?: Json | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_interactions_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_logs: {
+        Row: {
+          agent_id: string
+          context: Json | null
+          created_at: string
+          id: string
+          log_level: string
+          message: string
+        }
+        Insert: {
+          agent_id: string
+          context?: Json | null
+          created_at?: string
+          id?: string
+          log_level?: string
+          message: string
+        }
+        Update: {
+          agent_id?: string
+          context?: Json | null
+          created_at?: string
+          id?: string
+          log_level?: string
+          message?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_logs_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agent_price_history: {
         Row: {
           agent_id: string
@@ -88,6 +208,53 @@ export type Database = {
             foreignKeyName: "agent_price_snapshots_agent_id_fkey"
             columns: ["agent_id"]
             isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_runtime_status: {
+        Row: {
+          agent_id: string
+          created_at: string
+          current_goal: string | null
+          id: string
+          is_active: boolean
+          last_activity_at: string | null
+          performance_metrics: Json | null
+          revenue_generated: number | null
+          tasks_completed: number | null
+          updated_at: string
+        }
+        Insert: {
+          agent_id: string
+          created_at?: string
+          current_goal?: string | null
+          id?: string
+          is_active?: boolean
+          last_activity_at?: string | null
+          performance_metrics?: Json | null
+          revenue_generated?: number | null
+          tasks_completed?: number | null
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string
+          created_at?: string
+          current_goal?: string | null
+          id?: string
+          is_active?: boolean
+          last_activity_at?: string | null
+          performance_metrics?: Json | null
+          revenue_generated?: number | null
+          tasks_completed?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_runtime_status_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: true
             referencedRelation: "agents"
             referencedColumns: ["id"]
           },

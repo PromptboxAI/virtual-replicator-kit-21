@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -5,14 +6,66 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { Bot, TrendingUp, TrendingDown, DollarSign, Users, Plus, Loader2, AlertCircle } from "lucide-react";
+import { Bot, TrendingUp, TrendingDown, DollarSign, Users, Plus, Loader2, AlertCircle, Zap, Clock } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useMyAgents } from "@/hooks/useMyAgents";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 
 export default function MyAgents() {
   const { user, loading: authLoading, signIn } = useAuth();
   const { myAgents, loading, error } = useMyAgents(user?.id);
+  const [agentStatuses, setAgentStatuses] = useState<Record<string, any>>({});
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (myAgents.length > 0) {
+      fetchAgentStatuses();
+    }
+  }, [myAgents]);
+
+  const fetchAgentStatuses = async () => {
+    const statuses: Record<string, any> = {};
+    
+    for (const agent of myAgents) {
+      try {
+        const { data } = await supabase.functions.invoke('agent-runtime', {
+          body: { action: 'get_status', agentId: agent.id }
+        });
+        
+        if (data?.success) {
+          statuses[agent.id] = data.status;
+        }
+      } catch (error) {
+        console.error(`Failed to fetch status for agent ${agent.id}:`, error);
+      }
+    }
+    
+    setAgentStatuses(statuses);
+  };
+
+  const executeAgentCycle = async (agentId: string) => {
+    try {
+      await supabase.functions.invoke('agent-runtime', {
+        body: { action: 'execute_cycle', agentId }
+      });
+      
+      toast({
+        title: "Agent Activated",
+        description: "Agent execution cycle started successfully",
+      });
+      
+      // Refresh status after a delay
+      setTimeout(() => fetchAgentStatuses(), 2000);
+    } catch (error) {
+      toast({
+        title: "Activation Failed",
+        description: "Failed to start agent execution",
+        variant: "destructive",
+      });
+    }
+  };
 
   // Show loading state
   if (authLoading || loading) {
@@ -267,12 +320,49 @@ export default function MyAgents() {
                     
                     <Separator />
                     
+                    {/* Agent Runtime Status */}
+                    {agentStatuses[agent.id] && (
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">AI Status</span>
+                          <div className="flex items-center gap-1">
+                            <div className={`w-2 h-2 rounded-full ${
+                              agentStatuses[agent.id].is_active ? 'bg-green-500' : 'bg-gray-400'
+                            }`} />
+                            <span className="font-medium">
+                              {agentStatuses[agent.id].is_active ? 'Active' : 'Inactive'}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Tasks Done</span>
+                          <span className="font-medium">{agentStatuses[agent.id].tasks_completed || 0}</span>
+                        </div>
+                        
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">AI Revenue</span>
+                          <span className="font-medium">${(agentStatuses[agent.id].revenue_generated || 0).toFixed(2)}</span>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <Separator />
+                    
                     <div className="flex gap-2">
-                      <Button variant="outline" className="flex-1" size="sm">
-                        View Details
-                      </Button>
-                      <Button variant="outline" className="flex-1" size="sm">
-                        Edit Agent
+                      <Link to={`/agent/${agent.id}`} className="flex-1">
+                        <Button variant="outline" size="sm" className="w-full">
+                          View Details
+                        </Button>
+                      </Link>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="flex-1" 
+                        onClick={() => executeAgentCycle(agent.id)}
+                      >
+                        <Zap className="h-3 w-3 mr-1" />
+                        Execute
                       </Button>
                     </div>
                   </CardContent>

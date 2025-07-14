@@ -8,6 +8,7 @@ import { TrendingUp, TrendingDown, BarChart3, Users, Activity } from 'lucide-rea
 import { useToast } from '@/hooks/use-toast';
 import { TradingChart } from './TradingChart';
 import { OKXDEXWidget } from './OKXDEXWidget';
+import { AgentDashboard } from './AgentDashboard';
 
 interface AgentMetrics {
   promptRaised: number;
@@ -264,6 +265,16 @@ export function TradingInterface({
   // Original layout for bonding curve tokens
   return (
     <div className="space-y-6">
+      {/* Agent Dashboard */}
+      <AgentDashboard agent={{
+        id: agentId,
+        name: agentName,
+        symbol: agentSymbol,
+        description: `AI agent for ${agentName}`,
+        current_price: metrics.currentPrice,
+        avatar_url: undefined
+      }} />
+
       {/* Token Metrics */}
       <Card>
         <CardHeader>
