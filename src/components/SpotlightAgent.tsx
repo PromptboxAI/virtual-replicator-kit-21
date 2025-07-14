@@ -77,7 +77,7 @@ export function SpotlightAgent({ agent }: SpotlightAgentProps) {
               <div className="flex items-center gap-2">
                 <Badge variant="secondary" className="text-xs">${agent.symbol}</Badge>
                 {agent.token_graduated && (
-                  <Badge className="bg-green-600 text-white hover:bg-green-700">Graduated</Badge>
+                  <Badge className="bg-black text-white hover:bg-gray-800">Graduated</Badge>
                 )}
               </div>
             </div>

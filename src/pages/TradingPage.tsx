@@ -98,7 +98,7 @@ export default function TradingPage() {
                 <h1 className="text-3xl font-bold">{agent.name}</h1>
                 <Badge variant="secondary">${agent.symbol}</Badge>
                 {agent.token_graduated && (
-                  <Badge variant="default">Graduated</Badge>
+                  <Badge className="bg-black text-white hover:bg-gray-800">Graduated</Badge>
                 )}
               </div>
               {agent.description && (
