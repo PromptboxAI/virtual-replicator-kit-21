@@ -13,6 +13,7 @@ import { useAgents } from "@/hooks/useAgents";
 import { useAppMode } from "@/hooks/useAppMode";
 import { useAuth } from "@/hooks/useAuth";
 import { TermsModal } from "@/components/TermsModal";
+import { useNavigate } from "react-router-dom";
 import agentAvatar1 from "@/assets/agent-avatar-1.png";
 import agentAvatar2 from "@/assets/agent-avatar-2.png";
 import agentAvatar3 from "@/assets/agent-avatar-3.png";
@@ -21,6 +22,7 @@ const Index = () => {
   const { agents, loading, error } = useAgents();
   const { isTestMode } = useAppMode();
   const { showTermsModal, handleAcceptTerms } = useAuth();
+  const navigate = useNavigate();
 
   // Use first agent directly for spotlight
   const spotlightAgent = agents.length > 0 ? agents[0] : null;
@@ -56,7 +58,7 @@ const Index = () => {
             <Button size="lg" className="bg-black text-white hover:bg-black/90 border border-black">
               Explore Agents
             </Button>
-            <Button size="lg" variant="outline" className="border-black text-black hover:bg-black hover:text-white">
+            <Button size="lg" variant="outline" className="border-black text-black hover:bg-black hover:text-white" onClick={() => navigate("/learn")}>
               Learn More
             </Button>
           </div>
