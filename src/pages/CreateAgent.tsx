@@ -647,7 +647,10 @@ export default function CreateAgent() {
                             id="symbol"
                             placeholder="e.g. ALPHA"
                             value={formData.symbol}
-                            onChange={(e) => handleInputChange('symbol', e.target.value.toUpperCase())}
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/[^A-Z0-9]/g, '').toUpperCase();
+                              handleInputChange('symbol', value);
+                            }}
                             maxLength={10}
                           />
                         </div>
