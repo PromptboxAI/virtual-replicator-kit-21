@@ -273,10 +273,10 @@ const Learn = () => {
             Join thousands of developers and investors shaping the autonomous AI economy
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold">
+            <Button size="lg" className="bg-black text-white hover:bg-gray-800 font-semibold">
               Start Building
             </Button>
-            <Button size="lg" variant="outline" className="border-primary text-primary hover:bg-primary/10 font-semibold">
+            <Button size="lg" variant="outline" className="border-black text-black hover:bg-black hover:text-white font-semibold">
               Explore Documentation
             </Button>
           </div>
