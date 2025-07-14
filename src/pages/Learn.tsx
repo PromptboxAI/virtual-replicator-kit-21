@@ -17,11 +17,7 @@ const Learn = () => {
             <span className="font-bold">PROMPT</span>
           </h1>
           <h2 className="text-3xl md:text-4xl mb-6 text-foreground text-left">
-            Leverage the power
-            <br />
-            of autonomous intelligence
-            <br />
-            on the world's AI blockchain.
+            Leverage the power of autonomous intelligence on Base Network
           </h2>
           <div className="flex justify-end">
             <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-lg px-8 py-6">
