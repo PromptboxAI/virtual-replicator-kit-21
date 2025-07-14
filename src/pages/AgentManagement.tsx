@@ -259,13 +259,13 @@ export default function AgentManagement() {
               <Activity className="w-4 h-4" />
               Activities & Status
             </TabsTrigger>
-            <TabsTrigger value="chat" className="flex items-center gap-2">
-              <MessageSquare className="w-4 h-4" />
-              Chat with Agent
-            </TabsTrigger>
             <TabsTrigger value="builder" className="flex items-center gap-2">
               <Bot className="w-4 h-4" />
               Agent Builder
+            </TabsTrigger>
+            <TabsTrigger value="chat" className="flex items-center gap-2">
+              <MessageSquare className="w-4 h-4" />
+              Chat with Agent
             </TabsTrigger>
             <TabsTrigger value="settings" className="flex items-center gap-2">
               <Settings className="w-4 h-4" />
