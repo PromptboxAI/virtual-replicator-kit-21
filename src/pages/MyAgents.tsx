@@ -356,20 +356,12 @@ export default function MyAgents() {
                     <Separator />
                     
                     <div className="flex gap-2">
-                      <Link to={`/agent/${agent.id}`} className="flex-1">
+                      <Link to={`/agent/${agent.id}`} className="w-full">
                         <Button variant="outline" size="sm" className="w-full">
-                          View Details
+                          <Bot className="h-3 w-3 mr-1" />
+                          Agent Dashboard
                         </Button>
                       </Link>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="flex-1" 
-                        onClick={() => executeAgentCycle(agent.id)}
-                      >
-                        <Zap className="h-3 w-3 mr-1" />
-                        Execute
-                      </Button>
                     </div>
                   </CardContent>
                 </Card>
