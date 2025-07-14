@@ -139,15 +139,14 @@ export default function CreateAgent() {
   });
 
   const categories = [
-    "DeFi Assistant",
-    "Trading Bot", 
+    "Trading Bot",
+    "DeFi Assistant", 
     "Content Creator",
-    "Research Agent",
     "Community Manager",
     "Analytics Agent",
+    "Research Agent",
     "Gaming Agent",
-    "Educational Agent",
-    "Other"
+    "Educational Agent"
   ];
 
   // Get frameworks from SDK with fallback descriptions
