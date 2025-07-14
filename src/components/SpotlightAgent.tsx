@@ -161,7 +161,7 @@ export function SpotlightAgent({ agent }: SpotlightAgentProps) {
 
         <Button 
           onClick={handleTradeClick}
-          className="w-full mt-4"
+          className="w-full mt-4 bg-black text-white hover:bg-black/90 border border-black"
         >
           <BarChart3 className="h-4 w-4 mr-2" />
           Trade {agent.symbol}

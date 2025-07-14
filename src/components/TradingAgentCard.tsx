@@ -163,7 +163,7 @@ export function TradingAgentCard({ agent }: AgentCardProps) {
 
         <Button 
           onClick={handleTradeClick}
-          className="w-full group-hover:bg-primary/90 transition-colors"
+          className="w-full bg-black text-white hover:bg-black/90 border border-black"
         >
           <BarChart3 className="h-4 w-4 mr-2" />
           Trade {agent.symbol}

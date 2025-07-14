@@ -25,7 +25,7 @@ export function MarketOverview({ agents = [] }: MarketOverviewProps) {
       {/* Agent Grid */}
       <div>
         <div className="flex items-center justify-between mb-6">
-          <Button onClick={() => navigate('/agents')} className="gap-2">
+          <Button onClick={() => navigate('/agents')} className="gap-2 bg-black text-white hover:bg-black/90 border border-black">
             <Activity className="h-4 w-4" />
             See All Agents
           </Button>
