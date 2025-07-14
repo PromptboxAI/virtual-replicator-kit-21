@@ -17,7 +17,13 @@ interface Agent {
   name: string;
   description: string;
   framework: string;
+  category: string;
   current_goal?: string;
+}
+
+interface AgentConfiguration {
+  category: string;
+  configuration: any;
 }
 
 interface AgentActivity {
@@ -105,63 +111,282 @@ async function generateAIResponse(prompt: string, agentContext: string): Promise
   return data.choices[0].message.content;
 }
 
+async function loadAgentConfigurations(agentId: string): Promise<Record<string, any>> {
+  const { data, error } = await supabase
+    .from('agent_configurations')
+    .select('category, configuration')
+    .eq('agent_id', agentId);
+
+  if (error) {
+    console.error('Failed to load agent configurations:', error);
+    return {};
+  }
+
+  const configurations: Record<string, any> = {};
+  data.forEach((config) => {
+    configurations[config.category] = config.configuration;
+  });
+
+  return configurations;
+}
+
+async function getAPIKeys(agentId: string, keyNames: string[]): Promise<Record<string, string>> {
+  try {
+    const { data, error } = await supabase.functions.invoke('encrypt-api-key', {
+      body: {
+        action: 'decrypt',
+        agentId,
+        keyNames
+      }
+    });
+
+    if (error) throw error;
+    return data.apiKeys || {};
+  } catch (error) {
+    console.error('Failed to get API keys:', error);
+    return {};
+  }
+}
+
+async function executeDeFiOperations(agent: Agent, config: any, apiKeys: Record<string, string>) {
+  try {
+    // Get market data for selected protocols
+    const protocols = config.protocols || ['Uniswap', 'Aave'];
+    
+    for (const protocol of protocols.slice(0, 2)) { // Limit to 2 protocols per cycle
+      if (config.yieldOptimization) {
+        // Simulate yield optimization analysis
+        const yieldData = await analyzeProtocolYield(protocol, apiKeys);
+        
+        await logActivity(agent.id, {
+          activity_type: 'defi_analysis',
+          title: `${protocol} Yield Analysis`,
+          description: `Analyzed yield opportunities on ${protocol}`,
+          metadata: { protocol, yield_data: yieldData, risk_tolerance: config.riskTolerance },
+          status: 'completed',
+          result: { apy: yieldData.apy, recommendation: yieldData.action }
+        });
+      }
+
+      if (config.liquidityProvision && config.riskTolerance >= 6) {
+        // Simulate liquidity provision decision
+        await logActivity(agent.id, {
+          activity_type: 'liquidity_provision',
+          title: `${protocol} Liquidity Decision`,
+          description: `Evaluated liquidity provision opportunity`,
+          metadata: { protocol, max_position: config.maxPositionSize },
+          status: 'completed',
+          result: { action: 'provide_liquidity', amount: config.maxPositionSize * 0.1 }
+        });
+      }
+    }
+
+    // Auto-compounding simulation
+    if (config.autoCompounding) {
+      await logActivity(agent.id, {
+        activity_type: 'auto_compound',
+        title: 'Auto-Compound Rewards',
+        description: 'Automatically compounded accumulated rewards',
+        metadata: { frequency: config.rebalanceFrequency },
+        status: 'completed',
+        result: { rewards_compounded: Math.random() * 50 }
+      });
+    }
+
+  } catch (error) {
+    await logMessage(agent.id, 'error', `DeFi operations failed: ${error.message}`);
+  }
+}
+
+async function executeContentCreation(agent: Agent, config: any, apiKeys: Record<string, string>) {
+  try {
+    if (apiKeys.TWITTER_API_KEY && apiKeys.TWITTER_API_SECRET) {
+      // Generate and post tweet
+      const tweetContent = await generateAIResponse(
+        `Generate an engaging tweet about cryptocurrency or DeFi that would interest your followers. 
+        Keep it under 280 characters and include relevant hashtags.`,
+        `Agent: ${agent.name}, Focus: Social media engagement, Audience: Crypto enthusiasts`
+      );
+
+      // Simulate tweet posting
+      await logActivity(agent.id, {
+        activity_type: 'twitter_post',
+        title: 'Automated Tweet',
+        description: 'Posted automated social media content',
+        metadata: { platform: 'twitter', content: tweetContent },
+        status: 'completed',
+        result: { engagement_score: Math.random() * 100 }
+      });
+    }
+
+    // Content strategy execution
+    const contentStrategy = config.contentStrategy || 'educational';
+    const contentPiece = await generateAIResponse(
+      `Create ${contentStrategy} content about cryptocurrency trends or DeFi opportunities. 
+      Make it informative and engaging for your audience.`,
+      `Agent: ${agent.name}, Strategy: ${contentStrategy}`
+    );
+
+    await logActivity(agent.id, {
+      activity_type: 'content_creation',
+      title: 'Content Strategy Execution',
+      description: `Created ${contentStrategy} content`,
+      metadata: { strategy: contentStrategy, content: contentPiece },
+      status: 'completed',
+      result: { content_type: contentStrategy, quality_score: Math.random() * 100 }
+    });
+
+  } catch (error) {
+    await logMessage(agent.id, 'error', `Content creation failed: ${error.message}`);
+  }
+}
+
+async function executeCommunityManagement(agent: Agent, config: any, apiKeys: Record<string, string>) {
+  try {
+    if (apiKeys.DISCORD_BOT_TOKEN) {
+      // Simulate Discord community engagement
+      await logActivity(agent.id, {
+        activity_type: 'discord_engagement',
+        title: 'Discord Community Management',
+        description: 'Engaged with Discord community members',
+        metadata: { platform: 'discord', engagement_type: 'moderation' },
+        status: 'completed',
+        result: { messages_processed: Math.floor(Math.random() * 50) }
+      });
+    }
+
+    // Community sentiment analysis
+    const sentimentAnalysis = await generateAIResponse(
+      'Analyze the current sentiment in the crypto community and suggest engagement strategies.',
+      `Agent: ${agent.name}, Focus: Community management and engagement`
+    );
+
+    await logActivity(agent.id, {
+      activity_type: 'sentiment_analysis',
+      title: 'Community Sentiment Analysis',
+      description: 'Analyzed community sentiment and engagement opportunities',
+      metadata: { analysis: sentimentAnalysis },
+      status: 'completed',
+      result: { sentiment_score: Math.random() * 100, engagement_strategy: 'positive' }
+    });
+
+  } catch (error) {
+    await logMessage(agent.id, 'error', `Community management failed: ${error.message}`);
+  }
+}
+
+async function executeAnalytics(agent: Agent, config: any, apiKeys: Record<string, string>) {
+  try {
+    if (apiKeys.COINMARKETCAP_API_KEY) {
+      // Simulate market data analysis
+      const marketMetrics = {
+        btc_price: 45000 + Math.random() * 10000,
+        market_cap: 2.1e12 + Math.random() * 5e11,
+        fear_greed_index: Math.floor(Math.random() * 100)
+      };
+
+      await logActivity(agent.id, {
+        activity_type: 'market_analysis',
+        title: 'Market Data Analysis',
+        description: 'Analyzed current market conditions and trends',
+        metadata: { metrics: marketMetrics, data_source: 'CoinMarketCap' },
+        status: 'completed',
+        result: { market_outlook: marketMetrics.fear_greed_index > 50 ? 'bullish' : 'bearish' }
+      });
+    }
+
+    // Performance analytics
+    const performanceReport = await generateAIResponse(
+      'Generate a brief performance analysis and market outlook based on current conditions.',
+      `Agent: ${agent.name}, Focus: Analytics and market insights`
+    );
+
+    await logActivity(agent.id, {
+      activity_type: 'performance_report',
+      title: 'Performance Analytics',
+      description: 'Generated performance report and market insights',
+      metadata: { report: performanceReport },
+      status: 'completed',
+      result: { report_quality: Math.random() * 100 }
+    });
+
+  } catch (error) {
+    await logMessage(agent.id, 'error', `Analytics execution failed: ${error.message}`);
+  }
+}
+
+async function analyzeProtocolYield(protocol: string, apiKeys: Record<string, string>) {
+  // Simulate yield analysis
+  return {
+    apy: 5 + Math.random() * 20,
+    tvl: Math.random() * 1000000000,
+    risk_score: Math.random() * 10,
+    action: Math.random() > 0.5 ? 'invest' : 'monitor'
+  };
+}
+
 async function executeAgentCycle(agent: Agent) {
   await logMessage(agent.id, 'info', `Starting execution cycle for agent ${agent.name}`);
   
   try {
+    // Load agent configurations
+    const configurations = await loadAgentConfigurations(agent.id);
+    const category = agent.category || 'G.A.M.E.';
+    
     // Update status to active
     await updateRuntimeStatus(agent.id, { 
       is_active: true,
-      current_goal: agent.current_goal || 'Autonomous goal execution'
+      current_goal: agent.current_goal || `Autonomous ${category} execution`
     });
 
-    // Generate autonomous thoughts and decisions
+    // Get API keys if needed
+    const apiKeyConfig = configurations['api_keys'] || {};
+    const requiredKeys = Object.keys(apiKeyConfig);
+    const apiKeys = requiredKeys.length > 0 ? await getAPIKeys(agent.id, requiredKeys) : {};
+
+    // Generate contextual AI thoughts based on category and configuration
+    const contextPrompt = `As a ${category} AI agent, analyze your current situation and decide on your next action. 
+    Consider your configuration settings, available API integrations, and optimization opportunities.
+    Your current configuration: ${JSON.stringify(configurations[category] || {}).substring(0, 200)}`;
+
     const aiThought = await generateAIResponse(
-      `As an AI agent, analyze your current situation and decide on your next action. 
-      Consider: market conditions, social media engagement opportunities, user interactions, and goal progress.`,
-      `Agent: ${agent.name}, Description: ${agent.description}, Framework: ${agent.framework}`
+      contextPrompt,
+      `Agent: ${agent.name}, Category: ${category}, Description: ${agent.description}`
     );
 
     await logActivity(agent.id, {
       activity_type: 'goal_execution',
       title: 'AI Decision Making',
       description: 'Agent analyzed situation and made autonomous decisions',
-      metadata: { thought_process: aiThought },
+      metadata: { thought_process: aiThought, category, available_apis: Object.keys(apiKeys) },
       status: 'completed',
       result: { decision: aiThought }
     });
 
-    // Simulate different types of autonomous actions based on framework
-    if (agent.framework === 'G.A.M.E.') {
-      // Social media engagement simulation
-      const socialAction = await generateAIResponse(
-        'Generate a strategic social media post that would engage your community and drive value for your token holders.',
-        `Agent: ${agent.name}, Focus: Community engagement and value creation`
-      );
-
-      await logActivity(agent.id, {
-        activity_type: 'twitter_post',
-        title: 'Social Media Engagement',
-        description: 'Generated strategic social media content',
-        metadata: { platform: 'twitter', content: socialAction },
-        status: 'completed',
-        result: { engagement_potential: 'high' }
-      });
-
-      // Market analysis simulation
-      const marketAnalysis = await generateAIResponse(
-        'Analyze current market conditions and provide insights for token holders.',
-        `Agent: ${agent.name}, Focus: Market analysis and trading insights`
-      );
-
-      await logActivity(agent.id, {
-        activity_type: 'trading_decision',
-        title: 'Market Analysis',
-        description: 'Analyzed market conditions and generated insights',
-        metadata: { analysis: marketAnalysis },
-        status: 'completed',
-        result: { confidence_level: 'medium' }
-      });
+    // Execute category-specific operations
+    const categoryConfig = configurations[category] || {};
+    
+    switch (category) {
+      case 'DeFi Assistant':
+        await executeDeFiOperations(agent, categoryConfig, apiKeys);
+        break;
+        
+      case 'Content Creator':
+        await executeContentCreation(agent, categoryConfig, apiKeys);
+        break;
+        
+      case 'Community Manager':
+        await executeCommunityManagement(agent, categoryConfig, apiKeys);
+        break;
+        
+      case 'Analytics Agent':
+        await executeAnalytics(agent, categoryConfig, apiKeys);
+        break;
+        
+      default:
+        // Default G.A.M.E. framework execution
+        await executeContentCreation(agent, categoryConfig, apiKeys);
+        break;
     }
 
     // Update performance metrics
@@ -171,10 +396,15 @@ async function executeAgentCycle(agent: Agent) {
       .eq('agent_id', agent.id)
       .single();
 
-    // Generate revenue and distribute to token holders
-    const revenueGenerated = Math.random() * 10; // $0-10 simulated revenue
+    // Generate revenue based on category and performance
+    const baseRevenue = 5; // Base revenue
+    const categoryMultiplier = category === 'DeFi Assistant' ? 2 : 1;
+    const configurationBonus = Object.keys(categoryConfig).length * 0.5;
+    const apiIntegrationBonus = Object.keys(apiKeys).length * 1;
     
-    if (revenueGenerated > 1) { // Only distribute if meaningful amount
+    const revenueGenerated = baseRevenue * categoryMultiplier + configurationBonus + apiIntegrationBonus + Math.random() * 10;
+    
+    if (revenueGenerated > 2) { // Only distribute if meaningful amount
       try {
         await supabase.functions.invoke('distribute-revenue', {
           body: {
@@ -194,11 +424,16 @@ async function executeAgentCycle(agent: Agent) {
         last_cycle: new Date().toISOString(),
         efficiency: Math.random() * 100,
         engagement_score: Math.random() * 100,
-        revenue_generated_this_cycle: revenueGenerated
+        revenue_generated_this_cycle: revenueGenerated,
+        category_performance: {
+          category,
+          api_integrations: Object.keys(apiKeys).length,
+          configuration_completeness: Object.keys(categoryConfig).length
+        }
       }
     });
 
-    await logMessage(agent.id, 'info', `Completed execution cycle for agent ${agent.name}`);
+    await logMessage(agent.id, 'info', `Completed execution cycle for agent ${agent.name} (${category})`);
 
   } catch (error) {
     await logMessage(agent.id, 'error', `Execution cycle failed: ${error.message}`, { error: error.toString() });
@@ -317,7 +552,7 @@ Deno.serve(async (req) => {
         // Get agent details
         const { data: agent, error: agentError } = await supabase
           .from('agents')
-          .select('*')
+          .select('id, name, description, framework, category, current_goal')
           .eq('id', agentId)
           .single();
 

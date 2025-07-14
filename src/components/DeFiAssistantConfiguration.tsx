@@ -8,9 +8,11 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Slider } from '@/components/ui/slider';
-import { Shield, Coins, TrendingUp, Save, RotateCcw, AlertTriangle, ExternalLink } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Shield, Coins, TrendingUp, Save, RotateCcw, AlertTriangle, ExternalLink, Key } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { APIKeyManager } from '@/components/APIKeyManager';
 
 interface DeFiConfig {
   protocols: string[];
@@ -80,6 +82,7 @@ export function DeFiAssistantConfiguration({ agent, onConfigurationUpdated }: Co
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [hasRequiredAPIKeys, setHasRequiredAPIKeys] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -204,6 +207,28 @@ export function DeFiAssistantConfiguration({ agent, onConfigurationUpdated }: Co
           Configure your autonomous DeFi yield optimization and risk management settings
         </p>
       </div>
+
+      <Tabs defaultValue="strategy" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="strategy" className="flex items-center gap-2">
+            <TrendingUp className="h-4 w-4" />
+            Strategy Settings
+          </TabsTrigger>
+          <TabsTrigger value="api-keys" className="flex items-center gap-2">
+            <Key className="h-4 w-4" />
+            API Keys
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="api-keys">
+          <APIKeyManager 
+            agentId={agent.id}
+            category="DeFi Assistant"
+            onKeysUpdated={setHasRequiredAPIKeys}
+          />
+        </TabsContent>
+
+        <TabsContent value="strategy" className="space-y-6">
 
       {/* Configuration Status */}
       <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-secondary/5">
@@ -457,6 +482,27 @@ export function DeFiAssistantConfiguration({ agent, onConfigurationUpdated }: Co
           </div>
         </CardContent>
       </Card>
+
+      {/* Configuration Status */}
+      {!hasRequiredAPIKeys && (
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5" />
+              <div>
+                <h3 className="font-semibold text-red-800">Missing Required API Keys</h3>
+                <p className="text-sm text-red-700">
+                  Your DeFi assistant requires API keys to function autonomously. 
+                  Please configure the required keys in the API Keys tab.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
