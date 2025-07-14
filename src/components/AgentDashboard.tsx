@@ -140,8 +140,15 @@ export function AgentDashboard({ agent }: AgentDashboardProps) {
   const executeAgentCycle = async () => {
     try {
       setLoading(true);
+      
+      // Get current session for authentication
+      const { data: { session } } = await supabase.auth.getSession();
+      
       await supabase.functions.invoke('agent-runtime', {
-        body: { action: 'execute_cycle', agentId: agent.id }
+        body: { action: 'execute_cycle', agentId: agent.id },
+        headers: session?.access_token ? {
+          Authorization: `Bearer ${session.access_token}`
+        } : {}
       });
       
       toast({
@@ -167,13 +174,19 @@ export function AgentDashboard({ agent }: AgentDashboardProps) {
     
     try {
       setSendingMessage(true);
+      
+      // Get current session for authentication
+      const { data: { session } } = await supabase.auth.getSession();
+      
       await supabase.functions.invoke('agent-runtime', {
         body: { 
           action: 'interact', 
           agentId: agent.id, 
-          userId: 'user-123', // In real app, get from auth
           message: userMessage 
-        }
+        },
+        headers: session?.access_token ? {
+          Authorization: `Bearer ${session.access_token}`
+        } : {}
       });
       
       setUserMessage('');

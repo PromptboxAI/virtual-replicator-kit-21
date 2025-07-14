@@ -382,6 +382,26 @@ export default function CreateAgent() {
         }
       }
 
+      // Initialize agent runtime status after successful creation
+      try {
+        const { error: runtimeError } = await supabase
+          .from('agent_runtime_status')
+          .insert([{
+            agent_id: agentId,
+            is_active: false,
+            current_goal: `Autonomous execution for ${formData.name}`,
+            performance_metrics: {},
+            revenue_generated: 0,
+            tasks_completed: 0
+          }]);
+
+        if (runtimeError) {
+          console.error('Failed to initialize runtime status:', runtimeError);
+        }
+      } catch (error) {
+        console.error('Runtime initialization error:', error);
+      }
+
       toast({ 
         title: "Success!", 
         description: `${formData.name} has been created successfully! (${CREATION_COST} tokens deducted)`,

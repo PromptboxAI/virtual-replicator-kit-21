@@ -198,15 +198,20 @@ async function executeAgentCycle(agent: Agent) {
 
 async function processUserInteraction(agentId: string, userId: string, message: string) {
   try {
-    // Get agent context
-    const { data: agent } = await supabase
+    // Verify user has permission to interact with this agent
+    const { data: agent, error: agentError } = await supabase
       .from('agents')
       .select('*')
       .eq('id', agentId)
       .single();
 
-    if (!agent) {
+    if (agentError || !agent) {
       throw new Error('Agent not found');
+    }
+
+    // Check if user is the creator of the agent
+    if (agent.creator_id !== userId) {
+      throw new Error('Unauthorized: You can only interact with your own agents');
     }
 
     // Generate AI response to user message
@@ -259,8 +264,39 @@ Deno.serve(async (req) => {
   try {
     const { action, agentId, userId, message } = await req.json();
 
+    // Get user ID from authorization header if not provided
+    let actualUserId = userId;
+    if (!actualUserId) {
+      const authHeader = req.headers.get('authorization');
+      if (authHeader) {
+        // Extract user ID from Supabase JWT token
+        try {
+          const token = authHeader.replace('Bearer ', '');
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          actualUserId = payload.sub;
+        } catch (error) {
+          console.error('Failed to extract user ID from token:', error);
+        }
+      }
+    }
+
     switch (action) {
       case 'execute_cycle':
+        // Verify user owns the agent before executing
+        const { data: agentOwnership, error: ownershipError } = await supabase
+          .from('agents')
+          .select('creator_id')
+          .eq('id', agentId)
+          .single();
+
+        if (ownershipError || !agentOwnership) {
+          throw new Error('Agent not found');
+        }
+
+        if (actualUserId && agentOwnership.creator_id !== actualUserId) {
+          throw new Error('Unauthorized: You can only execute your own agents');
+        }
+
         // Get agent details
         const { data: agent, error: agentError } = await supabase
           .from('agents')
@@ -282,11 +318,11 @@ Deno.serve(async (req) => {
         });
 
       case 'interact':
-        if (!userId || !message) {
+        if (!actualUserId || !message) {
           throw new Error('User ID and message are required for interactions');
         }
 
-        const response = await processUserInteraction(agentId, userId, message);
+        const response = await processUserInteraction(agentId, actualUserId, message);
         
         return new Response(JSON.stringify({ 
           success: true, 

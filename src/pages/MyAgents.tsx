@@ -47,8 +47,14 @@ export default function MyAgents() {
 
   const executeAgentCycle = async (agentId: string) => {
     try {
+      // Get current session for authentication
+      const { data: { session } } = await supabase.auth.getSession();
+      
       await supabase.functions.invoke('agent-runtime', {
-        body: { action: 'execute_cycle', agentId }
+        body: { action: 'execute_cycle', agentId },
+        headers: session?.access_token ? {
+          Authorization: `Bearer ${session.access_token}`
+        } : {}
       });
       
       toast({
