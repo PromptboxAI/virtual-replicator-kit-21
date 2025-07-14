@@ -167,18 +167,18 @@ export default function AgentManagement() {
               {/* Action Buttons Row */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 {/* Execute Agent */}
-                <div className="space-y-3">
-                  <h3 className="font-semibold flex items-center gap-2">
+                <div className="flex flex-col h-full">
+                  <h3 className="font-semibold flex items-center gap-2 mb-3">
                     <Play className="w-4 h-4" />
                     Manual Execution
                   </h3>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground mb-4 flex-1">
                     Trigger your agent to make decisions and take actions right now. This shows you what happens every 15 minutes automatically.
                   </p>
                   <Button 
                     onClick={handleExecuteAgent}
                     disabled={isExecuting}
-                    className="w-full h-11"
+                    className="w-full h-11 mt-auto"
                   >
                     {isExecuting ? (
                       <>
@@ -195,12 +195,12 @@ export default function AgentManagement() {
                 </div>
 
                 {/* Twitter Setup */}
-                <div className="space-y-3">
-                  <h3 className="font-semibold flex items-center gap-2">
+                <div className="flex flex-col h-full">
+                  <h3 className="font-semibold flex items-center gap-2 mb-3">
                     <Twitter className="w-4 h-4" />
                     Twitter Integration
                   </h3>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground mb-4 flex-1">
                     {agent.twitter_api_configured 
                       ? `Connected as @${agent.twitter_username} - Your agent can post tweets!`
                       : "Enable your agent to post tweets autonomously"
@@ -209,7 +209,7 @@ export default function AgentManagement() {
                   <Button 
                     variant={agent.twitter_api_configured ? "secondary" : "default"}
                     onClick={() => setShowTwitterSetup(!showTwitterSetup)}
-                    className="w-full h-11"
+                    className="w-full h-11 mt-auto"
                   >
                     {agent.twitter_api_configured ? "Manage Twitter" : "Setup Twitter API"}
                   </Button>
