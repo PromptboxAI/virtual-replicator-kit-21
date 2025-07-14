@@ -24,6 +24,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { FrameworkSDKService, FRAMEWORK_CONFIGS } from "@/lib/frameworkSDK";
 import { useAgentTokenFactory } from "@/hooks/useAgentTokens";
 import { useAccount } from 'wagmi';
+import { BuilderRouter } from "@/components/builders/BuilderRouter";
 
 interface AgentFormData {
   name: string;
@@ -193,6 +194,16 @@ export default function CreateAgent() {
 
   const handleInputChange = (field: keyof AgentFormData, value: string | number) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleCategoryBuilderNext = (builderConfig: any) => {
+    // Store the builder config and proceed to next step
+    console.log('Builder config:', builderConfig);
+    setCurrentStep(1); // Move to next step in the main flow
+  };
+
+  const handleBackToCategory = () => {
+    setFormData(prev => ({ ...prev, category: '' }));
   };
 
   const handleAvatarUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
