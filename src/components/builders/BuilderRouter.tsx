@@ -16,7 +16,7 @@ interface BuilderRouterProps {
 }
 
 export function BuilderRouter({ selectedCategory, onBack, onNext }: BuilderRouterProps) {
-  const [showCategoryInfo, setShowCategoryInfo] = useState(true);
+  const [showCategoryInfo, setShowCategoryInfo] = useState(false);
 
   const getCategoryInfo = (category: string) => {
     const info = {
@@ -81,7 +81,7 @@ export function BuilderRouter({ selectedCategory, onBack, onNext }: BuilderRoute
   const renderBuilder = () => {
     const commonProps = {
       onNext,
-      onBack: () => setShowCategoryInfo(true)
+      onBack
     };
 
     switch (selectedCategory) {
@@ -104,7 +104,7 @@ export function BuilderRouter({ selectedCategory, onBack, onNext }: BuilderRoute
             <p className="text-muted-foreground mb-6">
               The {selectedCategory} builder is currently in development.
             </p>
-            <Button onClick={() => setShowCategoryInfo(true)}>
+            <Button onClick={onBack}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Go Back
             </Button>

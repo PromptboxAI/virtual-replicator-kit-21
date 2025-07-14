@@ -196,9 +196,19 @@ export default function CreateAgent() {
   };
 
   const handleCategoryBuilderNext = (builderConfig: any) => {
-    // Store the builder config and proceed to next step
-    console.log('Builder config:', builderConfig);
-    setCurrentStep(1); // Move to next step in the main flow
+    // Store the category-specific builder config
+    console.log('Category builder config:', builderConfig);
+    
+    // Update form data with category-specific configuration
+    setFormData(prev => ({
+      ...prev,
+      // The builderConfig contains category-specific settings
+      // This will be used later for agent deployment
+      ...builderConfig
+    }));
+    
+    // Move to project pitch step
+    setCurrentStep(2);
   };
 
   const handleBackToCategory = () => {
@@ -795,8 +805,17 @@ export default function CreateAgent() {
                 </>
               )}
 
-              {/* Step 1: Project Pitch */}
+              {/* Step 1: Category-Specific Builder */}
               {currentStep === 1 && (
+                <BuilderRouter
+                  selectedCategory={formData.category}
+                  onBack={() => setCurrentStep(0)}
+                  onNext={handleCategoryBuilderNext}
+                />
+              )}
+
+              {/* Step 2: Project Pitch */}
+              {currentStep === 2 && (
                 <>
                   <Card>
                     <CardHeader>
@@ -851,17 +870,17 @@ export default function CreateAgent() {
                     </CardContent>
                   </Card>
 
-                  {/* Step 1 Action Buttons */}
+                  {/* Step 2 Action Buttons */}
                   <div className="flex gap-4">
                     <Button
-                      onClick={() => setCurrentStep(0)}
+                      onClick={() => setCurrentStep(1)}
                       variant="outline"
                       className="flex-1"
                     >
                       Back
                     </Button>
                     <Button
-                      onClick={() => setCurrentStep(2)}
+                      onClick={() => setCurrentStep(3)}
                       disabled={!formData.short_pitch.trim() || !formData.agent_overview.trim()}
                       className="flex-1 bg-gradient-primary hover:opacity-90"
                     >
@@ -871,8 +890,8 @@ export default function CreateAgent() {
                 </>
               )}
 
-              {/* Step 2: Framework */}
-              {currentStep === 2 && (
+              {/* Step 3: Framework */}
+              {currentStep === 3 && (
                 <>
                   <Card>
                     <CardHeader>
