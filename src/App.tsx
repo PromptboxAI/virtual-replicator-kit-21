@@ -85,6 +85,7 @@ const App = () => (
               <Route path="/market" element={<Market />} />
               <Route path="/agents" element={<AllAgents />} />
               <Route path="/trade/:agentId" element={<TradingPage />} />
+              <Route path="/agent/:agentId" element={<AgentManagement />} />
               <Route path="/manage/:agentId" element={<AgentManagement />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

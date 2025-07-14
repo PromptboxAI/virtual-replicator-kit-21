@@ -1,39 +1,90 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { AgentDashboard } from '@/components/AgentDashboard';
+import { TwitterCredentialsForm } from '@/components/TwitterCredentialsForm';
 import { TradingInterface } from '@/components/TradingInterface';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { 
+  Loader2, 
+  AlertCircle, 
+  Play, 
+  Twitter, 
+  Settings, 
+  Activity, 
+  DollarSign,
+  Bot,
+  MessageSquare,
+  Zap,
+  TrendingUp
+} from 'lucide-react';
 
 export default function AgentManagement() {
   const { agentId } = useParams();
   const { user } = useAuth();
+  const { toast } = useToast();
+  const [isExecuting, setIsExecuting] = useState(false);
+  const [showTwitterSetup, setShowTwitterSetup] = useState(false);
 
   if (!agentId) {
     return <Navigate to="/my-agents" replace />;
   }
 
-  const { data: agent, isLoading, error } = useQuery({
+  const { data: agent, isLoading, error, refetch } = useQuery({
     queryKey: ['agent', agentId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('agents')
         .select('*')
         .eq('id', agentId)
-        .maybeSingle();
-
+        .single();
+      
       if (error) throw error;
       return data;
     },
-    enabled: !!agentId,
   });
+
+  // Handle manual agent execution
+  const handleExecuteAgent = async () => {
+    if (!agent || !user) return;
+    
+    setIsExecuting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('agent-runtime', {
+        body: {
+          action: 'execute_cycle',
+          agentId: agent.id
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Agent Executed Successfully! 🚀",
+        description: `${agent.name} completed an autonomous execution cycle. Check the Activities tab to see what it did.`,
+      });
+
+      // Refresh agent data
+      refetch();
+    } catch (error: any) {
+      toast({
+        title: "Execution Failed",
+        description: error.message || "Failed to execute agent",
+        variant: "destructive"
+      });
+    } finally {
+      setIsExecuting(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -70,90 +121,321 @@ export default function AgentManagement() {
     );
   }
 
-  const getStatusBadge = (status: string | null) => {
-    switch (status) {
-      case 'ACTIVATING':
-        return <Badge variant="outline" className="text-yellow-600 border-yellow-600">Activating</Badge>;
-      case 'AVAILABLE':
-        return <Badge variant="outline" className="text-green-600 border-green-600">Live</Badge>;
-      case 'INACTIVE':
-        return <Badge variant="outline" className="text-gray-600 border-gray-600">Inactive</Badge>;
-      default:
-        return <Badge variant="outline">Unknown</Badge>;
-    }
-  };
-
   return (
     <div className="min-h-screen bg-background">
       <Header />
       
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-7xl mx-auto space-y-6">
-          {/* Agent Header */}
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <Avatar className="h-16 w-16">
-                  <AvatarImage src={agent.avatar_url || ''} />
-                  <AvatarFallback>
-                    {agent.name.slice(0, 2).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h1 className="text-2xl font-bold">{agent.name}</h1>
-                    <Badge variant="secondary">${agent.symbol}</Badge>
-                    {getStatusBadge(agent.status)}
-                  </div>
-                  {agent.description && (
-                    <p className="text-muted-foreground">{agent.description}</p>
-                  )}
-                  <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
-                    <span>Framework: {agent.framework}</span>
-                    <span>Created: {new Date(agent.created_at).toLocaleDateString()}</span>
-                    {agent.category && <span>Category: {agent.category}</span>}
-                  </div>
+        {/* Agent Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-4 mb-6">
+            <Avatar className="h-16 w-16">
+              <AvatarImage src={agent.avatar_url} alt={agent.name} />
+              <AvatarFallback>
+                {agent.name.slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <h1 className="text-3xl font-bold">{agent.name}</h1>
+              <p className="text-muted-foreground">{agent.symbol}</p>
+              <div className="flex items-center gap-2 mt-2">
+                <Badge variant={agent.is_active ? "default" : "secondary"}>
+                  {agent.is_active ? "Active" : "Inactive"}
+                </Badge>
+                <Badge variant="outline">{agent.status || 'AVAILABLE'}</Badge>
+                {agent.twitter_api_configured && (
+                  <Badge variant="outline" className="text-blue-500">
+                    <Twitter className="w-3 h-3 mr-1" />
+                    Twitter Connected
+                  </Badge>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Creator Control Panel */}
+          <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-secondary/5">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="w-5 h-5" />
+                Creator Control Panel - Build Your AI Agent
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Your agent runs autonomously every 15 minutes. Use these controls to set it up and monitor its performance.
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Execute Agent */}
+                <div className="space-y-2">
+                  <h3 className="font-semibold flex items-center gap-2">
+                    <Play className="w-4 h-4" />
+                    Manual Execution
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Trigger your agent to make decisions and take actions right now. This shows you what happens every 15 minutes automatically.
+                  </p>
+                  <Button 
+                    onClick={handleExecuteAgent}
+                    disabled={isExecuting}
+                    className="w-full"
+                  >
+                    {isExecuting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Executing...
+                      </>
+                    ) : (
+                      <>
+                        <Bot className="w-4 h-4 mr-2" />
+                        Execute Agent Now
+                      </>
+                    )}
+                  </Button>
                 </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold">
+
+                {/* Twitter Setup */}
+                <div className="space-y-2">
+                  <h3 className="font-semibold flex items-center gap-2">
+                    <Twitter className="w-4 h-4" />
+                    Twitter Integration
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {agent.twitter_api_configured 
+                      ? `Connected as @${agent.twitter_username} - Your agent can post tweets!`
+                      : "Enable your agent to post tweets autonomously"
+                    }
+                  </p>
+                  <Button 
+                    variant={agent.twitter_api_configured ? "secondary" : "default"}
+                    onClick={() => setShowTwitterSetup(!showTwitterSetup)}
+                    className="w-full"
+                  >
+                    {agent.twitter_api_configured ? "Manage Twitter" : "Setup Twitter API"}
+                  </Button>
+                </div>
+
+                {/* Revenue Info */}
+                <div className="space-y-2">
+                  <h3 className="font-semibold flex items-center gap-2">
+                    <DollarSign className="w-4 h-4" />
+                    Autonomous Revenue
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Your agent earns revenue automatically and distributes it to token holders
+                  </p>
+                  <div className="text-lg font-bold text-green-600 flex items-center gap-1">
+                    <TrendingUp className="w-4 h-4" />
                     ${agent.current_price >= 0.01 ? agent.current_price.toFixed(2) : agent.current_price.toFixed(6)}
                   </div>
-                  <div className="text-sm text-muted-foreground">Current Price</div>
                 </div>
               </div>
+
+              {/* Twitter Setup Form */}
+              {showTwitterSetup && (
+                <div className="mt-6 pt-6 border-t">
+                  <TwitterCredentialsForm 
+                    agentId={agent.id}
+                    onCredentialsAdded={() => {
+                      setShowTwitterSetup(false);
+                      refetch();
+                      toast({
+                        title: "Twitter Connected! 🐦",
+                        description: "Your agent can now post tweets autonomously",
+                      });
+                    }}
+                  />
+                </div>
+              )}
             </CardContent>
           </Card>
+        </div>
 
-          {/* Agent Dashboard - Autonomous execution interface */}
-          <AgentDashboard agent={{
-            id: agent.id,
-            name: agent.name,
-            symbol: agent.symbol,
-            description: agent.description || `AI agent for ${agent.name}`,
-            current_price: agent.current_price,
-            avatar_url: agent.avatar_url
-          }} />
+        {/* Main Tabs Interface */}
+        <Tabs defaultValue="dashboard" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="dashboard" className="flex items-center gap-2">
+              <Activity className="w-4 h-4" />
+              Activities & Status
+            </TabsTrigger>
+            <TabsTrigger value="chat" className="flex items-center gap-2">
+              <MessageSquare className="w-4 h-4" />
+              Chat with Agent
+            </TabsTrigger>
+            <TabsTrigger value="trading" className="flex items-center gap-2">
+              <DollarSign className="w-4 h-4" />
+              Token Trading
+            </TabsTrigger>
+            <TabsTrigger value="settings" className="flex items-center gap-2">
+              <Settings className="w-4 h-4" />
+              How It Works
+            </TabsTrigger>
+          </TabsList>
 
-          {/* Trading Interface */}
-          <div className="mt-8">
+          {/* Agent Dashboard Tab */}
+          <TabsContent value="dashboard" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Zap className="w-5 h-5" />
+                  Autonomous Execution Dashboard
+                </CardTitle>
+                <p className="text-muted-foreground">
+                  Monitor your agent's autonomous activities, revenue generation, and AI decisions. 
+                  Your agent executes automatically every 15 minutes and makes decisions using OpenAI.
+                </p>
+              </CardHeader>
+            </Card>
+            <AgentDashboard agent={{
+              id: agent.id,
+              name: agent.name,
+              symbol: agent.symbol,
+              description: agent.description || `AI agent for ${agent.name}`,
+              current_price: agent.current_price,
+              avatar_url: agent.avatar_url
+            }} />
+          </TabsContent>
+
+          {/* Chat Tab */}
+          <TabsContent value="chat" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MessageSquare className="w-5 h-5" />
+                  Interact with Your Agent
+                </CardTitle>
+                <p className="text-muted-foreground">
+                  Chat directly with your AI agent. Users can also interact with your agent this way.
+                  Messages are powered by OpenAI and saved in your database.
+                </p>
+              </CardHeader>
+            </Card>
+            {/* The AgentDashboard component includes chat functionality */}
+            <AgentDashboard agent={{
+              id: agent.id,
+              name: agent.name,
+              symbol: agent.symbol,
+              description: agent.description || `AI agent for ${agent.name}`,
+              current_price: agent.current_price,
+              avatar_url: agent.avatar_url
+            }} />
+          </TabsContent>
+
+          {/* Trading Tab */}
+          <TabsContent value="trading" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <DollarSign className="w-5 h-5" />
+                  Token Trading Interface
+                </CardTitle>
+                <p className="text-muted-foreground">
+                  Monitor your agent's token performance. Users can buy/sell your agent's tokens here.
+                  Revenue generated by your agent is distributed to all token holders automatically.
+                </p>
+              </CardHeader>
+            </Card>
             <TradingInterface
               agentId={agent.id}
               agentName={agent.name}
               agentSymbol={agent.symbol}
               tokenAddress={agent.token_address || undefined}
-              isConnected={false} // This would come from wallet connection state
-              onConnect={() => {}} // Implement wallet connection
+              isConnected={false}
+              onConnect={() => {}}
               currentPrice={agent.current_price}
               marketCap={agent.market_cap || 0}
               volume24h={agent.volume_24h || 0}
               priceChange24h={agent.price_change_24h || 0}
               promptRaised={agent.prompt_raised || 0}
-              tokenHolders={agent.token_holders || 0}
               circulatingSupply={agent.circulating_supply || 0}
               tokenGraduated={agent.token_graduated || false}
+              tokenHolders={agent.token_holders || 0}
             />
-          </div>
-        </div>
+          </TabsContent>
+
+          {/* Settings Tab */}
+          <TabsContent value="settings" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="w-5 h-5" />
+                  How Your Autonomous Agent Works
+                </CardTitle>
+                <p className="text-muted-foreground">
+                  Understanding your agent's autonomous execution layer and revenue system.
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-3">
+                  <h3 className="font-semibold flex items-center gap-2">
+                    <Bot className="w-4 h-4" />
+                    Autonomous Execution (Every 15 Minutes)
+                  </h3>
+                  <div className="text-sm text-muted-foreground space-y-2">
+                    <p>Your agent automatically executes these actions:</p>
+                    <ul className="list-disc list-inside space-y-1 ml-4">
+                      <li><strong>AI Decision Making:</strong> Uses OpenAI to analyze market conditions and make strategic decisions</li>
+                      <li><strong>Twitter Posting:</strong> Generates and posts strategic content (if Twitter is configured)</li>
+                      <li><strong>Revenue Generation:</strong> Earns money through various automated activities</li>
+                      <li><strong>Market Analysis:</strong> Continuously monitors and responds to market conditions</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <h3 className="font-semibold flex items-center gap-2">
+                    <DollarSign className="w-4 h-4" />
+                    Revenue Distribution System
+                  </h3>
+                  <div className="text-sm text-muted-foreground space-y-2">
+                    <p>Revenue generated by your agent is automatically distributed:</p>
+                    <ul className="list-disc list-inside space-y-1 ml-4">
+                      <li><strong>Proportional Distribution:</strong> Revenue is split among all token holders based on their holdings</li>
+                      <li><strong>Real-time Processing:</strong> Distributions happen immediately when revenue is generated</li>
+                      <li><strong>Transparent Tracking:</strong> All revenue events are logged in the Activities tab</li>
+                      <li><strong>Token Holder Rewards:</strong> The more tokens someone holds, the more revenue they receive</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <h3 className="font-semibold flex items-center gap-2">
+                    <Twitter className="w-4 h-4" />
+                    Twitter Integration
+                  </h3>
+                  <div className="text-sm text-muted-foreground space-y-2">
+                    <p>Connect your Twitter API to enable autonomous posting:</p>
+                    <ul className="list-disc list-inside space-y-1 ml-4">
+                      <li><strong>Strategic Content:</strong> AI generates engaging posts to grow your community</li>
+                      <li><strong>Real Posting:</strong> Uses Twitter's official API with your credentials</li>
+                      <li><strong>Revenue Driver:</strong> Social engagement can increase token value and revenue</li>
+                      <li><strong>Secure Storage:</strong> Your credentials are encrypted and securely stored</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <h3 className="font-semibold">Framework: {agent.framework}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Your agent is powered by the {agent.framework} framework, providing advanced 
+                    autonomous capabilities, market interaction features, and AI-driven decision making.
+                  </p>
+                </div>
+
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                  <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">Next Steps:</h4>
+                  <ol className="text-sm text-blue-800 dark:text-blue-200 space-y-1 list-decimal list-inside">
+                    <li>Set up Twitter API credentials (if desired)</li>
+                    <li>Click "Execute Agent Now" to see it in action</li>
+                    <li>Monitor activities and revenue in the Activities tab</li>
+                    <li>Chat with your agent to test its responses</li>
+                    <li>Watch as it runs autonomously every 15 minutes!</li>
+                  </ol>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
       
       <Footer />
