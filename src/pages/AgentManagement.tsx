@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, Navigate } from 'react-router-dom';
+import { useParams, Navigate, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -33,6 +33,7 @@ import {
 
 export default function AgentManagement() {
   const { agentId } = useParams();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
   const [isExecuting, setIsExecuting] = useState(false);
@@ -203,31 +204,22 @@ export default function AgentManagement() {
             <CardContent>
               {/* Action Buttons Row */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                {/* Execute Agent */}
+                {/* Agent Dashboard */}
                 <div className="flex flex-col h-full">
                   <h3 className="font-semibold flex items-center gap-2 mb-3">
-                    <Play className="w-4 h-4" />
-                    Manual Execution
+                    <Activity className="w-4 h-4" />
+                    Agent Dashboard
                   </h3>
                   <p className="text-sm text-muted-foreground mb-4 flex-1">
-                    Trigger your agent to make decisions and take actions right now. This shows you what happens every 15 minutes automatically.
+                    View detailed analytics, activity feed, and interact with your agent.
                   </p>
                   <Button 
-                    onClick={handleExecuteAgent}
-                    disabled={isExecuting}
+                    onClick={() => navigate(`/agent/${agent.id}`)}
+                    variant="default"
                     className="w-full h-11 mt-auto"
                   >
-                    {isExecuting ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Executing...
-                      </>
-                    ) : (
-                      <>
-                        <Bot className="w-4 h-4 mr-2" />
-                        Execute Agent Now
-                      </>
-                    )}
+                    <Activity className="w-4 h-4 mr-2" />
+                    Agent Dashboard
                   </Button>
                 </div>
 
