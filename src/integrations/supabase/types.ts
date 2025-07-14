@@ -382,7 +382,10 @@ export type Database = {
           token_graduated: boolean | null
           token_holders: number | null
           total_supply: number | null
+          twitter_api_configured: boolean | null
+          twitter_api_encrypted_credentials: string | null
           twitter_url: string | null
+          twitter_username: string | null
           updated_at: string
           volume_24h: number | null
           website_url: string | null
@@ -411,7 +414,10 @@ export type Database = {
           token_graduated?: boolean | null
           token_holders?: number | null
           total_supply?: number | null
+          twitter_api_configured?: boolean | null
+          twitter_api_encrypted_credentials?: string | null
           twitter_url?: string | null
+          twitter_username?: string | null
           updated_at?: string
           volume_24h?: number | null
           website_url?: string | null
@@ -440,7 +446,10 @@ export type Database = {
           token_graduated?: boolean | null
           token_holders?: number | null
           total_supply?: number | null
+          twitter_api_configured?: boolean | null
+          twitter_api_encrypted_credentials?: string | null
           twitter_url?: string | null
+          twitter_username?: string | null
           updated_at?: string
           volume_24h?: number | null
           website_url?: string | null

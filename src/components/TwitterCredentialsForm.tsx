@@ -57,7 +57,7 @@ export const TwitterCredentialsForm = ({ agentId, onCredentialsAdded }: TwitterC
           .update({
             twitter_api_configured: true,
             twitter_username: data.username
-          })
+          } as any)
           .eq('id', agentId);
 
         if (updateError) throw updateError;
