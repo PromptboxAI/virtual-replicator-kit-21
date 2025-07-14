@@ -55,10 +55,10 @@ const Index = () => {
             The fairest transparent way to co-own AI Agents. Trade, invest, and participate in the autonomous digital economy.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-gradient-primary hover:opacity-90 shadow-glow-primary">
+            <Button size="lg" className="bg-black text-white hover:bg-black/90 border border-black">
               Explore Agents
             </Button>
-            <Button size="lg" variant="outline" className="border-primary/50 hover:border-primary">
+            <Button size="lg" variant="outline" className="border-black text-black hover:bg-black hover:text-white">
               Learn More
             </Button>
           </div>
@@ -108,11 +108,11 @@ const Index = () => {
               <p className="text-muted-foreground">Discover the most active agents in the ecosystem</p>
             </div>
             <div className="flex items-center space-x-2">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="border-black text-black hover:bg-black hover:text-white">
                 <Filter className="w-4 h-4 mr-2" />
                 Filter
               </Button>
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" className="text-black hover:bg-black hover:text-white">
                 <MoreHorizontal className="w-4 h-4" />
               </Button>
             </div>
