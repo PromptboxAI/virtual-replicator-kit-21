@@ -164,9 +164,10 @@ export default function AgentManagement() {
               </p>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Action Buttons Row */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 {/* Execute Agent */}
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <h3 className="font-semibold flex items-center gap-2">
                     <Play className="w-4 h-4" />
                     Manual Execution
@@ -177,7 +178,7 @@ export default function AgentManagement() {
                   <Button 
                     onClick={handleExecuteAgent}
                     disabled={isExecuting}
-                    className="w-full"
+                    className="w-full h-11"
                   >
                     {isExecuting ? (
                       <>
@@ -194,7 +195,7 @@ export default function AgentManagement() {
                 </div>
 
                 {/* Twitter Setup */}
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <h3 className="font-semibold flex items-center gap-2">
                     <Twitter className="w-4 h-4" />
                     Twitter Integration
@@ -208,27 +209,27 @@ export default function AgentManagement() {
                   <Button 
                     variant={agent.twitter_api_configured ? "secondary" : "default"}
                     onClick={() => setShowTwitterSetup(!showTwitterSetup)}
-                    className="w-full"
+                    className="w-full h-11"
                   >
                     {agent.twitter_api_configured ? "Manage Twitter" : "Setup Twitter API"}
                   </Button>
                 </div>
-
-                {/* Revenue Info */}
-                <div className="space-y-2">
-                  <h3 className="font-semibold flex items-center gap-2">
-                    <DollarSign className="w-4 h-4" />
-                    Autonomous Revenue
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Your agent earns revenue automatically and distributes it to token holders
-                  </p>
-                  <div className="text-lg font-bold text-green-600 flex items-center gap-1">
-                    <TrendingUp className="w-4 h-4" />
-                    ${agent.current_price >= 0.01 ? agent.current_price.toFixed(2) : agent.current_price.toFixed(6)}
-                  </div>
-                </div>
               </div>
+
+              {/* Revenue Info */}
+              <div className="space-y-3">
+                <h3 className="font-semibold flex items-center gap-2">
+                  <DollarSign className="w-4 h-4" />
+                  Autonomous Revenue
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Your agent earns revenue automatically and distributes it to token holders
+                </p>
+                <div className="text-lg font-bold text-green-600 flex items-center gap-1">
+                  <TrendingUp className="w-4 h-4" />
+                  ${agent.current_price >= 0.01 ? agent.current_price.toFixed(2) : agent.current_price.toFixed(6)}
+                </div>
+                </div>
 
               {/* Twitter Setup Form */}
               {showTwitterSetup && (
