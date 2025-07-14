@@ -23,6 +23,7 @@ export function AgentCard({ agent }: AgentCardProps) {
   const isPositive = agent.change > 0;
   
   const handleCardClick = () => {
+    console.log('AgentCard clicked, navigating to:', `/trade/${agent.id}`);
     navigate(`/trade/${agent.id}`);
   };
 

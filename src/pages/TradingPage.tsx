@@ -14,6 +14,9 @@ export default function TradingPage() {
   const { agentId } = useParams<{ agentId: string }>();
   const { user, signIn } = useAuth();
 
+  // Debug logging
+  console.log('TradingPage rendered with agentId:', agentId);
+
   const { data: agent, isLoading, error } = useQuery({
     queryKey: ['agent', agentId],
     queryFn: async () => {
