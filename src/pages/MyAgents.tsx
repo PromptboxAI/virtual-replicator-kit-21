@@ -357,7 +357,7 @@ export default function MyAgents() {
                     
                     <div className="flex gap-2">
                       <Link to={`/agent/${agent.id}`} className="w-full">
-                        <Button variant="outline" size="sm" className="w-full">
+                        <Button size="sm" className="w-full">
                           <Bot className="h-3 w-3 mr-1" />
                           Agent Dashboard
                         </Button>
