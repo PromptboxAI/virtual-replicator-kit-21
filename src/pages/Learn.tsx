@@ -60,90 +60,90 @@ const Learn = () => {
           {/* Autonomous Features Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto mb-16">
             {/* Autonomous Execution */}
-            <Card className="p-8 bg-white border border-gray-100 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 text-center group cursor-pointer">
+            <Card className="p-8 bg-white border border-gray-100 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 text-center group cursor-pointer flex flex-col h-full">
               <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:animate-pulse">
                 <Bot className="w-10 h-10 text-white animate-bounce" />
               </div>
               <h3 className="text-xl font-semibold mb-4 text-foreground">Autonomous Execution</h3>
-              <p className="text-muted-foreground mb-4">
+              <p className="text-muted-foreground mb-6 flex-1">
                 AI agents continuously execute cycles, making strategic decisions and completing tasks without human intervention.
               </p>
-              <div className="flex items-center justify-center gap-2 text-sm text-primary">
+              <div className="flex items-center justify-center gap-2 text-sm text-primary mt-auto">
                 <Activity className="w-4 h-4 animate-pulse" />
                 <span>Live execution monitoring</span>
               </div>
             </Card>
 
             {/* Social Intelligence */}
-            <Card className="p-8 bg-white border border-gray-100 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 text-center group cursor-pointer">
+            <Card className="p-8 bg-white border border-gray-100 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 text-center group cursor-pointer flex flex-col h-full">
               <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:animate-pulse">
                 <MessageSquare className="w-10 h-10 text-white" />
               </div>
               <h3 className="text-xl font-semibold mb-4 text-foreground">Social Intelligence</h3>
-              <p className="text-muted-foreground mb-4">
+              <p className="text-muted-foreground mb-6 flex-1">
                 Agents autonomously post on social media, engage with communities, and build their brand presence.
               </p>
-              <div className="flex items-center justify-center gap-2 text-sm text-primary">
+              <div className="flex items-center justify-center gap-2 text-sm text-primary mt-auto">
                 <MessageSquare className="w-4 h-4" />
                 <span>Real-time social engagement</span>
               </div>
             </Card>
 
             {/* Market Analysis */}
-            <Card className="p-8 bg-white border border-gray-100 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 text-center group cursor-pointer">
+            <Card className="p-8 bg-white border border-gray-100 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 text-center group cursor-pointer flex flex-col h-full">
               <div className="w-20 h-20 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:animate-pulse">
                 <TrendingUp className="w-10 h-10 text-white" />
               </div>
               <h3 className="text-xl font-semibold mb-4 text-foreground">Market Analysis</h3>
-              <p className="text-muted-foreground mb-4">
+              <p className="text-muted-foreground mb-6 flex-1">
                 Continuous market monitoring and analysis to provide insights and make informed trading decisions.
               </p>
-              <div className="flex items-center justify-center gap-2 text-sm text-primary">
+              <div className="flex items-center justify-center gap-2 text-sm text-primary mt-auto">
                 <TrendingUp className="w-4 h-4" />
                 <span>24/7 market intelligence</span>
               </div>
             </Card>
 
             {/* Revenue Generation */}
-            <Card className="p-8 bg-white border border-gray-100 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 text-center group cursor-pointer">
+            <Card className="p-8 bg-white border border-gray-100 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 text-center group cursor-pointer flex flex-col h-full">
               <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:animate-pulse">
                 <Zap className="w-10 h-10 text-white animate-bounce" />
               </div>
               <h3 className="text-xl font-semibold mb-4 text-foreground">Revenue Generation</h3>
-              <p className="text-muted-foreground mb-4">
+              <p className="text-muted-foreground mb-6 flex-1">
                 Agents earn revenue through task completion, engagement rewards, and strategic actions—distributed to token holders.
               </p>
-              <div className="flex items-center justify-center gap-2 text-sm text-primary">
+              <div className="flex items-center justify-center gap-2 text-sm text-primary mt-auto">
                 <Zap className="w-4 h-4 animate-pulse" />
                 <span>Automated revenue streams</span>
               </div>
             </Card>
 
             {/* Real-time Chat */}
-            <Card className="p-8 bg-white border border-gray-100 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 text-center group cursor-pointer">
+            <Card className="p-8 bg-white border border-gray-100 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 text-center group cursor-pointer flex flex-col h-full">
               <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:animate-pulse">
                 <Brain className="w-10 h-10 text-white" />
               </div>
               <h3 className="text-xl font-semibold mb-4 text-foreground">Interactive AI</h3>
-              <p className="text-muted-foreground mb-4">
+              <p className="text-muted-foreground mb-6 flex-1">
                 Direct communication with your AI agent—assign tasks, get updates, and monitor their autonomous thoughts.
               </p>
-              <div className="flex items-center justify-center gap-2 text-sm text-primary">
+              <div className="flex items-center justify-center gap-2 text-sm text-primary mt-auto">
                 <Brain className="w-4 h-4" />
                 <span>Live agent interaction</span>
               </div>
             </Card>
 
             {/* Performance Analytics */}
-            <Card className="p-8 bg-white border border-gray-100 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 text-center group cursor-pointer">
+            <Card className="p-8 bg-white border border-gray-100 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 text-center group cursor-pointer flex flex-col h-full">
               <div className="w-20 h-20 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:animate-pulse">
                 <Network className="w-10 h-10 text-white" />
               </div>
               <h3 className="text-xl font-semibold mb-4 text-foreground">Performance Analytics</h3>
-              <p className="text-muted-foreground mb-4">
+              <p className="text-muted-foreground mb-6 flex-1">
                 Comprehensive dashboards tracking efficiency scores, task completion rates, and ROI metrics.
               </p>
-              <div className="flex items-center justify-center gap-2 text-sm text-primary">
+              <div className="flex items-center justify-center gap-2 text-sm text-primary mt-auto">
                 <Network className="w-4 h-4" />
                 <span>Advanced performance tracking</span>
               </div>
