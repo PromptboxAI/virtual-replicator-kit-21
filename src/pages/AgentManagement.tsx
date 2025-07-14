@@ -7,6 +7,7 @@ import { AgentActivityFeed } from '@/components/AgentActivityFeed';
 import { AgentChat } from '@/components/AgentChat';
 import { TwitterCredentialsForm } from '@/components/TwitterCredentialsForm';
 import { AgentBuilder } from '@/components/AgentBuilder';
+import { TradingBotConfiguration } from '@/components/TradingBotConfiguration';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -351,7 +352,7 @@ export default function AgentManagement() {
             </TabsTrigger>
             <TabsTrigger value="builder" className="flex items-center gap-2">
               <Bot className="w-4 h-4" />
-              Agent Builder
+              {agent.category === 'Trading Bot' ? 'Trading Configuration' : 'Agent Builder'}
             </TabsTrigger>
             <TabsTrigger value="chat" className="flex items-center gap-2">
               <MessageSquare className="w-4 h-4" />
@@ -389,19 +390,35 @@ export default function AgentManagement() {
 
           {/* Agent Builder Tab */}
           <TabsContent value="builder" className="space-y-6">
-            <AgentBuilder 
-              agent={{
-                id: agent.id,
-                name: agent.name,
-                symbol: agent.symbol,
-                description: agent.description || '',
-                avatar_url: agent.avatar_url,
-                category: agent.category,
-                framework: agent.framework,
-                is_active: agent.is_active
-              }}
-              onAgentUpdated={refetch}
-            />
+            {agent.category === 'Trading Bot' ? (
+              <TradingBotConfiguration
+                agent={{
+                  id: agent.id,
+                  name: agent.name,
+                  symbol: agent.symbol,
+                  description: agent.description || '',
+                  avatar_url: agent.avatar_url,
+                  category: agent.category,
+                  framework: agent.framework,
+                  is_active: agent.is_active
+                }}
+                onConfigurationUpdated={refetch}
+              />
+            ) : (
+              <AgentBuilder 
+                agent={{
+                  id: agent.id,
+                  name: agent.name,
+                  symbol: agent.symbol,
+                  description: agent.description || '',
+                  avatar_url: agent.avatar_url,
+                  category: agent.category,
+                  framework: agent.framework,
+                  is_active: agent.is_active
+                }}
+                onAgentUpdated={refetch}
+              />
+            )}
           </TabsContent>
 
           {/* Settings Tab */}

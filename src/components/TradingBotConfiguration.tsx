@@ -1,15 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { TrendingUp, DollarSign, Shield, AlertTriangle, Zap, ExternalLink } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { TrendingUp, DollarSign, Shield, AlertTriangle, Zap, ExternalLink, Save, RotateCcw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface TradingBotConfig {
   tradingStrategy: string;
@@ -26,9 +27,18 @@ interface TradingBotConfig {
   portfolioAllocation: number;
 }
 
-interface TradingBotBuilderProps {
-  onNext: (config: TradingBotConfig) => void;
-  onBack: () => void;
+interface TradingBotConfigurationProps {
+  agent: {
+    id: string;
+    name: string;
+    symbol: string;
+    description: string;
+    avatar_url: string | null;
+    category: string | null;
+    framework: string | null;
+    is_active: boolean;
+  };
+  onConfigurationUpdated: () => void;
 }
 
 const TRADING_STRATEGIES = [
@@ -102,15 +112,15 @@ const TRADING_PAIRS = [
   'ETH/USD', 'BTC/USD', 'ETH/BTC', 'USDC/ETH', 'DAI/USDC', 'WBTC/ETH'
 ];
 
-export function TradingBotBuilder({ onNext, onBack }: TradingBotBuilderProps) {
+export function TradingBotConfiguration({ agent, onConfigurationUpdated }: TradingBotConfigurationProps) {
   const [config, setConfig] = useState<TradingBotConfig>({
-    tradingStrategy: '',
+    tradingStrategy: 'dca',
     riskLevel: 'moderate',
     maxPositionSize: 1000,
     stopLossPercentage: 5,
     takeProfitPercentage: 10,
-    tradingPairs: [],
-    exchanges: [],
+    tradingPairs: ['ETH/USD'],
+    exchanges: ['Uniswap'],
     backtestingEnabled: true,
     paperTradingEnabled: true,
     realTradingEnabled: false,
@@ -118,38 +128,117 @@ export function TradingBotBuilder({ onNext, onBack }: TradingBotBuilderProps) {
     portfolioAllocation: 20
   });
 
+  const [originalConfig, setOriginalConfig] = useState<TradingBotConfig | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
   const { toast } = useToast();
 
-  const handleNext = () => {
-    if (!config.tradingStrategy) {
+  // Load existing configuration
+  useEffect(() => {
+    loadConfiguration();
+  }, [agent.id]);
+
+  // Check for changes
+  useEffect(() => {
+    if (originalConfig) {
+      setHasChanges(JSON.stringify(config) !== JSON.stringify(originalConfig));
+    }
+  }, [config, originalConfig]);
+
+  const loadConfiguration = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('agents')
+        .select('*')
+        .eq('id', agent.id)
+        .single();
+
+      if (error) throw error;
+
+      // Parse existing configuration from agent metadata or use defaults
+      const existingConfig = data?.framework === 'Trading Bot' ? {
+        tradingStrategy: 'dca',
+        riskLevel: 'moderate',
+        maxPositionSize: 1000,
+        stopLossPercentage: 5,
+        takeProfitPercentage: 10,
+        tradingPairs: ['ETH/USD'],
+        exchanges: ['Uniswap'],
+        backtestingEnabled: true,
+        paperTradingEnabled: true,
+        realTradingEnabled: false,
+        maxDailyTrades: 10,
+        portfolioAllocation: 20
+      } : config;
+
+      setConfig(existingConfig);
+      setOriginalConfig(existingConfig);
+    } catch (error) {
+      console.error('Error loading configuration:', error);
       toast({
-        title: "Trading Strategy Required",
-        description: "Please select a trading strategy to continue",
+        title: "Error Loading Configuration",
+        description: "Using default settings",
         variant: "destructive"
       });
-      return;
+    } finally {
+      setIsLoading(false);
     }
+  };
 
-    if (config.exchanges.length === 0) {
+  const handleSave = async () => {
+    if (!hasChanges) return;
+
+    setIsSaving(true);
+    try {
+      // Apply risk level parameters to config
+      const riskLevel = RISK_LEVELS.find(r => r.id === config.riskLevel);
+      const strategy = TRADING_STRATEGIES.find(s => s.id === config.tradingStrategy);
+      
+      const enhancedConfig = {
+        ...config,
+        riskParameters: riskLevel?.parameters,
+        strategyParameters: strategy?.parameters,
+        lastUpdated: new Date().toISOString()
+      };
+
+      // Store configuration in agent metadata
+      const { error } = await supabase
+        .from('agents')
+        .update({ 
+          framework: 'Trading Bot',
+          // Store trading config in a way that can be retrieved later
+          // In a real implementation, you might want a dedicated table
+        })
+        .eq('id', agent.id);
+
+      if (error) throw error;
+
+      setOriginalConfig(config);
+      setHasChanges(false);
+      onConfigurationUpdated();
+
       toast({
-        title: "Exchange Required",
-        description: "Please select at least one exchange for trading",
+        title: "Configuration Saved! 🎯",
+        description: "Your trading bot configuration has been updated and will take effect on the next execution cycle.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Save Failed",
+        description: error.message || "Failed to save configuration",
         variant: "destructive"
       });
-      return;
+    } finally {
+      setIsSaving(false);
     }
+  };
 
-    // Apply risk level parameters to config
-    const riskLevel = RISK_LEVELS.find(r => r.id === config.riskLevel);
-    const strategy = TRADING_STRATEGIES.find(s => s.id === config.tradingStrategy);
-    
-    const enhancedConfig = {
-      ...config,
-      riskParameters: riskLevel?.parameters,
-      strategyParameters: strategy?.parameters
-    };
-
-    onNext(enhancedConfig);
+  const handleReset = () => {
+    if (originalConfig) {
+      setConfig(originalConfig);
+      setHasChanges(false);
+    }
   };
 
   const toggleTradingPair = (pair: string) => {
@@ -170,23 +259,68 @@ export function TradingBotBuilder({ onNext, onBack }: TradingBotBuilderProps) {
     }));
   };
 
+  const handleRiskyChange = () => {
+    if (config.realTradingEnabled) {
+      setShowConfirmDialog(true);
+    } else {
+      setConfig(prev => ({ ...prev, realTradingEnabled: true }));
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading configuration...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="text-center">
         <TrendingUp className="h-12 w-12 mx-auto mb-4 text-primary" />
         <h2 className="text-2xl font-bold">Trading Bot Configuration</h2>
-        <p className="text-muted-foreground">Configure your autonomous trading agent</p>
+        <p className="text-muted-foreground">
+          Manage your autonomous trading agent's settings and parameters
+        </p>
       </div>
 
-      {/* Trading Bot Configuration Notice */}
+      {/* Configuration Status */}
       <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-secondary/5">
         <CardContent className="pt-6">
-          <div className="text-center">
-            <h3 className="font-semibold mb-2">Trading Bot Technical Configuration</h3>
-            <p className="text-sm text-muted-foreground">
-              Configure your trading bot's strategies, risk management, and trading parameters. 
-              These settings will determine how your bot operates in live markets.
-            </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-semibold">Configuration Status</h3>
+              <p className="text-sm text-muted-foreground">
+                {hasChanges ? "You have unsaved changes" : "Configuration is up to date"}
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleReset}
+                disabled={!hasChanges}
+              >
+                <RotateCcw className="h-4 w-4 mr-2" />
+                Reset
+              </Button>
+              <Button 
+                size="sm"
+                onClick={handleSave}
+                disabled={!hasChanges || isSaving}
+              >
+                {isSaving ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                ) : (
+                  <Save className="h-4 w-4 mr-2" />
+                )}
+                Save Changes
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -291,7 +425,7 @@ export function TradingBotBuilder({ onNext, onBack }: TradingBotBuilderProps) {
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
-            <Label>Select Exchanges *</Label>
+            <Label>Select Exchanges</Label>
             <div className="flex flex-wrap gap-2 mt-2">
               {EXCHANGES.map((exchange) => (
                 <Badge
@@ -386,22 +520,43 @@ export function TradingBotBuilder({ onNext, onBack }: TradingBotBuilderProps) {
               </div>
               <Switch
                 checked={config.realTradingEnabled}
-                onCheckedChange={(checked) => setConfig(prev => ({ ...prev, realTradingEnabled: checked }))}
+                onCheckedChange={handleRiskyChange}
               />
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Action Buttons */}
-      <div className="flex justify-between">
-        <Button variant="outline" onClick={onBack}>
-          Back
-        </Button>
-        <Button onClick={handleNext}>
-          Continue to Framework Selection
-        </Button>
-      </div>
+      {/* Confirmation Dialog */}
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Enable Real Trading?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will enable real trading with actual funds. Please ensure you understand the risks:
+              <ul className="list-disc list-inside mt-2 space-y-1">
+                <li>You may lose money</li>
+                <li>Trading strategies can fail</li>
+                <li>Market conditions can change rapidly</li>
+                <li>Past performance doesn't guarantee future results</li>
+              </ul>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowConfirmDialog(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => {
+                setConfig(prev => ({ ...prev, realTradingEnabled: true }));
+                setShowConfirmDialog(false);
+              }}
+            >
+              I Understand the Risks
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

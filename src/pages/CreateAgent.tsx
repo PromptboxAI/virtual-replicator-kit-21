@@ -839,7 +839,7 @@ export default function CreateAgent() {
                           onChange={(e) => handleInputChange('short_pitch', e.target.value)}
                           rows={8}
                           maxLength={500}
-                          className="mt-2 min-h-[200px]"
+                          className="mt-2 min-h-[300px]"
                         />
                         <div className="flex justify-between items-center mt-1">
                           <p className="text-xs text-muted-foreground">
@@ -853,18 +853,61 @@ export default function CreateAgent() {
 
                       <div>
                         <Label htmlFor="agent_overview" className="flex items-center gap-1">
-                          AI Agent Overview <span className="text-red-500">*</span>
+                          AI Agent Whitepaper <span className="text-red-500">*</span>
                         </Label>
-                        <p className="text-sm text-muted-foreground mb-2">
-                          Treat this as your whitepaper. Tell us more about this AI Agent. Include capability, roadmap, key partnership, if any.
-                        </p>
+                        <div className="space-y-2 mb-4">
+                          <p className="text-sm text-muted-foreground">
+                            <strong>This is your agent's whitepaper.</strong> Provide comprehensive details about your AI Agent:
+                          </p>
+                          <ul className="text-xs text-muted-foreground space-y-1 ml-4">
+                            <li>• <strong>Capabilities:</strong> What can your agent do? What problems does it solve?</li>
+                            <li>• <strong>Technology:</strong> How does it work? What frameworks or models does it use?</li>
+                            <li>• <strong>Roadmap:</strong> What are your development plans and milestones?</li>
+                            <li>• <strong>Partnerships:</strong> Any strategic collaborations or integrations?</li>
+                            <li>• <strong>Tokenomics:</strong> How does your token create value for holders?</li>
+                            <li>• <strong>Use Cases:</strong> Real-world applications and target markets</li>
+                          </ul>
+                        </div>
                          <Textarea
                           id="agent_overview"
-                          placeholder="Provide a detailed overview of your AI Agent..."
+                          placeholder="**AI Agent Whitepaper**
+
+## Overview
+Provide a comprehensive overview of your AI Agent...
+
+## Capabilities
+- What can your agent do?
+- What problems does it solve?
+- Key features and functionalities
+
+## Technology Stack
+- Frameworks and models used
+- Technical architecture
+- AI/ML capabilities
+
+## Roadmap
+- Development milestones
+- Future features
+- Timeline for implementation
+
+## Partnerships & Integrations
+- Strategic collaborations
+- API integrations
+- Ecosystem partnerships
+
+## Tokenomics
+- How tokens create value
+- Revenue distribution
+- Holder benefits
+
+## Use Cases
+- Target markets
+- Real-world applications
+- Success metrics"
                           value={formData.agent_overview}
                           onChange={(e) => handleInputChange('agent_overview', e.target.value)}
-                          rows={12}
-                          className="mt-2 min-h-[300px]"
+                          rows={20}
+                          className="mt-2 min-h-[500px] text-sm"
                         />
                       </div>
                     </CardContent>
