@@ -234,7 +234,7 @@ export function AgentDashboard({ agent }: AgentDashboardProps) {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
-              <div className={`w-3 h-3 rounded-full ${runtimeStatus.is_active ? 'bg-green-500' : 'bg-gray-400'}`} />
+              <div className={`w-3 h-3 rounded-full ${runtimeStatus.is_active ? 'bg-green-500 ring-2 ring-green-200' : 'bg-gray-400'}`} />
               <span className="text-sm font-medium">
                 {runtimeStatus.is_active ? 'Active' : 'Inactive'}
               </span>
