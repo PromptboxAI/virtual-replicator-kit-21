@@ -19,6 +19,7 @@ import {
   Loader2, 
   AlertCircle, 
   Play, 
+  Pause,
   Twitter, 
   Settings, 
   Activity, 
@@ -26,7 +27,8 @@ import {
   Bot,
   MessageSquare,
   Zap,
-  TrendingUp
+  TrendingUp,
+  Power
 } from 'lucide-react';
 
 export default function AgentManagement() {
@@ -34,6 +36,7 @@ export default function AgentManagement() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isExecuting, setIsExecuting] = useState(false);
+  const [isTogglingStatus, setIsTogglingStatus] = useState(false);
   const [showTwitterSetup, setShowTwitterSetup] = useState(false);
 
   if (!agentId) {
@@ -84,6 +87,39 @@ export default function AgentManagement() {
       });
     } finally {
       setIsExecuting(false);
+    }
+  };
+
+  // Handle agent pause/resume toggle
+  const handleToggleAgentStatus = async () => {
+    if (!agent || !user) return;
+    
+    setIsTogglingStatus(true);
+    try {
+      const { error } = await supabase
+        .from('agents')
+        .update({ is_active: !agent.is_active })
+        .eq('id', agent.id);
+
+      if (error) throw error;
+
+      toast({
+        title: agent.is_active ? "Agent Paused ⏸️" : "Agent Resumed ▶️",
+        description: agent.is_active 
+          ? `${agent.name} has been paused and will no longer run autonomously.`
+          : `${agent.name} is now active and will run autonomously every 15 minutes.`,
+      });
+
+      // Refresh agent data
+      refetch();
+    } catch (error: any) {
+      toast({
+        title: "Status Update Failed",
+        description: error.message || "Failed to update agent status",
+        variant: "destructive"
+      });
+    } finally {
+      setIsTogglingStatus(false);
     }
   };
 
@@ -166,7 +202,7 @@ export default function AgentManagement() {
             </CardHeader>
             <CardContent>
               {/* Action Buttons Row */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 {/* Execute Agent */}
                 <div className="flex flex-col h-full">
                   <h3 className="font-semibold flex items-center gap-2 mb-3">
@@ -213,6 +249,43 @@ export default function AgentManagement() {
                     className="w-full h-11 mt-auto"
                   >
                     {agent.twitter_api_configured ? "Manage Twitter" : "Setup Twitter API"}
+                  </Button>
+                </div>
+
+                {/* Agent Status Control */}
+                <div className="flex flex-col h-full">
+                  <h3 className="font-semibold flex items-center gap-2 mb-3">
+                    <Power className="w-4 h-4" />
+                    Agent Status
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-4 flex-1">
+                    {agent.is_active 
+                      ? "Your agent is currently running autonomously every 15 minutes. Click to pause."
+                      : "Your agent is paused and won't run autonomously. Click to resume."
+                    }
+                  </p>
+                  <Button 
+                    variant={agent.is_active ? "secondary" : "default"}
+                    onClick={handleToggleAgentStatus}
+                    disabled={isTogglingStatus}
+                    className="w-full h-11 mt-auto"
+                  >
+                    {isTogglingStatus ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Updating...
+                      </>
+                    ) : agent.is_active ? (
+                      <>
+                        <Pause className="w-4 h-4 mr-2" />
+                        Pause Agent
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-4 h-4 mr-2" />
+                        Resume Agent
+                      </>
+                    )}
                   </Button>
                 </div>
               </div>
@@ -307,7 +380,8 @@ export default function AgentManagement() {
                 description: agent.description || '',
                 avatar_url: agent.avatar_url,
                 category: agent.category,
-                framework: agent.framework
+                framework: agent.framework,
+                is_active: agent.is_active
               }}
               onAgentUpdated={refetch}
             />

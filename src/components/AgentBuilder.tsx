@@ -27,6 +27,7 @@ interface AgentBuilderProps {
     avatar_url?: string;
     category?: string;
     framework?: string;
+    is_active?: boolean;
   };
   onAgentUpdated?: () => void;
 }
