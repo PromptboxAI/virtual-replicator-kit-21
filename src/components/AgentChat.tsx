@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { MessageSquare, Send, Loader2 } from 'lucide-react';
 
@@ -33,6 +34,7 @@ export function AgentChat({ agent }: AgentChatProps) {
   const [userMessage, setUserMessage] = useState('');
   const [sendingMessage, setSendingMessage] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -78,23 +80,18 @@ export function AgentChat({ agent }: AgentChatProps) {
   };
 
   const sendMessage = async () => {
-    if (!userMessage.trim()) return;
+    if (!userMessage.trim() || !user) return;
     
     try {
       setSendingMessage(true);
-      
-      // Get current session for authentication
-      const { data: { session } } = await supabase.auth.getSession();
       
       await supabase.functions.invoke('agent-runtime', {
         body: { 
           action: 'interact', 
           agentId: agent.id, 
-          message: userMessage 
-        },
-        headers: session?.access_token ? {
-          Authorization: `Bearer ${session.access_token}`
-        } : {}
+          message: userMessage,
+          userId: user.id // Send the Privy user ID
+        }
       });
       
       setUserMessage('');
@@ -103,6 +100,7 @@ export function AgentChat({ agent }: AgentChatProps) {
         description: "Your message has been sent to the agent",
       });
     } catch (error) {
+      console.error('Chat error:', error);
       toast({
         title: "Message Failed",
         description: "Failed to send message to agent",
@@ -176,14 +174,14 @@ export function AgentChat({ agent }: AgentChatProps) {
             type="text"
             value={userMessage}
             onChange={(e) => setUserMessage(e.target.value)}
-            placeholder="Type your message..."
+            placeholder={user ? "Type your message..." : "Please sign in to chat"}
             onKeyPress={handleKeyPress}
-            disabled={sendingMessage}
+            disabled={sendingMessage || !user}
             className="flex-1"
           />
           <Button 
             onClick={sendMessage} 
-            disabled={sendingMessage || !userMessage.trim()}
+            disabled={sendingMessage || !userMessage.trim() || !user}
             size="icon"
           >
             {sendingMessage ? (
