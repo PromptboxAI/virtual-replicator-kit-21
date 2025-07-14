@@ -17,9 +17,9 @@
     --popover-foreground: 0 0% 0%;
 
     /* Clean black and white theme */
-    --primary: 0 0% 0%;
+    --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 0 0% 20%;
+    --primary-glow: 217 91% 70%;
 
     --secondary: 0 0% 10%;
     --secondary-foreground: 0 0% 100%;
