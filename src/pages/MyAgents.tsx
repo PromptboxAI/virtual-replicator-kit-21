@@ -134,8 +134,20 @@ export default function MyAgents() {
     }
   };
 
-  const getStatusBadge = (status: string | null) => {
-    switch (status) {
+  const getStatusBadge = (agent: any, runtimeStatus: any = null) => {
+    // Use runtime status if available, otherwise fall back to agent status
+    if (runtimeStatus) {
+      return runtimeStatus.is_active ? 
+        <Badge variant="outline" className="text-green-600 border-green-600">Active</Badge> :
+        <Badge variant="outline" className="text-gray-600 border-gray-600">Inactive</Badge>;
+    }
+    
+    // Check agent.is_active first, then agent.status
+    if (agent.is_active === false) {
+      return <Badge variant="outline" className="text-gray-600 border-gray-600">Paused</Badge>;
+    }
+    
+    switch (agent.status) {
       case 'ACTIVATING':
         return <Badge variant="outline" className="text-yellow-600 border-yellow-600">Activating</Badge>;
       case 'AVAILABLE':
@@ -143,7 +155,10 @@ export default function MyAgents() {
       case 'INACTIVE':
         return <Badge variant="outline" className="text-gray-600 border-gray-600">Inactive</Badge>;
       default:
-        return <Badge variant="outline">Unknown</Badge>;
+        // Default to Live if agent is active but status is unknown
+        return agent.is_active ? 
+          <Badge variant="outline" className="text-green-600 border-green-600">Live</Badge> :
+          <Badge variant="outline" className="text-gray-600 border-gray-600">Inactive</Badge>;
     }
   };
 
@@ -270,7 +285,7 @@ export default function MyAgents() {
                           <CardDescription>${agent.symbol}</CardDescription>
                         </div>
                       </div>
-                      {getStatusBadge(agent.status)}
+                      {getStatusBadge(agent, agentStatuses[agent.id])}
                     </div>
                   </CardHeader>
                   
