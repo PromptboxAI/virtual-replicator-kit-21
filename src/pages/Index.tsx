@@ -45,7 +45,7 @@ const Index = () => {
       <section className="py-16 px-4">
         <div className="container mx-auto text-center">
           <h1 className="text-6xl font-bold mb-6">
-            <span className="bg-gradient-cyber bg-clip-text text-transparent">
+            <span className="bg-gradient-primary bg-clip-text text-transparent">
               Tokenized AI Agents
             </span>
           </h1>
