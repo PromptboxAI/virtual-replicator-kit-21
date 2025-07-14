@@ -171,13 +171,30 @@ async function executeAgentCycle(agent: Agent) {
       .eq('agent_id', agent.id)
       .single();
 
+    // Generate revenue and distribute to token holders
+    const revenueGenerated = Math.random() * 10; // $0-10 simulated revenue
+    
+    if (revenueGenerated > 1) { // Only distribute if meaningful amount
+      try {
+        await supabase.functions.invoke('distribute-revenue', {
+          body: {
+            agentId: agent.id,
+            revenueAmount: revenueGenerated,
+            source: 'autonomous_execution'
+          }
+        });
+      } catch (error) {
+        console.error('Revenue distribution failed:', error);
+      }
+    }
+
     await updateRuntimeStatus(agent.id, {
       tasks_completed: (currentStatus?.tasks_completed || 0) + 1,
-      revenue_generated: (currentStatus?.revenue_generated || 0) + Math.random() * 10, // Simulated revenue
       performance_metrics: {
         last_cycle: new Date().toISOString(),
         efficiency: Math.random() * 100,
-        engagement_score: Math.random() * 100
+        engagement_score: Math.random() * 100,
+        revenue_generated_this_cycle: revenueGenerated
       }
     });
 

@@ -133,13 +133,18 @@ serve(async (req) => {
       throw new Error('Twitter API not configured for this agent');
     }
 
-    // For demo purposes, we'll simulate the decryption
-    // In production, you'd decrypt the stored credentials
-    const credentials = JSON.parse(agent.twitter_api_encrypted_credentials || '{}');
-    
-    if (!credentials.consumer_key || !credentials.consumer_secret || 
-        !credentials.access_token || !credentials.access_token_secret) {
-      throw new Error('Invalid Twitter credentials stored');
+    // Decrypt stored credentials (simplified for demo - in production use proper encryption)
+    let credentials;
+    try {
+      // For now, assume credentials are stored as JSON (in production, decrypt properly)
+      credentials = JSON.parse(agent.twitter_api_encrypted_credentials || '{}');
+      
+      if (!credentials.consumer_key || !credentials.consumer_secret || 
+          !credentials.access_token || !credentials.access_token_secret) {
+        throw new Error('Missing required Twitter API credentials');
+      }
+    } catch (parseError) {
+      throw new Error('Failed to parse stored Twitter credentials');
     }
 
     // Post the tweet
