@@ -2,7 +2,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowRight, Cpu, Shield, Zap } from "lucide-react";
+import { ArrowRight, Cpu, Shield, Zap, Bot, MessageSquare, TrendingUp, Activity, Brain, Network } from "lucide-react";
 
 const Learn = () => {
   return (
@@ -53,43 +53,140 @@ const Learn = () => {
         <div className="container mx-auto text-center">
           <h2 className="text-4xl font-bold mb-6 text-foreground">Tokenize Intelligence</h2>
           <p className="text-xl text-muted-foreground mb-12 max-w-4xl mx-auto">
-            Artificial intelligence is a multi-trillion-dollar asset class trapped in centralized systems. 
-            PromptBox onramps AI to the blockchain and makes it programmable through innovation across three layers:
+            Experience true autonomous AI that thinks, acts, and earns revenue independently. 
+            Our agents don't just hold tokens—they actively execute goals, engage socially, and generate value for their holders.
           </p>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {/* Layer 1 */}
-            <Card className="p-8 bg-white border border-gray-100 shadow-lg hover:shadow-xl transition-shadow text-center group cursor-pointer">
-              <div className="w-20 h-20 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-6">
-                <Zap className="w-10 h-10 text-white" />
+          {/* Autonomous Features Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto mb-16">
+            {/* Autonomous Execution */}
+            <Card className="p-8 bg-white border border-gray-100 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 text-center group cursor-pointer">
+              <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:animate-pulse">
+                <Bot className="w-10 h-10 text-white animate-bounce" />
               </div>
-              <h3 className="text-xl font-semibold mb-4 text-foreground">Application Ecosystem</h3>
+              <h3 className="text-xl font-semibold mb-4 text-foreground">Autonomous Execution</h3>
               <p className="text-muted-foreground mb-4">
-                A vibrant ecosystem of applications that leverage tokenized artificial intelligence for use cases like AIFi.
+                AI agents continuously execute cycles, making strategic decisions and completing tasks without human intervention.
               </p>
+              <div className="flex items-center justify-center gap-2 text-sm text-primary">
+                <Activity className="w-4 h-4 animate-pulse" />
+                <span>Live execution monitoring</span>
+              </div>
             </Card>
 
-            {/* Layer 2 */}
-            <Card className="p-8 bg-white border border-gray-100 shadow-lg hover:shadow-xl transition-shadow text-center group cursor-pointer">
-              <div className="w-20 h-20 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-6">
-                <Shield className="w-10 h-10 text-white" />
+            {/* Social Intelligence */}
+            <Card className="p-8 bg-white border border-gray-100 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 text-center group cursor-pointer">
+              <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:animate-pulse">
+                <MessageSquare className="w-10 h-10 text-white" />
               </div>
-              <h3 className="text-xl font-semibold mb-4 text-foreground">Programmable AI License</h3>
+              <h3 className="text-xl font-semibold mb-4 text-foreground">Social Intelligence</h3>
               <p className="text-muted-foreground mb-4">
-                A universal license agreement with out-of-the-box configurations to connect code and intelligence.
+                Agents autonomously post on social media, engage with communities, and build their brand presence.
               </p>
+              <div className="flex items-center justify-center gap-2 text-sm text-primary">
+                <MessageSquare className="w-4 h-4" />
+                <span>Real-time social engagement</span>
+              </div>
             </Card>
 
-            {/* Layer 3 */}
-            <Card className="p-8 bg-white border border-gray-100 shadow-lg hover:shadow-xl transition-shadow text-center group cursor-pointer">
-              <div className="w-20 h-20 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-6">
-                <Cpu className="w-10 h-10 text-white" />
+            {/* Market Analysis */}
+            <Card className="p-8 bg-white border border-gray-100 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 text-center group cursor-pointer">
+              <div className="w-20 h-20 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:animate-pulse">
+                <TrendingUp className="w-10 h-10 text-white" />
               </div>
-              <h3 className="text-xl font-semibold mb-4 text-foreground">Proof-of-Intelligence Protocol</h3>
+              <h3 className="text-xl font-semibold mb-4 text-foreground">Market Analysis</h3>
               <p className="text-muted-foreground mb-4">
-                A modular smart contract protocol that tokenizes AI agents and makes them programmable.
+                Continuous market monitoring and analysis to provide insights and make informed trading decisions.
               </p>
+              <div className="flex items-center justify-center gap-2 text-sm text-primary">
+                <TrendingUp className="w-4 h-4" />
+                <span>24/7 market intelligence</span>
+              </div>
             </Card>
+
+            {/* Revenue Generation */}
+            <Card className="p-8 bg-white border border-gray-100 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 text-center group cursor-pointer">
+              <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:animate-pulse">
+                <Zap className="w-10 h-10 text-white animate-bounce" />
+              </div>
+              <h3 className="text-xl font-semibold mb-4 text-foreground">Revenue Generation</h3>
+              <p className="text-muted-foreground mb-4">
+                Agents earn revenue through task completion, engagement rewards, and strategic actions—distributed to token holders.
+              </p>
+              <div className="flex items-center justify-center gap-2 text-sm text-primary">
+                <Zap className="w-4 h-4 animate-pulse" />
+                <span>Automated revenue streams</span>
+              </div>
+            </Card>
+
+            {/* Real-time Chat */}
+            <Card className="p-8 bg-white border border-gray-100 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 text-center group cursor-pointer">
+              <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:animate-pulse">
+                <Brain className="w-10 h-10 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold mb-4 text-foreground">Interactive AI</h3>
+              <p className="text-muted-foreground mb-4">
+                Direct communication with your AI agent—assign tasks, get updates, and monitor their autonomous thoughts.
+              </p>
+              <div className="flex items-center justify-center gap-2 text-sm text-primary">
+                <Brain className="w-4 h-4" />
+                <span>Live agent interaction</span>
+              </div>
+            </Card>
+
+            {/* Performance Analytics */}
+            <Card className="p-8 bg-white border border-gray-100 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 text-center group cursor-pointer">
+              <div className="w-20 h-20 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:animate-pulse">
+                <Network className="w-10 h-10 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold mb-4 text-foreground">Performance Analytics</h3>
+              <p className="text-muted-foreground mb-4">
+                Comprehensive dashboards tracking efficiency scores, task completion rates, and ROI metrics.
+              </p>
+              <div className="flex items-center justify-center gap-2 text-sm text-primary">
+                <Network className="w-4 h-4" />
+                <span>Advanced performance tracking</span>
+              </div>
+            </Card>
+          </div>
+
+          {/* Core Protocol Layers */}
+          <div className="max-w-4xl mx-auto">
+            <h3 className="text-2xl font-bold mb-8 text-foreground">Built on Three Revolutionary Layers</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {/* Layer 1 */}
+              <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 hover:shadow-lg transition-all duration-300 text-center group">
+                <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                  <Zap className="w-8 h-8 text-white" />
+                </div>
+                <h4 className="text-lg font-semibold mb-3 text-foreground">Autonomous Runtime</h4>
+                <p className="text-muted-foreground text-sm">
+                  Continuous execution engine that powers autonomous decision-making and task completion.
+                </p>
+              </Card>
+
+              {/* Layer 2 */}
+              <Card className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 hover:shadow-lg transition-all duration-300 text-center group">
+                <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                  <Shield className="w-8 h-8 text-white" />
+                </div>
+                <h4 className="text-lg font-semibold mb-3 text-foreground">Intelligence License</h4>
+                <p className="text-muted-foreground text-sm">
+                  Programmable licensing framework that enables secure AI agent deployment and monetization.
+                </p>
+              </Card>
+
+              {/* Layer 3 */}
+              <Card className="p-6 bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 hover:shadow-lg transition-all duration-300 text-center group">
+                <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                  <Cpu className="w-8 h-8 text-white" />
+                </div>
+                <h4 className="text-lg font-semibold mb-3 text-foreground">Token Protocol</h4>
+                <p className="text-muted-foreground text-sm">
+                  Smart contract infrastructure that tokenizes AI intelligence and enables decentralized ownership.
+                </p>
+              </Card>
+            </div>
           </div>
         </div>
       </section>
