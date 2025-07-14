@@ -59,11 +59,20 @@ export default function AgentManagement() {
 
   // Check if user is the creator of this agent
   const isCreator = user?.id === agent?.creator_id;
+  
+  // Debug logging to check the ID comparison
+  console.log('Access control check:', {
+    userId: user?.id,
+    creatorId: agent?.creator_id,
+    isCreator,
+    agent: agent?.name
+  });
 
-  // Redirect non-creators to the trading page
-  if (agent && !isCreator) {
-    return <Navigate to={`/trade/${agentId}`} replace />;
-  }
+  // Temporarily disable the redirect to debug the issue
+  // TODO: Re-enable this after fixing the ID comparison issue
+  // if (agent && !isCreator) {
+  //   return <Navigate to={`/trade/${agentId}`} replace />;
+  // }
 
   // Handle manual agent execution
   const handleExecuteAgent = async () => {
