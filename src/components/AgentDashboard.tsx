@@ -257,7 +257,7 @@ export function AgentDashboard({ agent }: AgentDashboardProps) {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
-              <Zap className="h-4 w-4 text-blue-500" />
+              <Zap className="h-4 w-4 text-green-500" />
               <div>
                 <div className="text-lg font-bold">{runtimeStatus.tasks_completed}</div>
                 <div className="text-xs text-muted-foreground">Tasks Completed</div>
