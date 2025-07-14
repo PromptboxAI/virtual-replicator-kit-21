@@ -57,6 +57,14 @@ export default function AgentManagement() {
     },
   });
 
+  // Check if user is the creator of this agent
+  const isCreator = user?.id === agent?.creator_id;
+
+  // Redirect non-creators to the trading page
+  if (agent && !isCreator) {
+    return <Navigate to={`/trade/${agentId}`} replace />;
+  }
+
   // Handle manual agent execution
   const handleExecuteAgent = async () => {
     if (!agent || !user) return;
