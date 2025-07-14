@@ -114,7 +114,8 @@ export function AgentActivityFeed({ agent }: AgentActivityFeedProps) {
       pending: 'secondary',
       failed: 'destructive'
     } as const;
-    return <Badge variant={variants[status as keyof typeof variants] || 'secondary'}>{status}</Badge>;
+    const className = status === 'completed' ? 'bg-black hover:bg-gray-800 text-white' : '';
+    return <Badge variant={variants[status as keyof typeof variants] || 'secondary'} className={className}>{status}</Badge>;
   };
 
   if (loading && activities.length === 0) {

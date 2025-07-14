@@ -193,9 +193,9 @@ export default function AgentManagement() {
               <h1 className="text-3xl font-bold">{agent.name}</h1>
               <p className="text-muted-foreground">{agent.symbol}</p>
               <div className="flex items-center gap-2 mt-2">
-                <Badge variant={agent.is_active ? "default" : "secondary"}>
-                  {agent.is_active ? "Active" : "Inactive"}
-                </Badge>
+                 <Badge variant={agent.is_active ? "default" : "secondary"} className={agent.is_active ? "bg-green-500 hover:bg-green-600 text-white" : ""}>
+                   {agent.is_active ? "Active" : "Inactive"}
+                 </Badge>
                 {agent.twitter_api_configured && (
                   <Badge variant="outline" className="text-blue-500">
                     <Twitter className="w-3 h-3 mr-1" />
@@ -229,11 +229,11 @@ export default function AgentManagement() {
                   <p className="text-sm text-muted-foreground mb-4 flex-1">
                     Trigger your agent to make decisions and take actions right now. This shows you what happens every 15 minutes automatically.
                   </p>
-                  <Button 
-                    onClick={handleExecuteAgent}
-                    disabled={isExecuting}
-                    className="w-full h-11 mt-auto"
-                  >
+                   <Button 
+                     onClick={handleExecuteAgent}
+                     disabled={isExecuting}
+                     className="w-full h-11 mt-auto bg-black hover:bg-gray-800 text-white"
+                   >
                     {isExecuting ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -260,11 +260,11 @@ export default function AgentManagement() {
                       : "Enable your agent to post tweets autonomously"
                     }
                   </p>
-                  <Button 
-                    variant={agent.twitter_api_configured ? "secondary" : "default"}
-                    onClick={() => setShowTwitterSetup(!showTwitterSetup)}
-                    className="w-full h-11 mt-auto"
-                  >
+                   <Button 
+                     variant={agent.twitter_api_configured ? "secondary" : "default"}
+                     onClick={() => setShowTwitterSetup(!showTwitterSetup)}
+                     className={`w-full h-11 mt-auto ${!agent.twitter_api_configured ? "bg-black hover:bg-gray-800 text-white" : ""}`}
+                   >
                     {agent.twitter_api_configured ? "Manage Twitter" : "Setup Twitter API"}
                   </Button>
                 </div>
