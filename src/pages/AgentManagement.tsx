@@ -3,7 +3,8 @@ import { useParams, Navigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
-import { AgentDashboard } from '@/components/AgentDashboard';
+import { AgentActivityFeed } from '@/components/AgentActivityFeed';
+import { AgentChat } from '@/components/AgentChat';
 import { TwitterCredentialsForm } from '@/components/TwitterCredentialsForm';
 import { TradingInterface } from '@/components/TradingInterface';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -272,21 +273,9 @@ export default function AgentManagement() {
             </TabsTrigger>
           </TabsList>
 
-          {/* Agent Dashboard Tab */}
+          {/* Activities & Status Tab */}
           <TabsContent value="dashboard" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Zap className="w-5 h-5" />
-                  Autonomous Execution Dashboard
-                </CardTitle>
-                <p className="text-muted-foreground">
-                  Monitor your agent's autonomous activities, revenue generation, and AI decisions. 
-                  Your agent executes automatically every 15 minutes and makes decisions using OpenAI.
-                </p>
-              </CardHeader>
-            </Card>
-            <AgentDashboard agent={{
+            <AgentActivityFeed agent={{
               id: agent.id,
               name: agent.name,
               symbol: agent.symbol,
@@ -298,20 +287,7 @@ export default function AgentManagement() {
 
           {/* Chat Tab */}
           <TabsContent value="chat" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MessageSquare className="w-5 h-5" />
-                  Interact with Your Agent
-                </CardTitle>
-                <p className="text-muted-foreground">
-                  Chat directly with your AI agent. Users can also interact with your agent this way.
-                  Messages are powered by OpenAI and saved in your database.
-                </p>
-              </CardHeader>
-            </Card>
-            {/* The AgentDashboard component includes chat functionality */}
-            <AgentDashboard agent={{
+            <AgentChat agent={{
               id: agent.id,
               name: agent.name,
               symbol: agent.symbol,
