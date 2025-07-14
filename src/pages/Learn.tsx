@@ -3,8 +3,10 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowRight, Cpu, Shield, Zap, Bot, MessageSquare, TrendingUp, Activity, Brain, Network } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Learn = () => {
+  const navigate = useNavigate();
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -24,7 +26,11 @@ const Learn = () => {
             on the Base Network
           </h2>
           <div className="flex justify-end">
-            <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-lg px-8 py-6">
+            <Button 
+              size="lg" 
+              className="bg-black text-white hover:bg-gray-800 font-semibold text-lg px-8 py-6"
+              onClick={() => navigate('/create-agent')}
+            >
               Get Started with AI Agents
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
