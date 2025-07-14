@@ -8,6 +8,10 @@ import { AgentChat } from '@/components/AgentChat';
 import { TwitterCredentialsForm } from '@/components/TwitterCredentialsForm';
 import { AgentBuilder } from '@/components/AgentBuilder';
 import { TradingBotConfiguration } from '@/components/TradingBotConfiguration';
+import { DeFiAssistantConfiguration } from '@/components/DeFiAssistantConfiguration';
+import { ContentCreatorConfiguration } from '@/components/ContentCreatorConfiguration';
+import { CommunityManagerConfiguration } from '@/components/CommunityManagerConfiguration';
+import { AnalyticsAgentConfiguration } from '@/components/AnalyticsAgentConfiguration';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -390,35 +394,106 @@ export default function AgentManagement() {
 
           {/* Agent Builder Tab */}
           <TabsContent value="builder" className="space-y-6">
-            {agent.category === 'Trading Bot' ? (
-              <TradingBotConfiguration
-                agent={{
-                  id: agent.id,
-                  name: agent.name,
-                  symbol: agent.symbol,
-                  description: agent.description || '',
-                  avatar_url: agent.avatar_url,
-                  category: agent.category,
-                  framework: agent.framework,
-                  is_active: agent.is_active
-                }}
-                onConfigurationUpdated={refetch}
-              />
-            ) : (
-              <AgentBuilder 
-                agent={{
-                  id: agent.id,
-                  name: agent.name,
-                  symbol: agent.symbol,
-                  description: agent.description || '',
-                  avatar_url: agent.avatar_url,
-                  category: agent.category,
-                  framework: agent.framework,
-                  is_active: agent.is_active
-                }}
-                onAgentUpdated={refetch}
-              />
-            )}
+            {(() => {
+              switch (agent.category) {
+                case 'Trading Bot':
+                  return (
+                    <TradingBotConfiguration
+                      agent={{
+                        id: agent.id,
+                        name: agent.name,
+                        symbol: agent.symbol,
+                        description: agent.description || '',
+                        avatar_url: agent.avatar_url,
+                        category: agent.category,
+                        framework: agent.framework,
+                        is_active: agent.is_active
+                      }}
+                      onConfigurationUpdated={refetch}
+                    />
+                  );
+                case 'DeFi Assistant':
+                  return (
+                    <DeFiAssistantConfiguration
+                      agent={{
+                        id: agent.id,
+                        name: agent.name,
+                        symbol: agent.symbol,
+                        description: agent.description || '',
+                        avatar_url: agent.avatar_url,
+                        category: agent.category,
+                        framework: agent.framework,
+                        is_active: agent.is_active
+                      }}
+                      onConfigurationUpdated={refetch}
+                    />
+                  );
+                case 'Content Creator':
+                  return (
+                    <ContentCreatorConfiguration
+                      agent={{
+                        id: agent.id,
+                        name: agent.name,
+                        symbol: agent.symbol,
+                        description: agent.description || '',
+                        avatar_url: agent.avatar_url,
+                        category: agent.category,
+                        framework: agent.framework,
+                        is_active: agent.is_active
+                      }}
+                      onConfigurationUpdated={refetch}
+                    />
+                  );
+                case 'Community Manager':
+                  return (
+                    <CommunityManagerConfiguration
+                      agent={{
+                        id: agent.id,
+                        name: agent.name,
+                        symbol: agent.symbol,
+                        description: agent.description || '',
+                        avatar_url: agent.avatar_url,
+                        category: agent.category,
+                        framework: agent.framework,
+                        is_active: agent.is_active
+                      }}
+                      onConfigurationUpdated={refetch}
+                    />
+                  );
+                case 'Analytics Agent':
+                  return (
+                    <AnalyticsAgentConfiguration
+                      agent={{
+                        id: agent.id,
+                        name: agent.name,
+                        symbol: agent.symbol,
+                        description: agent.description || '',
+                        avatar_url: agent.avatar_url,
+                        category: agent.category,
+                        framework: agent.framework,
+                        is_active: agent.is_active
+                      }}
+                      onConfigurationUpdated={refetch}
+                    />
+                  );
+                default:
+                  return (
+                    <AgentBuilder 
+                      agent={{
+                        id: agent.id,
+                        name: agent.name,
+                        symbol: agent.symbol,
+                        description: agent.description || '',
+                        avatar_url: agent.avatar_url,
+                        category: agent.category,
+                        framework: agent.framework,
+                        is_active: agent.is_active
+                      }}
+                      onAgentUpdated={refetch}
+                    />
+                  );
+              }
+            })()}
           </TabsContent>
 
           {/* Settings Tab */}

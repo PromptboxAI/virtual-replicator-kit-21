@@ -61,6 +61,41 @@ export type Database = {
           },
         ]
       }
+      agent_configurations: {
+        Row: {
+          agent_id: string
+          category: string
+          configuration: Json
+          created_at: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          agent_id: string
+          category: string
+          configuration?: Json
+          created_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string
+          category?: string
+          configuration?: Json
+          created_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_configurations_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agent_interactions: {
         Row: {
           agent_id: string
