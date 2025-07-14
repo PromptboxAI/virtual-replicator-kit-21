@@ -264,16 +264,7 @@ export function TradingInterface({
 
   // Original layout for bonding curve tokens
   return (
-    <div className="space-y-6">
-      {/* Agent Dashboard */}
-      <AgentDashboard agent={{
-        id: agentId,
-        name: agentName,
-        symbol: agentSymbol,
-        description: `AI agent for ${agentName}`,
-        current_price: metrics.currentPrice,
-        avatar_url: undefined
-      }} />
+    <div className="space-y-6">{/* Removed AgentDashboard - this should only show trading interface */}
 
       {/* Token Metrics */}
       <Card>
