@@ -833,9 +833,6 @@ export default function CreateAgent() {
                         </Label>
                         <div className="space-y-2 mb-4">
                           <p className="text-sm text-muted-foreground">
-                            <strong>This is your agent's whitepaper.</strong>
-                          </p>
-                          <p className="text-sm text-muted-foreground">
                             Provide comprehensive details about your AI Agent:
                           </p>
                           <ul className="text-xs text-muted-foreground space-y-1 ml-4">
@@ -921,9 +918,6 @@ export default function CreateAgent() {
                           AI Agent Whitepaper <span className="text-red-500">*</span>
                         </Label>
                         <div className="space-y-2 mb-4">
-                          <p className="text-sm text-muted-foreground">
-                            <strong>This is your agent's whitepaper.</strong>
-                          </p>
                           <p className="text-sm text-muted-foreground">
                             Provide comprehensive details about your AI Agent:
                           </p>
