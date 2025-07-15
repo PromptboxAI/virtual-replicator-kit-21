@@ -1,6 +1,6 @@
-import { createPublicClient, createWalletClient, http, parseEther } from 'viem'
-import { base, baseSepolia } from 'viem/chains'
-import { privateKeyToAccount } from 'viem/accounts'
+import { createPublicClient, createWalletClient, http, parseEther } from 'npm:viem'
+import { base, baseSepolia } from 'npm:viem/chains'
+import { privateKeyToAccount } from 'npm:viem/accounts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
