@@ -13,8 +13,8 @@ export function usePrivyWallet() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  // For regular users, force production mode regardless of admin settings
-  const shouldUseTestMode = canChangeMode ? isTestMode : false;
+  // Use the current app mode setting (admin controls this for all users)
+  const shouldUseTestMode = isTestMode;
 
   // Get the wallet address based on auth method
   const address = user?.wallet?.address;

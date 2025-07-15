@@ -555,7 +555,7 @@ export default function CreateAgent() {
                          <strong>Loading...</strong>
                        </span>
                      ) : (
-                       <strong> {appIsTestMode ? balance : promptBalance} {appIsTestMode ? 'tokens' : '$PROMPT'}</strong>
+                       <strong> {appIsTestMode ? balance : promptBalance} $PROMPT</strong>
                      )}
                    </span>
                   <span>•</span>
