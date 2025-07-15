@@ -889,7 +889,7 @@ export default function CreateAgent() {
                         Select the framework your AI Agent is built with
                       </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">"
+                    <CardContent className="space-y-4">
                       <div>
                         <div className="flex items-center gap-2 mb-2">
                           <Label htmlFor="framework">AI Agent Framework *</Label>
