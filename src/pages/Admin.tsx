@@ -122,6 +122,22 @@ const Admin = () => {
             >
               Test Simple Contract Deploy
             </button>
+            <button 
+              onClick={async () => {
+                try {
+                  console.log('Deploying real ERC20 token...');
+                  const { data, error } = await supabase.functions.invoke('deploy-real-erc20-token');
+                  console.log('Real ERC20 deploy result:', { data, error });
+                  if (error) throw error;
+                  console.log('✅ Real ERC20 token deployed:', data.contractAddress);
+                } catch (err) {
+                  console.error('❌ Real ERC20 deploy failed:', err);
+                }
+              }}
+              className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 ml-2"
+            >
+              Deploy Real ERC20 Token
+            </button>
             <ContractDeployment />
           </CardContent>
         </Card>
