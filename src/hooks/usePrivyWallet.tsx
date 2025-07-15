@@ -13,8 +13,8 @@ export function usePrivyWallet() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  // Use the current app mode setting (admin controls this for all users)
-  const shouldUseTestMode = isTestMode;
+  // Regular users always use production mode, only admins can switch to test mode
+  const shouldUseTestMode = canChangeMode ? isTestMode : false;
 
   // Get the wallet address based on auth method
   const address = user?.wallet?.address;
@@ -68,9 +68,15 @@ export function usePrivyWallet() {
       } else {
         // PRODUCTION MODE: Query actual $PROMPT token balance
         try {
-          // For now, return 0 until we have the actual token contract address
           // TODO: Replace with actual token contract query when token is deployed
-          setPromptBalance('0');
+          // For now, simulate a balance based on wallet type for demo purposes
+          await new Promise(resolve => setTimeout(resolve, 800));
+          
+          if (walletType === 'privy') {
+            setPromptBalance('500'); // Embedded wallet demo balance
+          } else {
+            setPromptBalance('1250'); // Connected wallet demo balance
+          }
           
           console.log('Wallet address for balance query:', address);
           console.log('Wallet type:', walletType);
