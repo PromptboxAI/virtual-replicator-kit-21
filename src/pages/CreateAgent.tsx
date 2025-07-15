@@ -645,6 +645,7 @@ export default function CreateAgent() {
                           <Label htmlFor="symbol">Token Symbol *</Label>
                           <Input
                             id="symbol"
+                            type="text"
                             placeholder="e.g. ALPHA"
                             value={formData.symbol}
                             onChange={(e) => {
