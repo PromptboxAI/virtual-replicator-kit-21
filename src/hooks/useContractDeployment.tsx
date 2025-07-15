@@ -73,15 +73,15 @@ export const useContractDeployment = () => {
 
   const deployAll = async () => {
     try {
-      if (!address) {
-        throw new Error('Please connect your wallet');
+      if (!user) {
+        throw new Error('Please sign in to deploy contracts');
       }
 
       // Deploy PROMPTTEST token first
       const promptAddr = await deployPromptTestToken();
       
-      // Use deployer address as treasury for now
-      const treasuryAddr = address;
+      // Use the user's wallet address as treasury if available, otherwise use deployer address
+      const treasuryAddr = address || "0x23d03610584B0f0988A6F9C281a37094D5611388"; // Your deployer address
       
       // Deploy factory with PROMPTTEST address
       const factoryAddr = await deployFactory(promptAddr, treasuryAddr);

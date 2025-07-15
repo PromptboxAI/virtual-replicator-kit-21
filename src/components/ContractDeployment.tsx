@@ -34,30 +34,31 @@ export function ContractDeployment() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {!address ? (
+        {!user ? (
           <div className="text-center space-y-4">
             <p className="text-muted-foreground">
-              Connect your wallet to deploy contracts
+              Please sign in to deploy contracts
             </p>
-            <Button disabled>Connect Wallet First</Button>
+            <Button disabled>Sign In Required</Button>
           </div>
         ) : (
           <>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Connected Wallet:</span>
+                <span className="text-sm font-medium">Authenticated User:</span>
                 <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="font-mono text-xs">
-                    {address.slice(0, 6)}...{address.slice(-4)}
+                  <Badge variant="outline" className="text-xs">
+                    {user.email?.address || 'Connected'}
                   </Badge>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => copyToClipboard(address)}
-                  >
-                    <Copy className="h-3 w-3" />
-                  </Button>
+                  {address && (
+                    <Badge variant="outline" className="font-mono text-xs">
+                      {address.slice(0, 6)}...{address.slice(-4)}
+                    </Badge>
+                  )}
                 </div>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Contracts will be deployed using the system deployer wallet
               </div>
             </div>
 
