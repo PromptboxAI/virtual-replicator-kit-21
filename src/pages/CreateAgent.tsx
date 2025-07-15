@@ -942,6 +942,23 @@ export default function CreateAgent() {
                     </CardContent>
                   </Card>
 
+                  {/* Step 2 Action Buttons */}
+                  <div className="flex gap-4">
+                    <Button
+                      onClick={() => setCurrentStep(1)}
+                      variant="outline"
+                      className="flex-1"
+                    >
+                      Back
+                    </Button>
+                    <Button
+                      onClick={() => setCurrentStep(3)}
+                      disabled={!formData.short_pitch.trim() || !formData.agent_overview.trim()}
+                      className="flex-1 bg-gradient-primary hover:opacity-90"
+                    >
+                      Next
+                    </Button>
+                  </div>
                 </>
               )}
 
