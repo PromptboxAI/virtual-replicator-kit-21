@@ -114,7 +114,7 @@ export default function CreateAgent() {
   const { connectTwitter, disconnectTwitter, isConnecting, connectedAccount, setConnectedAccount } = useTwitterAuth();
   const { isTestMode: appIsTestMode } = useAppMode();
   const { isAdmin } = useUserRole();
-  const { isConnected } = usePrivyWallet();
+  const { isConnected, promptBalance } = usePrivyWallet();
   const CREATION_COST = 100;
 
   console.log('CreateAgent Debug:', {
@@ -246,11 +246,11 @@ export default function CreateAgent() {
       return;
     }
 
-    // In production mode, require wallet connection
-    if (!appIsTestMode) {
+    // Require wallet connection for agent creation
+    if (!isConnected) {
       toast({
         title: "Wallet Connection Required",
-        description: "Please connect your wallet to create agents in production mode",
+        description: "Please connect your wallet to create agents",
         variant: "destructive"
       });
       return;
@@ -547,23 +547,17 @@ export default function CreateAgent() {
               <Coins className="h-4 w-4" />
               <AlertDescription>
                 <div className="flex items-center gap-4">
-                  <span>
-                    {appIsTestMode ? (
-                      <>
-                        Your Balance: 
-                        {balanceLoading ? (
-                          <span className="inline-flex items-center gap-1 ml-1">
-                            <div className="animate-spin rounded-full h-3 w-3 border-b border-current"></div>
-                            <strong>Loading...</strong>
-                          </span>
-                        ) : (
-                          <strong> {balance} tokens</strong>
-                        )}
-                      </>
-                    ) : (
-                      <strong>Wallet Connection Required</strong>
-                    )}
-                  </span>
+                   <span>
+                     Your Balance: 
+                     {balanceLoading ? (
+                       <span className="inline-flex items-center gap-1 ml-1">
+                         <div className="animate-spin rounded-full h-3 w-3 border-b border-current"></div>
+                         <strong>Loading...</strong>
+                       </span>
+                     ) : (
+                       <strong> {appIsTestMode ? balance : promptBalance} {appIsTestMode ? 'tokens' : '$PROMPT'}</strong>
+                     )}
+                   </span>
                   <span>•</span>
                   <span>Creation Cost: <strong>{CREATION_COST} tokens</strong></span>
                   {appIsTestMode && !balanceLoading && balance < CREATION_COST && (
