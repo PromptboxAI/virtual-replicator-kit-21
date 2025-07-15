@@ -6,6 +6,7 @@ import { ContractDeployment } from "@/components/ContractDeployment";
 import { AppModeToggle } from "@/components/AppModeToggle";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield, Settings, Database } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -88,7 +89,24 @@ const Admin = () => {
               Deploy and manage core platform contracts
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
+            <button 
+              onClick={async () => {
+                try {
+                  console.log('Testing deployment setup...');
+                  const { data, error } = await supabase.functions.invoke('test-deploy');
+                  console.log('Test result:', { data, error });
+                  if (error) throw error;
+                  alert(JSON.stringify(data, null, 2));
+                } catch (err) {
+                  console.error('Test error:', err);
+                  alert('Test failed: ' + err.message);
+                }
+              }}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Test Deployment Setup
+            </button>
             <ContractDeployment />
           </CardContent>
         </Card>
