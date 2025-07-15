@@ -21,6 +21,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTwitterAuth } from "@/hooks/useTwitterAuth";
 import { useAppMode } from "@/hooks/useAppMode";
 import { useUserRole } from "@/hooks/useUserRole";
+import { usePrivyWallet } from "@/hooks/usePrivyWallet";
 import { FrameworkSDKService, FRAMEWORK_CONFIGS } from "@/lib/frameworkSDK";
 import { useAgentTokenFactory } from "@/hooks/useAgentTokens";
 import { useAccount } from 'wagmi';
@@ -113,6 +114,7 @@ export default function CreateAgent() {
   const { connectTwitter, disconnectTwitter, isConnecting, connectedAccount, setConnectedAccount } = useTwitterAuth();
   const { isTestMode: appIsTestMode } = useAppMode();
   const { isAdmin } = useUserRole();
+  const { isConnected } = usePrivyWallet();
   const CREATION_COST = 100;
 
   console.log('CreateAgent Debug:', {
@@ -1284,34 +1286,44 @@ export default function CreateAgent() {
                               </div>
                             ) : (
                               <div className="space-y-3">
-                                <div className="p-3 bg-muted rounded-lg">
-                                  {appIsTestMode ? (
-                                    <>
-                                      <div className="text-sm text-muted-foreground">Your $PROMPT Balance</div>
-                                      <div className="text-lg font-semibold">
-                                        {balance.toLocaleString()} $PROMPT
-                                      </div>
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => addTestTokens()}
-                                        className="mt-2"
-                                      >
-                                        Add 5,000 Test Tokens
-                                      </Button>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <div className="text-sm text-muted-foreground">Wallet Required</div>
-                                      <div className="text-lg font-semibold text-green-600">
-                                        Wallet Connection Required
-                                      </div>
-                                      <p className="text-sm text-muted-foreground mt-2">
-                                        Connect your wallet to use real $PROMPT tokens for agent creation.
-                                      </p>
-                                    </>
-                                  )}
-                                </div>
+                                 <div className="p-3 bg-muted rounded-lg">
+                                   {appIsTestMode ? (
+                                     <>
+                                       <div className="text-sm text-muted-foreground">Your $PROMPT Balance</div>
+                                       <div className="text-lg font-semibold">
+                                         {balance.toLocaleString()} $PROMPT
+                                       </div>
+                                       <Button
+                                         variant="outline"
+                                         size="sm"
+                                         onClick={() => addTestTokens()}
+                                         className="mt-2"
+                                       >
+                                         Add 5,000 Test Tokens
+                                       </Button>
+                                     </>
+                                   ) : isConnected ? (
+                                     <>
+                                       <div className="text-sm text-muted-foreground">Your $PROMPT Balance</div>
+                                       <div className="text-lg font-semibold text-green-600">
+                                         {balance.toLocaleString()} $PROMPT
+                                       </div>
+                                       <p className="text-sm text-muted-foreground mt-2">
+                                         Wallet connected • Production mode
+                                       </p>
+                                     </>
+                                   ) : (
+                                     <>
+                                       <div className="text-sm text-muted-foreground">Wallet Required</div>
+                                       <div className="text-lg font-semibold text-orange-600">
+                                         Wallet Connection Required
+                                       </div>
+                                       <p className="text-sm text-muted-foreground mt-2">
+                                         Connect your wallet to use real $PROMPT tokens for agent creation.
+                                       </p>
+                                     </>
+                                   )}
+                                 </div>
                                 
                                 <div className="space-y-3">
                                   <div className="flex items-center justify-between">
