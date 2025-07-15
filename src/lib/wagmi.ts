@@ -5,11 +5,12 @@ import { injected } from 'wagmi/connectors'
 export const config = createConfig({
   chains: [mainnet, baseSepolia, optimism],
   connectors: [
-    injected(), // MetaMask and other injected wallets only
+    injected(), // MetaMask and other injected wallets
   ],
   transports: {
     [mainnet.id]: http(),
     [baseSepolia.id]: http(),
     [optimism.id]: http(),
   },
+  ssr: false,
 })

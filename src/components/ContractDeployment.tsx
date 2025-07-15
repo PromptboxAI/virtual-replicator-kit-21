@@ -2,12 +2,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useContractDeployment } from '@/hooks/useContractDeployment';
-import { useAccount } from 'wagmi';
+import { useAuth } from '@/hooks/useAuth';
 import { Copy, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function ContractDeployment() {
-  const { address } = useAccount();
+  const { user } = useAuth();
+  const address = user?.wallet?.address;
   const { 
     deployAll, 
     isDeploying, 

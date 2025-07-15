@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAccount } from 'wagmi';
+import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -7,7 +7,8 @@ export const useContractDeployment = () => {
   const [isDeploying, setIsDeploying] = useState(false);
   const [promptTokenAddress, setPromptTokenAddress] = useState<string>('');
   const [factoryAddress, setFactoryAddress] = useState<string>('');
-  const { address } = useAccount();
+  const { user } = useAuth();
+  const address = user?.wallet?.address;
 
   const deployPromptTestToken = async () => {
     try {
