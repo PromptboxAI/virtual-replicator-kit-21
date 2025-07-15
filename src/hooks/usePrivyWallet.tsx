@@ -58,15 +58,19 @@ export function usePrivyWallet() {
           setPromptBalance('2500'); // Connected wallet might have more
         }
       } else {
-        // PRODUCTION MODE: Real token balance queries
-        await new Promise(resolve => setTimeout(resolve, 1200));
-        
-        // TODO: Query actual $PROMPT token contract
-        // For now, simulate lower "real" balances to encourage funding
-        if (walletType === 'privy') {
-          setPromptBalance('50'); // Lower balance to encourage funding
-        } else {
-          setPromptBalance('150'); // Connected wallets might have some tokens
+        // PRODUCTION MODE: Query actual $PROMPT token balance
+        try {
+          // For now, return 0 until we have the actual token contract address
+          // TODO: Replace with actual token contract query when token is deployed
+          setPromptBalance('0');
+          
+          console.log('Wallet address for balance query:', address);
+          console.log('Wallet type:', walletType);
+          
+          // Future implementation will query the actual $PROMPT token contract here
+        } catch (contractError) {
+          console.error('Error querying token contract:', contractError);
+          setPromptBalance('0');
         }
       }
     } catch (error) {
