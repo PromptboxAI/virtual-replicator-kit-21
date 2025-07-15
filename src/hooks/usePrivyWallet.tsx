@@ -2,10 +2,12 @@ import { useState, useEffect, useCallback } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import { useToast } from '@/hooks/use-toast';
 import { useAppMode } from './useAppMode';
+import { useAuthMethod } from './useAuthMethod';
 
 export function usePrivyWallet() {
   const { user, authenticated, ready } = usePrivy();
   const { isTestMode, canChangeMode } = useAppMode();
+  const { authMethod, isWalletAuth } = useAuthMethod();
   const [balance, setBalance] = useState<string>('0');
   const [promptBalance, setPromptBalance] = useState<string>('1000');
   const [isLoading, setIsLoading] = useState(false);
@@ -14,9 +16,14 @@ export function usePrivyWallet() {
   // For regular users, force production mode regardless of admin settings
   const shouldUseTestMode = canChangeMode ? isTestMode : false;
 
-  // Get the wallet address (embedded or connected)
+  // Get the wallet address based on auth method
   const address = user?.wallet?.address;
   const walletType = user?.wallet?.walletClientType;
+  
+  // For email users, only use embedded wallet. For wallet users, use connected wallet
+  const effectiveAddress = isWalletAuth ? 
+    (walletType !== 'privy' ? address : null) : // Wallet auth users need external wallet
+    (walletType === 'privy' ? address : null);  // Email auth users use embedded wallet
 
   // Simulate fetching ETH balance
   const fetchBalance = useCallback(async () => {

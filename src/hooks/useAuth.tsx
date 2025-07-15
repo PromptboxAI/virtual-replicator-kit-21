@@ -110,6 +110,10 @@ export function useAuth() {
 
         if (!existingProfile) {
           console.log('Creating new profile for user:', userId);
+          
+          // Determine authentication method
+          const authMethod = user.wallet?.address && !user.email ? 'wallet' : 'email';
+          
           // Create new profile
           const { error } = await supabase
             .from('profiles')
@@ -118,6 +122,7 @@ export function useAuth() {
               wallet_address: user.wallet?.address,
               username: user.email?.address?.split('@')[0] || `user_${user.id.slice(0, 8)}`,
               display_name: user.email?.address?.split('@')[0] || `User ${user.id.slice(0, 8)}`,
+              auth_method: authMethod,
             });
 
           if (error) {
