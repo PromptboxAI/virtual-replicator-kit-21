@@ -22,7 +22,8 @@ export function useAuthMethod() {
           .eq('user_id', user.id)
           .maybeSingle();
 
-        setAuthMethod(profile?.auth_method || 'email');
+        const authMethodFromDB = profile?.auth_method as 'email' | 'wallet';
+        setAuthMethod(authMethodFromDB || 'email');
       } catch (error) {
         console.error('Error fetching auth method:', error);
         setAuthMethod('email'); // Default fallback
