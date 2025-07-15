@@ -14,6 +14,7 @@ import CreateAgent from "./pages/CreateAgent";
 import MyAgents from "./pages/MyAgents";
 import TradingPage from "./pages/TradingPage";
 import AgentManagement from "./pages/AgentManagement";
+import Admin from "./pages/Admin";
 import Market from "./pages/Market";
 import AllAgents from "./pages/AllAgents";
 import NotFound from "./pages/NotFound";
@@ -87,6 +88,7 @@ const App = () => (
               <Route path="/trade/:agentId" element={<TradingPage />} />
               <Route path="/agent/:agentId" element={<AgentManagement />} />
               <Route path="/manage/:agentId" element={<AgentManagement />} />
+              <Route path="/admin" element={<Admin />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Search, User, LogOut, Wallet } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 import { AppModeToggle } from "./AppModeToggle";
 import {
   DropdownMenu,
@@ -16,6 +17,7 @@ export function Header() {
   const location = useLocation();
   const isAboutPage = location.pathname === '/about';
   const { user, signOut, signIn, linkWallet, unlinkWallet } = useAuth();
+  const { isAdmin } = useUserRole();
 
   return (
     <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
@@ -97,9 +99,19 @@ export function Header() {
                           <DropdownMenuItem onClick={() => user.wallet && unlinkWallet(user.wallet.address)} className="cursor-pointer text-orange-600">
                             <Wallet className="mr-2 h-4 w-4" />
                             Disconnect Wallet
-                          </DropdownMenuItem>
-                        )}
-                        <DropdownMenuSeparator />
+                           </DropdownMenuItem>
+                         )}
+                         <DropdownMenuSeparator />
+                         {isAdmin && (
+                           <>
+                             <DropdownMenuItem asChild className="cursor-pointer">
+                               <Link to="/admin" className="flex items-center">
+                                 Admin Dashboard
+                               </Link>
+                             </DropdownMenuItem>
+                             <DropdownMenuSeparator />
+                           </>
+                         )}
                         <DropdownMenuItem onClick={signOut} className="cursor-pointer text-destructive">
                           <LogOut className="mr-2 h-4 w-4" />
                           Sign Out

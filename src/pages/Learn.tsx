@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowRight, Cpu, Shield, Zap, Bot, MessageSquare, TrendingUp, Activity, Brain, Network } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { ContractDeployment } from "@/components/ContractDeployment";
 
 const Learn = () => {
   const navigate = useNavigate();
@@ -272,12 +271,6 @@ const Learn = () => {
         </div>
       </section>
 
-      {/* Contract Deployment Section */}
-      <section className="py-16 px-4 bg-gray-50">
-        <div className="container mx-auto">
-          <ContractDeployment />
-        </div>
-      </section>
 
       {/* CTA Section */}
       <section className="py-16 px-4">
