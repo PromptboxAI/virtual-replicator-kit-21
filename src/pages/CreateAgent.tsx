@@ -833,7 +833,10 @@ export default function CreateAgent() {
                         </Label>
                         <div className="space-y-2 mb-4">
                           <p className="text-sm text-muted-foreground">
-                            <strong>This is your agent's whitepaper.</strong> Provide comprehensive details about your AI Agent:
+                            <strong>This is your agent's whitepaper.</strong>
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Provide comprehensive details about your AI Agent:
                           </p>
                           <ul className="text-xs text-muted-foreground space-y-1 ml-4">
                             <li>• <strong>Capabilities:</strong> What can your agent do? What problems does it solve?</li>
@@ -844,37 +847,9 @@ export default function CreateAgent() {
                             <li>• <strong>Use Cases:</strong> Real-world applications and target markets</li>
                           </ul>
                         </div>
-                         <Textarea
-                          id="agent_overview"
-                          placeholder="**AI Agent Whitepaper**
-
-## Overview
-Provide a comprehensive overview of your AI Agent...
-
-## Capabilities
-- What can your agent do?
-- What problems does it solve?
-- Key features and functionalities
-
-## Technology Stack
-- Frameworks and models used
-- Technical architecture
-- AI/ML capabilities
-
-## Roadmap
-- Development milestones
-- Future features
-- Timeline for implementation
-
-## Partnerships & Integrations
-- Strategic collaborations
-- API integrations
-- Ecosystem partnerships
-
-## Tokenomics
-- How tokens create value
-- Revenue distribution
-- Success metrics"
+                          <Textarea
+                           id="agent_overview"
+                           placeholder=""
                           value={formData.agent_overview}
                           onChange={(e) => handleInputChange('agent_overview', e.target.value)}
                           rows={20}
@@ -947,7 +922,10 @@ Provide a comprehensive overview of your AI Agent...
                         </Label>
                         <div className="space-y-2 mb-4">
                           <p className="text-sm text-muted-foreground">
-                            <strong>This is your agent's whitepaper.</strong> Provide comprehensive details about your AI Agent:
+                            <strong>This is your agent's whitepaper.</strong>
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Provide comprehensive details about your AI Agent:
                           </p>
                           <ul className="text-xs text-muted-foreground space-y-1 ml-4">
                             <li>• <strong>Capabilities:</strong> What can your agent do? What problems does it solve?</li>
@@ -958,42 +936,9 @@ Provide a comprehensive overview of your AI Agent...
                             <li>• <strong>Use Cases:</strong> Real-world applications and target markets</li>
                           </ul>
                         </div>
-                         <Textarea
-                          id="agent_overview"
-                          placeholder="**AI Agent Whitepaper**
-
-## Overview
-Provide a comprehensive overview of your AI Agent...
-
-## Capabilities
-- What can your agent do?
-- What problems does it solve?
-- Key features and functionalities
-
-## Technology Stack
-- Frameworks and models used
-- Technical architecture
-- AI/ML capabilities
-
-## Roadmap
-- Development milestones
-- Future features
-- Timeline for implementation
-
-## Partnerships & Integrations
-- Strategic collaborations
-- API integrations
-- Ecosystem partnerships
-
-## Tokenomics
-- How tokens create value
-- Revenue distribution
-- Holder benefits
-
-## Use Cases
-- Target markets
-- Real-world applications
-- Success metrics"
+                          <Textarea
+                           id="agent_overview"
+                           placeholder=""
                           value={formData.agent_overview}
                           onChange={(e) => handleInputChange('agent_overview', e.target.value)}
                           rows={20}
