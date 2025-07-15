@@ -3,27 +3,25 @@
  * Based on pump.fun's constant product AMM model (x * y = k)
  */
 
-// Constants for bonding curve parameters (based on pump.fun model)
+// Constants for bonding curve parameters (based on virtuals.io model)
 export const BONDING_CURVE_CONFIG = {
-  // Constant Product AMM model (x * y = k)
-  VIRTUAL_PROMPT_RESERVE: 30, // Virtual PROMPT reserve (like 30 SOL in pump.fun)
-  VIRTUAL_TOKEN_RESERVE: 1073000000, // Virtual token reserve (~1.073B tokens)
-  TOTAL_SUPPLY: 1000000000, // 1B tokens total supply
-  CURVE_SUPPLY: 800000000, // 80% (800M) sold through bonding curve  
-  LP_SUPPLY: 200000000, // 20% (200M) reserved for liquidity pool
+  // Agent creation cost
+  AGENT_CREATION_COST: 100, // 100 PROMPT to create agent (like 100 $VIRTUAL)
   
-  // Graduation thresholds (inspired by pump.fun's 85 SOL / $69k model)
-  GRADUATION_PROMPT_AMOUNT: 85, // PROMPT needed to graduate
-  GRADUATION_MARKET_CAP_USD: 69000, // $69k market cap graduation
+  // Constant Product AMM model (x * y = k) - keeping proven math
+  VIRTUAL_PROMPT_RESERVE: 30, // Virtual PROMPT reserve for smooth pricing
+  VIRTUAL_TOKEN_RESERVE: 1073000000, // Virtual token reserve
+  TOTAL_SUPPLY: 1000000000, // 1B tokens total supply (matching virtuals.io)
   
-  // Platform economics
-  PLATFORM_FEE_PROMPT: 6, // Platform fee in PROMPT (like pump.fun's 6 SOL)
-  CREATOR_REWARD_PROMPT: 0.5, // Creator reward for successful graduation
+  // Graduation threshold (matching virtuals.io exactly)
+  GRADUATION_PROMPT_AMOUNT: 42000, // 42k PROMPT to graduate (like virtuals.io)
   
-  // Trading fees (lower than our original 2%, matching virtuals.io 1%)
+  // Trading fees (matching virtuals.io exactly)
   TRADING_FEE_PERCENTAGE: 0.01, // 1% trading fee
-  CREATOR_FEE_PERCENTAGE: 0.005, // 0.5% to creator
-  PLATFORM_FEE_PERCENTAGE: 0.005, // 0.5% to platform
+  AGENT_REVENUE_PERCENTAGE: 0.01, // 1% goes to agent for GPU/inference costs
+  
+  // Liquidity lock (matching virtuals.io)
+  LIQUIDITY_LOCK_YEARS: 10, // 10 year liquidity lock
 } as const;
 
 /**
@@ -133,19 +131,17 @@ export function calculateSellReturn(currentTokensSold: number, tokenAmount: numb
 }
 
 /**
- * Calculate fees for a transaction
+ * Calculate fees for a transaction (virtuals.io: 1% goes to agent)
  */
 export function calculateFees(amount: number, transactionType: 'buy' | 'sell'): {
   totalFees: number;
-  creatorFee: number;
-  platformFee: number;
+  agentRevenue: number;
   netAmount: number;
 } {
-  const { CREATOR_FEE_PERCENTAGE, PLATFORM_FEE_PERCENTAGE } = BONDING_CURVE_CONFIG;
+  const { AGENT_REVENUE_PERCENTAGE } = BONDING_CURVE_CONFIG;
   
-  const creatorFee = amount * CREATOR_FEE_PERCENTAGE;
-  const platformFee = amount * PLATFORM_FEE_PERCENTAGE;
-  const totalFees = creatorFee + platformFee;
+  const agentRevenue = amount * AGENT_REVENUE_PERCENTAGE;
+  const totalFees = agentRevenue;
   
   const netAmount = transactionType === 'buy' 
     ? amount + totalFees  // Add fees to buy cost
@@ -153,8 +149,7 @@ export function calculateFees(amount: number, transactionType: 'buy' | 'sell'): 
   
   return {
     totalFees,
-    creatorFee,
-    platformFee,
+    agentRevenue,
     netAmount
   };
 }
@@ -221,33 +216,30 @@ export function calculateTokensFromPrompt(currentTokensSold: number, promptAmoun
 
 /**
  * Check if the bonding curve is complete (ready for graduation)
+ * Virtuals.io: graduates at 42k PROMPT raised
  */
-export function isBondingCurveComplete(tokensSold: number, promptRaised: number): boolean {
-  const { CURVE_SUPPLY, GRADUATION_PROMPT_AMOUNT } = BONDING_CURVE_CONFIG;
-  return tokensSold >= CURVE_SUPPLY || promptRaised >= GRADUATION_PROMPT_AMOUNT;
+export function isBondingCurveComplete(promptRaised: number): boolean {
+  const { GRADUATION_PROMPT_AMOUNT } = BONDING_CURVE_CONFIG;
+  return promptRaised >= GRADUATION_PROMPT_AMOUNT;
 }
 
 /**
  * Calculate the initial LP creation parameters
+ * Virtuals.io: creates LP with all raised PROMPT and remaining tokens
  */
 export function calculateLPCreation(finalPromptRaised: number): {
   lpPromptAmount: number;
   lpTokenAmount: number;
-  platformFee: number;
-  creatorReward: number;
 } {
-  const { LP_SUPPLY, PLATFORM_FEE_PROMPT, CREATOR_REWARD_PROMPT } = BONDING_CURVE_CONFIG;
+  const { TOTAL_SUPPLY } = BONDING_CURVE_CONFIG;
   
-  const platformFee = PLATFORM_FEE_PROMPT;
-  const creatorReward = CREATOR_REWARD_PROMPT;
-  const lpPromptAmount = finalPromptRaised - platformFee; // Platform keeps fee
-  const lpTokenAmount = LP_SUPPLY;
+  // In virtuals.io model: all raised PROMPT goes to LP with remaining tokens
+  const lpPromptAmount = finalPromptRaised;
+  const lpTokenAmount = TOTAL_SUPPLY; // All remaining tokens go to LP
   
   return {
     lpPromptAmount,
-    lpTokenAmount,
-    platformFee,
-    creatorReward
+    lpTokenAmount
   };
 }
 
