@@ -189,7 +189,7 @@ export default function CreateAgent() {
     };
 
     loadTwitterConnection();
-  }, [user?.id, setConnectedAccount]);
+  }, [user?.id]);
 
   const handleInputChange = (field: keyof AgentFormData, value: string | number) => {
     setFormData(prev => ({ ...prev, [field]: value }));
