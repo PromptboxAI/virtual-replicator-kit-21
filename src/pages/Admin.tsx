@@ -97,15 +97,30 @@ const Admin = () => {
                   const { data, error } = await supabase.functions.invoke('test-deploy');
                   console.log('Test result:', { data, error });
                   if (error) throw error;
-                  alert(JSON.stringify(data, null, 2));
+                  console.log('✅ Test successful:', JSON.stringify(data, null, 2));
                 } catch (err) {
-                  console.error('Test error:', err);
-                  alert('Test failed: ' + err.message);
+                  console.error('❌ Test failed:', err);
                 }
               }}
               className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
             >
               Test Deployment Setup
+            </button>
+            <button 
+              onClick={async () => {
+                try {
+                  console.log('Testing simple contract deployment...');
+                  const { data, error } = await supabase.functions.invoke('simple-deploy-test');
+                  console.log('Simple deploy result:', { data, error });
+                  if (error) throw error;
+                  console.log('✅ Simple contract deployed:', data.contractAddress);
+                } catch (err) {
+                  console.error('❌ Simple deploy failed:', err);
+                }
+              }}
+              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 ml-2"
+            >
+              Test Simple Contract Deploy
             </button>
             <ContractDeployment />
           </CardContent>
