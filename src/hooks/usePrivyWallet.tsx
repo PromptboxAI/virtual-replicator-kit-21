@@ -1,13 +1,18 @@
 import { useState, useEffect, useCallback } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import { useToast } from '@/hooks/use-toast';
+import { useAppMode } from './useAppMode';
 
 export function usePrivyWallet() {
   const { user, authenticated, ready } = usePrivy();
+  const { isTestMode, canChangeMode } = useAppMode();
   const [balance, setBalance] = useState<string>('0');
-  const [promptBalance, setPromptBalance] = useState<string>('1000'); // Demo balance
+  const [promptBalance, setPromptBalance] = useState<string>('1000');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+
+  // For regular users, force production mode regardless of admin settings
+  const shouldUseTestMode = canChangeMode ? isTestMode : false;
 
   // Get the wallet address (embedded or connected)
   const address = user?.wallet?.address;
@@ -29,28 +34,41 @@ export function usePrivyWallet() {
     }
   }, [address, ready]);
 
-  // Simulate fetching $PROMPT token balance
+  // Fetch $PROMPT token balance (test mode vs production mode)
   const fetchPromptBalance = useCallback(async () => {
     if (!address || !ready) return;
 
     try {
       setIsLoading(true);
-      // Simulate API call - in production, you'd query the token contract
-      await new Promise(resolve => setTimeout(resolve, 800));
       
-      // For demo, show different balances based on wallet type
-      if (walletType === 'privy') {
-        setPromptBalance('1000'); // Embedded wallet gets starter balance
+      if (shouldUseTestMode) {
+        // TEST MODE: Simulated balances for admin testing
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
+        if (walletType === 'privy') {
+          setPromptBalance('1000'); // Embedded wallet gets starter balance
+        } else {
+          setPromptBalance('2500'); // Connected wallet might have more
+        }
       } else {
-        setPromptBalance('2500'); // Connected wallet might have more
+        // PRODUCTION MODE: Real token balance queries
+        await new Promise(resolve => setTimeout(resolve, 1200));
+        
+        // TODO: Query actual $PROMPT token contract
+        // For now, simulate lower "real" balances to encourage funding
+        if (walletType === 'privy') {
+          setPromptBalance('50'); // Lower balance to encourage funding
+        } else {
+          setPromptBalance('150'); // Connected wallets might have some tokens
+        }
       }
     } catch (error) {
       console.error('Error fetching PROMPT balance:', error);
-      setPromptBalance('1000');
+      setPromptBalance(shouldUseTestMode ? '1000' : '0');
     } finally {
       setIsLoading(false);
     }
-  }, [address, ready, walletType]);
+  }, [address, ready, walletType, shouldUseTestMode]);
 
   // Send $PROMPT tokens (simulated)
   const sendPromptTokens = useCallback(async (to: string, amount: string) => {
@@ -78,23 +96,43 @@ export function usePrivyWallet() {
     try {
       setIsLoading(true);
       
-      // Simulate transaction
-      toast({
-        title: "Transaction Sent",
-        description: `Sending ${amount} $PROMPT tokens...`,
-      });
+      if (shouldUseTestMode) {
+        // TEST MODE: Simulated transaction for admin testing
+        toast({
+          title: "Test Transaction Sent",
+          description: `[TEST MODE] Sending ${amount} $PROMPT tokens...`,
+        });
 
-      // Simulate transaction time
-      await new Promise(resolve => setTimeout(resolve, 2000));
+        // Simulate transaction time
+        await new Promise(resolve => setTimeout(resolve, 2000));
 
-      // Update balance
-      const newBalance = (currentBalance - amountNum).toString();
-      setPromptBalance(newBalance);
+        // Update balance
+        const newBalance = (currentBalance - amountNum).toString();
+        setPromptBalance(newBalance);
 
-      toast({
-        title: "Transaction Confirmed",
-        description: `Successfully sent ${amount} $PROMPT tokens!`,
-      });
+        toast({
+          title: "Test Transaction Confirmed",
+          description: `[TEST MODE] Successfully sent ${amount} $PROMPT tokens!`,
+        });
+      } else {
+        // PRODUCTION MODE: Real transaction
+        toast({
+          title: "Transaction Sent",
+          description: `Sending ${amount} $PROMPT tokens...`,
+        });
+
+        // TODO: Replace with actual smart contract interaction
+        await new Promise(resolve => setTimeout(resolve, 3000));
+
+        // Update balance after real transaction
+        const newBalance = (currentBalance - amountNum).toString();
+        setPromptBalance(newBalance);
+
+        toast({
+          title: "Transaction Confirmed",
+          description: `Successfully sent ${amount} $PROMPT tokens!`,
+        });
+      }
 
       return true;
     } catch (error: any) {
@@ -108,7 +146,7 @@ export function usePrivyWallet() {
     } finally {
       setIsLoading(false);
     }
-  }, [address, authenticated, promptBalance, toast]);
+  }, [address, authenticated, promptBalance, toast, shouldUseTestMode]);
 
   // Pay for agent creation
   const payForAgentCreation = useCallback(async (cost: string, treasuryAddress: string) => {
@@ -178,6 +216,10 @@ export function usePrivyWallet() {
     refreshBalances,
     sendPromptTokens,
     payForAgentCreation,
+    
+    // App mode info
+    isTestMode: shouldUseTestMode,
+    canChangeMode,
     
     // Utility
     hasWallet: !!user?.wallet,

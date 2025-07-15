@@ -16,7 +16,9 @@ export function WalletStatus() {
     promptBalance,
     isLoading,
     refreshBalances,
-    walletProvider
+    walletProvider,
+    isTestMode,
+    canChangeMode
   } = usePrivyWallet();
   
   const { toast } = useToast();
@@ -118,7 +120,14 @@ export function WalletStatus() {
             </div>
             <div className="text-center p-3 border rounded-lg">
               <div className="text-lg font-bold">{promptBalance} $PROMPT</div>
-              <div className="text-xs text-muted-foreground">Agent Tokens</div>
+              <div className="text-xs text-muted-foreground flex items-center justify-center gap-1">
+                Agent Tokens
+                {canChangeMode && (
+                  <Badge variant={isTestMode ? "secondary" : "default"} className="text-[10px] px-1 py-0">
+                    {isTestMode ? "TEST" : "LIVE"}
+                  </Badge>
+                )}
+              </div>
             </div>
           </div>
         </div>
