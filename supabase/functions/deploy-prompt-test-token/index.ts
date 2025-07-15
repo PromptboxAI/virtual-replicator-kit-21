@@ -116,11 +116,13 @@ Deno.serve(async (req) => {
     });
 
     console.log('Deploying from address:', account.address);
+    console.log('Bytecode length:', PROMPTTEST_BYTECODE.length);
+    console.log('Bytecode starts with 0x:', PROMPTTEST_BYTECODE.startsWith('0x'));
 
     // Deploy PROMPTTEST contract
     const hash = await walletClient.deployContract({
       abi: PROMPTTEST_ABI,
-      bytecode: PROMPTTEST_BYTECODE,
+      bytecode: PROMPTTEST_BYTECODE as `0x${string}`,
       args: []
     });
 
