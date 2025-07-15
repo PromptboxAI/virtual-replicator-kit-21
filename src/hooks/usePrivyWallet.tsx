@@ -66,22 +66,21 @@ export function usePrivyWallet() {
           setPromptBalance('2500'); // Connected wallet might have more
         }
       } else {
-        // PRODUCTION MODE: Query actual $PROMPT token balance
+        // PRODUCTION MODE: Query actual $PROMPT token balance from blockchain
         try {
           // TODO: Replace with actual token contract query when token is deployed
-          // For now, simulate a balance based on wallet type for demo purposes
-          await new Promise(resolve => setTimeout(resolve, 800));
-          
-          if (walletType === 'privy') {
-            setPromptBalance('500'); // Embedded wallet demo balance
-          } else {
-            setPromptBalance('1250'); // Connected wallet demo balance
-          }
+          // Until the $PROMPT token contract is deployed, all users will have 0 balance
+          setPromptBalance('0');
           
           console.log('Wallet address for balance query:', address);
           console.log('Wallet type:', walletType);
           
-          // Future implementation will query the actual $PROMPT token contract here
+          // Future implementation will query the actual $PROMPT token contract here:
+          // const tokenContract = new ethers.Contract(PROMPT_TOKEN_ADDRESS, ERC20_ABI, provider);
+          // const balance = await tokenContract.balanceOf(address);
+          // const formattedBalance = ethers.utils.formatUnits(balance, 18);
+          // setPromptBalance(formattedBalance);
+          
         } catch (contractError) {
           console.error('Error querying token contract:', contractError);
           setPromptBalance('0');
