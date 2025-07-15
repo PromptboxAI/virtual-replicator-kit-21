@@ -649,7 +649,7 @@ export default function CreateAgent() {
                             placeholder="e.g. ALPHA"
                             value={formData.symbol}
                             onChange={(e) => {
-                              const value = e.target.value.replace(/[^A-Z0-9]/g, '').toUpperCase();
+                              const value = e.target.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
                               handleInputChange('symbol', value);
                             }}
                             maxLength={10}
