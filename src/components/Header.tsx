@@ -68,68 +68,65 @@ export function Header() {
               </div>
             )}
             
-            {!isAboutPage && (
-              <>
-                {user ? (
-                  <div className="flex items-center space-x-2">
-                    <Button asChild variant="default">
-                      <Link to="/my-agents">Dashboard</Link>
+            {/* Auth Section - Always visible */}
+            {user ? (
+              <div className="flex items-center space-x-2">
+                <Button asChild variant="default">
+                  <Link to="/my-agents">Dashboard</Link>
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="icon">
+                      <User className="h-4 w-4" />
                     </Button>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="icon">
-                          <User className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-64">
-                        <DropdownMenuItem disabled>
-                          <div className="flex flex-col space-y-1">
-                            <span className="text-sm font-medium">
-                              {user.email?.address || 'Connected'}
-                            </span>
-                            {user.wallet?.address && (
-                              <span className="text-xs text-muted-foreground font-mono">
-                                {user.wallet.address.slice(0, 6)}...{user.wallet.address.slice(-4)}
-                              </span>
-                            )}
-                          </div>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-64">
+                    <DropdownMenuItem disabled>
+                      <div className="flex flex-col space-y-1">
+                        <span className="text-sm font-medium">
+                          {user.email?.address || 'Connected'}
+                        </span>
+                        {user.wallet?.address && (
+                          <span className="text-xs text-muted-foreground font-mono">
+                            {user.wallet.address.slice(0, 6)}...{user.wallet.address.slice(-4)}
+                          </span>
+                        )}
+                      </div>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    {!user.wallet ? (
+                      <DropdownMenuItem onClick={linkWallet} className="cursor-pointer">
+                        <Wallet className="mr-2 h-4 w-4" />
+                        Connect Wallet
+                      </DropdownMenuItem>
+                    ) : (
+                      <DropdownMenuItem onClick={() => user.wallet && unlinkWallet(user.wallet.address)} className="cursor-pointer text-orange-600">
+                        <Wallet className="mr-2 h-4 w-4" />
+                        Disconnect Wallet
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuSeparator />
+                    {isAdmin && (
+                      <>
+                        <DropdownMenuItem asChild className="cursor-pointer">
+                          <Link to="/admin" className="flex items-center">
+                            Admin Dashboard
+                          </Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        {!user.wallet ? (
-                          <DropdownMenuItem onClick={linkWallet} className="cursor-pointer">
-                            <Wallet className="mr-2 h-4 w-4" />
-                            Connect Wallet
-                          </DropdownMenuItem>
-                        ) : (
-                          <DropdownMenuItem onClick={() => user.wallet && unlinkWallet(user.wallet.address)} className="cursor-pointer text-orange-600">
-                            <Wallet className="mr-2 h-4 w-4" />
-                            Disconnect Wallet
-                           </DropdownMenuItem>
-                         )}
-                         <DropdownMenuSeparator />
-                         {isAdmin && (
-                           <>
-                             <DropdownMenuItem asChild className="cursor-pointer">
-                               <Link to="/admin" className="flex items-center">
-                                 Admin Dashboard
-                               </Link>
-                             </DropdownMenuItem>
-                             <DropdownMenuSeparator />
-                           </>
-                         )}
-                        <DropdownMenuItem onClick={signOut} className="cursor-pointer text-destructive">
-                          <LogOut className="mr-2 h-4 w-4" />
-                          Sign Out
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                ) : (
-                  <Button onClick={signIn} variant="outline">
-                    Connect Wallet
-                  </Button>
-                )}
-              </>
+                      </>
+                    )}
+                    <DropdownMenuItem onClick={signOut} className="cursor-pointer text-destructive">
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Sign Out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            ) : (
+              <Button onClick={signIn} variant="outline">
+                Connect Wallet
+              </Button>
             )}
             
             {isAboutPage && (
