@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAccount, useReadContract, useWriteContract } from 'wagmi';
 import { parseEther, formatEther } from 'viem';
 import { useToast } from '@/hooks/use-toast';
-import { base } from 'viem/chains';
+import { baseSepolia } from 'viem/chains';
 
 // These will be updated after deployment
 const AGENT_TOKEN_FACTORY_ADDRESS = '0x0000000000000000000000000000000000000000'; // Will be set after deployment
@@ -102,7 +102,7 @@ export function useAgentTokenFactory() {
         functionName: 'createAgentToken',
         args: [name, symbol, agentId],
         account: address,
-        chain: base,
+        chain: baseSepolia,
       });
       
       toast({
@@ -169,7 +169,7 @@ export function useAgentToken(tokenAddress?: string) {
         functionName: 'buyTokens',
         args: [amountWei],
         account: address,
-        chain: base,
+        chain: baseSepolia,
       });
       
       toast({
@@ -204,7 +204,7 @@ export function useAgentToken(tokenAddress?: string) {
         functionName: 'sellTokens',
         args: [amountWei],
         account: address,
-        chain: base,
+        chain: baseSepolia,
       });
       
       toast({
