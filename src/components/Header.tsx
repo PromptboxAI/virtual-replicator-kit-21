@@ -46,6 +46,11 @@ export function Header() {
               <Link to="/about" className="text-foreground hover:text-primary transition-colors font-medium">
                 About
               </Link>
+              {isAdmin && (
+                <Link to="/admin" className="text-red-500 hover:text-red-600 transition-colors font-medium">
+                  ADMIN
+                </Link>
+              )}
             </nav>
           </div>
 
