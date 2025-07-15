@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { ContractDeployment } from "@/components/ContractDeployment";
 import { AppModeToggle } from "@/components/AppModeToggle";
@@ -9,14 +10,27 @@ import { Shield, Settings, Database } from "lucide-react";
 const Admin = () => {
   const navigate = useNavigate();
   const { isAdmin, isLoading } = useUserRole();
+  const { user, authenticated, ready } = useAuth();
+
+  console.log('Admin page - auth state:', { user: !!user, authenticated, ready, isAdmin, isLoading });
 
   useEffect(() => {
-    if (!isLoading && !isAdmin) {
-      navigate('/');
+    if (ready && !isLoading) {
+      if (!authenticated) {
+        console.log('Admin page - not authenticated, redirecting to auth');
+        navigate('/auth');
+        return;
+      }
+      
+      if (!isAdmin) {
+        console.log('Admin page - not admin, redirecting to home');
+        navigate('/');
+        return;
+      }
     }
-  }, [isAdmin, isLoading, navigate]);
+  }, [authenticated, ready, isAdmin, isLoading, navigate]);
 
-  if (isLoading) {
+  if (!ready || isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -27,7 +41,7 @@ const Admin = () => {
     );
   }
 
-  if (!isAdmin) {
+  if (!authenticated || !isAdmin) {
     return null; // Will redirect
   }
 
