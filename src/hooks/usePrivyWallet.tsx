@@ -48,6 +48,14 @@ export function usePrivyWallet() {
     try {
       setIsLoading(true);
       
+      console.log('fetchPromptBalance - Admin mode debug:', {
+        canChangeMode,
+        isTestMode,
+        shouldUseTestMode,
+        walletType,
+        address
+      });
+      
       if (shouldUseTestMode) {
         // TEST MODE: Simulated balances for admin testing
         await new Promise(resolve => setTimeout(resolve, 800));
