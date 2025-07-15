@@ -17,3 +17,9 @@ verify_jwt = false
 
 [functions.test-twitter-credentials]
 verify_jwt = false
+
+[functions.deploy-prompt-test-token]
+verify_jwt = false
+
+[functions.deploy-factory-contract]
+verify_jwt = false

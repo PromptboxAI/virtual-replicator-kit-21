@@ -4,8 +4,9 @@ import { parseEther, formatEther } from 'viem';
 import { useToast } from '@/hooks/use-toast';
 import { base } from 'viem/chains';
 
-const AGENT_TOKEN_FACTORY_ADDRESS = '0x...'; // Will be set after deployment
-const PROMPT_TOKEN_ADDRESS = '0x...'; // Will be set after PROMPT token deployment
+// These will be updated after deployment
+const AGENT_TOKEN_FACTORY_ADDRESS = '0x0000000000000000000000000000000000000000'; // Will be set after deployment
+const PROMPT_TOKEN_ADDRESS = '0x0000000000000000000000000000000000000000'; // Will be set after PROMPT token deployment
 
 const FACTORY_ABI = [
   {
