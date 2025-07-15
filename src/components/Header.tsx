@@ -15,7 +15,7 @@ import {
 export function Header() {
   const location = useLocation();
   const isAboutPage = location.pathname === '/about';
-  const { user, signOut, signIn, linkWallet } = useAuth();
+  const { user, signOut, signIn, linkWallet, unlinkWallet } = useAuth();
 
   return (
     <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
@@ -74,20 +74,30 @@ export function Header() {
                           <User className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-56">
+                      <DropdownMenuContent align="end" className="w-64">
                         <DropdownMenuItem disabled>
-                          <span className="text-muted-foreground">
-                            {user.email?.address || user.wallet?.address || 'Connected'}
-                          </span>
+                          <div className="flex flex-col space-y-1">
+                            <span className="text-sm font-medium">
+                              {user.email?.address || 'Connected'}
+                            </span>
+                            {user.wallet?.address && (
+                              <span className="text-xs text-muted-foreground font-mono">
+                                {user.wallet.address.slice(0, 6)}...{user.wallet.address.slice(-4)}
+                              </span>
+                            )}
+                          </div>
                         </DropdownMenuItem>
-                        {!user.wallet && (
-                          <>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={linkWallet} className="cursor-pointer">
-                              <Wallet className="mr-2 h-4 w-4" />
-                              Connect Wallet
-                            </DropdownMenuItem>
-                          </>
+                        <DropdownMenuSeparator />
+                        {!user.wallet ? (
+                          <DropdownMenuItem onClick={linkWallet} className="cursor-pointer">
+                            <Wallet className="mr-2 h-4 w-4" />
+                            Connect Wallet
+                          </DropdownMenuItem>
+                        ) : (
+                          <DropdownMenuItem onClick={() => user.wallet && unlinkWallet(user.wallet.address)} className="cursor-pointer text-orange-600">
+                            <Wallet className="mr-2 h-4 w-4" />
+                            Disconnect Wallet
+                          </DropdownMenuItem>
                         )}
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={signOut} className="cursor-pointer text-destructive">
