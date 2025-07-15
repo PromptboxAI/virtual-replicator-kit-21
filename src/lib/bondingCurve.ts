@@ -16,9 +16,10 @@ export const BONDING_CURVE_CONFIG = {
   // Graduation threshold (matching virtuals.io exactly)
   GRADUATION_PROMPT_AMOUNT: 42000, // 42k PROMPT to graduate (like virtuals.io)
   
-  // Trading fees (matching virtuals.io exactly)
-  TRADING_FEE_PERCENTAGE: 0.01, // 1% trading fee
-  AGENT_REVENUE_PERCENTAGE: 0.01, // 1% goes to agent for GPU/inference costs
+  // Trading fees (virtuals.io: 1% total split 70%/30%)
+  TRADING_FEE_PERCENTAGE: 0.01, // 1% total trading fee
+  AGENT_REVENUE_PERCENTAGE: 0.007, // 70% of 1% = 0.7% goes to agent
+  PLATFORM_REVENUE_PERCENTAGE: 0.003, // 30% of 1% = 0.3% goes to platform
   
   // Liquidity lock (matching virtuals.io)
   LIQUIDITY_LOCK_YEARS: 10, // 10 year liquidity lock
@@ -131,17 +132,19 @@ export function calculateSellReturn(currentTokensSold: number, tokenAmount: numb
 }
 
 /**
- * Calculate fees for a transaction (virtuals.io: 1% goes to agent)
+ * Calculate fees for a transaction (virtuals.io: 1% split 70%/30%)
  */
 export function calculateFees(amount: number, transactionType: 'buy' | 'sell'): {
   totalFees: number;
   agentRevenue: number;
+  platformRevenue: number;
   netAmount: number;
 } {
-  const { AGENT_REVENUE_PERCENTAGE } = BONDING_CURVE_CONFIG;
+  const { AGENT_REVENUE_PERCENTAGE, PLATFORM_REVENUE_PERCENTAGE } = BONDING_CURVE_CONFIG;
   
-  const agentRevenue = amount * AGENT_REVENUE_PERCENTAGE;
-  const totalFees = agentRevenue;
+  const agentRevenue = amount * AGENT_REVENUE_PERCENTAGE; // 0.7%
+  const platformRevenue = amount * PLATFORM_REVENUE_PERCENTAGE; // 0.3%
+  const totalFees = agentRevenue + platformRevenue; // 1%
   
   const netAmount = transactionType === 'buy' 
     ? amount + totalFees  // Add fees to buy cost
@@ -150,6 +153,7 @@ export function calculateFees(amount: number, transactionType: 'buy' | 'sell'): 
   return {
     totalFees,
     agentRevenue,
+    platformRevenue,
     netAmount
   };
 }
