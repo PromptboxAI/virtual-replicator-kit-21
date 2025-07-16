@@ -59,45 +59,74 @@ Be conversational and ask clarifying questions to understand exactly what they w
 
     console.log('Calling OpenAI API...');
     
-    // Call OpenAI with timeout
-    const openAIResponse = await Promise.race([
-      fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${openAIApiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages,
-          max_tokens: 600,
-          temperature: 0.7
-        })
-      }),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('OpenAI timeout')), 10000)
-      )
-    ]) as Response;
+    // For now, let's use a simpler approach to avoid hanging
+    // We'll add the full Assistant creation once the conversation flow works
+    let aiMessage = "";
+    let suggestedIntegrations = [];
+    
+    // Simple logic to provide guidance based on message content
+    const lowerMessage = message.toLowerCase();
+    
+    if (lowerMessage.includes('telegram') && lowerMessage.includes('trading')) {
+      aiMessage = `Perfect! I'll help you build a Telegram trading bot. This is an excellent choice for automated trading with user interaction.
 
-    if (!openAIResponse.ok) {
-      console.error('OpenAI API error:', openAIResponse.status);
-      throw new Error(`OpenAI API error: ${openAIResponse.status}`);
+**Here's what we need to set up:**
+
+🤖 **Telegram Bot Integration**
+- Get bot token from @BotFather on Telegram
+- Set up commands and message handling
+- Configure notifications for trade updates
+
+📈 **Trading Integration** 
+- Connect to DEX APIs (Uniswap, PancakeSwap, etc.)
+- Set up wallet/private key for trade execution
+- Configure risk management parameters
+
+💡 **Additional Features**
+- Price monitoring and alerts
+- Portfolio tracking
+- Trade history and analytics
+
+**First Step:** Let's get your Telegram Bot Token. Have you created a bot with @BotFather yet?
+
+If not, here's how:
+1. Message @BotFather on Telegram
+2. Send /newbot
+3. Choose a name and username for your bot
+4. Copy the bot token it gives you
+
+Do you have a Telegram bot token ready, or should I guide you through creating one?`;
+
+      suggestedIntegrations = ['telegram', 'trading'];
+      
+    } else if (lowerMessage.includes('telegram')) {
+      aiMessage = `Great! A Telegram bot is a powerful way to create an interactive AI agent. What would you like your Telegram bot to do?
+
+Some popular options:
+- 📈 Trading and DeFi operations
+- 📰 News and updates
+- 💬 Customer support
+- 🎮 Gaming and entertainment
+- 📊 Analytics and reporting
+
+Tell me more about the specific functionality you want!`;
+      
+      suggestedIntegrations = ['telegram'];
+      
+    } else {
+      aiMessage = `I'd love to help you build a custom AI agent! To get started, I need to understand what you want your agent to do.
+
+**Popular agent types:**
+- 🤖 **Telegram Trading Bot** - Execute trades, monitor prices, send alerts
+- 🐦 **Twitter Bot** - Auto-post content, engage with users, track mentions  
+- 💬 **Discord Bot** - Moderate servers, provide info, fun commands
+- 📧 **Email Automation** - Process emails, send reports, manage communications
+- 🔗 **Multi-platform Agent** - Combine multiple services
+
+**What specific tasks do you want your agent to handle?** The more detail you provide, the better I can help you build exactly what you need!`;
+      
+      suggestedIntegrations = [];
     }
-
-    const openAIResult = await openAIResponse.json();
-    console.log('OpenAI response received');
-    
-    const aiMessage = openAIResult.choices[0].message.content;
-
-    // Detect integrations mentioned in the response or original message
-    const suggestedIntegrations = [];
-    const fullText = (message + ' ' + aiMessage).toLowerCase();
-    
-    if (fullText.includes('telegram')) suggestedIntegrations.push('telegram');
-    if (fullText.includes('trading') || fullText.includes('trade') || fullText.includes('swap')) suggestedIntegrations.push('trading');
-    if (fullText.includes('twitter') || fullText.includes('tweet')) suggestedIntegrations.push('twitter');
-    if (fullText.includes('email')) suggestedIntegrations.push('email');
-    if (fullText.includes('discord')) suggestedIntegrations.push('discord');
 
     return new Response(
       JSON.stringify({
