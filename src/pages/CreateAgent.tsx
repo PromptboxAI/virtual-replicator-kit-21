@@ -482,15 +482,24 @@ export default function CreateAgent() {
             </p>
           </div>
 
-          {/* Check contract deployment status */}
+          {/* Check contract deployment status - different messages for admin vs regular users */}
           {(!promptTokenAddress || !factoryAddress) && (
             <div className="mb-8">
-              <Alert>
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  Smart contracts are not deployed yet. Please deploy them in the <Link to="/admin" className="text-primary underline">Admin Panel</Link> first.
-                </AlertDescription>
-              </Alert>
+              {isAdmin ? (
+                <Alert>
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    Smart contracts are not deployed yet. Please deploy them in the <Link to="/admin" className="text-primary underline">Admin Panel</Link> first.
+                  </AlertDescription>
+                </Alert>
+              ) : (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    Agent creation is temporarily unavailable. Please contact an administrator.
+                  </AlertDescription>
+                </Alert>
+              )}
             </div>
           )}
 
