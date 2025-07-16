@@ -147,6 +147,9 @@ serve(async (req) => {
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages,
+        temperature: 0.7,
+        max_tokens: 1000,
+        timeout: 10000, // 10 second timeout
         functions: [
           {
             name: 'identify_integrations',
