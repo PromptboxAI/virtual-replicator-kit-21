@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
-import { ContractDeployment } from "@/components/ContractDeployment";
+import { ContractDeploymentWidget } from "@/components/ContractDeploymentWidget";
 import { AppModeToggle } from "@/components/AppModeToggle";
 import { AdminFaucet } from "@/components/AdminFaucet";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -103,68 +103,11 @@ const Admin = () => {
               Smart Contract Deployment
             </CardTitle>
             <CardDescription>
-              Deploy and manage core platform contracts
+              Deploy core PROMPT token and AgentTokenFactory contracts
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <button 
-              onClick={async () => {
-                try {
-                  console.log('Testing deployment setup...');
-                  const { data, error } = await supabase.functions.invoke('test-deploy');
-                  console.log('Test result:', { data, error });
-                  if (error) throw error;
-                  console.log('✅ Test successful:', JSON.stringify(data, null, 2));
-                } catch (err) {
-                  console.error('❌ Test failed:', err);
-                }
-              }}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            >
-              Test Deployment Setup
-            </button>
-            <button 
-              onClick={async () => {
-                try {
-                  console.log('Testing simple contract deployment...');
-                  const { data, error } = await supabase.functions.invoke('simple-deploy-test');
-                  console.log('Simple deploy result:', { data, error });
-                  if (error) throw error;
-                  console.log('✅ Simple contract deployed:', data.contractAddress);
-                } catch (err) {
-                  console.error('❌ Simple deploy failed:', err);
-                }
-              }}
-              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 ml-2"
-            >
-              Test Simple Contract Deploy
-            </button>
-            <button 
-              onClick={async () => {
-                try {
-                  console.log('Deploying real ERC20 token...');
-                  const { data, error } = await supabase.functions.invoke('deploy-real-erc20-token');
-                  console.log('Real ERC20 deploy result:', { data, error });
-                  if (error) throw error;
-                  console.log('✅ Real ERC20 token deployed:', data.contractAddress);
-                } catch (err) {
-                  console.error('❌ Real ERC20 deploy failed:', err);
-                }
-              }}
-              className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 ml-2"
-            >
-              Deploy Real ERC20 Token
-            </button>
-            <ContractDeployment />
-            
-            <div className="mt-4 p-4 bg-muted/50 rounded-lg">
-              <h4 className="font-semibold text-sm mb-2">🚀 New Web3 Deployment Process</h4>
-              <p className="text-xs text-muted-foreground">
-                Contracts are now deployed directly through your MetaMask wallet on Base Sepolia. 
-                You'll see transaction prompts and use your own ETH for gas fees. 
-                Your wallet becomes the contract owner with full control.
-              </p>
-            </div>
+          <CardContent>
+            <ContractDeploymentWidget />
           </CardContent>
         </Card>
       </div>

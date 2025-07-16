@@ -26,8 +26,6 @@ import { FrameworkSDKService, FRAMEWORK_CONFIGS } from "@/lib/frameworkSDK";
 import { useAgentTokenFactory } from "@/hooks/useAgentTokens";
 import { useAccount } from 'wagmi';
 import { getCurrentPrice } from "@/lib/bondingCurve";
-import { useWeb3ContractDeployment } from "@/hooks/useWeb3ContractDeployment";
-import { ContractDeploymentWidget } from "@/components/ContractDeploymentWidget";
 
 
 interface AgentFormData {
@@ -119,7 +117,10 @@ export default function CreateAgent() {
   const { isAdmin } = useUserRole();
   const { isConnected, promptBalance } = usePrivyWallet();
   const { createAgentToken } = useAgentTokenFactory();
-  const { deployAll, isDeploying, contractsDeployed, promptTokenAddress, factoryAddress } = useWeb3ContractDeployment();
+  
+  // Check if contracts are deployed (from localStorage)
+  const promptTokenAddress = typeof window !== 'undefined' ? localStorage.getItem('promptTokenAddress') : null;
+  const factoryAddress = typeof window !== 'undefined' ? localStorage.getItem('factoryAddress') : null;
   const CREATION_COST = 100;
 
   console.log('CreateAgent Debug:', {
@@ -481,10 +482,17 @@ export default function CreateAgent() {
             </p>
           </div>
 
-          {/* Contract Deployment Widget */}
-          <div className="mb-8">
-            <ContractDeploymentWidget />
-          </div>
+          {/* Check contract deployment status */}
+          {(!promptTokenAddress || !factoryAddress) && (
+            <div className="mb-8">
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Smart contracts are not deployed yet. Please deploy them in the <Link to="/admin" className="text-primary underline">Admin Panel</Link> first.
+                </AlertDescription>
+              </Alert>
+            </div>
+          )}
 
           {/* Progress Bar */}
           <div className="mb-8">
