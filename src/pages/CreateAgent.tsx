@@ -337,7 +337,7 @@ export default function CreateAgent() {
           prompt_raised: 0, // Start with 0 PROMPT raised
           is_active: false, // Not active until AI is configured
           creator_id: user.id,
-          status: 'PENDING', // Pending AI configuration
+          status: 'ACTIVATING', // Agent is being set up
           test_mode: appIsTestMode, // Set based on current app mode
         }])
         .select()
