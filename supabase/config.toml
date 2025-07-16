@@ -32,3 +32,6 @@ verify_jwt = false
 
 [functions.create-openai-assistant]
 verify_jwt = false
+
+[functions.conversational-agent-builder]
+verify_jwt = false
