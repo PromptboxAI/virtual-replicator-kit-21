@@ -156,6 +156,15 @@ const Admin = () => {
               Deploy Real ERC20 Token
             </button>
             <ContractDeployment />
+            
+            <div className="mt-4 p-4 bg-muted/50 rounded-lg">
+              <h4 className="font-semibold text-sm mb-2">🚀 New Web3 Deployment Process</h4>
+              <p className="text-xs text-muted-foreground">
+                Contracts are now deployed directly through your MetaMask wallet on Base Sepolia. 
+                You'll see transaction prompts and use your own ETH for gas fees. 
+                Your wallet becomes the contract owner with full control.
+              </p>
+            </div>
           </CardContent>
         </Card>
       </div>

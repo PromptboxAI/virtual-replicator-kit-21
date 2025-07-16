@@ -1,20 +1,22 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useContractDeployment } from '@/hooks/useContractDeployment';
+import { useWeb3ContractDeployment } from '@/hooks/useWeb3ContractDeployment';
 import { useAuth } from '@/hooks/useAuth';
-import { Copy, ExternalLink } from 'lucide-react';
+import { Copy, ExternalLink, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function ContractDeployment() {
   const { user } = useAuth();
-  const address = user?.wallet?.address;
   const { 
     deployAll, 
     isDeploying, 
     promptTokenAddress, 
-    factoryAddress 
-  } = useContractDeployment();
+    factoryAddress,
+    isConnected,
+    userAddress,
+    isCorrectNetwork
+  } = useWeb3ContractDeployment();
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -34,31 +36,47 @@ export function ContractDeployment() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {!user ? (
+        {!isConnected ? (
           <div className="text-center space-y-4">
-            <p className="text-muted-foreground">
-              Please sign in to deploy contracts
-            </p>
-            <Button disabled>Sign In Required</Button>
+            <Wallet className="h-12 w-12 mx-auto text-muted-foreground" />
+            <div>
+              <p className="text-muted-foreground">
+                Please connect your wallet to deploy contracts
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Contracts will be deployed using your connected wallet on Base Sepolia
+              </p>
+            </div>
+            <Button disabled>Wallet Connection Required</Button>
+          </div>
+        ) : !isCorrectNetwork ? (
+          <div className="text-center space-y-4">
+            <div className="p-4 border border-destructive/20 bg-destructive/5 rounded-lg">
+              <p className="text-destructive font-medium">Wrong Network</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Please switch to Base Sepolia network in your wallet
+              </p>
+            </div>
+            <Button disabled>Switch to Base Sepolia</Button>
           </div>
         ) : (
           <>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Authenticated User:</span>
+                <span className="text-sm font-medium">Connected Wallet:</span>
                 <div className="flex items-center gap-2">
                   <Badge variant="outline" className="text-xs">
-                    {user.email?.address || 'Connected'}
+                    Base Sepolia
                   </Badge>
-                  {address && (
+                  {userAddress && (
                     <Badge variant="outline" className="font-mono text-xs">
-                      {address.slice(0, 6)}...{address.slice(-4)}
+                      {userAddress.slice(0, 6)}...{userAddress.slice(-4)}
                     </Badge>
                   )}
                 </div>
               </div>
               <div className="text-xs text-muted-foreground">
-                Contracts will be deployed using the system deployer wallet
+                Contracts will be deployed using your connected wallet through MetaMask
               </div>
             </div>
 
@@ -70,7 +88,7 @@ export function ContractDeployment() {
                   <div>
                     <div className="font-medium">PROMPTTEST Token</div>
                     <div className="text-sm text-muted-foreground">
-                      Test token for development
+                      ERC20 token with minting capability for testing
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -133,20 +151,21 @@ export function ContractDeployment() {
 
               <Button
                 onClick={deployAll}
-                disabled={isDeploying}
+                disabled={isDeploying || !isConnected || !isCorrectNetwork}
                 className="w-full"
                 size="lg"
               >
-                {isDeploying ? 'Deploying...' : 'Deploy All Contracts'}
+                {isDeploying ? 'Deploying via MetaMask...' : 'Deploy All Contracts'}
               </Button>
 
               {promptTokenAddress && factoryAddress && (
                 <div className="p-4 bg-muted rounded-lg">
-                  <h4 className="font-semibold mb-2">Next Steps:</h4>
+                  <h4 className="font-semibold mb-2">✅ Deployment Complete!</h4>
                   <ol className="list-decimal list-inside space-y-1 text-sm">
-                    <li>Update the constants in useAgentTokens.tsx with the deployed addresses</li>
-                    <li>Test the faucet functionality with the PROMPTTEST token</li>
-                    <li>Create your first agent token using the factory</li>
+                    <li>Contracts deployed with your wallet as owner</li>
+                    <li>Addresses saved to browser storage for persistence</li>
+                    <li>Test the admin faucet with real PROMPTTEST tokens</li>
+                    <li>Verify contracts on BaseScan using the links above</li>
                   </ol>
                 </div>
               )}
