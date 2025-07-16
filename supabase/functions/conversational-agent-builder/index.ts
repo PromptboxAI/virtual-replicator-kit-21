@@ -122,20 +122,40 @@ serve(async (req) => {
     console.log('Agent Builder Request:', { agentName, buildingPhase, message });
 
     if (!openAIApiKey) {
+      console.error('OpenAI API key not configured');
       return new Response(
         JSON.stringify({ error: 'OpenAI API key not configured' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
       );
     }
 
-    // Build context for the AI assistant
-    const systemPrompt = buildSystemPrompt(buildingPhase, identifiedIntegrations, configuredIntegrations);
-    
-    const messages = [
-      { role: 'system', content: systemPrompt },
-      ...conversationHistory.slice(-10), // Keep last 10 messages for context
-      { role: 'user', content: message }
-    ];
+    // Simple response for now to test connectivity
+    const responseContent = `I understand you want to build a trading bot with Telegram integration. Let me help you identify the requirements:
+
+**Required Integrations:**
+• **Telegram Bot**: For user interaction and notifications
+• **Trading/DEX**: For executing cryptocurrency trades
+• **Price Monitoring**: For tracking market data
+
+To get started, I'll need:
+1. Telegram Bot Token (from @BotFather)
+2. Trading wallet private key or connection
+3. Preferred DEX/trading platform
+
+Which integration would you like to set up first?`;
+
+    return new Response(
+      JSON.stringify({
+        response: {
+          content: responseContent,
+          metadata: {
+            suggestedIntegrations: ['telegram', 'trading'],
+            currentStep: 'integration_setup'
+          }
+        }
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
 
     // Call OpenAI to analyze the request and provide guidance
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
