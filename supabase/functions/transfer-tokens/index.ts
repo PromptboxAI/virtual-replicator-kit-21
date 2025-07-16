@@ -1,11 +1,17 @@
 import { createPublicClient, createWalletClient, http, parseUnits, formatUnits } from 'npm:viem'
 import { baseSepolia } from 'npm:viem/chains'
 import { privateKeyToAccount } from 'npm:viem/accounts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
+
+// Initialize Supabase client for revenue tracking
+const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+const supabase = createClient(supabaseUrl, supabaseServiceRoleKey)
 
 const PROMPT_TOKEN_ABI = [
   {
@@ -36,7 +42,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { fromAddress, toAddress, amount } = await req.json();
+    const { fromAddress, toAddress, amount, agentId, isAgentCreation } = await req.json();
     
     if (!fromAddress || !toAddress || !amount) {
       throw new Error('Missing required parameters: fromAddress, toAddress, and amount');
@@ -91,6 +97,23 @@ Deno.serve(async (req) => {
 
     const receipt = await publicClient.waitForTransactionReceipt({ hash });
     console.log('Transfer confirmed in block:', receipt.blockNumber);
+
+    // Track revenue if this is an agent creation payment
+    if (isAgentCreation && agentId) {
+      try {
+        await supabase.from('platform_revenue').insert({
+          revenue_type: 'agent_creation',
+          amount: parseFloat(amount),
+          agent_id: agentId,
+          transaction_hash: hash,
+          network: 'testnet'
+        });
+        console.log('Revenue tracked for agent creation:', agentId);
+      } catch (revenueError) {
+        console.error('Failed to track revenue:', revenueError);
+        // Don't fail the main transaction for revenue tracking errors
+      }
+    }
 
     return new Response(JSON.stringify({
       success: true,

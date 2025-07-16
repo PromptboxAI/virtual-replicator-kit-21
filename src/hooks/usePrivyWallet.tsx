@@ -188,7 +188,7 @@ export function usePrivyWallet() {
   }, [address, authenticated, promptBalance, toast, shouldUseTestMode]);
 
   // Pay for agent creation
-  const payForAgentCreation = useCallback(async (cost: string, treasuryAddress: string) => {
+  const payForAgentCreation = useCallback(async (cost: string, treasuryAddress: string, agentId?: string) => {
     if (!authenticated || !address) {
       toast({
         title: "Authentication Required",

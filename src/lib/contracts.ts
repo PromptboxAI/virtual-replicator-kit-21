@@ -88,4 +88,5 @@ export const PROMPT_TOKEN_ABI = [
   }
 ] as const;
 
-export const TREASURY_ADDRESS = "0x23d03610584B0f0988A6F9C281a37094D5611388"; // Default treasury address
+// Default treasury address (fallback)
+export const TREASURY_ADDRESS = "0x23d03610584B0f0988A6F9C281a37094D5611388";

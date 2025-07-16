@@ -5,16 +5,18 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Coins, CreditCard, Wallet, AlertCircle } from 'lucide-react';
 import { usePrivyWallet } from '@/hooks/usePrivyWallet';
+import { useTreasuryConfig } from '@/hooks/useTreasuryConfig';
 import { useToast } from '@/hooks/use-toast';
 
 interface AgentPaymentProps {
   agentName: string;
   cost: string;
+  agentId?: string;
   onPaymentSuccess: () => void;
   onCancel?: () => void;
 }
 
-export function AgentPayment({ agentName, cost, onPaymentSuccess, onCancel }: AgentPaymentProps) {
+export function AgentPayment({ agentName, cost, agentId, onPaymentSuccess, onCancel }: AgentPaymentProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const { 
     isConnected, 
@@ -25,13 +27,11 @@ export function AgentPayment({ agentName, cost, onPaymentSuccess, onCancel }: Ag
   } = usePrivyWallet();
   
   const { toast } = useToast();
+  const { treasuryAddress, loading: treasuryLoading } = useTreasuryConfig();
   
   const costNumber = parseFloat(cost);
   const balanceNumber = parseFloat(promptBalance);
   const hasSufficientBalance = balanceNumber >= costNumber;
-  
-  // Treasury address for receiving payments (in production, this would be dynamic)
-  const TREASURY_ADDRESS = "0x23d03610584B0f0988A6F9C281a37094D5611388";
 
   const handlePayment = async () => {
     if (!isConnected) {
@@ -55,7 +55,7 @@ export function AgentPayment({ agentName, cost, onPaymentSuccess, onCancel }: Ag
     setIsProcessing(true);
     
     try {
-      const success = await payForAgentCreation(cost, TREASURY_ADDRESS);
+      const success = await payForAgentCreation(cost, treasuryAddress, agentId);
       
       if (success) {
         toast({
@@ -170,7 +170,7 @@ export function AgentPayment({ agentName, cost, onPaymentSuccess, onCancel }: Ag
         <div className="flex gap-3">
           <Button
             onClick={handlePayment}
-            disabled={!hasSufficientBalance || isProcessing}
+            disabled={!hasSufficientBalance || isProcessing || treasuryLoading || !treasuryAddress}
             className="flex-1"
           >
             {isProcessing ? (

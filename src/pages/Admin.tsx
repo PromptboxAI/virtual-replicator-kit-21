@@ -5,8 +5,10 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { ContractDeploymentWidget } from "@/components/ContractDeploymentWidget";
 import { AppModeToggle } from "@/components/AppModeToggle";
 import { AdminFaucet } from "@/components/AdminFaucet";
+import { TreasuryManagement } from "@/components/TreasuryManagement";
+import { RevenueDashboard } from "@/components/RevenueDashboard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield, Settings, Database } from "lucide-react";
+import { Shield, Settings, Database, Wallet, BarChart3 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 const Admin = () => {
@@ -92,6 +94,38 @@ const Admin = () => {
           </CardHeader>
           <CardContent>
             <AdminFaucet />
+          </CardContent>
+        </Card>
+
+        {/* Treasury Management */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Wallet className="h-5 w-5" />
+              Treasury Configuration
+            </CardTitle>
+            <CardDescription>
+              Configure treasury addresses for testnet and mainnet
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <TreasuryManagement />
+          </CardContent>
+        </Card>
+
+        {/* Revenue Dashboard */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              Platform Revenue
+            </CardTitle>
+            <CardDescription>
+              Monitor platform revenue from agent creation and trading fees
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <RevenueDashboard />
           </CardContent>
         </Card>
 

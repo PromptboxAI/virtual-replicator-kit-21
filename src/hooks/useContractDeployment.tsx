@@ -80,7 +80,7 @@ export const useContractDeployment = () => {
       // Deploy the real ERC20 PROMPTTEST token
       const promptAddr = await deployPromptTestToken();
       
-      // Use the user's wallet address as treasury if available, otherwise use deployer address
+      // Use the user's wallet address as treasury if available, otherwise use default address
       const treasuryAddr = address || "0x23d03610584B0f0988A6F9C281a37094D5611388";
       
       // Deploy factory with the new PROMPTTEST token address

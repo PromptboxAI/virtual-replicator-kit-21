@@ -491,6 +491,44 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_revenue: {
+        Row: {
+          agent_id: string | null
+          amount: number
+          created_at: string
+          id: string
+          network: string
+          revenue_type: string
+          transaction_hash: string | null
+        }
+        Insert: {
+          agent_id?: string | null
+          amount: number
+          created_at?: string
+          id?: string
+          network: string
+          revenue_type: string
+          transaction_hash?: string | null
+        }
+        Update: {
+          agent_id?: string | null
+          amount?: number
+          created_at?: string
+          id?: string
+          network?: string
+          revenue_type?: string
+          transaction_hash?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_revenue_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           auth_method: string
@@ -606,6 +644,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      treasury_config: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          network: string
+          treasury_address: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          network: string
+          treasury_address: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          network?: string
+          treasury_address?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       user_agent_holdings: {
         Row: {
