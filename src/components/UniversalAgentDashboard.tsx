@@ -169,30 +169,40 @@ export function UniversalAgentDashboard({ agent, onAgentUpdated }: UniversalAgen
       // If this is the first save and we have a complete configuration, create OpenAI Assistant
       if (!existingConfig && configuration.instructions && configuration.goals && configuration.knowledge_base) {
         console.log('Creating OpenAI Assistant...');
-        const { error: assistantError } = await supabase.functions.invoke('create-openai-assistant', {
-          body: {
-            agentId: agent.id,
-            name: agent.name,
-            description: configuration.instructions,
-            purpose: configuration.goals,
-            functionalities: ['social_media', 'content_creation'], // Default functionalities
-            customInstructions: configuration.knowledge_base,
-            category: agent.category || 'Custom Agent',
-            apiKeys: {} // Empty for now
+        try {
+          const { data: assistantData, error: assistantError } = await supabase.functions.invoke('create-openai-assistant', {
+            body: {
+              agentId: agent.id,
+              name: agent.name,
+              description: configuration.instructions,
+              purpose: configuration.goals,
+              functionalities: ['trading', 'telegram'], // Based on user's telegram trading bot request
+              customInstructions: configuration.knowledge_base,
+              category: agent.category || 'Trading Bot',
+              apiKeys: {}
+            }
+          });
+          
+          if (assistantError) {
+            console.error('Assistant creation error:', assistantError);
+            toast({
+              title: "Configuration Saved ✅",
+              description: "Configuration saved but OpenAI Assistant creation failed. You can retry later.",
+              variant: "default"
+            });
+          } else {
+            console.log('Assistant created successfully:', assistantData);
+            toast({
+              title: "Agent Created! 🎉",
+              description: "Your OpenAI Assistant has been created and configured successfully.",
+            });
           }
-        });
-        
-        if (assistantError) {
-          console.error('Assistant creation error:', assistantError);
+        } catch (assistantError: any) {
+          console.error('Assistant creation failed:', assistantError);
           toast({
             title: "Configuration Saved ✅",
             description: "Configuration saved but OpenAI Assistant creation failed. You can retry later.",
             variant: "default"
-          });
-        } else {
-          toast({
-            title: "Agent Created! 🎉",
-            description: "Your OpenAI Assistant has been created and configured successfully.",
           });
         }
       } else {
