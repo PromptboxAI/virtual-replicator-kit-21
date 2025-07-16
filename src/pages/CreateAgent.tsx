@@ -322,7 +322,7 @@ export default function CreateAgent() {
           twitter_url: formData.twitter_url || null,
           avatar_url: finalAvatarUrl,
           total_supply: formData.total_supply,
-          current_price: 0.00001, // Fixed initial price for all tokens
+          current_price: 0, // Will be set from bonding curve getCurrentPrice(0)
           market_cap: 0, // Will be calculated based on trading
           creation_cost: CREATION_COST,
           is_active: false, // Not active until AI is configured

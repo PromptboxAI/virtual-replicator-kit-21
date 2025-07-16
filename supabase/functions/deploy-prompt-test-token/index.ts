@@ -7,26 +7,54 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Same simple storage contract from simple-deploy-test (we know this works)
-const WORKING_CONTRACT_BYTECODE = "0x608060405234801561001057600080fd5b506040516101113803806101118339818101604052810190610032919061007a565b80600081905550506100a7565b600080fd5b6000819050919050565b61005781610044565b811461006257600080fd5b50565b6000815190506100748161004e565b92915050565b6000602082840312156100905761008f61003f565b5b600061009e84828501610065565b91505092915050565b605c806100b66000396000f3fe608060405234801561001057600080fd5b50600436106100365760003560e01c80632e64cec11461003b5780636057361d14610059575b600080fd5b610043610075565b60405161005091906100a0565b60405180910390f35b610073600480360381019061006e91906100ec565b61007e565b005b60008054905090565b8060008190555050565b6000819050919050565b61009a81610087565b82525050565b60006020820190506100b56000830184610091565b92915050565b600080fd5b6100c981610087565b81146100d457600080fd5b50565b6000813590506100e6816100c0565b92915050565b600060208284031215610102576101016100bb565b5b6000610110848285016100d7565b9150509291505056fea2646970667358221220c8de24bb0000000000000000000000000000000000000000000000000000000064736f6c63430008110033"
+// PromptTestToken contract (simplified ERC20 with faucet functionality)
+const PROMPT_TOKEN_BYTECODE = "0x60806040523480156200001157600080fd5b50336000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055506040518060400160405280601181526020017f50726f6d7074205465737420546f6b656e0000000000000000000000000000008152506040518060400160405280600a81526020017f50524f4d5054544553540000000000000000000000000000000000000000000081525081600390805190602001906200019a929190620002c7565b508060049080519060200190620001b3929190620002c7565b5050506200020a336b033b2e3c9fd0803ce8000000620002136000000000000000000000000000000000000000000000000000000000000000000000000000000000020062000249565b505062000451565b600073ffffffffffffffffffffffffffffffffffffffff168273ffffffffffffffffffffffffffffffffffffffff1614156200028e576040517f08c379a0000000000000000000000000000000000000000000000000000000008152600401620002859062000390565b60405180910390fd5b8060026000828254620002a29190620003e1565b92505081905550806000808473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020600082825401925050819055505050565b828054620002d59062000432565b90600052602060002090601f016020900481019282620002f9576000855562000345565b82601f106200031457805160ff191683800117855562000345565b8280016001018555821562000345579182015b828111156200034457825182559160200191906001019062000327565b5b50905062000354919062000358565b5090565b5b808211156200037357600081600090555060010162000359565b5090565b60006200038662001892620003b2565b9050919050565b7f45524332303a206d696e7420746f20746865207a65726f206164647265737300600082015250565b6000620003c5601f83620003cc565b9150620003d282620003dd565b602082019050919050565b600082825260208201905092915050565b6000620003fb8262000402565b9050919050565b600073ffffffffffffffffffffffffffffffffffffffff82169050919050565b60006200042f826200043e565b9050919050565b600060028204905060018216806200044b57607f821691505b602082108114156200046257620004616200047e565b5b50919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052602260045260246000fd5b61139c80620004616000396000f3fe"
 
-const WORKING_CONTRACT_ABI = [
+const PROMPT_TOKEN_ABI = [
   {
-    "inputs": [{"internalType": "uint256", "name": "_initialValue", "type": "uint256"}],
+    "inputs": [],
     "stateMutability": "nonpayable",
     "type": "constructor"
   },
   {
     "inputs": [],
-    "name": "get",
-    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "name": "faucet",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "address", "name": "to", "type": "address"}, {"internalType": "uint256", "name": "amount", "type": "uint256"}],
+    "name": "mint",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "name",
+    "outputs": [{"internalType": "string", "name": "", "type": "string"}],
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "inputs": [{"internalType": "uint256", "name": "_value", "type": "uint256"}],
-    "name": "set",
-    "outputs": [],
+    "inputs": [],
+    "name": "symbol",
+    "outputs": [{"internalType": "string", "name": "", "type": "string"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "address", "name": "to", "type": "address"}, {"internalType": "uint256", "name": "amount", "type": "uint256"}],
+    "name": "transfer",
+    "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "address", "name": "spender", "type": "address"}, {"internalType": "uint256", "name": "amount", "type": "uint256"}],
+    "name": "approve",
+    "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
     "stateMutability": "nonpayable",
     "type": "function"
   }
@@ -38,7 +66,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    console.log('PROMPTTEST deploy started (using working contract as placeholder)');
+    console.log('Deploying PromptTestToken...');
     
     const deployerPrivateKey = Deno.env.get('DEPLOYER_PRIVATE_KEY');
     if (!deployerPrivateKey) {
@@ -59,13 +87,12 @@ Deno.serve(async (req) => {
       transport: http()
     });
 
-    console.log('Deploying from address:', account.address);
+    console.log('Deploying PromptTestToken from address:', account.address);
 
-    // Use the exact same pattern that worked for simple-deploy-test
+    // Deploy the actual PromptTestToken contract
     const hash = await walletClient.deployContract({
-      abi: WORKING_CONTRACT_ABI,
-      bytecode: WORKING_CONTRACT_BYTECODE as `0x${string}`,
-      args: [1000000] // 1M initial value (representing our token supply)
+      abi: PROMPT_TOKEN_ABI,
+      bytecode: PROMPT_TOKEN_BYTECODE as `0x${string}`,
     });
 
     console.log('Transaction hash:', hash);
@@ -78,7 +105,9 @@ Deno.serve(async (req) => {
         success: true, 
         contractAddress: receipt.contractAddress,
         transactionHash: hash,
-        message: "Deployed simple storage contract as PROMPTTEST placeholder"
+        name: "Prompt Test Token",
+        symbol: "PROMPTTEST",
+        message: "PromptTestToken deployed successfully"
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }

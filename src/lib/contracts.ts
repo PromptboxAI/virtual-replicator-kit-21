@@ -1,6 +1,6 @@
 // Contract addresses and ABIs for blockchain integration
 
-export const PROMPT_TOKEN_ADDRESS = "0x62fa50ce04dd11d2be35f1dee04063e63118c727"; // Will be updated after deployment
+export const PROMPT_TOKEN_ADDRESS = localStorage.getItem('promptTokenAddress') || "0x62fa50ce04dd11d2be35f1dee04063e63118c727";
 
 export const PROMPT_TOKEN_ABI = [
   {
