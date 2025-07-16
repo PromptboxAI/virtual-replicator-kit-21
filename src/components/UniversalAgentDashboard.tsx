@@ -173,10 +173,12 @@ export function UniversalAgentDashboard({ agent, onAgentUpdated }: UniversalAgen
           body: {
             agentId: agent.id,
             name: agent.name,
-            instructions: configuration.instructions,
-            personality: configuration.personality,
-            goals: configuration.goals,
-            knowledge: configuration.knowledge_base
+            description: configuration.instructions,
+            purpose: configuration.goals,
+            functionalities: ['social_media', 'content_creation'], // Default functionalities
+            customInstructions: configuration.knowledge_base,
+            category: agent.category || 'Custom Agent',
+            apiKeys: {} // Empty for now
           }
         });
         
