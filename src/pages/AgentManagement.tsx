@@ -7,6 +7,7 @@ import { AgentActivityFeed } from '@/components/AgentActivityFeed';
 import { AgentChat } from '@/components/AgentChat';
 import { TwitterCredentialsForm } from '@/components/TwitterCredentialsForm';
 import { AgentBuilder } from '@/components/AgentBuilder';
+import { CustomAgentDashboard } from '@/components/CustomAgentDashboard';
 import { TradingBotConfiguration } from '@/components/TradingBotConfiguration';
 import { DeFiAssistantConfiguration } from '@/components/DeFiAssistantConfiguration';
 import { ContentCreatorConfiguration } from '@/components/ContentCreatorConfiguration';
@@ -174,6 +175,30 @@ export default function AgentManagement() {
               The agent you're looking for doesn't exist or you don't have access to it.
             </p>
           </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Special handling for Custom Agent category
+  if (agent?.category === 'Custom Agent') {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <CustomAgentDashboard 
+            agent={{
+              id: agent.id,
+              name: agent.name,
+              symbol: agent.symbol,
+              description: agent.description,
+              avatar_url: agent.avatar_url,
+              category: agent.category,
+              is_active: agent.is_active
+            }}
+            onAgentUpdated={refetch}
+          />
         </div>
         <Footer />
       </div>
