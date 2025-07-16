@@ -23,3 +23,9 @@ verify_jwt = false
 
 [functions.deploy-factory-contract]
 verify_jwt = false
+
+[functions.trading-engine]
+verify_jwt = false
+
+[functions.save-trading-config]
+verify_jwt = false

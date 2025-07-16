@@ -150,7 +150,53 @@ async function getAPIKeys(agentId: string, keyNames: string[]): Promise<Record<s
 
 async function executeDeFiOperations(agent: Agent, config: any, apiKeys: Record<string, string>) {
   try {
-    // Get market data for selected protocols
+    // Check if this is a trading bot with real trading configuration
+    if (config.tradingStrategy && config.tradingPairs) {
+      // Execute real trading via trading engine
+      await logMessage(agent.id, 'info', 'Executing real trading strategy');
+      
+      try {
+        const tradingResult = await supabase.functions.invoke('trading-engine', {
+          body: {
+            agentId: agent.id,
+            action: 'run_trading_cycle'
+          }
+        });
+        
+        if (tradingResult.error) {
+          throw new Error(tradingResult.error.message);
+        }
+        
+        await logActivity(agent.id, {
+          activity_type: 'autonomous_trading',
+          title: 'Real Trading Cycle Completed',
+          description: `Executed ${config.tradingStrategy} strategy on real markets`,
+          metadata: { 
+            strategy: config.tradingStrategy,
+            pairs: config.tradingPairs,
+            exchanges: config.exchanges,
+            result: tradingResult.data 
+          },
+          status: 'completed',
+          result: { trading_engine_result: tradingResult.data }
+        });
+        
+      } catch (tradingError) {
+        await logMessage(agent.id, 'error', `Real trading failed: ${tradingError.message}`);
+        
+        await logActivity(agent.id, {
+          activity_type: 'trading_error',
+          title: 'Trading Execution Failed',
+          description: `Real trading execution encountered an error: ${tradingError.message}`,
+          status: 'failed',
+          result: { error: tradingError.message }
+        });
+      }
+      
+      return; // Exit early for trading bots
+    }
+    
+    // Original DeFi operations for non-trading agents
     const protocols = config.protocols || ['Uniswap', 'Aave'];
     
     for (const protocol of protocols.slice(0, 2)) { // Limit to 2 protocols per cycle
@@ -371,6 +417,10 @@ async function executeAgentCycle(agent: Agent) {
         await executeDeFiOperations(agent, categoryConfig, apiKeys);
         break;
         
+      case 'Trading Bot':
+        await executeDeFiOperations(agent, categoryConfig, apiKeys);
+        break;
+        
       case 'Content Creator':
         await executeContentCreation(agent, categoryConfig, apiKeys);
         break;
@@ -384,8 +434,13 @@ async function executeAgentCycle(agent: Agent) {
         break;
         
       default:
-        // Default G.A.M.E. framework execution
-        await executeContentCreation(agent, categoryConfig, apiKeys);
+        // Check if agent has trading configuration regardless of category
+        if (categoryConfig.tradingStrategy) {
+          await executeDeFiOperations(agent, categoryConfig, apiKeys);
+        } else {
+          // Default G.A.M.E. framework execution
+          await executeContentCreation(agent, categoryConfig, apiKeys);
+        }
         break;
     }
 
