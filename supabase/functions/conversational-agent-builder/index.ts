@@ -50,14 +50,14 @@ serve(async (req: Request) => {
         messages: [
           {
             role: 'system',
-            content: 'You are a helpful AI agent builder assistant. Help users create custom AI agents step by step.'
+            content: 'You are an AI agent builder assistant. Help users build Telegram trading bots step by step. Keep responses focused and complete. When they have a bot token, guide them to the next step.'
           },
           {
             role: 'user',
             content: message
           }
         ],
-        max_tokens: 200,
+        max_tokens: 500, // Increased for complete responses
         temperature: 0.7
       })
     });
