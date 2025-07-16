@@ -309,7 +309,7 @@ export default function CreateAgent() {
         }
       }
 
-      // Create agent in database
+      // Create basic agent/token record in database
       const { data, error } = await supabase
         .from('agents')
         .insert([{
@@ -325,9 +325,9 @@ export default function CreateAgent() {
           current_price: 0.00001, // Fixed initial price for all tokens
           market_cap: 0, // Will be calculated based on trading
           creation_cost: CREATION_COST,
-          is_active: true,
+          is_active: false, // Not active until AI is configured
           creator_id: user.id,
-          status: 'ACTIVATING',
+          status: 'PENDING', // Pending AI configuration
           test_mode: appIsTestMode, // Set based on current app mode
         }])
         .select()
@@ -335,65 +335,28 @@ export default function CreateAgent() {
 
       if (error) {
         console.error('Database error:', error);
-        toast({ title: "Error", description: "Failed to create AI Agent", variant: "destructive" });
+        if (error.code === '23505') {
+          toast({ 
+            title: "Symbol Already Exists", 
+            description: "An agent with this symbol already exists. Please choose a different symbol.", 
+            variant: "destructive" 
+          });
+        } else {
+          toast({ title: "Error", description: "Failed to create AI Agent", variant: "destructive" });
+        }
         return;
       }
 
       const agentId = data.id;
 
-      // Deploy agent to framework if SDK integration is available
-      const frameworkConfig = FrameworkSDKService.getFrameworkConfig(formData.framework);
-      if (frameworkConfig) {
-        try {
-          toast({
-            title: "Deploying Agent",
-            description: `Deploying ${formData.name} to ${formData.framework}...`,
-          });
-
-          const { data: deployResult, error: deployError } = await supabase.functions.invoke('deploy-agent', {
-            body: {
-              agentId,
-              framework: formData.framework,
-              name: formData.name,
-              description: formData.description,
-              environment: {
-                totalSupply: formData.total_supply,
-                prebuyAmount: formData.prebuy_amount
-              }
-            }
-          });
-
-          if (deployError) {
-            console.error('Deployment error:', deployError);
-            toast({
-              title: "Warning",
-              description: `Agent created but deployment to ${formData.framework} failed. You can retry deployment later.`,
-              variant: "destructive"
-            });
-          } else if (deployResult?.success) {
-            toast({
-              title: "Deployment Successful!",
-              description: `${formData.name} has been successfully deployed to ${formData.framework}`,
-            });
-          }
-        } catch (deploymentError) {
-          console.error('Deployment error:', deploymentError);
-          toast({
-            title: "Warning",
-            description: `Agent created but deployment to ${formData.framework} failed. You can retry deployment later.`,
-            variant: "destructive"
-          });
-        }
-      }
-
-      // Initialize agent runtime status after successful creation
+      // Initialize agent runtime status for future configuration
       try {
         const { error: runtimeError } = await supabase
           .from('agent_runtime_status')
           .insert([{
             agent_id: agentId,
             is_active: false,
-            current_goal: `Autonomous execution for ${formData.name}`,
+            current_goal: `Awaiting AI configuration for ${formData.name}`,
             performance_metrics: {},
             revenue_generated: 0,
             tasks_completed: 0
@@ -407,12 +370,12 @@ export default function CreateAgent() {
       }
 
       toast({ 
-        title: "Success!", 
-        description: `${formData.name} has been created successfully! (${CREATION_COST} tokens deducted)`,
+        title: "Token Created Successfully!", 
+        description: `${formData.name} token has been created. Now configure your AI agent.`,
       });
       
-      // Navigate back to home to see the new AI Agent
-      navigate('/');
+      // Navigate to agent page to configure AI
+      navigate(`/agent/${agentId}`);
       
     } catch (error) {
       console.error('Creation error:', error);
