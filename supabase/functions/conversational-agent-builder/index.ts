@@ -1,9 +1,12 @@
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 
 serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
@@ -13,98 +16,91 @@ serve(async (req: Request) => {
   try {
     console.log('Conversational agent builder called');
     
-    let requestBody;
-    try {
-      requestBody = await req.json();
-    } catch (e) {
-      console.error('Failed to parse JSON:', e);
-      return new Response(
-        JSON.stringify({ error: 'Invalid JSON in request body' }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 
-          status: 400 
-        }
-      );
-    }
-
-    const { message, agentName } = requestBody;
+    const { message, agentName, conversationHistory = [] } = await req.json();
     console.log('Processing message:', message);
+    console.log('Conversation history length:', conversationHistory.length);
 
-    if (!message) {
+    if (!openAIApiKey) {
+      console.error('OpenAI API key not configured');
       return new Response(
-        JSON.stringify({ error: 'Message is required' }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 
-          status: 400 
-        }
+        JSON.stringify({ error: 'OpenAI API key not configured' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
       );
     }
 
-    // Simple response logic based on message content
-    let responseContent = '';
-    let suggestedIntegrations: string[] = [];
-    
-    const lowerMessage = message.toLowerCase();
-    
-    if (lowerMessage.includes('telegram') && lowerMessage.includes('trading')) {
-      responseContent = `Perfect! I'll help you build a Telegram trading bot. This is an excellent choice for automated trading with user interaction.
+    // Build conversation context for OpenAI
+    const systemPrompt = `You are an expert AI agent builder assistant. Your job is to guide users step-by-step through building custom AI agents.
 
-**Here's what we need to set up:**
+IMPORTANT: Follow the conversation context and respond appropriately to the user's specific question or request.
 
-🤖 **Telegram Bot Integration**
-- Get bot token from @BotFather on Telegram
-- Set up commands and message handling
-- Configure notifications for trade updates
+When helping users build agents, you should:
+1. Understand what they want to build
+2. Identify required integrations (telegram, trading, twitter, email, discord)
+3. Guide them through getting API keys step-by-step
+4. Provide specific, actionable instructions
+5. Ask follow-up questions to move the process forward
 
-📈 **Trading Integration** 
-- Connect to DEX APIs (Uniswap, PancakeSwap, etc.)
-- Set up wallet/private key for trade execution
-- Configure risk management parameters
+Available integrations:
+- Telegram: Bot API for messaging, commands, notifications
+- Trading: DEX APIs, wallet integration, price monitoring
+- Twitter: Post tweets, monitor mentions, engage users
+- Email: Send notifications, process messages
+- Discord: Bot functionality, server management
 
-**First Step:** Let's get your Telegram Bot Token. Have you created a bot with @BotFather yet?
+Always maintain conversation context and provide specific help based on what the user is asking for.`;
 
-If not, here's how:
-1. Message @BotFather on Telegram
-2. Send /newbot
-3. Choose a name and username for your bot
-4. Copy the bot token it gives you
+    const messages = [
+      { role: 'system', content: systemPrompt },
+      ...conversationHistory.slice(-6), // Keep last 6 messages for context
+      { role: 'user', content: message }
+    ];
 
-Do you have a Telegram bot token ready, or should I guide you through creating one?`;
+    console.log('Calling OpenAI API with conversation context...');
 
-      suggestedIntegrations = ['telegram', 'trading'];
+    // Call OpenAI API
+    const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAIApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages,
+        max_tokens: 500,
+        temperature: 0.7
+      })
+    });
+
+    if (!openAIResponse.ok) {
+      console.error('OpenAI API error:', openAIResponse.status);
+      const errorText = await openAIResponse.text();
+      console.error('OpenAI error details:', errorText);
       
-    } else if (lowerMessage.includes('telegram')) {
-      responseContent = `Great! A Telegram bot is a powerful way to create an interactive AI agent. What would you like your Telegram bot to do?
-
-Some popular options:
-- 📈 Trading and DeFi operations
-- 📰 News and updates
-- 💬 Customer support
-- 🎮 Gaming and entertainment
-- 📊 Analytics and reporting
-
-Tell me more about the specific functionality you want!`;
-      
-      suggestedIntegrations = ['telegram'];
-      
-    } else {
-      responseContent = `I'd love to help you build a custom AI agent! To get started, I need to understand what you want your agent to do.
-
-**Popular agent types:**
-- 🤖 **Telegram Trading Bot** - Execute trades, monitor prices, send alerts
-- 🐦 **Twitter Bot** - Auto-post content, engage with users, track mentions  
-- 💬 **Discord Bot** - Moderate servers, provide info, fun commands
-- 📧 **Email Automation** - Process emails, send reports, manage communications
-- 🔗 **Multi-platform Agent** - Combine multiple services
-
-**What specific tasks do you want your agent to handle?** The more detail you provide, the better I can help you build exactly what you need!`;
-      
-      suggestedIntegrations = [];
+      return new Response(
+        JSON.stringify({ error: `OpenAI API error: ${openAIResponse.status}` }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      );
     }
+
+    const openAIResult = await openAIResponse.json();
+    console.log('OpenAI response received successfully');
+    
+    const aiMessage = openAIResult.choices[0].message.content;
+
+    // Detect integrations mentioned in the conversation
+    const suggestedIntegrations = [];
+    const fullText = (message + ' ' + aiMessage).toLowerCase();
+    
+    if (fullText.includes('telegram')) suggestedIntegrations.push('telegram');
+    if (fullText.includes('trading') || fullText.includes('trade')) suggestedIntegrations.push('trading');
+    if (fullText.includes('twitter')) suggestedIntegrations.push('twitter');
+    if (fullText.includes('email')) suggestedIntegrations.push('email');
+    if (fullText.includes('discord')) suggestedIntegrations.push('discord');
 
     const response = {
       response: {
-        content: responseContent,
+        content: aiMessage,
         metadata: {
           suggestedIntegrations,
           currentStep: suggestedIntegrations.length > 0 ? 'integration_setup' : 'discovery'
@@ -112,7 +108,7 @@ Tell me more about the specific functionality you want!`;
       }
     };
 
-    console.log('Sending successful response');
+    console.log('Sending AI response');
     
     return new Response(
       JSON.stringify(response),
@@ -142,4 +138,3 @@ Tell me more about the specific functionality you want!`;
       }
     );
   }
-});
