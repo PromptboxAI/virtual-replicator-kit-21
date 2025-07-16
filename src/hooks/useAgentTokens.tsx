@@ -4,9 +4,16 @@ import { parseEther, formatEther } from 'viem';
 import { useToast } from '@/hooks/use-toast';
 import { baseSepolia } from 'viem/chains';
 
-// These will be updated after deployment
-const AGENT_TOKEN_FACTORY_ADDRESS = '0x0000000000000000000000000000000000000000'; // Will be set after deployment
-const PROMPT_TOKEN_ADDRESS = '0x0000000000000000000000000000000000000000'; // Will be set after PROMPT token deployment
+// Get contract addresses from localStorage (set by deployment hook)
+const getContractAddress = (key: string, fallback: string = '0x0000000000000000000000000000000000000000') => {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem(key) || fallback;
+  }
+  return fallback;
+};
+
+const AGENT_TOKEN_FACTORY_ADDRESS = getContractAddress('factoryAddress');
+const PROMPT_TOKEN_ADDRESS = getContractAddress('promptTokenAddress');
 
 const FACTORY_ABI = [
   {
@@ -79,25 +86,40 @@ export function useAgentTokenFactory() {
   const { writeContract, isPending: isCreating } = useWriteContract();
 
   // Get All Tokens
+  const factoryAddr = getContractAddress('factoryAddress');
   const { data: allTokens } = useReadContract({
-    address: AGENT_TOKEN_FACTORY_ADDRESS as `0x${string}`,
+    address: factoryAddr as `0x${string}`,
     abi: FACTORY_ABI,
     functionName: 'getAllTokens',
+    query: {
+      enabled: factoryAddr !== '0x0000000000000000000000000000000000000000'
+    }
   });
 
-  const createAgentToken = async (name: string, symbol: string, agentId: string) => {
+  const createAgentToken = async (name: string, symbol: string, agentId: string): Promise<string | null> => {
     if (!address) {
       toast({
         title: "Wallet Not Connected",
         description: "Please connect your wallet to create an agent token.",
         variant: "destructive",
       });
-      return;
+      return null;
+    }
+
+    // Check if factory is deployed
+    const factoryAddr = getContractAddress('factoryAddress');
+    if (factoryAddr === '0x0000000000000000000000000000000000000000') {
+      toast({
+        title: "Factory Not Deployed",
+        description: "Please deploy the factory contract first.",
+        variant: "destructive",
+      });
+      return null;
     }
 
     try {
       await writeContract({
-        address: AGENT_TOKEN_FACTORY_ADDRESS as `0x${string}`,
+        address: factoryAddr as `0x${string}`,
         abi: FACTORY_ABI,
         functionName: 'createAgentToken',
         args: [name, symbol, agentId],
@@ -109,12 +131,16 @@ export function useAgentTokenFactory() {
         title: "Token Created!",
         description: "Agent token has been deployed successfully.",
       });
+      
+      // For now return a placeholder - in a real system, you'd get this from the transaction logs
+      return 'pending'; // This would be the actual token address from contract event logs
     } catch (error: any) {
       toast({
         title: "Creation Failed",
         description: error.message || "Failed to create token",
         variant: "destructive",
       });
+      return null;
     }
   };
 

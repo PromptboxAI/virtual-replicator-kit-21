@@ -9,6 +9,9 @@ import { useToast } from '@/hooks/use-toast';
 import { TradingChart } from './TradingChart';
 import { OKXDEXWidget } from './OKXDEXWidget';
 import { AgentDashboard } from './AgentDashboard';
+import { useAgentToken } from '@/hooks/useAgentTokens';
+import { calculateBuyCost, calculateSellReturn, formatPrice, formatPromptAmount, getCurrentPrice, calculateTokensFromPrompt } from '@/lib/bondingCurve';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AgentMetrics {
   promptRaised: number;
@@ -61,6 +64,9 @@ export function TradingInterface({
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('buy');
   const { toast } = useToast();
+  
+  // Smart contract integration for tokens with deployed contracts
+  const { buyAgentTokens, sellAgentTokens, isBuying, isSelling, metrics: contractMetrics } = useAgentToken(tokenAddress);
 
   useEffect(() => {
     // Fetch real-time data from Moralis for graduated tokens, use agent data for others
@@ -141,13 +147,44 @@ export function TradingInterface({
       return;
     }
 
+    if (!buyAmount || parseFloat(buyAmount) <= 0) {
+      toast({
+        title: "Invalid Amount",
+        description: "Please enter a valid PROMPT amount",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
     try {
-      // Implement actual buy logic here
-      toast({
-        title: "Purchase Successful",
-        description: `Bought ${buyAmount} PROMPT worth of ${agentSymbol}`,
-      });
+      if (tokenAddress && tokenGraduated) {
+        // Use smart contract for graduated tokens
+        await buyAgentTokens(buyAmount);
+      } else {
+        // Use bonding curve calculation for non-graduated tokens
+        const promptAmount = parseFloat(buyAmount);
+        const currentPromptRaised = metrics?.promptRaised || 0;
+        
+        // Calculate how many tokens can be bought with this PROMPT amount
+        const tokenResult = calculateTokensFromPrompt(currentPromptRaised, promptAmount);
+        const newPromptRaised = currentPromptRaised + promptAmount;
+        const newPrice = getCurrentPrice(tokenResult.newTokensSold);
+        
+        // Update database with new trade
+        await supabase
+          .from('agents')
+          .update({
+            prompt_raised: newPromptRaised,
+            current_price: newPrice
+          })
+          .eq('id', agentId);
+        
+        toast({
+          title: "Purchase Successful",
+          description: `Bought ${tokenResult.tokenAmount.toFixed(2)} ${agentSymbol} for ${formatPromptAmount(promptAmount)}`,
+        });
+      }
       setBuyAmount('');
     } catch (error) {
       toast({
@@ -166,13 +203,46 @@ export function TradingInterface({
       return;
     }
 
+    if (!sellAmount || parseFloat(sellAmount) <= 0) {
+      toast({
+        title: "Invalid Amount",
+        description: "Please enter a valid token amount",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
     try {
-      // Implement actual sell logic here
-      toast({
-        title: "Sale Successful",
-        description: `Sold ${sellAmount} ${agentSymbol}`,
-      });
+      if (tokenAddress && tokenGraduated) {
+        // Use smart contract for graduated tokens
+        await sellAgentTokens(sellAmount);
+      } else {
+        // Use bonding curve calculation for non-graduated tokens
+        const tokenAmount = parseFloat(sellAmount);
+        const currentPromptRaised = metrics?.promptRaised || 0;
+        
+        // Calculate how much PROMPT this returns
+        // For selling, we need to reverse-calculate from current state
+        const currentTokensSold = currentPromptRaised > 0 ? currentPromptRaised * 1000 : 0; // Approximate
+        const sellResult = calculateSellReturn(currentTokensSold, tokenAmount);
+        const newPromptRaised = Math.max(0, currentPromptRaised - sellResult.return);
+        const newPrice = getCurrentPrice(sellResult.newTokensSold);
+        
+        // Update database with new trade
+        await supabase
+          .from('agents')
+          .update({
+            prompt_raised: newPromptRaised,
+            current_price: newPrice
+          })
+          .eq('id', agentId);
+        
+        toast({
+          title: "Sale Successful",
+          description: `Sold ${tokenAmount} ${agentSymbol} for ${formatPromptAmount(sellResult.return)}`,
+        });
+      }
       setSellAmount('');
     } catch (error) {
       toast({
@@ -277,9 +347,9 @@ export function TradingInterface({
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Price</p>
+              <p className="text-sm text-muted-foreground">Price (PROMPT)</p>
               <div className="flex items-center gap-2">
-                <p className="text-lg font-semibold">${metrics.currentPrice >= 0.01 ? metrics.currentPrice.toFixed(2) : metrics.currentPrice.toFixed(6)}</p>
+                <p className="text-lg font-semibold">{formatPrice(metrics.currentPrice)}</p>
                 <Badge variant={metrics.priceChange24h >= 0 ? "default" : "destructive"}>
                   {metrics.priceChange24h >= 0 ? (
                     <TrendingUp className="h-3 w-3 mr-1" />

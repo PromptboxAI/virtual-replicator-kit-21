@@ -25,6 +25,9 @@ import { usePrivyWallet } from "@/hooks/usePrivyWallet";
 import { FrameworkSDKService, FRAMEWORK_CONFIGS } from "@/lib/frameworkSDK";
 import { useAgentTokenFactory } from "@/hooks/useAgentTokens";
 import { useAccount } from 'wagmi';
+import { getCurrentPrice } from "@/lib/bondingCurve";
+import { useWeb3ContractDeployment } from "@/hooks/useWeb3ContractDeployment";
+import { ContractDeploymentWidget } from "@/components/ContractDeploymentWidget";
 
 
 interface AgentFormData {
@@ -115,6 +118,8 @@ export default function CreateAgent() {
   const { isTestMode: appIsTestMode } = useAppMode();
   const { isAdmin } = useUserRole();
   const { isConnected, promptBalance } = usePrivyWallet();
+  const { createAgentToken } = useAgentTokenFactory();
+  const { deployAll, isDeploying, contractsDeployed, promptTokenAddress, factoryAddress } = useWeb3ContractDeployment();
   const CREATION_COST = 100;
 
   console.log('CreateAgent Debug:', {
@@ -309,6 +314,9 @@ export default function CreateAgent() {
         }
       }
 
+      // Calculate initial bonding curve price
+      const initialPrice = getCurrentPrice(0); // Start at bonding curve beginning
+      
       // Create basic agent/token record in database
       const { data, error } = await supabase
         .from('agents')
@@ -322,9 +330,10 @@ export default function CreateAgent() {
           twitter_url: formData.twitter_url || null,
           avatar_url: finalAvatarUrl,
           total_supply: formData.total_supply,
-          current_price: 0, // Will be set from bonding curve getCurrentPrice(0)
+          current_price: initialPrice, // Use actual bonding curve price
           market_cap: 0, // Will be calculated based on trading
           creation_cost: CREATION_COST,
+          prompt_raised: 0, // Start with 0 PROMPT raised
           is_active: false, // Not active until AI is configured
           creator_id: user.id,
           status: 'PENDING', // Pending AI configuration
@@ -348,6 +357,14 @@ export default function CreateAgent() {
       }
 
       const agentId = data.id;
+
+      // For now, note that smart contract deployment will be handled separately
+      // The agent is created with initial bonding curve pricing
+      toast({
+        title: "Info", 
+        description: `Agent created with initial price: ${initialPrice.toFixed(8)} PROMPT per token`,
+        variant: "default"
+      });
 
       // Initialize agent runtime status for future configuration
       try {
@@ -462,6 +479,11 @@ export default function CreateAgent() {
                 className="w-5 h-5"
               />
             </p>
+          </div>
+
+          {/* Contract Deployment Widget */}
+          <div className="mb-8">
+            <ContractDeploymentWidget />
           </div>
 
           {/* Progress Bar */}
