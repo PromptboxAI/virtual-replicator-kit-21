@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { ConversationalAgentBuilder } from './ConversationalAgentBuilder';
 import { 
   CheckCircle2, 
   Circle, 
@@ -22,7 +23,8 @@ import {
   ArrowRight,
   Lightbulb,
   Rocket,
-  Brain
+  Brain,
+  Wand2
 } from 'lucide-react';
 
 interface UniversalAgentDashboardProps {
@@ -52,6 +54,7 @@ export function UniversalAgentDashboard({ agent, onAgentUpdated }: UniversalAgen
   const [isUpdating, setIsUpdating] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
   const [testMessage, setTestMessage] = useState('');
+  const [builderMode, setBuilderMode] = useState<'form' | 'conversational'>('conversational');
   const [configuration, setConfiguration] = useState<AgentConfiguration>({
     instructions: '',
     personality: 'friendly',
@@ -606,6 +609,15 @@ export function UniversalAgentDashboard({ agent, onAgentUpdated }: UniversalAgen
     }
   };
 
+  const handleAssistantComplete = (assistantId: string) => {
+    toast({
+      title: "Agent Created! 🎉",
+      description: `Your OpenAI Assistant has been created successfully with ID: ${assistantId}`,
+    });
+    refetch();
+    onAgentUpdated?.();
+  };
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -623,6 +635,74 @@ export function UniversalAgentDashboard({ agent, onAgentUpdated }: UniversalAgen
           </div>
         </div>
       </div>
+
+      {/* Builder Mode Toggle */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Choose Building Mode</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Select how you want to build your agent
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div
+              className={`p-4 rounded-lg border cursor-pointer transition-colors ${
+                builderMode === 'conversational' 
+                  ? 'bg-primary/10 border-primary' 
+                  : 'hover:bg-muted/50'
+              }`}
+              onClick={() => setBuilderMode('conversational')}
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+                  <Wand2 className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold">AI-Guided Builder</h3>
+                  <p className="text-sm text-green-600 font-medium">✨ Recommended</p>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Conversational setup with an AI assistant that guides you through the entire process, 
+                identifies required integrations, and helps configure everything step-by-step.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Badge variant="secondary" className="text-xs">Auto Integration Detection</Badge>
+                <Badge variant="secondary" className="text-xs">API Key Setup</Badge>
+                <Badge variant="secondary" className="text-xs">Testing & Validation</Badge>
+              </div>
+            </div>
+
+            <div
+              className={`p-4 rounded-lg border cursor-pointer transition-colors ${
+                builderMode === 'form' 
+                  ? 'bg-primary/10 border-primary' 
+                  : 'hover:bg-muted/50'
+              }`}
+              onClick={() => setBuilderMode('form')}
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-gray-500 to-gray-600 flex items-center justify-center">
+                  <Settings className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold">Manual Form Builder</h3>
+                  <p className="text-sm text-gray-600">Basic Setup</p>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Traditional step-by-step forms to configure your agent. 
+                Good for simple agents but requires manual integration setup.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Badge variant="outline" className="text-xs">Step-by-Step Forms</Badge>
+                <Badge variant="outline" className="text-xs">Manual Setup</Badge>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Progress */}
       <Card>
@@ -669,7 +749,15 @@ export function UniversalAgentDashboard({ agent, onAgentUpdated }: UniversalAgen
       </Card>
 
       {/* Current Step Content */}
-      {renderStepContent()}
+      {builderMode === 'conversational' ? (
+        <ConversationalAgentBuilder
+          agentId={agent.id}
+          agentName={agent.name}
+          onComplete={handleAssistantComplete}
+        />
+      ) : (
+        renderStepContent()
+      )}
     </div>
   );
 }
