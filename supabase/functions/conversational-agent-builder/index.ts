@@ -129,101 +129,57 @@ serve(async (req) => {
       );
     }
 
-    // Simple response for now to test connectivity
-    const responseContent = `I understand you want to build a trading bot with Telegram integration. Let me help you identify the requirements:
+    // Build context for the AI assistant
+    const systemPrompt = buildSystemPrompt(buildingPhase, identifiedIntegrations, configuredIntegrations);
+    
+    const messages = [
+      { role: 'system', content: systemPrompt },
+      ...conversationHistory.slice(-5), // Keep last 5 messages for context
+      { role: 'user', content: message }
+    ];
 
-**Required Integrations:**
-• **Telegram Bot**: For user interaction and notifications
-• **Trading/DEX**: For executing cryptocurrency trades
-• **Price Monitoring**: For tracking market data
+    console.log('Calling OpenAI with messages:', messages.length);
 
-To get started, I'll need:
-1. Telegram Bot Token (from @BotFather)
-2. Trading wallet private key or connection
-3. Preferred DEX/trading platform
-
-Which integration would you like to set up first?`;
-
-    return new Response(
-      JSON.stringify({
-        response: {
-          content: responseContent,
-          metadata: {
-            suggestedIntegrations: ['telegram', 'trading'],
-            currentStep: 'integration_setup'
-          }
-        }
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-
-    // Call OpenAI to analyze the request and provide guidance
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages,
-        temperature: 0.7,
-        max_tokens: 1000,
-        timeout: 10000, // 10 second timeout
-        functions: [
-          {
-            name: 'identify_integrations',
-            description: 'Identify required integrations based on user requirements',
-            parameters: {
-              type: 'object',
-              properties: {
-                integrations: {
-                  type: 'array',
-                  items: { type: 'string' },
-                  description: 'List of required integration keys'
-                },
-                reasoning: { type: 'string', description: 'Why these integrations are needed' }
-              }
-            }
-          },
-          {
-            name: 'request_api_keys',
-            description: 'Request specific API keys from the user',
-            parameters: {
-              type: 'object',
-              properties: {
-                integration: { type: 'string', description: 'Integration name' },
-                apiKeys: {
-                  type: 'array',
-                  items: { type: 'string' },
-                  description: 'Required API keys'
-                },
-                instructions: { type: 'string', description: 'How to obtain these keys' }
-              }
-            }
-          },
-          {
-            name: 'create_assistant',
-            description: 'Create the OpenAI assistant with configured integrations',
-            parameters: {
-              type: 'object',
-              properties: {
-                instructions: { type: 'string', description: 'System instructions for the assistant' },
-                functionalities: {
-                  type: 'array',
-                  items: { type: 'string' },
-                  description: 'List of functionalities'
+    // Call OpenAI with shorter timeout and simpler request
+    const response = await Promise.race([
+      fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages,
+          temperature: 0.7,
+          max_tokens: 500,
+          functions: [
+            {
+              name: 'identify_integrations',
+              description: 'Identify required integrations',
+              parameters: {
+                type: 'object',
+                properties: {
+                  integrations: { type: 'array', items: { type: 'string' } },
+                  reasoning: { type: 'string' }
                 }
               }
             }
-          }
-        ],
-        function_call: 'auto'
-      })
-    });
+          ],
+          function_call: 'auto'
+        })
+      }),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('OpenAI timeout')), 8000)
+      )
+     ]) as Response;
+
+    console.log('OpenAI response status:', response.status);
 
     if (!response.ok) {
-      throw new Error('OpenAI API request failed');
+      const errorText = await response.text();
+      console.error('OpenAI API error:', errorText);
+      throw new Error(`OpenAI API request failed: ${response.status}`);
     }
 
     const aiResponse = await response.json();
