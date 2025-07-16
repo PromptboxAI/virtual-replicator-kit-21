@@ -1,9 +1,5 @@
 import React, { useState } from 'react';
-import { TradingBotBuilder } from './TradingBotBuilder';
-import { DeFiAssistantBuilder } from './DeFiAssistantBuilder';
-import { ContentCreatorBuilder } from './ContentCreatorBuilder';
-import { CommunityManagerBuilder } from './CommunityManagerBuilder';
-import { AnalyticsAgentBuilder } from './AnalyticsAgentBuilder';
+import { UniversalAgentBuilder } from '../UniversalAgentBuilder';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -67,6 +63,12 @@ export function BuilderRouter({ selectedCategory, onBack, onNext }: BuilderRoute
         description: "Build an agent that provides educational content and support",
         features: ["Course creation", "Student engagement", "Progress tracking", "Personalized learning"],
         icon: "📚"
+      },
+      "Custom Agent": {
+        title: "Custom AI Agent",
+        description: "Build a completely custom agent with unlimited possibilities",
+        features: ["Natural language configuration", "Unlimited functionality", "OpenAI Assistants API", "Professional-grade AI"],
+        icon: "🚀"
       }
     };
 
@@ -79,38 +81,8 @@ export function BuilderRouter({ selectedCategory, onBack, onNext }: BuilderRoute
   };
 
   const renderBuilder = () => {
-    const commonProps = {
-      onNext,
-      onBack
-    };
-
-    switch (selectedCategory) {
-      case "Trading Bot":
-        return <TradingBotBuilder {...commonProps} />;
-      case "DeFi Assistant":  
-        return <DeFiAssistantBuilder {...commonProps} />;
-      case "Content Creator":
-        return <ContentCreatorBuilder {...commonProps} />;
-      case "Community Manager":
-        return <CommunityManagerBuilder {...commonProps} />;
-      case "Analytics Agent":
-        return <AnalyticsAgentBuilder {...commonProps} />;
-      default:
-        // For categories not yet implemented, show coming soon
-        return (
-          <div className="text-center py-12">
-            <Bot className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-xl font-semibold mb-2">Coming Soon</h3>
-            <p className="text-muted-foreground mb-6">
-              The {selectedCategory} builder is currently in development.
-            </p>
-            <Button onClick={onBack}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Go Back
-            </Button>
-          </div>
-        );
-    }
+    // Universal builder for all agent types powered by OpenAI Assistants API
+    return <UniversalAgentBuilder onNext={onNext} onBack={onBack} />;
   };
 
   if (showCategoryInfo) {

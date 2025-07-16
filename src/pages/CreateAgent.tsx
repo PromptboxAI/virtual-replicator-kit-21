@@ -148,7 +148,8 @@ export default function CreateAgent() {
     "Analytics Agent",
     "Research Agent",
     "Gaming Agent",
-    "Educational Agent"
+    "Educational Agent",
+    "Custom Agent"
   ];
 
   // Get frameworks from SDK with fallback descriptions
