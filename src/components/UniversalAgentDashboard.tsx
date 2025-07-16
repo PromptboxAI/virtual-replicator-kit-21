@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -71,28 +71,35 @@ export function UniversalAgentDashboard({ agent, onAgentUpdated }: UniversalAgen
         .eq('agent_id', agent.id)
         .single();
       
-      if (error && error.code !== 'PGRST116') throw error;
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching agent config:', error);
+        throw error;
+      }
       return data;
     },
   });
 
   // Initialize configuration from existing data
-  useState(() => {
+  useEffect(() => {
     if (existingConfig?.configuration) {
       const config = existingConfig.configuration as AgentConfiguration;
       setConfiguration(config);
       // Determine which step to show based on completion
       if (config.instructions) {
-        setCurrentStep(2);
         if (config.goals) {
-          setCurrentStep(3);
           if (config.knowledge_base) {
             setCurrentStep(4);
+          } else {
+            setCurrentStep(3);
           }
+        } else {
+          setCurrentStep(2);
         }
+      } else {
+        setCurrentStep(1);
       }
     }
-  });
+  }, [existingConfig]);
 
   const setupSteps = [
     {
@@ -143,6 +150,9 @@ export function UniversalAgentDashboard({ agent, onAgentUpdated }: UniversalAgen
   const handleSaveConfiguration = async () => {
     setIsUpdating(true);
     try {
+      console.log('Saving configuration for agent:', agent.id);
+      console.log('Configuration data:', configuration);
+      
       const { error } = await supabase
         .from('agent_configurations')
         .upsert({
@@ -151,19 +161,52 @@ export function UniversalAgentDashboard({ agent, onAgentUpdated }: UniversalAgen
           configuration: configuration as any
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
 
-      toast({
-        title: "Configuration Saved! 🎉",
-        description: "Your agent configuration has been updated.",
-      });
+      // If this is the first save and we have a complete configuration, create OpenAI Assistant
+      if (!existingConfig && configuration.instructions && configuration.goals && configuration.knowledge_base) {
+        console.log('Creating OpenAI Assistant...');
+        const { error: assistantError } = await supabase.functions.invoke('create-openai-assistant', {
+          body: {
+            agentId: agent.id,
+            name: agent.name,
+            instructions: configuration.instructions,
+            personality: configuration.personality,
+            goals: configuration.goals,
+            knowledge: configuration.knowledge_base
+          }
+        });
+        
+        if (assistantError) {
+          console.error('Assistant creation error:', assistantError);
+          toast({
+            title: "Configuration Saved ✅",
+            description: "Configuration saved but OpenAI Assistant creation failed. You can retry later.",
+            variant: "default"
+          });
+        } else {
+          toast({
+            title: "Agent Created! 🎉",
+            description: "Your OpenAI Assistant has been created and configured successfully.",
+          });
+        }
+      } else {
+        toast({
+          title: "Configuration Saved! 🎉",
+          description: "Your agent configuration has been updated.",
+        });
+      }
 
       refetch();
       onAgentUpdated?.();
     } catch (error: any) {
+      console.error('Full error details:', error);
       toast({
         title: "Save Failed",
-        description: error.message || "Failed to save configuration",
+        description: error.message || "Failed to save configuration. Please check your authentication and try again.",
         variant: "destructive"
       });
     } finally {
@@ -493,24 +536,37 @@ export function UniversalAgentDashboard({ agent, onAgentUpdated }: UniversalAgen
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-sm">Configuration</span>
-                      <CheckCircle2 className="w-5 h-5 text-green-500" />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Knowledge Base</span>
-                      <CheckCircle2 className="w-5 h-5 text-green-500" />
+                      {configuration.instructions ? (
+                        <CheckCircle2 className="w-5 h-5 text-green-500" />
+                      ) : (
+                        <Circle className="w-5 h-5 text-muted-foreground" />
+                      )}
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm">Goals & Personality</span>
-                      <CheckCircle2 className="w-5 h-5 text-green-500" />
+                      {configuration.goals && configuration.personality ? (
+                        <CheckCircle2 className="w-5 h-5 text-green-500" />
+                      ) : (
+                        <Circle className="w-5 h-5 text-muted-foreground" />
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Knowledge Base</span>
+                      {configuration.knowledge_base ? (
+                        <CheckCircle2 className="w-5 h-5 text-green-500" />
+                      ) : (
+                        <Circle className="w-5 h-5 text-muted-foreground" />
+                      )}
                     </div>
                   </div>
                   
                   <Button 
                     className="w-full bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700"
                     size="lg"
+                    disabled={!configuration.instructions || !configuration.goals || !configuration.knowledge_base}
                   >
                     <Rocket className="w-4 h-4 mr-2" />
-                    Launch Agent
+                    {configuration.instructions && configuration.goals && configuration.knowledge_base ? 'Launch Agent' : 'Complete Setup First'}
                   </Button>
                 </CardContent>
               </Card>
