@@ -202,6 +202,15 @@ export function UniversalAgentDashboard({ agent, onAgentUpdated }: UniversalAgen
         });
       }
 
+      // Auto-advance to next step based on what was just completed
+      if (currentStep === 1 && configuration.instructions) {
+        setCurrentStep(2);
+      } else if (currentStep === 2 && configuration.goals && configuration.personality) {
+        setCurrentStep(3);
+      } else if (currentStep === 3 && configuration.knowledge_base) {
+        setCurrentStep(4);
+      }
+
       refetch();
       onAgentUpdated?.();
     } catch (error: any) {
