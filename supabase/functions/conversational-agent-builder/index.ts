@@ -56,56 +56,41 @@ Always maintain conversation context and provide specific help based on what the
     ];
 
     console.log('Calling OpenAI API with conversation context...');
+    console.log('OpenAI API Key exists:', !!openAIApiKey);
+    console.log('Messages to send:', JSON.stringify(messages, null, 2));
 
-    // Call OpenAI API with aggressive timeout and error handling
-    let openAIResponse;
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
-      
-      openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${openAIApiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages,
-          max_tokens: 300, // Reduced to speed up response
-          temperature: 0.5,
-          stream: false
-        }),
-        signal: controller.signal
-      });
-      
-      clearTimeout(timeoutId);
-      
-      if (!openAIResponse.ok) {
-        console.error('OpenAI API error:', openAIResponse.status);
-        throw new Error(`OpenAI API error: ${openAIResponse.status}`);
-      }
-      
-    } catch (error) {
-      console.error('OpenAI call failed:', error);
-      
-      // Fallback to intelligent hardcoded response based on context
-      const fallbackResponse = generateFallbackResponse(message, conversationHistory);
-      
-      return new Response(
-        JSON.stringify({
-          response: {
-            content: fallbackResponse.content,
-            metadata: fallbackResponse.metadata
-          }
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
-      );
+    // Make OpenAI call with detailed logging
+    const startTime = Date.now();
+    
+    const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAIApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages,
+        max_tokens: 300,
+        temperature: 0.7
+      })
+    });
+
+    const responseTime = Date.now() - startTime;
+    console.log(`OpenAI request took ${responseTime}ms`);
+    console.log('OpenAI response status:', openAIResponse.status);
+    console.log('OpenAI response headers:', Object.fromEntries(openAIResponse.headers.entries()));
+
+    if (!openAIResponse.ok) {
+      const errorText = await openAIResponse.text();
+      console.error('OpenAI API error details:', errorText);
+      throw new Error(`OpenAI API error: ${openAIResponse.status} - ${errorText}`);
     }
 
     const openAIResult = await openAIResponse.json();
     console.log('OpenAI response received successfully');
-    
+    console.log('OpenAI result:', JSON.stringify(openAIResult, null, 2));
+
     const aiMessage = openAIResult.choices[0].message.content;
 
     // Detect integrations mentioned in the conversation
@@ -159,51 +144,3 @@ Always maintain conversation context and provide specific help based on what the
     );
   }
 });
-
-function generateFallbackResponse(message: string, conversationHistory: any[]) {
-  const lowerMessage = message.toLowerCase();
-  const lastMessage = conversationHistory.length > 0 ? conversationHistory[conversationHistory.length - 1]?.content?.toLowerCase() || '' : '';
-  
-  // Check if they're asking for telegram bot setup
-  if (lowerMessage.includes('show') || lowerMessage.includes('guide') || lowerMessage.includes('how')) {
-    if (lastMessage.includes('telegram') || lowerMessage.includes('telegram')) {
-      return {
-        content: `Here's exactly how to create a Telegram bot:
-
-**Step-by-Step Telegram Bot Setup:**
-
-1. **Open Telegram** and search for @BotFather
-2. **Start a chat** with @BotFather
-3. **Send /newbot** command
-4. **Choose a name** for your bot (e.g., "My Trading Bot")
-5. **Choose a username** (must end with 'bot', e.g., "mytrading_bot")
-6. **Copy the token** - BotFather will give you a token like: \`123456789:ABCdef123456789...\`
-
-**Important:** Keep this token safe! This is what we'll use to connect your agent.
-
-Do you have your Telegram bot token ready? Paste it here and I'll help you set up the trading functionality next.`,
-        metadata: {
-          suggestedIntegrations: ['telegram'],
-          currentStep: 'integration_setup'
-        }
-      };
-    }
-  }
-  
-  // Default fallback
-  return {
-    content: `I'm here to help you build your AI agent! What specific question do you have about setting up your agent?
-
-If you're building a Telegram trading bot, I can help you with:
-- Getting your Telegram bot token from @BotFather
-- Setting up trading functionality
-- Connecting to DEX APIs
-- Configuring wallet integration
-
-What would you like to work on first?`,
-    metadata: {
-      suggestedIntegrations: [],
-      currentStep: 'discovery'
-    }
-  };
-}
