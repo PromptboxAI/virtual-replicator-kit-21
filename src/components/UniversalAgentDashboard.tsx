@@ -25,7 +25,7 @@ import {
   Brain
 } from 'lucide-react';
 
-interface CustomAgentDashboardProps {
+interface UniversalAgentDashboardProps {
   agent: {
     id: string;
     name: string;
@@ -47,7 +47,7 @@ interface AgentConfiguration {
   [key: string]: any;
 }
 
-export function CustomAgentDashboard({ agent, onAgentUpdated }: CustomAgentDashboardProps) {
+export function UniversalAgentDashboard({ agent, onAgentUpdated }: UniversalAgentDashboardProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
@@ -128,6 +128,18 @@ export function CustomAgentDashboard({ agent, onAgentUpdated }: CustomAgentDashb
   const completedSteps = setupSteps.filter(step => step.completed).length;
   const progressPercentage = (completedSteps / setupSteps.length) * 100;
 
+  const getInstructionsPlaceholder = (category?: string) => {
+    const placeholders = {
+      'Trading Bot': 'You are an AI trading assistant. Your job is to analyze market data, identify trading opportunities, and execute trades based on predefined strategies. You should be knowledgeable about technical analysis, risk management, and maintain a data-driven approach.',
+      'Content Creator': 'You are a content creation specialist. Your job is to generate engaging blog posts, social media content, and marketing materials. You should be creative, understand current trends, and maintain brand consistency.',
+      'Community Manager': 'You are a community manager for a crypto project. Your job is to engage with community members, answer questions, moderate discussions, and foster a positive environment. You should be knowledgeable about the project and maintain a helpful, professional tone.',
+      'DeFi Assistant': 'You are a DeFi protocol assistant. Your job is to help users understand DeFi concepts, navigate protocols, and make informed decisions. You should be knowledgeable about yield farming, liquidity provision, and maintain an educational approach.',
+      'Analytics Agent': 'You are a data analytics specialist. Your job is to analyze data, generate insights, and create reports. You should be analytical, detail-oriented, and able to explain complex data in simple terms.'
+    };
+    
+    return placeholders[category as keyof typeof placeholders] || 'You are an AI assistant. Define your specific role, responsibilities, and how you should interact with users. Be specific about your expertise and communication style.';
+  };
+
   const handleSaveConfiguration = async () => {
     setIsUpdating(true);
     try {
@@ -135,7 +147,7 @@ export function CustomAgentDashboard({ agent, onAgentUpdated }: CustomAgentDashb
         .from('agent_configurations')
         .upsert({
           agent_id: agent.id,
-          category: 'custom',
+          category: agent.category || 'universal',
           configuration: configuration as any
         });
 
@@ -214,7 +226,7 @@ export function CustomAgentDashboard({ agent, onAgentUpdated }: CustomAgentDashb
               </CardHeader>
               <CardContent className="space-y-4">
                 <Textarea
-                  placeholder="Example: You are a social media manager for a crypto project. Your job is to create engaging content, respond to community questions, and help grow our following. You should be knowledgeable about blockchain technology and maintain a professional but friendly tone."
+                  placeholder={getInstructionsPlaceholder(agent.category)}
                   value={configuration.instructions}
                   onChange={(e) => setConfiguration(prev => ({ ...prev, instructions: e.target.value }))}
                   rows={6}
@@ -530,7 +542,7 @@ export function CustomAgentDashboard({ agent, onAgentUpdated }: CustomAgentDashb
           </Avatar>
           <div>
             <h1 className="text-3xl font-bold">{agent.name}</h1>
-            <p className="text-muted-foreground">{agent.symbol} • Custom AI Agent</p>
+            <p className="text-muted-foreground">{agent.symbol} • {agent.category || 'AI Agent'}</p>
           </div>
         </div>
       </div>
