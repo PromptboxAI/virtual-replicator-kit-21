@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { ContractDeployment } from "@/components/ContractDeployment";
 import { AppModeToggle } from "@/components/AppModeToggle";
+import { AdminFaucet } from "@/components/AdminFaucet";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield, Settings, Database } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -75,6 +76,22 @@ const Admin = () => {
           </CardHeader>
           <CardContent>
             <AppModeToggle />
+          </CardContent>
+        </Card>
+
+        {/* Token Faucet */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Database className="h-5 w-5" />
+              Token Management
+            </CardTitle>
+            <CardDescription>
+              Distribute test tokens to user wallets
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <AdminFaucet />
           </CardContent>
         </Card>
 

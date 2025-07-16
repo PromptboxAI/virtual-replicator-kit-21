@@ -3,6 +3,7 @@ import { usePrivy } from '@privy-io/react-auth';
 import { useToast } from '@/hooks/use-toast';
 import { useAppMode } from './useAppMode';
 import { useAuthMethod } from './useAuthMethod';
+import { supabase } from '@/integrations/supabase/client';
 
 export function usePrivyWallet() {
   const { user, authenticated, ready } = usePrivy();
@@ -68,18 +69,23 @@ export function usePrivyWallet() {
       } else {
         // PRODUCTION MODE: Query actual $PROMPT token balance from blockchain
         try {
-          // TODO: Replace with actual token contract query when token is deployed
-          // Until the $PROMPT token contract is deployed, all users will have 0 balance
-          setPromptBalance('0');
+          console.log('Querying real PROMPTTEST token balance for:', address);
           
-          console.log('Wallet address for balance query:', address);
-          console.log('Wallet type:', walletType);
+          // Query the actual $PROMPT token contract balance
+          const { data, error } = await supabase.functions.invoke('query-token-balance', {
+            body: { address }
+          });
           
-          // Future implementation will query the actual $PROMPT token contract here:
-          // const tokenContract = new ethers.Contract(PROMPT_TOKEN_ADDRESS, ERC20_ABI, provider);
-          // const balance = await tokenContract.balanceOf(address);
-          // const formattedBalance = ethers.utils.formatUnits(balance, 18);
-          // setPromptBalance(formattedBalance);
+          if (error) {
+            console.error('Error querying token balance:', error);
+            setPromptBalance('0');
+          } else if (data.success) {
+            setPromptBalance(data.balance);
+            console.log('Real token balance:', data.balance);
+          } else {
+            console.error('Failed to query balance:', data.error);
+            setPromptBalance('0');
+          }
           
         } catch (contractError) {
           console.error('Error querying token contract:', contractError);
@@ -139,18 +145,27 @@ export function usePrivyWallet() {
           description: `[TEST MODE] Successfully sent ${amount} $PROMPT tokens!`,
         });
       } else {
-        // PRODUCTION MODE: Real transaction
+        // PRODUCTION MODE: Real blockchain transaction
         toast({
           title: "Transaction Sent",
           description: `Sending ${amount} $PROMPT tokens...`,
         });
 
-        // TODO: Replace with actual smart contract interaction
-        await new Promise(resolve => setTimeout(resolve, 3000));
+        // Call the real token transfer function
+        const { data, error } = await supabase.functions.invoke('transfer-tokens', {
+          body: {
+            fromAddress: address,
+            toAddress: to,
+            amount: amount
+          }
+        });
 
-        // Update balance after real transaction
-        const newBalance = (currentBalance - amountNum).toString();
-        setPromptBalance(newBalance);
+        if (error || !data.success) {
+          throw new Error(data?.error || error?.message || 'Transaction failed');
+        }
+
+        // Refresh balance after successful transaction
+        await fetchPromptBalance();
 
         toast({
           title: "Transaction Confirmed",

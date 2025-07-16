@@ -13,9 +13,9 @@ export const useContractDeployment = () => {
   const deployPromptTestToken = async () => {
     try {
       setIsDeploying(true);
-      toast.info('Deploying PROMPTTEST token...');
+      toast.info('Deploying real ERC20 PROMPTTEST token...');
 
-      const { data, error } = await supabase.functions.invoke('deploy-prompt-test-token');
+      const { data, error } = await supabase.functions.invoke('deploy-real-erc20-token');
 
       if (error) {
         throw error;
@@ -26,7 +26,7 @@ export const useContractDeployment = () => {
       }
 
       setPromptTokenAddress(data.contractAddress);
-      toast.success(`PROMPTTEST token deployed at: ${data.contractAddress}`);
+      toast.success(`Real PROMPTTEST token deployed at: ${data.contractAddress}`);
       
       return data.contractAddress;
     } catch (error) {
@@ -77,14 +77,13 @@ export const useContractDeployment = () => {
         throw new Error('Please sign in to deploy contracts');
       }
 
-      // Use the existing placeholder contract as our "PROMPTTEST" token
-      // This simple storage contract works and can serve as a test token
-      const promptAddr = "0x62fa50ce04dd11d2be35f1dee04063e63118c727"; // Already deployed
+      // Deploy the real ERC20 PROMPTTEST token
+      const promptAddr = await deployPromptTestToken();
       
       // Use the user's wallet address as treasury if available, otherwise use deployer address
-      const treasuryAddr = address || "0x23d03610584B0f0988A6F9C281a37094D5611388"; // Your deployer address
+      const treasuryAddr = address || "0x23d03610584B0f0988A6F9C281a37094D5611388";
       
-      // Deploy factory with PROMPTTEST address
+      // Deploy factory with the new PROMPTTEST token address
       const factoryAddr = await deployFactory(promptAddr, treasuryAddr);
       
       toast.success('All contracts deployed successfully!');

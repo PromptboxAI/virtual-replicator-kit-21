@@ -11,9 +11,9 @@ export const useAppMode = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // For non-admin users, always use test mode
+    // For non-admin users, always use production mode (real ERC20 tokens)
     if (!isAdmin) {
-      setMode('test');
+      setMode('production');
       setIsLoading(false);
       return;
     }
@@ -22,6 +22,9 @@ export const useAppMode = () => {
     const savedMode = localStorage.getItem('app-mode') as AppMode;
     if (savedMode && (savedMode === 'test' || savedMode === 'production')) {
       setMode(savedMode);
+    } else {
+      // Default admins to production mode
+      setMode('production');
     }
     setIsLoading(false);
   }, [isAdmin]);
