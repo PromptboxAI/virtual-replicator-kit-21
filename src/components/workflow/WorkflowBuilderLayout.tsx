@@ -18,6 +18,14 @@ export function WorkflowBuilderLayout({ agentId, agentName, onComplete }: Workfl
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [lastPublished, setLastPublished] = useState<Date | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [canvasRef, setCanvasRef] = useState<any>(null);
+
+  const handleAddNode = (nodeData: any) => {
+    if (canvasRef && canvasRef.addNode) {
+      canvasRef.addNode(nodeData);
+      setHasUnsavedChanges(true);
+    }
+  };
 
   const handleSave = () => {
     setLastSaved(new Date());
@@ -62,11 +70,13 @@ export function WorkflowBuilderLayout({ agentId, agentName, onComplete }: Workfl
         <WorkflowSidebar 
           activeTab={activeTab}
           onChange={handleChange}
+          onAddNode={handleAddNode}
         />
         
         {/* Canvas Area */}
         <div className="flex-1 flex flex-col">
           <WorkflowCanvas 
+            ref={setCanvasRef}
             agentId={agentId}
             agentName={agentName}
             activeTab={activeTab}

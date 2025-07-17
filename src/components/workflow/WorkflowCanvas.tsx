@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useImperativeHandle, forwardRef } from 'react';
 import {
   ReactFlow,
   addEdge,
@@ -74,6 +74,10 @@ interface WorkflowCanvasProps {
   activeTab: WorkflowTab;
   onComplete?: (workflowId: string) => void;
   onChange: () => void;
+}
+
+export interface WorkflowCanvasRef {
+  addNode: (nodeData: any) => void;
 }
 
 // Enhanced Node Data Interface
@@ -190,6 +194,7 @@ const CustomNode = ({ data, selected, id }: NodeProps) => {
           type="target" 
           position={Position.Left} 
           className="w-3 h-3 border-2 border-background bg-primary opacity-80 hover:opacity-100"
+          isConnectable={true}
         />
       )}
       {nodeData.type !== 'output' && (
@@ -197,6 +202,7 @@ const CustomNode = ({ data, selected, id }: NodeProps) => {
           type="source" 
           position={Position.Right} 
           className="w-3 h-3 border-2 border-background bg-primary opacity-80 hover:opacity-100"
+          isConnectable={true}
         />
       )}
     </div>
@@ -272,7 +278,7 @@ const initialEdges: Edge[] = [
   },
 ];
 
-export function WorkflowCanvas({ agentId, agentName, activeTab, onComplete, onChange }: WorkflowCanvasProps) {
+const WorkflowCanvas = forwardRef<WorkflowCanvasRef, WorkflowCanvasProps>(({ agentId, agentName, activeTab, onComplete, onChange }, ref) => {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
@@ -281,6 +287,21 @@ export function WorkflowCanvas({ agentId, agentName, activeTab, onComplete, onCh
   const [inputValues, setInputValues] = useState<Record<string, string>>({});
   const { toast } = useToast();
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
+
+  // Expose addNode method via ref
+  useImperativeHandle(ref, () => ({
+    addNode: (nodeData: any) => {
+      const newNode: Node = {
+        id: `${nodeData.type}-${Date.now()}`,
+        type: 'custom',
+        position: { x: 100 + Math.random() * 200, y: 100 + Math.random() * 200 }, // Random position
+        data: nodeData,
+      };
+      
+      setNodes((nds) => nds.concat(newNode));
+      onChange();
+    }
+  }));
 
   const onConnect = useCallback(
     (params: Connection) => {
@@ -742,4 +763,6 @@ export function WorkflowCanvas({ agentId, agentName, activeTab, onComplete, onCh
       )}
     </div>
   );
-}
+});
+
+export { WorkflowCanvas };

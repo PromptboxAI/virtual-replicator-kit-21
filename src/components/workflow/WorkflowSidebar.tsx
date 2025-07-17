@@ -39,6 +39,7 @@ import { WorkflowTab } from './WorkflowBuilderLayout';
 interface WorkflowSidebarProps {
   activeTab: WorkflowTab;
   onChange: () => void;
+  onAddNode: (nodeData: any) => void; // Add this prop
 }
 
 // Stack AI style node categories
@@ -141,7 +142,7 @@ const stackAICategories = [
   }
 ];
 
-export function WorkflowSidebar({ activeTab, onChange }: WorkflowSidebarProps) {
+export function WorkflowSidebar({ activeTab, onChange, onAddNode }: WorkflowSidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>(
     Object.fromEntries(stackAICategories.map(cat => [cat.name, cat.expanded]))
@@ -252,7 +253,19 @@ export function WorkflowSidebar({ activeTab, onChange }: WorkflowSidebarProps) {
                           }));
                           e.dataTransfer.effectAllowed = 'move';
                         }}
-                        className="group p-3 rounded-lg border bg-background hover:bg-accent cursor-grab active:cursor-grabbing transition-all duration-200 hover:border-foreground hover:shadow-sm"
+                        onClick={() => {
+                          // Handle click to add
+                          const nodeType = category.name.toLowerCase() === 'llms' ? 'llm' : 
+                                         category.name.toLowerCase() === 'inputs' ? 'input' :
+                                         category.name.toLowerCase() === 'outputs' ? 'output' :
+                                         category.name.toLowerCase();
+                          
+                          onAddNode({
+                            ...node,
+                            type: nodeType,
+                          });
+                        }}
+                        className="group p-3 rounded-lg border bg-background hover:bg-accent cursor-pointer transition-all duration-200 hover:border-foreground hover:shadow-sm"
                       >
                         <div className="flex items-start gap-3">
                           <div className={`w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br from-${node.color}-100 to-${node.color}-200 shadow-sm group-hover:shadow-md transition-shadow`}>
