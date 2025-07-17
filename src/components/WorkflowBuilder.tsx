@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   ReactFlow,
   addEdge,
@@ -13,9 +13,7 @@ import {
   BackgroundVariant,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -29,7 +27,6 @@ import {
   Zap,
   Send,
   Play,
-  Save,
   Plus,
   Settings,
   Trash2,
@@ -40,14 +37,12 @@ import {
   Mail,
   FileText,
   Image,
-  Video,
-  Calculator,
   Clock,
   Filter,
   ShuffleIcon as Shuffle,
   Target,
   CheckCircle,
-  ArrowRight
+  Wand2
 } from 'lucide-react';
 
 interface WorkflowBuilderProps {
@@ -66,10 +61,10 @@ const initialNodes: Node[] = [
   {
     id: 'input-1',
     type: 'input',
-    position: { x: 100, y: 100 },
+    position: { x: 100, y: 200 },
     data: { 
-      label: 'Input',
-      type: 'text',
+      label: 'User Input',
+      type: 'input',
       description: 'User message input',
       icon: MessageSquare,
       color: 'blue'
@@ -78,9 +73,9 @@ const initialNodes: Node[] = [
   {
     id: 'llm-1',
     type: 'default',
-    position: { x: 400, y: 100 },
+    position: { x: 400, y: 200 },
     data: { 
-      label: 'OpenAI',
+      label: 'OpenAI GPT',
       type: 'llm',
       description: 'AI processing node',
       icon: Brain,
@@ -92,13 +87,13 @@ const initialNodes: Node[] = [
   {
     id: 'output-1',
     type: 'output',
-    position: { x: 700, y: 100 },
+    position: { x: 700, y: 200 },
     data: { 
-      label: 'Output',
-      type: 'text',
+      label: 'Response',
+      type: 'output',
       description: 'Response output',
       icon: Send,
-      color: 'green'
+      color: 'emerald'
     },
   },
 ];
@@ -118,19 +113,47 @@ const initialEdges: Edge[] = [
   },
 ];
 
-// Available node types for the sidebar
-const availableNodes = [
-  { type: 'input', label: 'Text Input', icon: MessageSquare, color: 'blue', description: 'Accept text input from users' },
-  { type: 'llm', label: 'OpenAI', icon: Brain, color: 'purple', description: 'AI language model processing' },
-  { type: 'llm', label: 'Claude', icon: Bot, color: 'orange', description: 'Anthropic Claude model' },
-  { type: 'api', label: 'API Call', icon: Globe, color: 'cyan', description: 'Make HTTP requests to external APIs' },
-  { type: 'database', label: 'Database', icon: Database, color: 'green', description: 'Query or store data' },
-  { type: 'code', label: 'Code', icon: Code, color: 'gray', description: 'Execute custom Python code' },
-  { type: 'filter', label: 'Filter', icon: Filter, color: 'yellow', description: 'Filter and transform data' },
-  { type: 'email', label: 'Email', icon: Mail, color: 'red', description: 'Send email notifications' },
-  { type: 'file', label: 'File', icon: FileText, color: 'indigo', description: 'Process files and documents' },
-  { type: 'output', label: 'Text Output', icon: Send, color: 'green', description: 'Display final output' },
+// Node categories for better organization
+const nodeCategories = [
+  {
+    name: 'Input/Output',
+    nodes: [
+      { type: 'input', label: 'Text Input', icon: MessageSquare, color: 'blue', description: 'Accept text input from users' },
+      { type: 'input', label: 'File Input', icon: FileText, color: 'blue', description: 'Upload and process files' },
+      { type: 'input', label: 'Image Input', icon: Image, color: 'blue', description: 'Process image uploads' },
+      { type: 'output', label: 'Text Output', icon: Send, color: 'emerald', description: 'Display final output' },
+      { type: 'output', label: 'Email Output', icon: Mail, color: 'emerald', description: 'Send email notifications' },
+    ]
+  },
+  {
+    name: 'AI Models',
+    nodes: [
+      { type: 'llm', label: 'OpenAI GPT', icon: Brain, color: 'purple', description: 'OpenAI language models' },
+      { type: 'llm', label: 'Claude', icon: Bot, color: 'orange', description: 'Anthropic Claude model' },
+      { type: 'llm', label: 'Gemini', icon: Zap, color: 'indigo', description: 'Google Gemini model' },
+    ]
+  },
+  {
+    name: 'Data & APIs',
+    nodes: [
+      { type: 'api', label: 'HTTP Request', icon: Globe, color: 'cyan', description: 'Make API calls' },
+      { type: 'database', label: 'Database', icon: Database, color: 'green', description: 'Query database' },
+      { type: 'code', label: 'Code Block', icon: Code, color: 'slate', description: 'Execute custom code' },
+    ]
+  },
+  {
+    name: 'Logic & Control',
+    nodes: [
+      { type: 'filter', label: 'Filter', icon: Filter, color: 'yellow', description: 'Filter and transform data' },
+      { type: 'condition', label: 'Condition', icon: Target, color: 'pink', description: 'Conditional logic' },
+      { type: 'loop', label: 'Loop', icon: Shuffle, color: 'teal', description: 'Repeat operations' },
+      { type: 'delay', label: 'Delay', icon: Clock, color: 'amber', description: 'Add time delays' },
+    ]
+  },
 ];
+
+// Flatten for easy access
+const availableNodes = nodeCategories.flatMap(category => category.nodes);
 
 export function WorkflowBuilder({ agentId, agentName, onComplete }: WorkflowBuilderProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
@@ -402,48 +425,69 @@ export function WorkflowBuilder({ agentId, agentName, onComplete }: WorkflowBuil
   };
 
   return (
-    <div className="h-[800px] flex bg-background">
+    <div className="h-[800px] flex bg-background border rounded-lg overflow-hidden">
       {/* Sidebar */}
-      <div className="w-80 border-r bg-card">
+      <div className="w-80 border-r bg-card flex flex-col">
         <div className="p-4 border-b">
-          <h2 className="font-semibold mb-2">Workflow Builder</h2>
+          <h2 className="font-semibold mb-2 flex items-center gap-2">
+            <Wand2 className="w-5 h-5 text-primary" />
+            Workflow Builder
+          </h2>
           <p className="text-sm text-muted-foreground">
-            Drag and drop components to build your AI agent workflow
+            Build powerful AI workflows with visual components
           </p>
         </div>
 
         {/* Node Library */}
-        <div className="p-4 border-b">
-          <h3 className="font-medium mb-3">Components</h3>
-          <div className="space-y-2">
-            {availableNodes.map((nodeTemplate) => {
-              const IconComponent = nodeTemplate.icon;
-              return (
-                <div
-                  key={`${nodeTemplate.type}-${nodeTemplate.label}`}
-                  className="flex items-center gap-3 p-2 rounded-lg border cursor-pointer hover:bg-accent/50 transition-colors"
-                  onClick={() => addNode(nodeTemplate)}
-                >
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center bg-${nodeTemplate.color}-100`}>
-                    <IconComponent className={`w-4 h-4 text-${nodeTemplate.color}-600`} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm">{nodeTemplate.label}</p>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {nodeTemplate.description}
-                    </p>
-                  </div>
-                  <Plus className="w-4 h-4 text-muted-foreground" />
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-4">
+            <h3 className="font-medium mb-3 flex items-center gap-2">
+              <Plus className="w-4 h-4" />
+              Add Components
+            </h3>
+            
+            {nodeCategories.map((category) => (
+              <div key={category.name} className="mb-4">
+                <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+                  {category.name}
+                </h4>
+                <div className="space-y-1">
+                  {category.nodes.map((nodeTemplate) => {
+                    const IconComponent = nodeTemplate.icon;
+                    return (
+                      <div
+                        key={`${nodeTemplate.type}-${nodeTemplate.label}`}
+                        className="flex items-center gap-3 p-3 rounded-lg border border-border/50 cursor-pointer hover:bg-accent/50 hover:border-border transition-all duration-200 group"
+                        onClick={() => addNode(nodeTemplate)}
+                      >
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br from-${nodeTemplate.color}-100 to-${nodeTemplate.color}-200 group-hover:scale-110 transition-transform`}>
+                          <IconComponent className={`w-4 h-4 text-${nodeTemplate.color}-600`} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm text-foreground">{nodeTemplate.label}</p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {nodeTemplate.description}
+                          </p>
+                        </div>
+                        <Plus className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                      </div>
+                    );
+                  })}
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         </div>
 
         {/* Node Configuration */}
-        <div className="p-4 flex-1">
-          <h3 className="font-medium mb-3">Configuration</h3>
-          {renderNodeConfig()}
+        <div className="border-t p-4">
+          <h3 className="font-medium mb-3 flex items-center gap-2">
+            <Settings className="w-4 h-4" />
+            Configuration
+          </h3>
+          <div className="max-h-64 overflow-y-auto">
+            {renderNodeConfig()}
+          </div>
         </div>
 
         {/* Actions */}
@@ -452,16 +496,17 @@ export function WorkflowBuilder({ agentId, agentName, onComplete }: WorkflowBuil
             onClick={saveWorkflow}
             disabled={isSaving}
             className="w-full"
+            size="lg"
           >
             {isSaving ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Saving...
+                Saving Workflow...
               </>
             ) : (
               <>
-                <Save className="w-4 h-4 mr-2" />
-                Save Workflow
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Deploy Agent
               </>
             )}
           </Button>
@@ -469,14 +514,19 @@ export function WorkflowBuilder({ agentId, agentName, onComplete }: WorkflowBuil
       </div>
 
       {/* Main Canvas */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col bg-gradient-to-br from-background to-muted/20">
         {/* Toolbar */}
-        <div className="p-4 border-b bg-card">
+        <div className="p-4 border-b bg-card/80 backdrop-blur">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="font-semibold">{agentName} Workflow</h1>
+              <h1 className="font-semibold text-lg flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-primary to-primary/80 flex items-center justify-center">
+                  <Bot className="w-4 h-4 text-primary-foreground" />
+                </div>
+                {agentName}
+              </h1>
               <p className="text-sm text-muted-foreground">
-                {nodes.length} nodes, {edges.length} connections
+                {nodes.length} components • {edges.length} connections
               </p>
             </div>
             <div className="flex gap-2">
@@ -484,6 +534,7 @@ export function WorkflowBuilder({ agentId, agentName, onComplete }: WorkflowBuil
                 onClick={testWorkflow}
                 disabled={isTesting}
                 variant="outline"
+                size="lg"
               >
                 {isTesting ? (
                   <>
@@ -501,8 +552,8 @@ export function WorkflowBuilder({ agentId, agentName, onComplete }: WorkflowBuil
           </div>
         </div>
 
-        {/* ReactFlow Canvas */}
-        <div className="flex-1">
+        {/* React Flow Canvas */}
+        <div className="flex-1 relative">
           <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -510,48 +561,102 @@ export function WorkflowBuilder({ agentId, agentName, onComplete }: WorkflowBuil
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
             onNodeClick={(_, node) => setSelectedNode(node)}
-            onPaneClick={() => setSelectedNode(null)}
+            nodeTypes={nodeTypes}
             fitView
-            attributionPosition="bottom-left"
+            className="bg-transparent"
+            defaultViewport={{ x: 0, y: 0, zoom: 0.8 }}
           >
-            <Controls />
-            <MiniMap />
-            <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
+            <Background 
+              variant={BackgroundVariant.Dots} 
+              gap={24} 
+              size={1}
+              className="opacity-30"
+              color="hsl(var(--muted-foreground))"
+            />
+            <Controls 
+              className="bg-card/90 backdrop-blur border border-border shadow-lg rounded-lg" 
+              showInteractive={false}
+            />
+            <MiniMap 
+              className="bg-card/90 backdrop-blur border border-border shadow-lg rounded-lg" 
+              nodeColor={(node) => {
+                const color = node.data.color as string;
+                const colorMap: Record<string, string> = {
+                  blue: '#3b82f6',
+                  purple: '#8b5cf6',
+                  emerald: '#10b981',
+                  orange: '#f97316',
+                  cyan: '#06b6d4',
+                  green: '#22c55e',
+                  slate: '#64748b',
+                  yellow: '#eab308',
+                  pink: '#ec4899',
+                  teal: '#14b8a6',
+                  amber: '#f59e0b',
+                  indigo: '#6366f1'
+                };
+                return colorMap[color] || '#64748b';
+              }}
+              nodeStrokeWidth={2}
+              maskColor="rgba(0,0,0,0.1)"
+            />
           </ReactFlow>
         </div>
 
         {/* Test Panel */}
-        {(testInput || testOutput || isTesting) && (
-          <div className="border-t bg-card p-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="test-input">Test Input</Label>
-                <Textarea
+        <div className="border-t bg-card/80 backdrop-blur p-4">
+          <div className="grid grid-cols-2 gap-6">
+            <div>
+              <Label htmlFor="test-input" className="text-sm font-medium mb-2 block">
+                💬 Test Input
+              </Label>
+              <div className="flex gap-2">
+                <Input
                   id="test-input"
+                  placeholder="Enter a test message to see how your agent responds..."
                   value={testInput}
                   onChange={(e) => setTestInput(e.target.value)}
-                  placeholder="Enter test message..."
-                  rows={3}
+                  className="flex-1"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey && testInput.trim()) {
+                      e.preventDefault();
+                      testWorkflow();
+                    }
+                  }}
                 />
-              </div>
-              <div>
-                <Label>Test Output</Label>
-                <div className="mt-1 p-3 bg-muted rounded-md min-h-[76px] text-sm">
+                <Button
+                  onClick={testWorkflow}
+                  disabled={isTesting || !testInput.trim()}
+                  size="default"
+                  className="min-w-[80px]"
+                >
                   {isTesting ? (
-                    <div className="flex items-center gap-2">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Testing workflow...
-                    </div>
-                  ) : testOutput ? (
-                    <pre className="whitespace-pre-wrap">{testOutput}</pre>
+                    <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    <span className="text-muted-foreground">Test output will appear here...</span>
+                    <>
+                      <Send className="w-4 h-4 mr-2" />
+                      Test
+                    </>
                   )}
-                </div>
+                </Button>
+              </div>
+            </div>
+            <div>
+              <Label className="text-sm font-medium mb-2 block">
+                🤖 Agent Response
+              </Label>
+              <div className="p-3 border rounded-lg bg-muted/30 min-h-[40px] text-sm overflow-y-auto max-h-24">
+                {testOutput ? (
+                  <div className="whitespace-pre-wrap">{testOutput}</div>
+                ) : (
+                  <div className="text-muted-foreground italic">
+                    Test your workflow to see how your agent responds...
+                  </div>
+                )}
               </div>
             </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
