@@ -78,6 +78,19 @@ const stackAICategories = [
     ]
   },
   {
+    name: 'Integrations',
+    icon: Globe,
+    expanded: false,
+    nodes: [
+      { label: 'Gmail', icon: 'Mail', color: 'red', description: 'Send emails via Gmail' },
+      { label: 'Google Sheets', icon: 'FileSpreadsheet', color: 'green', description: 'Read/write spreadsheets' },
+      { label: 'Slack', icon: 'MessageSquare', color: 'purple', description: 'Send Slack messages' },
+      { label: 'Twitter/X', icon: 'MessageSquare', color: 'blue', description: 'Post to Twitter/X' },
+      { label: 'Discord', icon: 'MessageSquare', color: 'indigo', description: 'Send Discord messages' },
+      { label: 'Zapier', icon: 'Zap', color: 'orange', description: 'Trigger Zapier workflows' }
+    ]
+  },
+  {
     name: 'Actions',
     icon: Zap,
     expanded: false,

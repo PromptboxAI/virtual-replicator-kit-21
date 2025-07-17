@@ -122,6 +122,10 @@ interface NodeData {
   // File specific
   fileTypes?: string[];
   maxSize?: number;
+  
+  // Integration specific
+  toEmail?: string;
+  webhookUrl?: string;
 }
 
 // Custom Node Components
@@ -196,7 +200,7 @@ const CustomNode = ({ data, selected, id }: NodeProps) => {
         <Handle 
           type="target" 
           position={Position.Left} 
-          className="w-3 h-3 border-2 border-background bg-primary opacity-80 hover:opacity-100"
+          className="w-3 h-3 border-2 border-background bg-primary opacity-80 hover:opacity-100 transition-opacity"
           isConnectable={true}
         />
       )}
@@ -204,7 +208,7 @@ const CustomNode = ({ data, selected, id }: NodeProps) => {
         <Handle 
           type="source" 
           position={Position.Right} 
-          className="w-3 h-3 border-2 border-background bg-primary opacity-80 hover:opacity-100"
+          className="w-3 h-3 border-2 border-background bg-primary opacity-80 hover:opacity-100 transition-opacity"
           isConnectable={true}
         />
       )}
@@ -438,20 +442,22 @@ const WorkflowCanvas = forwardRef<WorkflowCanvasRef, WorkflowCanvasProps>(({ age
       // Execute workflow step by step
       const results: Record<string, any> = {};
       
-      // Step 1: Process input nodes
+      // Step 1: Process input nodes - collect values during execution
       for (const inputNode of inputNodes) {
         const inputData = inputNode.data as unknown as NodeData;
-        const userInput = inputValues[inputNode.id] || "What color is the sky?"; // Default for demo
-        results[inputNode.id] = userInput;
         
         // Update node to show it's processing
         updateNodeData(inputNode.id, { ...inputData, status: 'processing' });
-      }
-
-      // Mark input nodes as completed after collecting their values
-      for (const inputNode of inputNodes) {
-        const inputData = inputNode.data as unknown as NodeData;
-        updateNodeData(inputNode.id, { ...inputData, status: 'completed' });
+        
+        // For demo purposes, prompt for input or use default
+        const userInput = prompt(`Enter value for ${inputData.label || 'input'}:`) || 
+                         inputData.description || 
+                         "Default input value";
+        
+        results[inputNode.id] = userInput;
+        
+        // Mark as completed
+        updateNodeData(inputNode.id, { ...inputData, status: 'completed', result: userInput });
       }
 
       // Step 2: Process LLM nodes that are connected to input nodes
@@ -714,17 +720,54 @@ const WorkflowCanvas = forwardRef<WorkflowCanvasRef, WorkflowCanvasProps>(({ age
                 <div className="space-y-4">
                   <h4 className="font-medium text-sm">Input Configuration</h4>
                   
-                  <div>
-                    <Label htmlFor="input-value">Input Value</Label>
-                    <Textarea
-                      id="input-value"
-                      value={inputValues[selectedNode.id] || ''}
-                      onChange={(e) => setInputValues(prev => ({ ...prev, [selectedNode.id]: e.target.value }))}
-                      onFocus={(e) => e.target.select()}
-                      placeholder="Enter your input text..."
-                      rows={3}
-                    />
+                  <div className="p-4 bg-muted/50 rounded-lg border">
+                    <div className="text-sm text-muted-foreground mb-2">
+                      <span className="font-medium">Note:</span> Input values are collected when the workflow runs
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      This node will prompt for input during execution. Use the description field above to specify what input is expected.
+                    </div>
                   </div>
+                </div>
+              )}
+
+              {/* Integration Node Configuration */}
+              {['Gmail', 'Google Sheets', 'Slack', 'Twitter/X', 'Discord', 'Zapier'].includes((selectedNode.data as unknown as NodeData).label) && (
+                <div className="space-y-4">
+                  <h4 className="font-medium text-sm">Integration Configuration</h4>
+                  
+                  <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <div className="text-sm text-blue-700 dark:text-blue-300 mb-2">
+                      <span className="font-medium">Integration Required:</span> {(selectedNode.data as unknown as NodeData).label}
+                    </div>
+                    <div className="text-xs text-blue-600 dark:text-blue-400">
+                      This integration requires authentication setup. Configure your API keys or OAuth settings to use this node.
+                    </div>
+                  </div>
+                  
+                  {(selectedNode.data as unknown as NodeData).label === 'Gmail' && (
+                    <div>
+                      <Label htmlFor="gmail-to">To Email</Label>
+                      <Input
+                        id="gmail-to"
+                        value={(selectedNode.data as unknown as NodeData).toEmail || ''}
+                        onChange={(e) => updateNodeData(selectedNode.id, { toEmail: e.target.value })}
+                        placeholder="recipient@example.com"
+                      />
+                    </div>
+                  )}
+                  
+                  {(selectedNode.data as unknown as NodeData).label === 'Zapier' && (
+                    <div>
+                      <Label htmlFor="zapier-webhook">Webhook URL</Label>
+                      <Input
+                        id="zapier-webhook"
+                        value={(selectedNode.data as unknown as NodeData).webhookUrl || ''}
+                        onChange={(e) => updateNodeData(selectedNode.id, { webhookUrl: e.target.value })}
+                        placeholder="https://hooks.zapier.com/hooks/catch/..."
+                      />
+                    </div>
+                  )}
                 </div>
               )}
 

@@ -41,17 +41,29 @@ export function WorkflowTopNav({
         </div>
         
         <Tabs value={activeTab} onValueChange={(value) => onTabChange(value as WorkflowTab)}>
-          <TabsList className="h-10">
-            <TabsTrigger value="workflow" className="px-4">
+          <TabsList className="h-10 bg-transparent border">
+            <TabsTrigger 
+              value="workflow" 
+              className="px-4 data-[state=active]:bg-transparent data-[state=active]:border-foreground data-[state=active]:border-b-2 data-[state=active]:rounded-none rounded-none border-b-2 border-transparent"
+            >
               Workflow
             </TabsTrigger>
-            <TabsTrigger value="export" className="px-4">
+            <TabsTrigger 
+              value="export" 
+              className="px-4 data-[state=active]:bg-transparent data-[state=active]:border-foreground data-[state=active]:border-b-2 data-[state=active]:rounded-none rounded-none border-b-2 border-transparent"
+            >
               Export
             </TabsTrigger>
-            <TabsTrigger value="analytics" className="px-4">
+            <TabsTrigger 
+              value="analytics" 
+              className="px-4 data-[state=active]:bg-transparent data-[state=active]:border-foreground data-[state=active]:border-b-2 data-[state=active]:rounded-none rounded-none border-b-2 border-transparent"
+            >
               Analytics
             </TabsTrigger>
-            <TabsTrigger value="manager" className="px-4">
+            <TabsTrigger 
+              value="manager" 
+              className="px-4 data-[state=active]:bg-transparent data-[state=active]:border-foreground data-[state=active]:border-b-2 data-[state=active]:rounded-none rounded-none border-b-2 border-transparent"
+            >
               Manager
             </TabsTrigger>
           </TabsList>
