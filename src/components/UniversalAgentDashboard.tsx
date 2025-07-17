@@ -24,8 +24,13 @@ import {
   Lightbulb,
   Rocket,
   Brain,
-  Wand2
+  Wand2,
+  Zap,
+  Send,
+  Eye
 } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface UniversalAgentDashboardProps {
   agent: {
@@ -46,6 +51,9 @@ interface AgentConfiguration {
   goals?: string;
   tools?: string[];
   knowledge_base?: string;
+  model?: string;
+  assistantId?: string;
+  apiKeys?: Record<string, string>;
   [key: string]: any;
 }
 
@@ -54,13 +62,16 @@ export function UniversalAgentDashboard({ agent, onAgentUpdated }: UniversalAgen
   const [isUpdating, setIsUpdating] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
   const [testMessage, setTestMessage] = useState('');
+  const [testResponse, setTestResponse] = useState('');
   const [builderMode, setBuilderMode] = useState<'form' | 'conversational'>('conversational');
   const [configuration, setConfiguration] = useState<AgentConfiguration>({
     instructions: '',
     personality: 'friendly',
     goals: '',
     tools: [],
-    knowledge_base: ''
+    knowledge_base: '',
+    model: 'gpt-4o-mini',
+    apiKeys: {}
   });
   const { toast } = useToast();
 
@@ -107,31 +118,31 @@ export function UniversalAgentDashboard({ agent, onAgentUpdated }: UniversalAgen
   const setupSteps = [
     {
       id: 1,
-      title: "Define Your Agent",
-      description: "Tell your AI what it should do and how it should behave",
+      title: "Define Your AI Agent",
+      description: "Set core instructions, model selection, and basic configuration",
       icon: Brain,
-      completed: !!configuration.instructions
+      completed: !!configuration.instructions && !!configuration.model
     },
     {
       id: 2,
-      title: "Set Goals & Personality", 
-      description: "Give your agent specific objectives and a unique personality",
+      title: "Instructions & Behavior", 
+      description: "Define personality, goals, and how your agent should interact",
       icon: Sparkles,
       completed: !!configuration.goals && !!configuration.personality
     },
     {
       id: 3,
-      title: "Add Knowledge",
-      description: "Provide context and information your agent needs to know",
+      title: "Tools & Capabilities",
+      description: "Select tools and configure API keys for your agent's capabilities",
       icon: Lightbulb,
-      completed: !!configuration.knowledge_base
+      completed: !!configuration.tools && configuration.tools.length > 0
     },
     {
       id: 4,
-      title: "Test & Launch",
-      description: "Try out your agent and activate it for autonomous operation",
+      title: "Deploy & Test",
+      description: "Create your OpenAI Assistant and test it before going live",
       icon: Rocket,
-      completed: agent.is_active
+      completed: !!configuration.assistantId
     }
   ];
 
@@ -242,21 +253,29 @@ export function UniversalAgentDashboard({ agent, onAgentUpdated }: UniversalAgen
     if (!testMessage.trim()) return;
     
     setIsTesting(true);
+    setTestResponse('');
+    
     try {
-      const { data, error } = await supabase.functions.invoke('agent-runtime', {
-        body: {
-          action: 'test_message',
-          agentId: agent.id,
-          message: testMessage
-        }
-      });
+      // If assistant already exists, test with OpenAI directly
+      if (configuration.assistantId) {
+        const { data, error } = await supabase.functions.invoke('test-assistant', {
+          body: {
+            assistantId: configuration.assistantId,
+            message: testMessage
+          }
+        });
 
-      if (error) throw error;
-
-      toast({
-        title: "Test Successful! 🤖",
-        description: "Your agent responded correctly. Ready for launch!",
-      });
+        if (error) throw error;
+        
+        setTestResponse(data.response || "Agent responded successfully!");
+        toast({
+          title: "Test Successful! 🤖",
+          description: "Your agent is working correctly!",
+        });
+      } else {
+        // Create assistant first, then test
+        await createAssistant();
+      }
     } catch (error: any) {
       toast({
         title: "Test Failed",
@@ -265,7 +284,56 @@ export function UniversalAgentDashboard({ agent, onAgentUpdated }: UniversalAgen
       });
     } finally {
       setIsTesting(false);
-      setTestMessage('');
+    }
+  };
+
+  const createAssistant = async () => {
+    try {
+      console.log('Creating OpenAI Assistant...');
+        const { data: assistantData, error: assistantError } = await supabase.functions.invoke('create-openai-assistant', {
+          body: {
+            agentId: agent.id,
+            name: agent.name,
+            description: configuration.instructions,
+            purpose: configuration.goals,
+            functionalities: configuration.tools || [],
+            customInstructions: configuration.knowledge_base,
+            category: agent.category || 'AI Agent',
+            model: configuration.model || 'gpt-4o-mini',
+            personality: configuration.personality || 'friendly',
+            apiKeys: configuration.apiKeys || {}
+          }
+        });
+      
+      if (assistantError) {
+        console.error('Assistant creation error:', assistantError);
+        throw assistantError;
+      }
+
+      console.log('Assistant created successfully:', assistantData);
+      
+      // Update configuration with assistant ID
+      setConfiguration(prev => ({ ...prev, assistantId: assistantData.assistant_id }));
+      
+      // Save updated configuration
+      await supabase
+        .from('agent_configurations')
+        .upsert({
+          agent_id: agent.id,
+          category: agent.category || 'universal',
+          configuration: { ...configuration, assistantId: assistantData.assistant_id } as any
+        });
+      
+      toast({
+        title: "Agent Created! 🎉",
+        description: `Your OpenAI Assistant has been created successfully. ID: ${assistantData.assistant_id}`,
+      });
+
+      refetch();
+      return assistantData.assistant_id;
+    } catch (error: any) {
+      console.error('Assistant creation failed:', error);
+      throw error;
     }
   };
 
@@ -299,11 +367,29 @@ export function UniversalAgentDashboard({ agent, onAgentUpdated }: UniversalAgen
                   rows={6}
                   className="resize-none"
                 />
+
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="model">AI Model</Label>
+                    <Select
+                      value={configuration.model}
+                      onValueChange={(value) => setConfiguration(prev => ({ ...prev, model: value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select AI Model" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="gpt-4o-mini">GPT-4o Mini (Fast & Cost-effective)</SelectItem>
+                        <SelectItem value="gpt-4o">GPT-4o (Advanced reasoning)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
                 
                 <div className="flex gap-3">
                   <Button 
                     onClick={handleSaveConfiguration}
-                    disabled={!configuration.instructions || isUpdating}
+                    disabled={!configuration.instructions || !configuration.model || isUpdating}
                     className="flex-1"
                   >
                     {isUpdating ? (
@@ -431,64 +517,233 @@ export function UniversalAgentDashboard({ agent, onAgentUpdated }: UniversalAgen
           <div className="space-y-6">
             <div className="text-center space-y-4">
               <div className="w-16 h-16 mx-auto bg-gradient-to-r from-green-500 to-blue-600 rounded-full flex items-center justify-center">
-                <Lightbulb className="w-8 h-8 text-white" />
+                <Zap className="w-8 h-8 text-white" />
               </div>
-              <h2 className="text-2xl font-bold">Add Knowledge</h2>
+              <h2 className="text-2xl font-bold">Tools & Capabilities</h2>
               <p className="text-muted-foreground max-w-md mx-auto">
-                Provide your agent with specific information, facts, and context it needs to operate effectively.
+                Select the tools your agent will use and configure the necessary API keys for each capability.
               </p>
             </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Knowledge Base</CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  Include important information, guidelines, FAQs, or any specific knowledge your agent needs.
-                </p>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Textarea
-                  placeholder="Example: Our token launched on January 2024 with a total supply of 1B tokens. Main features include: staking rewards (12% APY), governance voting, exclusive NFT drops. Community guidelines: be respectful, no spam, help newcomers. Key partnerships: DeFiPlatform, CryptoExchange. Roadmap: Q2 - Mobile app, Q3 - Cross-chain bridge."
-                  value={configuration.knowledge_base}
-                  onChange={(e) => setConfiguration(prev => ({ ...prev, knowledge_base: e.target.value }))}
-                  rows={8}
-                  className="resize-none"
-                />
+            <div className="grid gap-6">
+              {/* Available Tools */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Available Tools</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Choose which capabilities your agent should have. You can select multiple tools.
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    {/* Communication Tools */}
+                    <div>
+                      <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wide mb-3">Communication</h4>
+                      <div className="grid gap-3">
+                        {[
+                          { id: 'telegram_messaging', name: 'Telegram Messaging', desc: 'Send and receive messages via Telegram' },
+                          { id: 'discord_messaging', name: 'Discord Messaging', desc: 'Interact in Discord servers' },
+                          { id: 'email_communication', name: 'Email Communication', desc: 'Send automated emails' }
+                        ].map((tool) => (
+                          <div key={tool.id} className="flex items-start space-x-3 p-3 border rounded-lg">
+                            <Checkbox
+                              id={tool.id}
+                              checked={configuration.tools?.includes(tool.id)}
+                              onCheckedChange={(checked) => {
+                                const newTools = checked 
+                                  ? [...(configuration.tools || []), tool.id]
+                                  : (configuration.tools || []).filter(t => t !== tool.id);
+                                setConfiguration(prev => ({ ...prev, tools: newTools }));
+                              }}
+                            />
+                            <div className="flex-1">
+                              <Label htmlFor={tool.id} className="text-sm font-medium cursor-pointer">
+                                {tool.name}
+                              </Label>
+                              <p className="text-xs text-muted-foreground mt-1">{tool.desc}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
 
-                <div className="flex gap-3">
-                  <Button variant="outline" onClick={() => setCurrentStep(2)}>
-                    Back
-                  </Button>
-                  <Button 
-                    onClick={handleSaveConfiguration}
-                    disabled={!configuration.knowledge_base || isUpdating}
-                    className="flex-1"
-                  >
-                    {isUpdating ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        Save & Continue
-                        <ArrowRight className="w-4 h-4 ml-2" />
-                      </>
+                    {/* Content Creation Tools */}
+                    <div>
+                      <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wide mb-3">Content Creation</h4>
+                      <div className="grid gap-3">
+                        {[
+                          { id: 'social_media_posting', name: 'Social Media Posting', desc: 'Create and post social content' },
+                          { id: 'blog_writing', name: 'Blog Writing', desc: 'Generate blog posts and articles' },
+                          { id: 'newsletter_creation', name: 'Newsletter Creation', desc: 'Create email newsletters' }
+                        ].map((tool) => (
+                          <div key={tool.id} className="flex items-start space-x-3 p-3 border rounded-lg">
+                            <Checkbox
+                              id={tool.id}
+                              checked={configuration.tools?.includes(tool.id)}
+                              onCheckedChange={(checked) => {
+                                const newTools = checked 
+                                  ? [...(configuration.tools || []), tool.id]
+                                  : (configuration.tools || []).filter(t => t !== tool.id);
+                                setConfiguration(prev => ({ ...prev, tools: newTools }));
+                              }}
+                            />
+                            <div className="flex-1">
+                              <Label htmlFor={tool.id} className="text-sm font-medium cursor-pointer">
+                                {tool.name}
+                              </Label>
+                              <p className="text-xs text-muted-foreground mt-1">{tool.desc}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Trading Tools */}
+                    <div>
+                      <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wide mb-3">Trading & DeFi</h4>
+                      <div className="grid gap-3">
+                        {[
+                          { id: 'crypto_trading', name: 'Crypto Trading', desc: 'Execute trades on DEX platforms' },
+                          { id: 'price_monitoring', name: 'Price Monitoring', desc: 'Track cryptocurrency prices' },
+                          { id: 'defi_analysis', name: 'DeFi Protocol Analysis', desc: 'Analyze DeFi protocols and opportunities' }
+                        ].map((tool) => (
+                          <div key={tool.id} className="flex items-start space-x-3 p-3 border rounded-lg">
+                            <Checkbox
+                              id={tool.id}
+                              checked={configuration.tools?.includes(tool.id)}
+                              onCheckedChange={(checked) => {
+                                const newTools = checked 
+                                  ? [...(configuration.tools || []), tool.id]
+                                  : (configuration.tools || []).filter(t => t !== tool.id);
+                                setConfiguration(prev => ({ ...prev, tools: newTools }));
+                              }}
+                            />
+                            <div className="flex-1">
+                              <Label htmlFor={tool.id} className="text-sm font-medium cursor-pointer">
+                                {tool.name}
+                              </Label>
+                              <p className="text-xs text-muted-foreground mt-1">{tool.desc}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* API Key Configuration */}
+              {configuration.tools && configuration.tools.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>API Key Configuration</CardTitle>
+                    <p className="text-sm text-muted-foreground">
+                      Configure API keys for the selected tools. These are securely encrypted and stored.
+                    </p>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {configuration.tools?.includes('telegram_messaging') && (
+                      <div>
+                        <Label htmlFor="telegram-token">Telegram Bot Token</Label>
+                        <Input
+                          id="telegram-token"
+                          type="password"
+                          value={configuration.apiKeys?.TELEGRAM_BOT_TOKEN || ''}
+                          onChange={(e) => setConfiguration(prev => ({ 
+                            ...prev, 
+                            apiKeys: { ...prev.apiKeys, TELEGRAM_BOT_TOKEN: e.target.value }
+                          }))}
+                          placeholder="Enter your Telegram bot token from @BotFather"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Create a bot with @BotFather on Telegram to get this token
+                        </p>
+                      </div>
                     )}
-                  </Button>
-                </div>
 
-                <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
-                  <h4 className="font-semibold text-green-900 dark:text-green-100 mb-2">💡 Knowledge Tips:</h4>
-                  <ul className="text-sm text-green-800 dark:text-green-200 space-y-1">
-                    <li>• Include key facts about your project/business</li>
-                    <li>• Add frequently asked questions and answers</li>
-                    <li>• Provide guidelines for interactions</li>
-                    <li>• Include relevant links, dates, and numbers</li>
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
+                    {configuration.tools?.includes('discord_messaging') && (
+                      <div>
+                        <Label htmlFor="discord-token">Discord Bot Token</Label>
+                        <Input
+                          id="discord-token"
+                          type="password"
+                          value={configuration.apiKeys?.DISCORD_BOT_TOKEN || ''}
+                          onChange={(e) => setConfiguration(prev => ({ 
+                            ...prev, 
+                            apiKeys: { ...prev.apiKeys, DISCORD_BOT_TOKEN: e.target.value }
+                          }))}
+                          placeholder="Enter your Discord bot token"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Create a bot in Discord Developer Portal to get this token
+                        </p>
+                      </div>
+                    )}
+
+                    {configuration.tools?.includes('email_communication') && (
+                      <div className="space-y-2">
+                        <Label htmlFor="sendgrid-key">SendGrid API Key</Label>
+                        <Input
+                          id="sendgrid-key"
+                          type="password"
+                          value={configuration.apiKeys?.SENDGRID_API_KEY || ''}
+                          onChange={(e) => setConfiguration(prev => ({ 
+                            ...prev, 
+                            apiKeys: { ...prev.apiKeys, SENDGRID_API_KEY: e.target.value }
+                          }))}
+                          placeholder="Enter your SendGrid API key"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Get this from SendGrid dashboard for email functionality
+                        </p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Knowledge Base */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Knowledge Base</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Add specific knowledge, facts, and context your agent needs to know.
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <Textarea
+                    placeholder="Example: Our token launched on January 2024 with a total supply of 1B tokens. Main features include: staking rewards (12% APY), governance voting, exclusive NFT drops. Community guidelines: be respectful, no spam, help newcomers."
+                    value={configuration.knowledge_base}
+                    onChange={(e) => setConfiguration(prev => ({ ...prev, knowledge_base: e.target.value }))}
+                    rows={6}
+                    className="resize-none"
+                  />
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={() => setCurrentStep(2)}>
+                Back
+              </Button>
+              <Button 
+                onClick={handleSaveConfiguration}
+                disabled={!configuration.tools || configuration.tools.length === 0 || isUpdating}
+                className="flex-1"
+              >
+                {isUpdating ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    Save & Continue
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         );
 
@@ -499,101 +754,185 @@ export function UniversalAgentDashboard({ agent, onAgentUpdated }: UniversalAgen
               <div className="w-16 h-16 mx-auto bg-gradient-to-r from-orange-500 to-red-600 rounded-full flex items-center justify-center">
                 <Rocket className="w-8 h-8 text-white" />
               </div>
-              <h2 className="text-2xl font-bold">Test & Launch</h2>
+              <h2 className="text-2xl font-bold">Deploy & Test</h2>
               <p className="text-muted-foreground max-w-md mx-auto">
-                Test your agent to make sure it works as expected, then launch it for autonomous operation.
+                Create your OpenAI Assistant and test it to ensure it works correctly before going live.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6">
+              {/* Configuration Summary */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MessageSquare className="w-5 h-5" />
-                    Test Your Agent
-                  </CardTitle>
+                  <CardTitle>Configuration Summary</CardTitle>
                   <p className="text-sm text-muted-foreground">
-                    Send a test message to see how your agent responds
+                    Review your agent configuration before deployment
                   </p>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Label>Test Message</Label>
-                    <Textarea
-                      placeholder="Ask your agent something related to its role..."
-                      value={testMessage}
-                      onChange={(e) => setTestMessage(e.target.value)}
-                      rows={3}
-                    />
-                  </div>
-                  <Button 
-                    onClick={handleTestAgent}
-                    disabled={!testMessage.trim() || isTesting}
-                    className="w-full"
-                  >
-                    {isTesting ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Testing...
-                      </>
-                    ) : (
-                      <>
-                        <Play className="w-4 h-4 mr-2" />
-                        Test Agent
-                      </>
+                <CardContent>
+                  <div className="grid gap-4 text-sm">
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">Agent Name:</span>
+                      <span className="font-medium">{agent.name}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">AI Model:</span>
+                      <span className="font-medium">{configuration.model || 'gpt-4o-mini'}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">Personality:</span>
+                      <span className="font-medium capitalize">{configuration.personality}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">Tools Selected:</span>
+                      <span className="font-medium">{configuration.tools?.length || 0}</span>
+                    </div>
+                    {configuration.assistantId && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground">Assistant ID:</span>
+                        <span className="font-medium text-green-600">{configuration.assistantId}</span>
+                      </div>
                     )}
-                  </Button>
+                  </div>
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Bot className="w-5 h-5" />
-                    Launch Status
-                  </CardTitle>
-                  <p className="text-sm text-muted-foreground">
-                    Your agent is ready for autonomous operation
-                  </p>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Configuration</span>
-                      {configuration.instructions ? (
-                        <CheckCircle2 className="w-5 h-5 text-green-500" />
-                      ) : (
-                        <Circle className="w-5 h-5 text-muted-foreground" />
-                      )}
+              {/* Test Interface */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <MessageSquare className="w-5 h-5" />
+                      Test Your Agent
+                    </CardTitle>
+                    <p className="text-sm text-muted-foreground">
+                      Test your agent by sending it a message to ensure it responds correctly
+                    </p>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <Label htmlFor="test-message">Test Message</Label>
+                      <Textarea
+                        id="test-message"
+                        placeholder="Ask your agent something related to its role..."
+                        value={testMessage}
+                        onChange={(e) => setTestMessage(e.target.value)}
+                        rows={3}
+                      />
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Goals & Personality</span>
-                      {configuration.goals && configuration.personality ? (
-                        <CheckCircle2 className="w-5 h-5 text-green-500" />
+                    
+                    <Button 
+                      onClick={handleTestAgent}
+                      disabled={!testMessage.trim() || isTesting || (!configuration.instructions || !configuration.goals)}
+                      className="w-full"
+                    >
+                      {isTesting ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          {configuration.assistantId ? 'Testing...' : 'Creating & Testing...'}
+                        </>
                       ) : (
-                        <Circle className="w-5 h-5 text-muted-foreground" />
+                        <>
+                          <Send className="w-4 h-4 mr-2" />
+                          {configuration.assistantId ? 'Test Agent' : 'Create & Test Agent'}
+                        </>
                       )}
+                    </Button>
+
+                    {testResponse && (
+                      <div className="mt-4 p-3 bg-muted rounded-lg">
+                        <h4 className="font-medium text-sm mb-2">Agent Response:</h4>
+                        <p className="text-sm">{testResponse}</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Eye className="w-5 h-5" />
+                      Deployment Status
+                    </CardTitle>
+                    <p className="text-sm text-muted-foreground">
+                      Check your agent's deployment status and launch when ready
+                    </p>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Instructions Configured</span>
+                        {configuration.instructions ? (
+                          <CheckCircle2 className="w-5 h-5 text-green-500" />
+                        ) : (
+                          <Circle className="w-5 h-5 text-muted-foreground" />
+                        )}
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Goals & Personality Set</span>
+                        {configuration.goals && configuration.personality ? (
+                          <CheckCircle2 className="w-5 h-5 text-green-500" />
+                        ) : (
+                          <Circle className="w-5 h-5 text-muted-foreground" />
+                        )}
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Tools Selected</span>
+                        {configuration.tools && configuration.tools.length > 0 ? (
+                          <CheckCircle2 className="w-5 h-5 text-green-500" />
+                        ) : (
+                          <Circle className="w-5 h-5 text-muted-foreground" />
+                        )}
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">OpenAI Assistant Created</span>
+                        {configuration.assistantId ? (
+                          <CheckCircle2 className="w-5 h-5 text-green-500" />
+                        ) : (
+                          <Circle className="w-5 h-5 text-muted-foreground" />
+                        )}
+                      </div>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Knowledge Base</span>
-                      {configuration.knowledge_base ? (
-                        <CheckCircle2 className="w-5 h-5 text-green-500" />
-                      ) : (
-                        <Circle className="w-5 h-5 text-muted-foreground" />
-                      )}
-                    </div>
-                  </div>
-                  
-                  <Button 
-                    className="w-full bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700"
-                    size="lg"
-                    disabled={!configuration.instructions || !configuration.goals || !configuration.knowledge_base}
-                  >
-                    <Rocket className="w-4 h-4 mr-2" />
-                    {configuration.instructions && configuration.goals && configuration.knowledge_base ? 'Launch Agent' : 'Complete Setup First'}
-                  </Button>
-                </CardContent>
-              </Card>
+                    
+                    {!configuration.assistantId && (
+                      <Button 
+                        onClick={createAssistant}
+                        disabled={!configuration.instructions || !configuration.goals || !configuration.tools || isUpdating}
+                        className="w-full"
+                        variant="outline"
+                      >
+                        {isUpdating ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Creating Assistant...
+                          </>
+                        ) : (
+                          <>
+                            <Bot className="w-4 h-4 mr-2" />
+                            Create OpenAI Assistant
+                          </>
+                        )}
+                      </Button>
+                    )}
+                    
+                    <Button 
+                      className="w-full bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700"
+                      size="lg"
+                      disabled={!configuration.assistantId}
+                      onClick={() => {
+                        toast({
+                          title: "Agent Launched! 🚀",
+                          description: "Your AI agent is now live and ready to operate autonomously!",
+                        });
+                        onAgentUpdated?.();
+                      }}
+                    >
+                      <Rocket className="w-4 h-4 mr-2" />
+                      {configuration.assistantId ? 'Launch Agent' : 'Create Assistant First'}
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
 
             <div className="flex gap-3">

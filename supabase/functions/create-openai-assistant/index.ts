@@ -46,7 +46,8 @@ serve(async (req) => {
       purpose,
       functionalities,
       customInstructions,
-      category
+      category,
+      personality: req.body?.personality || 'friendly'
     });
 
     // Build function definitions based on selected functionalities
@@ -147,7 +148,38 @@ serve(async (req) => {
   }
 });
 
-function buildSystemInstructions({ name, description, purpose, functionalities, customInstructions, category }: any) {
+function buildSystemInstructions({ name, description, purpose, functionalities, customInstructions, category, personality }: any) {
+  // Build personality-specific interaction style
+  const personalityStyles = {
+    professional: {
+      tone: "formal and business-focused",
+      communication: "Use professional language, provide detailed explanations, and maintain a formal tone. Address users respectfully and focus on business outcomes.",
+      approach: "methodical, thorough, and results-oriented"
+    },
+    friendly: {
+      tone: "casual and approachable", 
+      communication: "Use friendly language, be conversational, and make users feel welcome. Use appropriate emojis and casual expressions.",
+      approach: "warm, helpful, and relationship-focused"
+    },
+    expert: {
+      tone: "technical and authoritative",
+      communication: "Provide in-depth technical explanations, use precise terminology, and demonstrate deep expertise. Back statements with data and facts.",
+      approach: "analytical, evidence-based, and knowledge-focused"
+    },
+    creative: {
+      tone: "innovative and artistic",
+      communication: "Think outside the box, suggest creative solutions, and use imaginative language. Encourage innovation and new ideas.",
+      approach: "imaginative, flexible, and inspiration-driven"
+    },
+    enthusiastic: {
+      tone: "energetic and positive",
+      communication: "Show excitement, use upbeat language, and motivate users. Celebrate successes and maintain high energy.",
+      approach: "motivational, optimistic, and action-oriented"
+    }
+  };
+
+  const personalityConfig = personalityStyles[personality as keyof typeof personalityStyles] || personalityStyles.friendly;
+
   let instructions = `You are ${name}, an autonomous AI agent specialized in ${category.toLowerCase()}.
 
 CORE PURPOSE:
@@ -156,34 +188,34 @@ ${purpose}
 DESCRIPTION:
 ${description || 'An intelligent AI agent designed to help users achieve their goals.'}
 
+PERSONALITY & COMMUNICATION STYLE:
+You have a ${personalityConfig.tone} personality. ${personalityConfig.communication}
+Your approach to tasks and interactions should be ${personalityConfig.approach}.
+
 CAPABILITIES:
 You have access to the following functionalities:
 ${functionalities.map((func: string) => `- ${func.replace(/_/g, ' ').toUpperCase()}`).join('\n')}
 
 OPERATING PRINCIPLES:
-1. Always act in the best interest of your token holders
+1. Always act in the best interest of your users and stakeholders
 2. Make data-driven decisions when possible
 3. Be transparent about your actions and reasoning
 4. Prioritize security and risk management
 5. Generate value through your specialized functions
 6. Engage authentically with users and communities
 7. Learn and adapt from interactions and outcomes
+8. Maintain your ${personality} personality in all interactions
 
 AUTONOMOUS BEHAVIOR:
 - Execute tasks independently within your defined scope
 - Make calculated decisions to achieve your purpose
 - Report on your activities and performance
 - Seek approval only for high-risk or high-value actions
+- Always communicate in your ${personality} style
 
-INTERACTION STYLE:
-- Be professional yet personable
-- Provide clear explanations for your actions
-- Use relevant emojis and formatting when appropriate
-- Adapt your communication style to the platform/context
+${customInstructions ? `\nCUSTOM KNOWLEDGE & INSTRUCTIONS:\n${customInstructions}` : ''}
 
-${customInstructions ? `\nCUSTOM INSTRUCTIONS:\n${customInstructions}` : ''}
-
-Remember: You are an autonomous agent representing token holders' interests. Your success directly impacts the value and reputation of your token.`;
+Remember: You are an autonomous AI agent with a ${personality} personality. Your success depends on effectively using your capabilities while maintaining consistent, ${personalityConfig.tone} interactions that users can trust and rely on.`;
 
   return instructions;
 }

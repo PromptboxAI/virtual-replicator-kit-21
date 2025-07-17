@@ -1,5 +1,5 @@
 import React from 'react';
-import { AssistantSetupFlow } from './AssistantSetupFlow';
+import { UniversalAgentDashboard } from './UniversalAgentDashboard';
 
 interface ConversationalAgentBuilderProps {
   agentId: string;
@@ -8,6 +8,16 @@ interface ConversationalAgentBuilderProps {
 }
 
 export function ConversationalAgentBuilder({ agentId, agentName, onComplete }: ConversationalAgentBuilderProps) {
+  // Create mock agent object for UniversalAgentDashboard
+  const agent = {
+    id: agentId,
+    name: agentName,
+    symbol: agentName.slice(0, 3).toUpperCase(),
+    description: '',
+    category: 'AI Agent',
+    is_active: false
+  };
+
   return (
     <div className="container mx-auto py-8">
       <div className="mb-8 text-center">
@@ -17,10 +27,12 @@ export function ConversationalAgentBuilder({ agentId, agentName, onComplete }: C
         </p>
       </div>
       
-      <AssistantSetupFlow 
-        agentId={agentId}
-        agentName={agentName}
-        onComplete={onComplete}
+      <UniversalAgentDashboard 
+        agent={agent}
+        onAgentUpdated={() => {
+          // When agent is fully configured and deployed, call onComplete
+          onComplete(agentId);
+        }}
       />
     </div>
   );
