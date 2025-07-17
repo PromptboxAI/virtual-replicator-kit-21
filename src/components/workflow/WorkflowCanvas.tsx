@@ -508,7 +508,8 @@ export function WorkflowCanvas({ agentId, agentName, activeTab, onComplete, onCh
                     id="node-label"
                     value={(selectedNode.data as unknown as NodeData).label || ''}
                     onChange={(e) => updateNodeData(selectedNode.id, { label: e.target.value })}
-                    placeholder="Node label"
+                    onFocus={(e) => e.target.select()}
+                    placeholder="Enter node label..."
                   />
                 </div>
 
@@ -518,7 +519,8 @@ export function WorkflowCanvas({ agentId, agentName, activeTab, onComplete, onCh
                     id="node-description"
                     value={(selectedNode.data as unknown as NodeData).description || ''}
                     onChange={(e) => updateNodeData(selectedNode.id, { description: e.target.value })}
-                    placeholder="Node description"
+                    onFocus={(e) => e.target.select()}
+                    placeholder="Enter node description..."
                     rows={3}
                   />
                 </div>
@@ -555,6 +557,7 @@ export function WorkflowCanvas({ agentId, agentName, activeTab, onComplete, onCh
                       id="prompt"
                       value={(selectedNode.data as unknown as NodeData).prompt || ''}
                       onChange={(e) => updateNodeData(selectedNode.id, { prompt: e.target.value })}
+                      onFocus={(e) => e.target.select()}
                       placeholder="Enter system prompt..."
                       rows={4}
                     />
