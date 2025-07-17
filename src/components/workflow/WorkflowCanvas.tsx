@@ -14,6 +14,7 @@ import {
   Handle,
   Position,
   NodeProps,
+  ConnectionMode,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { Button } from '@/components/ui/button';
@@ -132,8 +133,8 @@ interface NodeData {
 const CustomNode = ({ data, selected, id }: NodeProps) => {
   const nodeData = data as unknown as NodeData;
   
-  // Debug: log node data
-  console.log(`Rendering node ${nodeData.label} (${id}): type=${nodeData.type}`);
+  // Debug: log node data (removed excessive logging)
+  // console.log(`Rendering node ${nodeData.label} (${id}): type=${nodeData.type}`);
   
   // Icon mapping for rendering nodes
   const iconMap: { [key: string]: any } = {
@@ -195,21 +196,23 @@ const CustomNode = ({ data, selected, id }: NodeProps) => {
         </Badge>
       </div>
       
-      {/* Handles - Input nodes need source handles, non-output nodes need target handles */}
+      {/* Handles - Ensure proper connectivity */}
       {nodeData.type !== 'output' && (
         <Handle 
           type="source" 
           position={Position.Right} 
-          className="w-3 h-3 border-2 border-background bg-primary opacity-80 hover:opacity-100 transition-opacity"
+          className="w-3 h-3 border-2 border-background bg-primary"
           isConnectable={true}
+          style={{ background: 'hsl(var(--primary))', border: '2px solid hsl(var(--background))' }}
         />
       )}
       {nodeData.type !== 'input' && (
         <Handle 
           type="target" 
           position={Position.Left} 
-          className="w-3 h-3 border-2 border-background bg-primary opacity-80 hover:opacity-100 transition-opacity"
+          className="w-3 h-3 border-2 border-background bg-primary"
           isConnectable={true}
+          style={{ background: 'hsl(var(--primary))', border: '2px solid hsl(var(--background))' }}
         />
       )}
     </div>
@@ -582,6 +585,9 @@ const WorkflowCanvas = forwardRef<WorkflowCanvasRef, WorkflowCanvasProps>(({ age
           onNodeClick={onNodeClick}
           onPaneClick={onPaneClick}
           nodeTypes={nodeTypes}
+          connectionMode={ConnectionMode.Loose}
+          deleteKeyCode={["Backspace", "Delete"]}
+          multiSelectionKeyCode={["Meta", "Ctrl"]}
           fitView
           className="bg-gradient-to-br from-background to-muted/20"
         >
