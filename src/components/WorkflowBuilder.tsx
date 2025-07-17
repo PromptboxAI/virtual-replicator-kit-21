@@ -51,9 +51,29 @@ interface WorkflowBuilderProps {
   onComplete?: (workflowId: string) => void;
 }
 
+// Custom Node Component
+const CustomNode = ({ data, selected }: { data: any; selected?: boolean }) => {
+  const IconComponent = data.icon;
+  return (
+    <div className={`px-4 py-3 border-2 rounded-lg bg-card shadow-sm transition-all duration-200 min-w-[140px] ${
+      selected ? 'border-primary shadow-md ring-2 ring-primary/20' : 'border-border hover:border-muted-foreground'
+    }`}>
+      <div className="flex items-center gap-2 mb-1">
+        <div className={`w-6 h-6 rounded-md flex items-center justify-center bg-${data.color}-100`}>
+          <IconComponent className={`w-3 h-3 text-${data.color}-600`} />
+        </div>
+        <span className="font-medium text-sm">{data.label}</span>
+      </div>
+      <p className="text-xs text-muted-foreground">{data.description}</p>
+    </div>
+  );
+};
+
 // Node types
 const nodeTypes = {
-  // We'll define custom nodes here
+  default: CustomNode,
+  input: CustomNode,
+  output: CustomNode,
 };
 
 // Initial nodes based on Stack AI's approach
@@ -578,7 +598,8 @@ export function WorkflowBuilder({ agentId, agentName, onComplete }: WorkflowBuil
               showInteractive={false}
             />
             <MiniMap 
-              className="bg-card/90 backdrop-blur border border-border shadow-lg rounded-lg" 
+              className="bg-card/90 backdrop-blur border border-border shadow-lg rounded-lg !w-32 !h-24" 
+              position="bottom-left"
               nodeColor={(node) => {
                 const color = node.data.color as string;
                 const colorMap: Record<string, string> = {
@@ -597,7 +618,7 @@ export function WorkflowBuilder({ agentId, agentName, onComplete }: WorkflowBuil
                 };
                 return colorMap[color] || '#64748b';
               }}
-              nodeStrokeWidth={2}
+              nodeStrokeWidth={1}
               maskColor="rgba(0,0,0,0.1)"
             />
           </ReactFlow>
