@@ -111,11 +111,21 @@ interface NodeData {
   inputType?: string;
   placeholder?: string;
   required?: boolean;
+  value?: string; // For text input
+  
+  // Image upload specific
+  imageUrl?: string;
+  previewUrl?: string;
+  
+  // Audio upload specific
+  audioUrl?: string;
+  
+  // File upload specific
+  fileUrl?: string;
   
   // Condition specific
   condition?: string;
   operator?: string;
-  value?: string;
   
   // Memory specific
   variableName?: string;
@@ -501,17 +511,67 @@ const WorkflowCanvas = forwardRef<WorkflowCanvasRef, WorkflowCanvasProps>(({ age
       // Execute workflow step by step
       const results: Record<string, any> = {};
       
-      // Step 1: Process input nodes - collect values during execution
+      // Step 1: Process input nodes - collect values from node data
       for (const inputNode of inputNodes) {
         const inputData = inputNode.data as unknown as NodeData;
         
         // Update node to show it's processing
         updateNodeData(inputNode.id, { ...inputData, status: 'processing' });
         
-        // For demo purposes, prompt for input or use default
-        const userInput = prompt(`Enter value for ${inputData.label || 'input'}:`) || 
-                         inputData.description || 
-                         "Default input value";
+        let userInput: string = '';
+        
+        // Get input value based on node type
+        if (inputData.type === 'text-input') {
+          userInput = inputData.value || '';
+          if (!userInput) {
+            toast({
+              title: "Missing Text Input",
+              description: `Please enter text in the "${inputData.label || 'Text Input'}" node.`,
+              variant: "destructive",
+            });
+            updateNodeData(inputNode.id, { ...inputData, status: 'error' });
+            return;
+          }
+        } else if (inputData.type === 'image-upload') {
+          const imageUrl = inputData.imageUrl || inputData.previewUrl || '';
+          if (!imageUrl) {
+            toast({
+              title: "Missing Image",
+              description: `Please upload an image in the "${inputData.label || 'Image Upload'}" node.`,
+              variant: "destructive",
+            });
+            updateNodeData(inputNode.id, { ...inputData, status: 'error' });
+            return;
+          }
+          userInput = `[Image: ${imageUrl}]`;
+        } else if (inputData.type === 'audio-upload') {
+          const audioUrl = inputData.audioUrl || '';
+          if (!audioUrl) {
+            toast({
+              title: "Missing Audio",
+              description: `Please upload audio in the "${inputData.label || 'Audio Upload'}" node.`,
+              variant: "destructive",
+            });
+            updateNodeData(inputNode.id, { ...inputData, status: 'error' });
+            return;
+          }
+          userInput = `[Audio: ${audioUrl}]`;
+        } else if (inputData.type === 'file-upload') {
+          const fileUrl = inputData.fileUrl || '';
+          if (!fileUrl) {
+            toast({
+              title: "Missing File",
+              description: `Please upload a file in the "${inputData.label || 'File Upload'}" node.`,
+              variant: "destructive",
+            });
+            updateNodeData(inputNode.id, { ...inputData, status: 'error' });
+            return;
+          }
+          userInput = `[File: ${fileUrl}]`;
+        } else {
+          // Default input node - use existing logic for backward compatibility
+          userInput = inputData.description || "Default input value";
+        }
         
         results[inputNode.id] = userInput;
         
