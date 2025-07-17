@@ -128,6 +128,9 @@ interface NodeData {
 const CustomNode = ({ data, selected, id }: NodeProps) => {
   const nodeData = data as unknown as NodeData;
   
+  // Debug: log node data
+  console.log(`Rendering node ${nodeData.label} (${id}): type=${nodeData.type}`);
+  
   // Icon mapping for rendering nodes
   const iconMap: { [key: string]: any } = {
     MessageSquare, Brain, Send, FileText, Link, Headphones, Image, 
