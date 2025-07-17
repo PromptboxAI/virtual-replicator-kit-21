@@ -423,9 +423,9 @@ export function WorkflowCanvas({ agentId, agentName, activeTab, onComplete, onCh
 
       {/* Configuration Panel */}
       {selectedNode && (
-        <div className="w-80 border-l bg-card/50 backdrop-blur-sm flex flex-col h-full">
+        <div className="w-80 border-l bg-card/50 backdrop-blur-sm flex flex-col h-screen">
           {/* Header - Fixed */}
-          <div className="p-6 border-b bg-card/80 backdrop-blur-sm">
+          <div className="p-6 border-b bg-card/80 backdrop-blur-sm flex-shrink-0">
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-lg">Node Configuration</h3>
               <Button
@@ -440,7 +440,7 @@ export function WorkflowCanvas({ agentId, agentName, activeTab, onComplete, onCh
           </div>
           
           {/* Scrollable Content */}
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto min-h-0">
             <div className="p-6 space-y-6">
               {/* Basic Node Info */}
               <div className="space-y-4">
