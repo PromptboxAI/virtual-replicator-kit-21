@@ -255,7 +255,7 @@ export function WorkflowSidebar({ activeTab, onChange }: WorkflowSidebarProps) {
                           }));
                           e.dataTransfer.effectAllowed = 'move';
                         }}
-                        className="group p-3 rounded-lg border bg-background hover:bg-accent cursor-grab active:cursor-grabbing transition-all duration-200 hover:border-primary/20 hover:shadow-sm"
+                        className="group p-3 rounded-lg border bg-background hover:bg-accent cursor-grab active:cursor-grabbing transition-all duration-200 hover:border-black hover:shadow-sm"
                       >
                         <div className="flex items-start gap-3">
                           <div className={`w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br from-${node.color}-100 to-${node.color}-200 shadow-sm group-hover:shadow-md transition-shadow`}>
