@@ -1,121 +1,69 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Handle, Position } from '@xyflow/react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { MessageSquare, CheckCircle } from 'lucide-react';
+import { MessageSquare } from 'lucide-react';
 
 interface TextInputNodeProps {
   data: any;
   id: string;
   selected: boolean;
+  onChange?: (id: string, data: any) => void;
 }
 
-export const TextInputNode = ({ data, id, selected }: TextInputNodeProps) => {
-  const [inputType, setInputType] = useState(data.inputType || 'text');
-  const [placeholder, setPlaceholder] = useState(data.placeholder || 'Enter your message...');
-  const [required, setRequired] = useState(data.required || false);
+export const TextInputNode = ({ data, id, selected, onChange }: TextInputNodeProps) => {
   const [value, setValue] = useState(data.value || '');
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const inputTypes = [
-    { value: 'text', label: 'Single Line Text' },
-    { value: 'textarea', label: 'Multi-line Text' },
-    { value: 'email', label: 'Email' },
-    { value: 'number', label: 'Number' },
-    { value: 'url', label: 'URL' },
-    { value: 'password', label: 'Password' },
-  ];
+  // Focus on the textarea when node is selected
+  useEffect(() => {
+    if (selected && textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, [selected]);
+
+  const handleValueChange = (newValue: string) => {
+    setValue(newValue);
+    // Update the node data
+    if (onChange) {
+      onChange(id, { ...data, value: newValue });
+    }
+  };
 
   return (
-    <div className={`p-4 border-2 rounded-lg shadow-sm transition-all duration-200 min-w-[280px] max-w-[320px] bg-card ${
+    <div className={`p-3 border-2 rounded-lg shadow-sm transition-all duration-200 min-w-[240px] max-w-[280px] bg-card ${
       selected 
-        ? 'border-foreground shadow-lg' 
+        ? 'border-primary shadow-lg' 
         : 'border-border hover:border-muted-foreground hover:shadow-md'
     }`}>
       {/* Node Header */}
-      <div className="flex items-center gap-3 mb-3">
-        <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-200 shadow-sm">
-          <MessageSquare className="w-5 h-5 text-blue-600" />
+      <div className="flex items-center gap-2 mb-3">
+        <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-200">
+          <MessageSquare className="w-4 h-4 text-blue-600" />
         </div>
         <div className="flex-1">
-          <h3 className="font-semibold text-sm">{data.label}</h3>
-          <p className="text-xs text-muted-foreground uppercase tracking-wide">TEXT INPUT</p>
-        </div>
-        {value && <CheckCircle className="w-4 h-4 text-green-600" />}
-      </div>
-
-      {/* Input Configuration */}
-      <div className="space-y-3">
-        <div>
-          <Label htmlFor={`input-type-${id}`} className="text-xs font-medium">Input Type</Label>
-          <Select value={inputType} onValueChange={setInputType}>
-            <SelectTrigger className="text-xs">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {inputTypes.map((type) => (
-                <SelectItem key={type.value} value={type.value} className="text-xs">
-                  {type.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div>
-          <Label htmlFor={`placeholder-${id}`} className="text-xs font-medium">Placeholder</Label>
-          <Input
-            id={`placeholder-${id}`}
-            placeholder="Enter placeholder text..."
-            value={placeholder}
-            onChange={(e) => setPlaceholder(e.target.value)}
-            className="text-xs"
-          />
-        </div>
-
-        <div className="flex items-center justify-between">
-          <Label htmlFor={`required-${id}`} className="text-xs font-medium">Required</Label>
-          <Switch
-            id={`required-${id}`}
-            checked={required}
-            onCheckedChange={setRequired}
-          />
-        </div>
-
-        {/* Preview Input */}
-        <div>
-          <Label className="text-xs font-medium">Preview</Label>
-          <div className="mt-1">
-            {inputType === 'textarea' ? (
-              <Textarea
-                placeholder={placeholder}
-                value={value}
-                onChange={(e) => setValue(e.target.value)}
-                rows={3}
-                className="text-xs"
-              />
-            ) : (
-              <Input
-                type={inputType}
-                placeholder={placeholder}
-                value={value}
-                onChange={(e) => setValue(e.target.value)}
-                className="text-xs"
-              />
-            )}
-          </div>
+          <h3 className="font-medium text-sm">{data.label || 'Text Input'}</h3>
+          <p className="text-xs text-muted-foreground">Enter your text</p>
         </div>
       </div>
 
-      {/* Status */}
-      <div className="mt-3">
-        <Badge variant={value ? "default" : "secondary"} className="text-xs">
-          {value ? 'Has Value' : placeholder ? 'Ready' : 'Configure'}
-        </Badge>
+      {/* Text Input */}
+      <div className="mb-3">
+        <Textarea
+          ref={textareaRef}
+          placeholder="Type your message here..."
+          value={value}
+          onChange={(e) => handleValueChange(e.target.value)}
+          rows={3}
+          className="text-sm nodrag resize-none"
+        />
       </div>
+
+      {/* Character count */}
+      {value && (
+        <div className="text-xs text-muted-foreground mb-2">
+          {value.length} characters
+        </div>
+      )}
 
       {/* Handles */}
       <Handle 

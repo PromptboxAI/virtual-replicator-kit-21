@@ -423,7 +423,17 @@ const WorkflowCanvas = forwardRef<WorkflowCanvasRef, WorkflowCanvasProps>(({ age
   );
 
   const onNodeClick = useCallback((_event: React.MouseEvent, node: Node) => {
-    // Toggle: if clicking the same node, close the panel
+    // For simple input nodes, don't show configuration popup
+    const simpleNodeTypes = ['text-input', 'image-upload', 'audio-upload', 'file-upload'];
+    const nodeData = node.data as unknown as NodeData;
+    
+    if (simpleNodeTypes.includes(nodeData.type)) {
+      // Just select the node, don't open config panel
+      setSelectedNode(null);
+      return;
+    }
+    
+    // For complex nodes (LLM, API, etc), show configuration popup
     if (selectedNode?.id === node.id) {
       setSelectedNode(null);
     } else {
