@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { ConversationalAgentBuilder } from './ConversationalAgentBuilder';
+import { WorkflowBuilder } from './WorkflowBuilder';
 import { 
   CheckCircle2, 
   Circle, 
@@ -63,7 +64,7 @@ export function UniversalAgentDashboard({ agent, onAgentUpdated }: UniversalAgen
   const [isTesting, setIsTesting] = useState(false);
   const [testMessage, setTestMessage] = useState('');
   const [testResponse, setTestResponse] = useState('');
-  const [builderMode, setBuilderMode] = useState<'form' | 'conversational'>('conversational');
+  const [builderMode, setBuilderMode] = useState<'form' | 'conversational' | 'workflow'>('workflow');
   const [configuration, setConfiguration] = useState<AgentConfiguration>({
     instructions: '',
     personality: 'friendly',
@@ -84,18 +85,17 @@ export function UniversalAgentDashboard({ agent, onAgentUpdated }: UniversalAgen
         .from('agent_configurations')
         .select('*')
         .eq('agent_id', agent.id)
-        .single();
+        .maybeSingle(); // Use maybeSingle instead of single to handle multiple/no rows
       
       console.log('Agent config query result:', { data, error });
       
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
         console.error('Error fetching agent config:', error);
-        // Don't throw on "not found" errors, just return null
         return null;
       }
       return data;
     },
-    enabled: !!agent.id, // Only run query when agent.id exists
+    enabled: !!agent.id,
   });
 
   // Initialize configuration from existing data
@@ -1029,7 +1029,34 @@ export function UniversalAgentDashboard({ agent, onAgentUpdated }: UniversalAgen
           </p>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div
+              className={`p-4 rounded-lg border cursor-pointer transition-colors ${
+                builderMode === 'workflow' 
+                  ? 'bg-primary/10 border-primary' 
+                  : 'hover:bg-muted/50'
+              }`}
+              onClick={() => setBuilderMode('workflow')}
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-green-500 to-teal-600 flex items-center justify-center">
+                  <Wand2 className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold">Workflow Builder</h3>
+                  <p className="text-sm text-green-600 font-medium">✨ New & Powerful</p>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Visual drag-and-drop interface like Stack AI. Build complex AI workflows with nodes and connections.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Badge variant="secondary" className="text-xs">Drag & Drop</Badge>
+                <Badge variant="secondary" className="text-xs">Visual Nodes</Badge>
+                <Badge variant="secondary" className="text-xs">Advanced Logic</Badge>
+              </div>
+            </div>
+
             <div
               className={`p-4 rounded-lg border cursor-pointer transition-colors ${
                 builderMode === 'conversational' 
@@ -1040,21 +1067,19 @@ export function UniversalAgentDashboard({ agent, onAgentUpdated }: UniversalAgen
             >
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
-                  <Wand2 className="w-5 h-5 text-white" />
+                  <MessageSquare className="w-5 h-5 text-white" />
                 </div>
                 <div>
                   <h3 className="font-semibold">AI-Guided Builder</h3>
-                  <p className="text-sm text-green-600 font-medium">✨ Recommended</p>
+                  <p className="text-sm text-blue-600 font-medium">🤖 Guided</p>
                 </div>
               </div>
               <p className="text-sm text-muted-foreground">
-                Conversational setup with an AI assistant that guides you through the entire process, 
-                identifies required integrations, and helps configure everything step-by-step.
+                Conversational setup with an AI assistant that guides you through the entire process.
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
-                <Badge variant="secondary" className="text-xs">Auto Integration Detection</Badge>
-                <Badge variant="secondary" className="text-xs">API Key Setup</Badge>
-                <Badge variant="secondary" className="text-xs">Testing & Validation</Badge>
+                <Badge variant="secondary" className="text-xs">AI Assistant</Badge>
+                <Badge variant="secondary" className="text-xs">Step by Step</Badge>
               </div>
             </div>
 
@@ -1072,16 +1097,15 @@ export function UniversalAgentDashboard({ agent, onAgentUpdated }: UniversalAgen
                 </div>
                 <div>
                   <h3 className="font-semibold">Manual Form Builder</h3>
-                  <p className="text-sm text-gray-600">Basic Setup</p>
+                  <p className="text-sm text-gray-600">📝 Traditional</p>
                 </div>
               </div>
               <p className="text-sm text-muted-foreground">
-                Traditional step-by-step forms to configure your agent. 
-                Good for simple agents but requires manual integration setup.
+                Traditional step-by-step forms to configure your agent manually.
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
-                <Badge variant="outline" className="text-xs">Step-by-Step Forms</Badge>
                 <Badge variant="outline" className="text-xs">Manual Setup</Badge>
+                <Badge variant="outline" className="text-xs">Form Based</Badge>
               </div>
             </div>
           </div>
@@ -1133,15 +1157,7 @@ export function UniversalAgentDashboard({ agent, onAgentUpdated }: UniversalAgen
       </Card>
 
       {/* Current Step Content */}
-      {builderMode === 'conversational' ? (
-        <ConversationalAgentBuilder
-          agentId={agent.id}
-          agentName={agent.name}
-          onComplete={handleAssistantComplete}
-        />
-      ) : (
-        renderStepContent()
-      )}
+      {builderMode === 'form' && renderStepContent()}
     </div>
   );
 }
