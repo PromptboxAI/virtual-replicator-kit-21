@@ -76,7 +76,7 @@ export function UniversalAgentDashboard({ agent, onAgentUpdated }: UniversalAgen
   const { toast } = useToast();
 
   // Fetch existing configuration
-  const { data: existingConfig, refetch } = useQuery({
+  const { data: existingConfig, refetch, isLoading: configLoading } = useQuery({
     queryKey: ['agent-config', agent.id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -87,7 +87,8 @@ export function UniversalAgentDashboard({ agent, onAgentUpdated }: UniversalAgen
       
       if (error && error.code !== 'PGRST116') {
         console.error('Error fetching agent config:', error);
-        throw error;
+        // Don't throw on "not found" errors, just return null
+        return null;
       }
       return data;
     },
@@ -956,6 +957,37 @@ export function UniversalAgentDashboard({ agent, onAgentUpdated }: UniversalAgen
     refetch();
     onAgentUpdated?.();
   };
+
+  // Show loading state while configuration is loading
+  if (configLoading) {
+    return (
+      <div className="space-y-8">
+        <div className="text-center space-y-4">
+          <div className="flex items-center justify-center gap-4">
+            <Avatar className="h-16 w-16">
+              <AvatarImage src={agent.avatar_url} alt={agent.name} />
+              <AvatarFallback>
+                {agent.name.slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <h1 className="text-3xl font-bold">{agent.name}</h1>
+              <p className="text-muted-foreground">{agent.symbol} • {agent.category || 'AI Agent'}</p>
+            </div>
+          </div>
+        </div>
+        
+        <Card>
+          <CardContent className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+              <p className="text-muted-foreground">Loading agent configuration...</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
