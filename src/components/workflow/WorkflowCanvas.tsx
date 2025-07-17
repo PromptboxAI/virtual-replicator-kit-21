@@ -297,8 +297,13 @@ export function WorkflowCanvas({ agentId, agentName, activeTab, onComplete, onCh
   );
 
   const onNodeClick = useCallback((_event: React.MouseEvent, node: Node) => {
-    setSelectedNode(node);
-  }, []);
+    // Toggle: if clicking the same node, close the panel
+    if (selectedNode?.id === node.id) {
+      setSelectedNode(null);
+    } else {
+      setSelectedNode(node);
+    }
+  }, [selectedNode]);
 
   const onPaneClick = useCallback(() => {
     setSelectedNode(null);
@@ -418,157 +423,168 @@ export function WorkflowCanvas({ agentId, agentName, activeTab, onComplete, onCh
 
       {/* Configuration Panel */}
       {selectedNode && (
-        <div className="w-80 border-l bg-card/50 backdrop-blur-sm flex flex-col max-h-screen">
-          <div className="p-6 overflow-y-auto flex-1">
-            <div className="space-y-6">
+        <div className="w-80 border-l bg-card/50 backdrop-blur-sm flex flex-col h-full">
+          {/* Header - Fixed */}
+          <div className="p-6 border-b bg-card/80 backdrop-blur-sm">
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-lg">Node Configuration</h3>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setSelectedNode(null)}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  <Eye className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => deleteNode(selectedNode.id)}
-                  className="text-destructive hover:text-destructive"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-
-            <Separator />
-
-            {/* Basic Node Info */}
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="node-label">Label</Label>
-                <Input
-                  id="node-label"
-                  value={(selectedNode.data as unknown as NodeData).label || ''}
-                  onChange={(e) => updateNodeData(selectedNode.id, { label: e.target.value })}
-                  placeholder="Node label"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="node-description">Description</Label>
-                <Textarea
-                  id="node-description"
-                  value={(selectedNode.data as unknown as NodeData).description || ''}
-                  onChange={(e) => updateNodeData(selectedNode.id, { description: e.target.value })}
-                  placeholder="Node description"
-                  rows={3}
-                />
-              </div>
-            </div>
-
-            {/* Node Type Specific Configuration */}
-            {(selectedNode.data as unknown as NodeData).type === 'llm' && (
-              <div className="space-y-4">
-                <h4 className="font-medium text-sm">LLM Configuration</h4>
-                
-                <div>
-                  <Label htmlFor="model">Model</Label>
-                  <Select 
-                    value={(selectedNode.data as unknown as NodeData).model || ''} 
-                    onValueChange={(value) => updateNodeData(selectedNode.id, { model: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select model" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="gpt-4o-mini">GPT-4O Mini</SelectItem>
-                      <SelectItem value="gpt-4o">GPT-4O</SelectItem>
-                      <SelectItem value="claude-3-sonnet">Claude 3 Sonnet</SelectItem>
-                      <SelectItem value="claude-3-opus">Claude 3 Opus</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="prompt">System Prompt</Label>
-                  <Textarea
-                    id="prompt"
-                    value={(selectedNode.data as unknown as NodeData).prompt || ''}
-                    onChange={(e) => updateNodeData(selectedNode.id, { prompt: e.target.value })}
-                    placeholder="Enter system prompt..."
-                    rows={4}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="temperature">Temperature: {(selectedNode.data as unknown as NodeData).temperature || 0.7}</Label>
-                  <Input
-                    id="temperature"
-                    type="range"
-                    min="0"
-                    max="2"
-                    step="0.1"
-                    value={(selectedNode.data as unknown as NodeData).temperature || 0.7}
-                    onChange={(e) => updateNodeData(selectedNode.id, { temperature: parseFloat(e.target.value) })}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="maxTokens">Max Tokens</Label>
-                  <Input
-                    id="maxTokens"
-                    type="number"
-                    value={(selectedNode.data as unknown as NodeData).maxTokens || 1000}
-                    onChange={(e) => updateNodeData(selectedNode.id, { maxTokens: parseInt(e.target.value) })}
-                    placeholder="1000"
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Test Section */}
-            <div className="space-y-4 pt-4 border-t">
-              <h4 className="font-medium text-sm">Test Workflow</h4>
-              
-              <div>
-                <Label htmlFor="test-input">Test Input</Label>
-                <Textarea
-                  id="test-input"
-                  value={testInput}
-                  onChange={(e) => setTestInput(e.target.value)}
-                  placeholder="Enter test input..."
-                  rows={3}
-                />
-              </div>
-
-              <Button 
-                onClick={testWorkflow} 
-                disabled={isTesting}
-                className="w-full gap-2"
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedNode(null)}
+                className="text-muted-foreground hover:text-foreground"
               >
-                {isTesting ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Play className="w-4 h-4" />
-                )}
-                {isTesting ? 'Testing...' : 'Test Workflow'}
+                <Eye className="w-4 h-4" />
               </Button>
-
-              {testOutput && (
+            </div>
+          </div>
+          
+          {/* Scrollable Content */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="p-6 space-y-6">
+              {/* Basic Node Info */}
+              <div className="space-y-4">
                 <div>
-                  <Label>Test Output</Label>
-                  <Textarea
-                    value={testOutput}
-                    readOnly
-                    rows={6}
-                    className="bg-muted"
+                  <Label htmlFor="node-label">Label</Label>
+                  <Input
+                    id="node-label"
+                    value={(selectedNode.data as unknown as NodeData).label || ''}
+                    onChange={(e) => updateNodeData(selectedNode.id, { label: e.target.value })}
+                    placeholder="Node label"
                   />
+                </div>
+
+                <div>
+                  <Label htmlFor="node-description">Description</Label>
+                  <Textarea
+                    id="node-description"
+                    value={(selectedNode.data as unknown as NodeData).description || ''}
+                    onChange={(e) => updateNodeData(selectedNode.id, { description: e.target.value })}
+                    placeholder="Node description"
+                    rows={3}
+                  />
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Node Type Specific Configuration */}
+              {(selectedNode.data as unknown as NodeData).type === 'llm' && (
+                <div className="space-y-4">
+                  <h4 className="font-medium text-sm">LLM Configuration</h4>
+                  
+                  <div>
+                    <Label htmlFor="model">Model</Label>
+                    <Select 
+                      value={(selectedNode.data as unknown as NodeData).model || ''} 
+                      onValueChange={(value) => updateNodeData(selectedNode.id, { model: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select model" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="gpt-4o-mini">GPT-4O Mini</SelectItem>
+                        <SelectItem value="gpt-4o">GPT-4O</SelectItem>
+                        <SelectItem value="claude-3-sonnet">Claude 3 Sonnet</SelectItem>
+                        <SelectItem value="claude-3-opus">Claude 3 Opus</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="prompt">System Prompt</Label>
+                    <Textarea
+                      id="prompt"
+                      value={(selectedNode.data as unknown as NodeData).prompt || ''}
+                      onChange={(e) => updateNodeData(selectedNode.id, { prompt: e.target.value })}
+                      placeholder="Enter system prompt..."
+                      rows={4}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="temperature">Temperature: {(selectedNode.data as unknown as NodeData).temperature || 0.7}</Label>
+                    <Input
+                      id="temperature"
+                      type="range"
+                      min="0"
+                      max="2"
+                      step="0.1"
+                      value={(selectedNode.data as unknown as NodeData).temperature || 0.7}
+                      onChange={(e) => updateNodeData(selectedNode.id, { temperature: parseFloat(e.target.value) })}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="maxTokens">Max Tokens</Label>
+                    <Input
+                      id="maxTokens"
+                      type="number"
+                      value={(selectedNode.data as unknown as NodeData).maxTokens || 1000}
+                      onChange={(e) => updateNodeData(selectedNode.id, { maxTokens: parseInt(e.target.value) })}
+                      placeholder="1000"
+                    />
+                  </div>
                 </div>
               )}
-            </div>
+
+              <Separator />
+
+              {/* Test Section */}
+              <div className="space-y-4">
+                <h4 className="font-medium text-sm">Test Workflow</h4>
+                
+                <div>
+                  <Label htmlFor="test-input">Test Input</Label>
+                  <Textarea
+                    id="test-input"
+                    value={testInput}
+                    onChange={(e) => setTestInput(e.target.value)}
+                    placeholder="Enter test input..."
+                    rows={3}
+                  />
+                </div>
+
+                <Button 
+                  onClick={testWorkflow} 
+                  disabled={isTesting}
+                  className="w-full gap-2"
+                >
+                  {isTesting ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Play className="w-4 h-4" />
+                  )}
+                  {isTesting ? 'Testing...' : 'Test Workflow'}
+                </Button>
+
+                {testOutput && (
+                  <div>
+                    <Label>Test Output</Label>
+                    <Textarea
+                      value={testOutput}
+                      readOnly
+                      rows={6}
+                      className="bg-muted"
+                    />
+                  </div>
+                )}
+              </div>
+
+              <Separator />
+
+              {/* Delete Section - Moved to bottom for safety */}
+              <div className="pt-4">
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => deleteNode(selectedNode.id)}
+                  className="w-full gap-2"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Delete Node
+                </Button>
+              </div>
             </div>
           </div>
         </div>
