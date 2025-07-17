@@ -625,7 +625,10 @@ const WorkflowCanvas = forwardRef<WorkflowCanvasRef, WorkflowCanvasProps>(({ age
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
+          onConnect={(params) => {
+            console.log('🔗 onConnect triggered:', params);
+            onConnect(params);
+          }}
           onDrop={onDrop}
           onDragOver={onDragOver}
           onNodeClick={onNodeClick}
@@ -638,6 +641,15 @@ const WorkflowCanvas = forwardRef<WorkflowCanvasRef, WorkflowCanvasProps>(({ age
           snapGrid={[15, 15]}
           fitView
           className="bg-gradient-to-br from-background to-muted/20"
+          onInit={(reactFlowInstance) => {
+            console.log('🚀 ReactFlow initialized:', reactFlowInstance);
+          }}
+          onConnectStart={(event, params) => {
+            console.log('🔵 Connection start:', params);
+          }}
+          onConnectEnd={(event) => {
+            console.log('🔴 Connection end:', event);
+          }}
         >
           <Controls 
             className="bg-card shadow-lg border"
