@@ -174,7 +174,7 @@ const CustomNode = ({ data, selected, id }: NodeProps) => {
   );
 };
 
-// Node types registry
+// Node types registry - moved outside component to prevent re-creation
 const nodeTypes = {
   custom: CustomNode,
 };
