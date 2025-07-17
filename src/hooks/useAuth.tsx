@@ -41,7 +41,7 @@ export function useAuth() {
           elements.forEach(el => {
             try {
               // Check if element still exists and has a parent before removing
-              if (el && el.parentNode && el.parentNode.contains(el)) {
+              if (el && el.parentNode && document.body.contains(el)) {
                 el.parentNode.removeChild(el);
               }
             } catch (error) {
