@@ -3,10 +3,14 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Bot, Coins, TrendingUp, Users, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 
 const TokenAgents = () => {
   return (
     <div className="min-h-screen bg-background">
+      <Header />
+      
       {/* Announcement Bar */}
       <div className="bg-primary/10 border-b border-border">
         <div className="container mx-auto px-4 py-3">
@@ -266,6 +270,8 @@ const TokenAgents = () => {
           </div>
         </div>
       </section>
+
+      <Footer />
     </div>
   );
 };
