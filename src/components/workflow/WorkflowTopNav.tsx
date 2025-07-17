@@ -11,6 +11,7 @@ interface WorkflowTopNavProps {
   agentName: string;
   onSave: () => void;
   onPublish: () => void;
+  onRun: () => void;
   hasUnsavedChanges: boolean;
 }
 
@@ -20,6 +21,7 @@ export function WorkflowTopNav({
   agentName, 
   onSave, 
   onPublish,
+  onRun,
   hasUnsavedChanges 
 }: WorkflowTopNavProps) {
   return (
@@ -71,6 +73,7 @@ export function WorkflowTopNav({
         <Button 
           variant="outline" 
           size="sm"
+          onClick={onRun}
           className="gap-2"
         >
           <Play className="w-4 h-4" />

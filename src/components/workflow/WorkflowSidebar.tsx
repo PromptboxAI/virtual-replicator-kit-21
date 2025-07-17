@@ -46,7 +46,7 @@ const stackAICategories = [
   {
     name: 'Inputs',
     icon: FileText,
-    expanded: true,
+    expanded: false,
     nodes: [
       { label: 'Files', icon: 'FileText', color: 'blue', description: 'Upload and process files' },
       { label: 'URL', icon: 'Link', color: 'blue', description: 'Fetch content from URLs' },
@@ -58,7 +58,7 @@ const stackAICategories = [
   {
     name: 'Outputs',
     icon: Send,
-    expanded: true,
+    expanded: false,
     nodes: [
       { label: 'Text', icon: 'FileText', color: 'emerald', description: 'Output text response' },
       { label: 'JSON', icon: 'FileJson', color: 'emerald', description: 'Structured data output' },
@@ -68,7 +68,7 @@ const stackAICategories = [
   {
     name: 'LLMs',
     icon: Brain,
-    expanded: true,
+    expanded: false,
     nodes: [
       { label: 'OpenAI GPT', icon: 'Brain', color: 'purple', description: 'GPT-4, GPT-3.5 models' },
       { label: 'Claude', icon: 'MessageSquare', color: 'orange', description: 'Anthropic Claude models' },
@@ -214,9 +214,6 @@ export function WorkflowSidebar({ activeTab, onChange }: WorkflowSidebarProps) {
                   )}
                   <CategoryIcon className="w-4 h-4 text-muted-foreground" />
                   <span className="font-medium text-sm">{category.name}</span>
-                  <Badge variant="secondary" className="ml-auto text-xs">
-                    {category.nodes.length}
-                  </Badge>
                 </div>
               </Button>
 
@@ -255,7 +252,7 @@ export function WorkflowSidebar({ activeTab, onChange }: WorkflowSidebarProps) {
                           }));
                           e.dataTransfer.effectAllowed = 'move';
                         }}
-                        className="group p-3 rounded-lg border bg-background hover:bg-accent cursor-grab active:cursor-grabbing transition-all duration-200 hover:border-black hover:shadow-sm"
+                        className="group p-3 rounded-lg border bg-background hover:bg-accent cursor-grab active:cursor-grabbing transition-all duration-200 hover:border-foreground hover:shadow-sm"
                       >
                         <div className="flex items-start gap-3">
                           <div className={`w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br from-${node.color}-100 to-${node.color}-200 shadow-sm group-hover:shadow-md transition-shadow`}>

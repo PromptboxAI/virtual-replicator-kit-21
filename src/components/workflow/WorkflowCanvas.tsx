@@ -135,45 +135,33 @@ const CustomNode = ({ data, selected, id }: NodeProps) => {
   return (
     <div className={`px-4 py-3 border-2 rounded-lg shadow-sm transition-all duration-200 min-w-[180px] max-w-[240px] ${
       selected 
-        ? 'bg-black text-white border-white shadow-lg scale-105' 
+        ? 'bg-card border-foreground shadow-lg' 
         : 'bg-card border-border hover:border-muted-foreground hover:shadow-md'
     }`}>
       {/* Node Header */}
       <div className="flex items-center gap-3 mb-2">
-        <div className={`w-9 h-9 rounded-lg flex items-center justify-center bg-gradient-to-br ${
-          selected ? 'from-white/20 to-white/10' : `from-${nodeData.color}-100 to-${nodeData.color}-200`
-        } shadow-sm`}>
-          <IconComponent className={`w-5 h-5 ${
-            selected ? 'text-white' : `text-${nodeData.color}-600`
-          }`} />
+        <div className={`w-9 h-9 rounded-lg flex items-center justify-center bg-gradient-to-br from-${nodeData.color}-100 to-${nodeData.color}-200 shadow-sm`}>
+          <IconComponent className={`w-5 h-5 text-${nodeData.color}-600`} />
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className={`font-semibold text-sm truncate ${selected ? 'text-white' : ''}`}>{nodeData.label}</h3>
-          <p className={`text-xs uppercase tracking-wide ${selected ? 'text-white/70' : 'text-muted-foreground'}`}>{nodeData.type}</p>
+          <h3 className="font-semibold text-sm truncate">{nodeData.label}</h3>
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">{nodeData.type}</p>
         </div>
       </div>
       
       {/* Node Content */}
-      <div className={`text-xs mb-3 line-clamp-2 ${selected ? 'text-white/80' : 'text-muted-foreground'}`}>
+      <div className="text-xs mb-3 line-clamp-2 text-muted-foreground">
         {nodeData.description}
       </div>
       
       {/* Node Status/Info */}
       <div className="flex items-center justify-between">
-        <Badge variant={selected ? "outline" : "secondary"} className={`text-xs ${selected ? 'border-white/30 text-white bg-white/10' : ''}`}>
+        <Badge variant="secondary" className="text-xs">
           {nodeData.type === 'llm' && nodeData.model ? nodeData.model : 
            nodeData.type === 'api' && nodeData.method ? nodeData.method :
            nodeData.type === 'input' && nodeData.inputType ? nodeData.inputType :
            'Ready'}
         </Badge>
-        
-        {selected && (
-          <div className="flex gap-1">
-            <div className="w-2 h-2 rounded-full bg-white"></div>
-            <div className="w-2 h-2 rounded-full bg-white/70"></div>
-            <div className="w-2 h-2 rounded-full bg-white/50"></div>
-          </div>
-        )}
       </div>
       
       {/* Handles - Always visible for better UX */}
@@ -268,9 +256,7 @@ export function WorkflowCanvas({ agentId, agentName, activeTab, onComplete, onCh
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
-  const [isTesting, setIsTesting] = useState(false);
-  const [testInput, setTestInput] = useState('');
-  const [testOutput, setTestOutput] = useState('');
+  const [isRunning, setIsRunning] = useState(false);
   const { toast } = useToast();
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
 
@@ -375,18 +361,8 @@ export function WorkflowCanvas({ agentId, agentName, activeTab, onComplete, onCh
     onChange();
   }, [setNodes, setEdges, onChange]);
 
-  const testWorkflow = async () => {
-    if (!testInput.trim()) {
-      toast({
-        title: "Test Input Required",
-        description: "Please enter some test input to run the workflow.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsTesting(true);
-    setTestOutput('');
+  const executeWorkflow = async (testInput: string = "What color is the sky?") => {
+    setIsRunning(true);
     
     try {
       // Find the input and LLM nodes to execute the workflow
@@ -394,7 +370,11 @@ export function WorkflowCanvas({ agentId, agentName, activeTab, onComplete, onCh
       const llmNode = nodes.find(node => (node.data as unknown as NodeData).type === 'llm');
       
       if (!llmNode) {
-        setTestOutput('No LLM node found in workflow. Please add an LLM processing node to test the workflow.');
+        toast({
+          title: "Workflow Incomplete",
+          description: "No LLM node found in workflow. Please add an LLM processing node.",
+          variant: "destructive",
+        });
         return;
       }
 
@@ -415,24 +395,35 @@ export function WorkflowCanvas({ agentId, agentName, activeTab, onComplete, onCh
         throw new Error(error.message || 'Failed to process workflow');
       }
 
-      setTestOutput(data.response || 'No response received');
-      
       toast({
-        title: "Workflow Test Complete",
-        description: "Your workflow has been successfully tested with real AI processing.",
+        title: "Workflow Executed Successfully",
+        description: `Response: ${(data.response || 'No response received').substring(0, 100)}...`,
       });
     } catch (error) {
-      console.error('Workflow test error:', error);
-      setTestOutput(`Error: ${error.message}\n\nMake sure your OpenAI API key is configured and the model settings are correct.`);
+      console.error('Workflow execution error:', error);
       toast({
-        title: "Test Failed",
-        description: "There was an error testing your workflow. Check the console for details.",
+        title: "Workflow Failed",
+        description: "There was an error executing your workflow. Check the console for details.",
         variant: "destructive",
       });
     } finally {
-      setIsTesting(false);
+      setIsRunning(false);
     }
   };
+
+  // Listen for workflow execution events from the Run button
+  React.useEffect(() => {
+    const handleExecuteWorkflow = () => {
+      executeWorkflow();
+    };
+
+    if (reactFlowWrapper.current) {
+      reactFlowWrapper.current.addEventListener('executeWorkflow', handleExecuteWorkflow);
+      return () => {
+        reactFlowWrapper.current?.removeEventListener('executeWorkflow', handleExecuteWorkflow);
+      };
+    }
+  }, [nodes]);
 
   // Render different content based on active tab
   if (activeTab !== 'workflow') {
@@ -453,7 +444,7 @@ export function WorkflowCanvas({ agentId, agentName, activeTab, onComplete, onCh
   return (
     <div className="flex-1 flex">
       {/* Main Flow Canvas */}
-      <div className="flex-1 relative" ref={reactFlowWrapper}>
+      <div className="flex-1 relative" ref={reactFlowWrapper} data-testid="rf__wrapper">
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -595,50 +586,6 @@ export function WorkflowCanvas({ agentId, agentName, activeTab, onComplete, onCh
                 </div>
               )}
 
-              <Separator />
-
-              {/* Test Section */}
-              <div className="space-y-4">
-                <h4 className="font-medium text-sm">Test Workflow</h4>
-                
-                <div>
-                  <Label htmlFor="test-input">Test Input</Label>
-                  <Textarea
-                    id="test-input"
-                    value={testInput}
-                    onChange={(e) => setTestInput(e.target.value)}
-                    placeholder="Enter test input..."
-                    rows={3}
-                  />
-                </div>
-
-                <Button 
-                  onClick={testWorkflow} 
-                  disabled={isTesting}
-                  className="w-full gap-2"
-                >
-                  {isTesting ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Play className="w-4 h-4" />
-                  )}
-                  {isTesting ? 'Testing...' : 'Test Workflow'}
-                </Button>
-
-                {testOutput && (
-                  <div>
-                    <Label>Test Output</Label>
-                    <Textarea
-                      value={testOutput}
-                      readOnly
-                      rows={6}
-                      className="bg-muted"
-                    />
-                  </div>
-                )}
-              </div>
-
-              <Separator />
 
               {/* Delete Section - Moved to bottom for safety */}
               <div className="pt-4">

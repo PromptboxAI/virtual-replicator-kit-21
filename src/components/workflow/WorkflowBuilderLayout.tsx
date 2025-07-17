@@ -29,6 +29,16 @@ export function WorkflowBuilderLayout({ agentId, agentName, onComplete }: Workfl
     setHasUnsavedChanges(false);
   };
 
+  const handleRun = () => {
+    // Get canvas component to trigger workflow execution
+    const canvasComponent = document.querySelector('[data-testid="rf__wrapper"]');
+    if (canvasComponent) {
+      // Dispatch custom event to trigger workflow execution
+      const event = new CustomEvent('executeWorkflow');
+      canvasComponent.dispatchEvent(event);
+    }
+  };
+
   const handleChange = () => {
     setHasUnsavedChanges(true);
   };
@@ -42,6 +52,7 @@ export function WorkflowBuilderLayout({ agentId, agentName, onComplete }: Workfl
         agentName={agentName}
         onSave={handleSave}
         onPublish={handlePublish}
+        onRun={handleRun}
         hasUnsavedChanges={hasUnsavedChanges}
       />
       
