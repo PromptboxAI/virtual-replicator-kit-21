@@ -55,7 +55,16 @@ import {
   Save,
   Eye,
   AlertCircle,
-  Copy
+  Copy,
+  Link,
+  Headphones,
+  FileJson,
+  Sparkles,
+  FileCheck,
+  FileSearch,
+  FileSpreadsheet,
+  FilePlus,
+  ArrowLeftRight
 } from 'lucide-react';
 import { WorkflowTab } from './WorkflowBuilderLayout';
 
@@ -72,7 +81,7 @@ interface NodeData {
   label: string;
   type: string;
   description: string;
-  icon: any;
+  icon: string; // Changed to string for icon names
   color: string;
   
   // LLM specific
@@ -112,7 +121,16 @@ interface NodeData {
 // Custom Node Components
 const CustomNode = ({ data, selected, id }: NodeProps) => {
   const nodeData = data as unknown as NodeData;
-  const IconComponent = nodeData.icon;
+  
+  // Icon mapping for rendering nodes
+  const iconMap: { [key: string]: any } = {
+    MessageSquare, Brain, Send, FileText, Link, Headphones, Image, 
+    FileJson, Download, Sparkles, Zap, Globe, Mail, Webhook, FileCheck,
+    FileSearch, Database, FileSpreadsheet, FilePlus, Target, RotateCcw,
+    ArrowLeftRight: RotateCcw, Clock, CheckCircle
+  };
+  
+  const IconComponent = iconMap[nodeData.icon] || FileText;
   
   return (
     <div className={`px-4 py-3 border-2 rounded-lg bg-card shadow-sm transition-all duration-200 min-w-[180px] max-w-[240px] ${
@@ -188,7 +206,7 @@ const initialNodes: Node[] = [
       label: 'User Input',
       type: 'input',
       description: 'User message input',
-      icon: MessageSquare,
+      icon: 'MessageSquare',
       color: 'blue',
       inputType: 'text',
       placeholder: 'Enter your message...',
@@ -203,7 +221,7 @@ const initialNodes: Node[] = [
       label: 'OpenAI GPT',
       type: 'llm',
       description: 'AI processing node',
-      icon: Brain,
+      icon: 'Brain',
       color: 'purple',
       model: 'gpt-4o-mini',
       prompt: 'You are a helpful AI assistant. Respond to the user\'s query in a helpful and informative way.',
@@ -219,7 +237,7 @@ const initialNodes: Node[] = [
       label: 'Response',
       type: 'output',
       description: 'Response output',
-      icon: Send,
+      icon: 'Send',
       color: 'emerald'
     },
   },

@@ -48,11 +48,11 @@ const stackAICategories = [
     icon: FileText,
     expanded: true,
     nodes: [
-      { label: 'Files', icon: FileText, color: 'blue', description: 'Upload and process files' },
-      { label: 'URL', icon: Link, color: 'blue', description: 'Fetch content from URLs' },
-      { label: 'Audio', icon: Headphones, color: 'blue', description: 'Process audio inputs' },
-      { label: 'Image', icon: Image, color: 'blue', description: 'Process image inputs' },
-      { label: 'Text Input', icon: MessageSquare, color: 'blue', description: 'Accept text input' }
+      { label: 'Files', icon: 'FileText', color: 'blue', description: 'Upload and process files' },
+      { label: 'URL', icon: 'Link', color: 'blue', description: 'Fetch content from URLs' },
+      { label: 'Audio', icon: 'Headphones', color: 'blue', description: 'Process audio inputs' },
+      { label: 'Image', icon: 'Image', color: 'blue', description: 'Process image inputs' },
+      { label: 'Text Input', icon: 'MessageSquare', color: 'blue', description: 'Accept text input' }
     ]
   },
   {
@@ -60,9 +60,9 @@ const stackAICategories = [
     icon: Send,
     expanded: true,
     nodes: [
-      { label: 'Text', icon: FileText, color: 'emerald', description: 'Output text response' },
-      { label: 'JSON', icon: FileJson, color: 'emerald', description: 'Structured data output' },
-      { label: 'File', icon: Download, color: 'emerald', description: 'Generate file downloads' }
+      { label: 'Text', icon: 'FileText', color: 'emerald', description: 'Output text response' },
+      { label: 'JSON', icon: 'FileJson', color: 'emerald', description: 'Structured data output' },
+      { label: 'File', icon: 'Download', color: 'emerald', description: 'Generate file downloads' }
     ]
   },
   {
@@ -70,10 +70,10 @@ const stackAICategories = [
     icon: Brain,
     expanded: true,
     nodes: [
-      { label: 'OpenAI GPT', icon: Brain, color: 'purple', description: 'GPT-4, GPT-3.5 models' },
-      { label: 'Claude', icon: MessageSquare, color: 'orange', description: 'Anthropic Claude models' },
-      { label: 'Gemini', icon: Sparkles, color: 'blue', description: 'Google Gemini models' },
-      { label: 'Custom', icon: Zap, color: 'indigo', description: 'Custom model endpoint' }
+      { label: 'OpenAI GPT', icon: 'Brain', color: 'purple', description: 'GPT-4, GPT-3.5 models' },
+      { label: 'Claude', icon: 'MessageSquare', color: 'orange', description: 'Anthropic Claude models' },
+      { label: 'Gemini', icon: 'Sparkles', color: 'blue', description: 'Google Gemini models' },
+      { label: 'Custom', icon: 'Zap', color: 'indigo', description: 'Custom model endpoint' }
     ]
   },
   {
@@ -81,10 +81,10 @@ const stackAICategories = [
     icon: Zap,
     expanded: false,
     nodes: [
-      { label: 'HTTP Request', icon: Globe, color: 'cyan', description: 'API calls and webhooks' },
-      { label: 'Email', icon: Mail, color: 'red', description: 'Send email notifications' },
-      { label: 'Webhook', icon: Webhook, color: 'yellow', description: 'Trigger external webhooks' },
-      { label: 'Code', icon: FileCheck, color: 'slate', description: 'Execute custom code' }
+      { label: 'HTTP Request', icon: 'Globe', color: 'cyan', description: 'API calls and webhooks' },
+      { label: 'Email', icon: 'Mail', color: 'red', description: 'Send email notifications' },
+      { label: 'Webhook', icon: 'Webhook', color: 'yellow', description: 'Trigger external webhooks' },
+      { label: 'Code', icon: 'FileCheck', color: 'slate', description: 'Execute custom code' }
     ]
   },
   {
@@ -92,8 +92,8 @@ const stackAICategories = [
     icon: Database,
     expanded: false,
     nodes: [
-      { label: 'Vector Search', icon: FileSearch, color: 'green', description: 'Semantic search' },
-      { label: 'Document Q&A', icon: FileText, color: 'green', description: 'Query documents' }
+      { label: 'Vector Search', icon: 'FileSearch', color: 'green', description: 'Semantic search' },
+      { label: 'Document Q&A', icon: 'FileText', color: 'green', description: 'Query documents' }
     ]
   },
   {
@@ -101,9 +101,9 @@ const stackAICategories = [
     icon: Database,
     expanded: false,
     nodes: [
-      { label: 'SQL Query', icon: Database, color: 'blue', description: 'Execute SQL queries' },
-      { label: 'NoSQL', icon: FileJson, color: 'green', description: 'NoSQL operations' },
-      { label: 'Redis', icon: Database, color: 'red', description: 'Redis cache operations' }
+      { label: 'SQL Query', icon: 'Database', color: 'blue', description: 'Execute SQL queries' },
+      { label: 'NoSQL', icon: 'FileJson', color: 'green', description: 'NoSQL operations' },
+      { label: 'Redis', icon: 'Database', color: 'red', description: 'Redis cache operations' }
     ]
   },
   {
@@ -111,10 +111,10 @@ const stackAICategories = [
     icon: FileText,
     expanded: false,
     nodes: [
-      { label: 'PDF', icon: FileText, color: 'red', description: 'Extract PDF content' },
-      { label: 'CSV', icon: FileSpreadsheet, color: 'green', description: 'Parse CSV files' },
-      { label: 'TXT', icon: FileText, color: 'gray', description: 'Process text files' },
-      { label: 'DOC', icon: FilePlus, color: 'blue', description: 'Read Word documents' }
+      { label: 'PDF', icon: 'FileText', color: 'red', description: 'Extract PDF content' },
+      { label: 'CSV', icon: 'FileSpreadsheet', color: 'green', description: 'Parse CSV files' },
+      { label: 'TXT', icon: 'FileText', color: 'gray', description: 'Process text files' },
+      { label: 'DOC', icon: 'FilePlus', color: 'blue', description: 'Read Word documents' }
     ]
   },
   {
@@ -122,10 +122,10 @@ const stackAICategories = [
     icon: Target,
     expanded: false,
     nodes: [
-      { label: 'If/Else', icon: Target, color: 'pink', description: 'Conditional branching' },
-      { label: 'Loop', icon: RotateCcw, color: 'purple', description: 'Iterate over data' },
-      { label: 'Switch', icon: ArrowLeftRight, color: 'yellow', description: 'Multiple conditions' },
-      { label: 'Delay', icon: Clock, color: 'amber', description: 'Add time delays' }
+      { label: 'If/Else', icon: 'Target', color: 'pink', description: 'Conditional branching' },
+      { label: 'Loop', icon: 'RotateCcw', color: 'purple', description: 'Iterate over data' },
+      { label: 'Switch', icon: 'ArrowLeftRight', color: 'yellow', description: 'Multiple conditions' },
+      { label: 'Delay', icon: 'Clock', color: 'amber', description: 'Add time delays' }
     ]
   },
   {
@@ -133,10 +133,10 @@ const stackAICategories = [
     icon: Settings,
     expanded: false,
     nodes: [
-      { label: 'Format', icon: Sparkles, color: 'teal', description: 'Format data' },
-      { label: 'Transform', icon: ArrowLeftRight, color: 'cyan', description: 'Transform data' },
-      { label: 'Validate', icon: CheckCircle, color: 'green', description: 'Validate inputs' },
-      { label: 'Cache', icon: Database, color: 'slate', description: 'Cache results' }
+      { label: 'Format', icon: 'Sparkles', color: 'teal', description: 'Format data' },
+      { label: 'Transform', icon: 'ArrowLeftRight', color: 'cyan', description: 'Transform data' },
+      { label: 'Validate', icon: 'CheckCircle', color: 'green', description: 'Validate inputs' },
+      { label: 'Cache', icon: 'Database', color: 'slate', description: 'Cache results' }
     ]
   }
 ];
@@ -224,7 +224,15 @@ export function WorkflowSidebar({ activeTab, onChange }: WorkflowSidebarProps) {
               {isExpanded && (
                 <div className="ml-4 space-y-1 mt-2">
                   {category.nodes.map((node, index) => {
-                    const NodeIcon = node.icon;
+                    // Icon mapping for rendering in sidebar
+                    const iconMap: { [key: string]: any } = {
+                      FileText, Link, Headphones, Image, MessageSquare, Send, FileJson, Download,
+                      Brain, Sparkles, Zap, Globe, Mail, Webhook, FileCheck, FileSearch,
+                      Database, FileSpreadsheet, FilePlus, Target, RotateCcw, ArrowLeftRight,
+                      Clock, CheckCircle
+                    };
+                    
+                    const NodeIcon = iconMap[node.icon as string] || FileText;
                     
                     return (
                       <div
