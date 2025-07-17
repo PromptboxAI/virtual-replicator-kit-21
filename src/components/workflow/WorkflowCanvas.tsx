@@ -348,18 +348,44 @@ export function WorkflowCanvas({ agentId, agentName, activeTab, onComplete, onCh
     setTestOutput('');
     
     try {
-      // Simulate workflow execution
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      setTestOutput(`Processed: "${testInput}"\n\nThis is a simulated response from your AI workflow. The actual implementation would process this through your configured nodes and return the real result.`);
+      // Find the input and LLM nodes to execute the workflow
+      const inputNode = nodes.find(node => (node.data as unknown as NodeData).type === 'input');
+      const llmNode = nodes.find(node => (node.data as unknown as NodeData).type === 'llm');
+      
+      if (!llmNode) {
+        setTestOutput('No LLM node found in workflow. Please add an LLM processing node to test the workflow.');
+        return;
+      }
+
+      const llmData = llmNode.data as unknown as NodeData;
+      
+      // Call the test-assistant edge function to process the input
+      const { data, error } = await supabase.functions.invoke('test-assistant', {
+        body: {
+          model: llmData.model || 'gpt-4o-mini',
+          prompt: llmData.prompt || 'You are a helpful assistant.',
+          userInput: testInput,
+          temperature: llmData.temperature || 0.7,
+          maxTokens: llmData.maxTokens || 1000
+        }
+      });
+
+      if (error) {
+        throw new Error(error.message || 'Failed to process workflow');
+      }
+
+      setTestOutput(data.response || 'No response received');
       
       toast({
         title: "Workflow Test Complete",
-        description: "Your workflow has been successfully tested.",
+        description: "Your workflow has been successfully tested with real AI processing.",
       });
     } catch (error) {
+      console.error('Workflow test error:', error);
+      setTestOutput(`Error: ${error.message}\n\nMake sure your OpenAI API key is configured and the model settings are correct.`);
       toast({
         title: "Test Failed",
-        description: "There was an error testing your workflow.",
+        description: "There was an error testing your workflow. Check the console for details.",
         variant: "destructive",
       });
     } finally {
