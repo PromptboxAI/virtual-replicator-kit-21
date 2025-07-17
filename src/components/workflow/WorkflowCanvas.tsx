@@ -133,30 +133,34 @@ const CustomNode = ({ data, selected, id }: NodeProps) => {
   const IconComponent = iconMap[nodeData.icon] || FileText;
   
   return (
-    <div className={`px-4 py-3 border-2 rounded-lg bg-card shadow-sm transition-all duration-200 min-w-[180px] max-w-[240px] ${
+    <div className={`px-4 py-3 border-2 rounded-lg shadow-sm transition-all duration-200 min-w-[180px] max-w-[240px] ${
       selected 
-        ? 'border-primary shadow-lg ring-2 ring-primary/20 scale-105' 
-        : 'border-border hover:border-muted-foreground hover:shadow-md'
+        ? 'bg-black text-white border-white shadow-lg scale-105' 
+        : 'bg-card border-border hover:border-muted-foreground hover:shadow-md'
     }`}>
       {/* Node Header */}
       <div className="flex items-center gap-3 mb-2">
-        <div className={`w-9 h-9 rounded-lg flex items-center justify-center bg-gradient-to-br from-${nodeData.color}-100 to-${nodeData.color}-200 shadow-sm`}>
-          <IconComponent className={`w-5 h-5 text-${nodeData.color}-600`} />
+        <div className={`w-9 h-9 rounded-lg flex items-center justify-center bg-gradient-to-br ${
+          selected ? 'from-white/20 to-white/10' : `from-${nodeData.color}-100 to-${nodeData.color}-200`
+        } shadow-sm`}>
+          <IconComponent className={`w-5 h-5 ${
+            selected ? 'text-white' : `text-${nodeData.color}-600`
+          }`} />
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-sm truncate">{nodeData.label}</h3>
-          <p className="text-xs text-muted-foreground uppercase tracking-wide">{nodeData.type}</p>
+          <h3 className={`font-semibold text-sm truncate ${selected ? 'text-white' : ''}`}>{nodeData.label}</h3>
+          <p className={`text-xs uppercase tracking-wide ${selected ? 'text-white/70' : 'text-muted-foreground'}`}>{nodeData.type}</p>
         </div>
       </div>
       
       {/* Node Content */}
-      <div className="text-xs text-muted-foreground mb-3 line-clamp-2">
+      <div className={`text-xs mb-3 line-clamp-2 ${selected ? 'text-white/80' : 'text-muted-foreground'}`}>
         {nodeData.description}
       </div>
       
       {/* Node Status/Info */}
       <div className="flex items-center justify-between">
-        <Badge variant="secondary" className="text-xs">
+        <Badge variant={selected ? "outline" : "secondary"} className={`text-xs ${selected ? 'border-white/30 text-white bg-white/10' : ''}`}>
           {nodeData.type === 'llm' && nodeData.model ? nodeData.model : 
            nodeData.type === 'api' && nodeData.method ? nodeData.method :
            nodeData.type === 'input' && nodeData.inputType ? nodeData.inputType :
@@ -165,9 +169,9 @@ const CustomNode = ({ data, selected, id }: NodeProps) => {
         
         {selected && (
           <div className="flex gap-1">
-            <div className="w-2 h-2 rounded-full bg-green-500"></div>
-            <div className="w-2 h-2 rounded-full bg-green-400"></div>
-            <div className="w-2 h-2 rounded-full bg-green-300"></div>
+            <div className="w-2 h-2 rounded-full bg-white"></div>
+            <div className="w-2 h-2 rounded-full bg-white/70"></div>
+            <div className="w-2 h-2 rounded-full bg-white/50"></div>
           </div>
         )}
       </div>
