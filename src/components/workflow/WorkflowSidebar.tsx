@@ -231,11 +231,18 @@ export function WorkflowSidebar({ activeTab, onChange }: WorkflowSidebarProps) {
                         key={index}
                         draggable
                         onDragStart={(e) => {
+                          const nodeType = category.name.toLowerCase() === 'llms' ? 'llm' : 
+                                         category.name.toLowerCase() === 'inputs' ? 'input' :
+                                         category.name.toLowerCase() === 'outputs' ? 'output' :
+                                         category.name.toLowerCase();
+                          
+                          console.log('Dragging node:', { ...node, type: nodeType });
+                          
                           e.dataTransfer.setData('application/reactflow', JSON.stringify({
                             type: 'custom',
                             data: {
                               ...node,
-                              type: category.name.toLowerCase().replace(/[^a-z]/g, ''),
+                              type: nodeType,
                             }
                           }));
                           e.dataTransfer.effectAllowed = 'move';

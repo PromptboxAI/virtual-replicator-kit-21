@@ -275,23 +275,42 @@ export function WorkflowCanvas({ agentId, agentName, activeTab, onComplete, onCh
       event.preventDefault();
 
       const reactFlowBounds = reactFlowWrapper.current?.getBoundingClientRect();
-      if (!reactFlowBounds) return;
+      if (!reactFlowBounds) {
+        console.log('No react flow bounds found');
+        return;
+      }
 
-      const nodeData = JSON.parse(event.dataTransfer.getData('application/reactflow'));
-      const position = {
-        x: event.clientX - reactFlowBounds.left - 100,
-        y: event.clientY - reactFlowBounds.top - 50,
-      };
+      try {
+        const dragData = event.dataTransfer.getData('application/reactflow');
+        console.log('Drop event data:', dragData);
+        
+        const nodeData = JSON.parse(dragData);
+        console.log('Parsed node data:', nodeData);
+        
+        const position = {
+          x: event.clientX - reactFlowBounds.left - 100,
+          y: event.clientY - reactFlowBounds.top - 50,
+        };
+        console.log('Drop position:', position);
 
-      const newNode: Node = {
-        id: `${nodeData.data.type}-${Date.now()}`,
-        type: 'custom',
-        position,
-        data: nodeData.data,
-      };
+        const newNode: Node = {
+          id: `${nodeData.data.type}-${Date.now()}`,
+          type: 'custom',
+          position,
+          data: nodeData.data,
+        };
 
-      setNodes((nds) => nds.concat(newNode));
-      onChange();
+        console.log('Creating new node:', newNode);
+        
+        setNodes((nds) => {
+          const updated = nds.concat(newNode);
+          console.log('Updated nodes:', updated);
+          return updated;
+        });
+        onChange();
+      } catch (error) {
+        console.error('Error processing drop:', error);
+      }
     },
     [setNodes, onChange]
   );
