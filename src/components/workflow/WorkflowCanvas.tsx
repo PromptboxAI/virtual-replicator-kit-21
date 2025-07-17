@@ -129,14 +129,36 @@ interface NodeData {
   webhookUrl?: string;
 }
 
+// Import specialized node components
+import { ImageUploadNode } from './nodes/ImageUploadNode';
+import { AudioUploadNode } from './nodes/AudioUploadNode';
+import { FileUploadNode } from './nodes/FileUploadNode';
+import { ApiRequestNode } from './nodes/ApiRequestNode';
+import { TextInputNode } from './nodes/TextInputNode';
+
 // Custom Node Components
 const CustomNode = ({ data, selected, id }: NodeProps) => {
   const nodeData = data as unknown as NodeData;
   
-  // Debug: log node data (removed excessive logging)
-  // console.log(`Rendering node ${nodeData.label} (${id}): type=${nodeData.type}`);
+  // Render specialized nodes based on type and label
+  if (nodeData.type === 'input') {
+    switch (nodeData.label) {
+      case 'Image':
+        return <ImageUploadNode data={nodeData} id={id} selected={selected} />;
+      case 'Audio':
+        return <AudioUploadNode data={nodeData} id={id} selected={selected} />;
+      case 'Files':
+        return <FileUploadNode data={nodeData} id={id} selected={selected} />;
+      case 'Text Input':
+        return <TextInputNode data={nodeData} id={id} selected={selected} />;
+    }
+  }
   
-  // Icon mapping for rendering nodes
+  if (nodeData.type === 'actions' && nodeData.label === 'HTTP Request') {
+    return <ApiRequestNode data={nodeData} id={id} selected={selected} />;
+  }
+  
+  // Default generic node for other types
   const iconMap: { [key: string]: any } = {
     MessageSquare, Brain, Send, FileText, Link, Headphones, Image, 
     FileJson, Download, Sparkles, Zap, Globe, Mail, Webhook, FileCheck,
@@ -146,7 +168,6 @@ const CustomNode = ({ data, selected, id }: NodeProps) => {
   
   const IconComponent = iconMap[nodeData.icon] || FileText;
   
-  // Get status styling
   const getStatusColor = () => {
     switch (nodeData.status) {
       case 'processing': return 'border-yellow-500 bg-yellow-50';
@@ -196,7 +217,7 @@ const CustomNode = ({ data, selected, id }: NodeProps) => {
         </Badge>
       </div>
       
-      {/* Handles - Ensure proper connectivity */}
+      {/* Handles - Fixed connectivity logic */}
       {nodeData.type !== 'output' && (
         <Handle 
           type="source" 
@@ -315,15 +336,40 @@ const WorkflowCanvas = forwardRef<WorkflowCanvasRef, WorkflowCanvasProps>(({ age
 
   const onConnect = useCallback(
     (params: Connection) => {
-      const newEdge = {
-        ...params,
+      console.log('Connecting nodes:', params);
+      
+      if (!params.source || !params.target) {
+        console.log('Invalid connection - missing source or target');
+        return;
+      }
+      
+      const sourceNode = nodes.find(n => n.id === params.source);
+      const targetNode = nodes.find(n => n.id === params.target);
+      
+      if (!sourceNode || !targetNode) {
+        console.log('Invalid connection - nodes not found');
+        return;
+      }
+      
+      console.log('Valid connection established:', {
+        from: sourceNode.data.label,
+        to: targetNode.data.label
+      });
+      
+      const newEdge: Edge = {
+        id: `${params.source}-${params.target}`,
+        source: params.source!,
+        target: params.target!,
+        sourceHandle: params.sourceHandle,
+        targetHandle: params.targetHandle,
         animated: true,
         style: { stroke: 'hsl(var(--primary))', strokeWidth: 2 }
       };
+      
       setEdges((eds) => addEdge(newEdge, eds));
       onChange();
     },
-    [setEdges, onChange]
+    [setEdges, onChange, nodes]
   );
 
   const onDragOver = useCallback((event: React.DragEvent) => {
@@ -588,6 +634,8 @@ const WorkflowCanvas = forwardRef<WorkflowCanvasRef, WorkflowCanvasProps>(({ age
           connectionMode={ConnectionMode.Loose}
           deleteKeyCode={["Backspace", "Delete"]}
           multiSelectionKeyCode={["Meta", "Ctrl"]}
+          snapToGrid
+          snapGrid={[15, 15]}
           fitView
           className="bg-gradient-to-br from-background to-muted/20"
         >
