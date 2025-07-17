@@ -685,49 +685,15 @@ export function WorkflowCanvas({ agentId, agentName, activeTab, onComplete, onCh
                   <h4 className="font-medium text-sm">Input Configuration</h4>
                   
                   <div>
-                    <Label htmlFor="input-type">Input Type</Label>
-                    <Select
-                      value={(selectedNode.data as unknown as NodeData).inputType || 'text'}
-                      onValueChange={(value) => updateNodeData(selectedNode.id, { inputType: value })}
-                    >
-                      <SelectTrigger id="input-type">
-                        <SelectValue placeholder="Select input type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="text">Text</SelectItem>
-                        <SelectItem value="number">Number</SelectItem>
-                        <SelectItem value="email">Email</SelectItem>
-                        <SelectItem value="url">URL</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="placeholder">Placeholder Text</Label>
-                    <Input
-                      id="placeholder"
-                      value={(selectedNode.data as unknown as NodeData).placeholder || ''}
-                      onChange={(e) => updateNodeData(selectedNode.id, { placeholder: e.target.value })}
-                      onFocus={(e) => e.target.select()}
-                      placeholder="Enter placeholder text..."
-                    />
-                  </div>
-                  
-                  <Separator />
-                  
-                  <div>
-                    <Label htmlFor="test-input">Test Input Value</Label>
+                    <Label htmlFor="input-value">Input Value</Label>
                     <Textarea
-                      id="test-input"
+                      id="input-value"
                       value={inputValues[selectedNode.id] || ''}
                       onChange={(e) => setInputValues(prev => ({ ...prev, [selectedNode.id]: e.target.value }))}
                       onFocus={(e) => e.target.select()}
-                      placeholder="Enter test value to use when running workflow..."
+                      placeholder="Enter your input text..."
                       rows={3}
                     />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      This value will be passed to connected nodes when you run the workflow
-                    </p>
                   </div>
                 </div>
               )}
