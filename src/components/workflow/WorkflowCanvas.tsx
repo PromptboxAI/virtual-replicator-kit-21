@@ -300,6 +300,10 @@ export function WorkflowCanvas({ agentId, agentName, activeTab, onComplete, onCh
     setSelectedNode(node);
   }, []);
 
+  const onPaneClick = useCallback(() => {
+    setSelectedNode(null);
+  }, []);
+
   const updateNodeData = useCallback((nodeId: string, newData: Partial<NodeData>) => {
     setNodes((nds) =>
       nds.map((node) =>
@@ -387,6 +391,7 @@ export function WorkflowCanvas({ agentId, agentName, activeTab, onComplete, onCh
           onDrop={onDrop}
           onDragOver={onDragOver}
           onNodeClick={onNodeClick}
+          onPaneClick={onPaneClick}
           nodeTypes={nodeTypes}
           fitView
           className="bg-gradient-to-br from-background to-muted/20"
@@ -418,14 +423,24 @@ export function WorkflowCanvas({ agentId, agentName, activeTab, onComplete, onCh
             <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-lg">Node Configuration</h3>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => deleteNode(selectedNode.id)}
-                className="text-destructive hover:text-destructive"
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSelectedNode(null)}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <Eye className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => deleteNode(selectedNode.id)}
+                  className="text-destructive hover:text-destructive"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
 
             <Separator />
