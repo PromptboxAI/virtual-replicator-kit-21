@@ -586,6 +586,8 @@ export function WorkflowCanvas({ agentId, agentName, activeTab, onComplete, onCh
                 </Button>
               </div>
             </div>
+            {/* Extra bottom padding to ensure scrolling works properly */}
+            <div className="h-6"></div>
           </div>
         </div>
       )}
