@@ -380,8 +380,8 @@ export function WorkflowCanvas({ agentId, agentName, activeTab, onComplete, onCh
 
       const llmData = llmNode.data as unknown as NodeData;
       
-      // Call the test-assistant edge function to process the input
-      const { data, error } = await supabase.functions.invoke('test-assistant', {
+      // Call the execute-workflow edge function to process the input
+      const { data, error } = await supabase.functions.invoke('execute-workflow', {
         body: {
           model: llmData.model || 'gpt-4o-mini',
           prompt: llmData.prompt || 'You are a helpful assistant.',
