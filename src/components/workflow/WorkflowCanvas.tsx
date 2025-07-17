@@ -445,6 +445,12 @@ const WorkflowCanvas = forwardRef<WorkflowCanvasRef, WorkflowCanvasProps>(({ age
         updateNodeData(inputNode.id, { ...inputData, status: 'processing' });
       }
 
+      // Mark input nodes as completed after collecting their values
+      for (const inputNode of inputNodes) {
+        const inputData = inputNode.data as unknown as NodeData;
+        updateNodeData(inputNode.id, { ...inputData, status: 'completed' });
+      }
+
       // Step 2: Process LLM nodes that are connected to input nodes
       for (const llmNode of llmNodes) {
         const llmData = llmNode.data as unknown as NodeData;
