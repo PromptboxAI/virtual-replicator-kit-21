@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { WorkflowTopNav } from './WorkflowTopNav';
 import { WorkflowSidebar } from './WorkflowSidebar';
-import { WorkflowCanvas } from './WorkflowCanvas';
+import { WorkflowCanvas, WorkflowCanvasRef } from './WorkflowCanvas';
 import { WorkflowBottomStatus } from './WorkflowBottomStatus';
 import { Node, Edge } from '@xyflow/react';
 
@@ -18,11 +18,11 @@ export function WorkflowBuilderLayout({ agentId, agentName, onComplete }: Workfl
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [lastPublished, setLastPublished] = useState<Date | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [canvasRef, setCanvasRef] = useState<any>(null);
+  const canvasRef = useRef<WorkflowCanvasRef>(null);
 
   const handleAddNode = (nodeData: any) => {
-    if (canvasRef && canvasRef.addNode) {
-      canvasRef.addNode(nodeData);
+    if (canvasRef.current) {
+      canvasRef.current.addNode(nodeData);
       setHasUnsavedChanges(true);
     }
   };
@@ -76,7 +76,7 @@ export function WorkflowBuilderLayout({ agentId, agentName, onComplete }: Workfl
         {/* Canvas Area */}
         <div className="flex-1 flex flex-col">
           <WorkflowCanvas 
-            ref={setCanvasRef}
+            ref={canvasRef}
             agentId={agentId}
             agentName={agentName}
             activeTab={activeTab}
