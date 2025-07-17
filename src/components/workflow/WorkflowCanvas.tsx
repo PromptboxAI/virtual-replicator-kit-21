@@ -195,19 +195,19 @@ const CustomNode = ({ data, selected, id }: NodeProps) => {
         </Badge>
       </div>
       
-      {/* Handles - Always visible for better UX */}
-      {nodeData.type !== 'input' && (
-        <Handle 
-          type="target" 
-          position={Position.Left} 
-          className="w-3 h-3 border-2 border-background bg-primary opacity-80 hover:opacity-100 transition-opacity"
-          isConnectable={true}
-        />
-      )}
+      {/* Handles - Input nodes need source handles, non-output nodes need target handles */}
       {nodeData.type !== 'output' && (
         <Handle 
           type="source" 
           position={Position.Right} 
+          className="w-3 h-3 border-2 border-background bg-primary opacity-80 hover:opacity-100 transition-opacity"
+          isConnectable={true}
+        />
+      )}
+      {nodeData.type !== 'input' && (
+        <Handle 
+          type="target" 
+          position={Position.Left} 
           className="w-3 h-3 border-2 border-background bg-primary opacity-80 hover:opacity-100 transition-opacity"
           isConnectable={true}
         />

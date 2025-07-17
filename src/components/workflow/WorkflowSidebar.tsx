@@ -278,7 +278,7 @@ export function WorkflowSidebar({ activeTab, onChange, onAddNode }: WorkflowSide
                             type: nodeType,
                           });
                         }}
-                        className="group p-3 rounded-lg border bg-background hover:bg-accent cursor-pointer transition-all duration-200 hover:border-foreground hover:shadow-sm"
+                        className="group p-3 rounded-lg border bg-background hover:border-foreground hover:shadow-sm cursor-pointer transition-all duration-200"
                       >
                         <div className="flex items-start gap-3">
                           <div className={`w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br from-${node.color}-100 to-${node.color}-200 shadow-sm group-hover:shadow-md transition-shadow`}>
