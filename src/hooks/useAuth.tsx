@@ -135,11 +135,10 @@ export function useAuth() {
         } else {
           console.log('Profile exists, checking for updates');
           // Check if user has accepted terms
-          if (!existingProfile.terms_accepted_at) {
-            setShowTermsModal(true);
-          } else {
+          if (existingProfile.terms_accepted_at) {
             setHasAcceptedTerms(true);
           }
+          // Only show terms modal for new users, not existing ones
           // Update existing profile with wallet if connected
           if (user.wallet?.address && existingProfile.wallet_address !== user.wallet.address) {
             const { error } = await supabase

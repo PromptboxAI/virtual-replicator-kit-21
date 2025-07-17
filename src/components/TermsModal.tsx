@@ -10,22 +10,15 @@ interface TermsModalProps {
 }
 
 export function TermsModal({ open, onAccept }: TermsModalProps) {
-  const [termsAccepted, setTermsAccepted] = useState(false);
-  const [policiesAccepted, setPoliciesAccepted] = useState(false);
-
   const handleTermsClick = () => {
     // Open terms in new tab (you can replace with your actual terms URL)
     window.open('/terms', '_blank');
-    setTermsAccepted(true);
   };
 
   const handlePoliciesClick = () => {
     // Open policies in new tab (you can replace with your actual policies URL)
     window.open('/privacy-policy', '_blank');
-    setPoliciesAccepted(true);
   };
-
-  const canProceed = termsAccepted && policiesAccepted;
 
   return (
     <Dialog open={open} modal={false}>
@@ -41,7 +34,7 @@ export function TermsModal({ open, onAccept }: TermsModalProps) {
           
           <div className="space-y-4">
             <Button
-              variant={termsAccepted ? "default" : "outline"}
+              variant="outline"
               className="w-full justify-between"
               onClick={handleTermsClick}
             >
@@ -50,7 +43,7 @@ export function TermsModal({ open, onAccept }: TermsModalProps) {
             </Button>
             
             <Button
-              variant={policiesAccepted ? "default" : "outline"}
+              variant="outline"
               className="w-full justify-between"
               onClick={handlePoliciesClick}
             >
@@ -59,20 +52,12 @@ export function TermsModal({ open, onAccept }: TermsModalProps) {
             </Button>
           </div>
           
-          <div className="flex flex-col space-y-2">
-            <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-              <div className={`w-2 h-2 rounded-full ${termsAccepted ? 'bg-green-500' : 'bg-gray-300'}`} />
-              <span>Terms of Service {termsAccepted ? 'reviewed' : 'pending'}</span>
-            </div>
-            <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-              <div className={`w-2 h-2 rounded-full ${policiesAccepted ? 'bg-green-500' : 'bg-gray-300'}`} />
-              <span>Privacy Policy {policiesAccepted ? 'reviewed' : 'pending'}</span>
-            </div>
-          </div>
+          <p className="text-xs text-muted-foreground text-center">
+            By clicking "Accept and Continue", you agree to our Terms of Service and Privacy Policy.
+          </p>
           
           <Button 
             onClick={onAccept}
-            disabled={!canProceed}
             className="w-full"
           >
             Accept and Continue
