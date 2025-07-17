@@ -83,6 +83,8 @@ interface NodeData {
   description: string;
   icon: string; // Changed to string for icon names
   color: string;
+  status?: 'idle' | 'processing' | 'completed' | 'error';
+  result?: string;
   
   // LLM specific
   model?: string;
@@ -132,12 +134,22 @@ const CustomNode = ({ data, selected, id }: NodeProps) => {
   
   const IconComponent = iconMap[nodeData.icon] || FileText;
   
+  // Get status styling
+  const getStatusColor = () => {
+    switch (nodeData.status) {
+      case 'processing': return 'border-yellow-500 bg-yellow-50';
+      case 'completed': return 'border-green-500 bg-green-50';
+      case 'error': return 'border-red-500 bg-red-50';
+      default: return '';
+    }
+  };
+  
   return (
     <div className={`px-4 py-3 border-2 rounded-lg shadow-sm transition-all duration-200 min-w-[180px] max-w-[240px] ${
       selected 
         ? 'bg-card border-foreground shadow-lg' 
         : 'bg-card border-border hover:border-muted-foreground hover:shadow-md'
-    }`}>
+    } ${getStatusColor()}`}>
       {/* Node Header */}
       <div className="flex items-center gap-3 mb-2">
         <div className={`w-9 h-9 rounded-lg flex items-center justify-center bg-gradient-to-br from-${nodeData.color}-100 to-${nodeData.color}-200 shadow-sm`}>
@@ -147,17 +159,25 @@ const CustomNode = ({ data, selected, id }: NodeProps) => {
           <h3 className="font-semibold text-sm truncate">{nodeData.label}</h3>
           <p className="text-xs uppercase tracking-wide text-muted-foreground">{nodeData.type}</p>
         </div>
+        {nodeData.status === 'processing' && (
+          <Loader2 className="w-4 h-4 animate-spin text-yellow-600" />
+        )}
+        {nodeData.status === 'completed' && (
+          <CheckCircle className="w-4 h-4 text-green-600" />
+        )}
       </div>
       
       {/* Node Content */}
       <div className="text-xs mb-3 line-clamp-2 text-muted-foreground">
-        {nodeData.description}
+        {nodeData.result ? nodeData.result.substring(0, 100) + '...' : nodeData.description}
       </div>
       
       {/* Node Status/Info */}
       <div className="flex items-center justify-between">
         <Badge variant="secondary" className="text-xs">
-          {nodeData.type === 'llm' && nodeData.model ? nodeData.model : 
+          {nodeData.status === 'processing' ? 'Processing...' :
+           nodeData.status === 'completed' ? 'Completed' :
+           nodeData.type === 'llm' && nodeData.model ? nodeData.model : 
            nodeData.type === 'api' && nodeData.method ? nodeData.method :
            nodeData.type === 'input' && nodeData.inputType ? nodeData.inputType :
            'Ready'}
@@ -257,6 +277,8 @@ export function WorkflowCanvas({ agentId, agentName, activeTab, onComplete, onCh
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [isRunning, setIsRunning] = useState(false);
+  const [executionResults, setExecutionResults] = useState<Record<string, any>>({});
+  const [inputValues, setInputValues] = useState<Record<string, string>>({});
   const { toast } = useToast();
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
 
@@ -361,49 +383,117 @@ export function WorkflowCanvas({ agentId, agentName, activeTab, onComplete, onCh
     onChange();
   }, [setNodes, setEdges, onChange]);
 
-  const executeWorkflow = async (testInput: string = "What color is the sky?") => {
+  const executeWorkflow = async () => {
     setIsRunning(true);
+    setExecutionResults({});
     
     try {
-      // Find the input and LLM nodes to execute the workflow
-      const inputNode = nodes.find(node => (node.data as unknown as NodeData).type === 'input');
-      const llmNode = nodes.find(node => (node.data as unknown as NodeData).type === 'llm');
+      // Find input nodes and get their values
+      const inputNodes = nodes.filter(node => (node.data as unknown as NodeData).type === 'input');
+      const llmNodes = nodes.filter(node => (node.data as unknown as NodeData).type === 'llm');
+      const outputNodes = nodes.filter(node => (node.data as unknown as NodeData).type === 'output');
       
-      if (!llmNode) {
+      if (inputNodes.length === 0) {
         toast({
-          title: "Workflow Incomplete",
-          description: "No LLM node found in workflow. Please add an LLM processing node.",
+          title: "No Input Found",
+          description: "Please add an input node to provide data to the workflow.",
           variant: "destructive",
         });
         return;
       }
 
-      const llmData = llmNode.data as unknown as NodeData;
-      
-      // Call the execute-workflow edge function to process the input
-      const { data, error } = await supabase.functions.invoke('execute-workflow', {
-        body: {
-          model: llmData.model || 'gpt-4o-mini',
-          prompt: llmData.prompt || 'You are a helpful assistant.',
-          userInput: testInput,
-          temperature: llmData.temperature || 0.7,
-          maxTokens: llmData.maxTokens || 1000
-        }
-      });
-
-      if (error) {
-        throw new Error(error.message || 'Failed to process workflow');
+      if (llmNodes.length === 0) {
+        toast({
+          title: "No LLM Found", 
+          description: "Please add an LLM node to process the input.",
+          variant: "destructive",
+        });
+        return;
       }
 
+      // Execute workflow step by step
+      const results: Record<string, any> = {};
+      
+      // Step 1: Process input nodes
+      for (const inputNode of inputNodes) {
+        const inputData = inputNode.data as unknown as NodeData;
+        const userInput = inputValues[inputNode.id] || "What color is the sky?"; // Default for demo
+        results[inputNode.id] = userInput;
+        
+        // Update node to show it's processing
+        updateNodeData(inputNode.id, { ...inputData, status: 'processing' });
+      }
+
+      // Step 2: Process LLM nodes that are connected to input nodes
+      for (const llmNode of llmNodes) {
+        const llmData = llmNode.data as unknown as NodeData;
+        
+        // Find input nodes connected to this LLM
+        const connectedInputs = edges
+          .filter(edge => edge.target === llmNode.id)
+          .map(edge => results[edge.source])
+          .filter(Boolean);
+        
+        if (connectedInputs.length === 0) {
+          continue; // Skip if no connected inputs
+        }
+
+        const combinedInput = connectedInputs.join(" ");
+        
+        // Update node to show it's processing
+        updateNodeData(llmNode.id, { ...llmData, status: 'processing' });
+
+        // Call the execute-workflow edge function
+        const { data, error } = await supabase.functions.invoke('execute-workflow', {
+          body: {
+            model: llmData.model || 'gpt-4o-mini',
+            prompt: llmData.prompt || 'You are a helpful assistant.',
+            userInput: combinedInput,
+            temperature: llmData.temperature || 0.7,
+            maxTokens: llmData.maxTokens || 1000
+          }
+        });
+
+        if (error) {
+          throw new Error(error.message || 'Failed to process LLM node');
+        }
+
+        results[llmNode.id] = data.response;
+        
+        // Update node to show completion
+        updateNodeData(llmNode.id, { ...llmData, status: 'completed', result: data.response });
+      }
+
+      // Step 3: Process output nodes
+      for (const outputNode of outputNodes) {
+        const outputData = outputNode.data as unknown as NodeData;
+        
+        // Find LLM nodes connected to this output
+        const connectedResults = edges
+          .filter(edge => edge.target === outputNode.id)
+          .map(edge => results[edge.source])
+          .filter(Boolean);
+        
+        if (connectedResults.length > 0) {
+          const finalResult = connectedResults.join("\n\n");
+          results[outputNode.id] = finalResult;
+          
+          // Update output node to show the result
+          updateNodeData(outputNode.id, { ...outputData, status: 'completed', result: finalResult });
+        }
+      }
+
+      setExecutionResults(results);
+      
       toast({
-        title: "Workflow Executed Successfully",
-        description: `Response: ${(data.response || 'No response received').substring(0, 100)}...`,
+        title: "Workflow Completed",
+        description: "Check the output nodes for results.",
       });
     } catch (error) {
       console.error('Workflow execution error:', error);
       toast({
         title: "Workflow Failed",
-        description: "There was an error executing your workflow. Check the console for details.",
+        description: error.message || "There was an error executing your workflow.",
         variant: "destructive",
       });
     } finally {
@@ -589,7 +679,51 @@ export function WorkflowCanvas({ agentId, agentName, activeTab, onComplete, onCh
                 </div>
               )}
 
+              {/* Input Node Configuration */}
+              {(selectedNode.data as unknown as NodeData).type === 'input' && (
+                <div className="space-y-4">
+                  <h4 className="font-medium text-sm">Input Configuration</h4>
+                  
+                  <div>
+                    <Label htmlFor="input-value">Input Value</Label>
+                    <Textarea
+                      id="input-value"
+                      value={inputValues[selectedNode.id] || ''}
+                      onChange={(e) => setInputValues(prev => ({ ...prev, [selectedNode.id]: e.target.value }))}
+                      placeholder="Enter the input value for this node..."
+                      rows={3}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      This value will be used when the workflow runs
+                    </p>
+                  </div>
+                </div>
+              )}
 
+              {/* Output Node Display */}
+              {(selectedNode.data as unknown as NodeData).type === 'output' && (
+                <div className="space-y-4">
+                  <h4 className="font-medium text-sm">Output Result</h4>
+                  
+                  {(selectedNode.data as unknown as NodeData).result ? (
+                    <div>
+                      <Label>Generated Output</Label>
+                      <Textarea
+                        value={(selectedNode.data as unknown as NodeData).result || ''}
+                        readOnly
+                        rows={6}
+                        className="bg-muted"
+                      />
+                    </div>
+                  ) : (
+                    <div className="text-sm text-muted-foreground p-4 border-2 border-dashed rounded-lg text-center">
+                      Run the workflow to see output results here
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <Separator />
               {/* Delete Section - Moved to bottom for safety */}
               <div className="pt-4">
                 <Button
