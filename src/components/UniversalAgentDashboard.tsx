@@ -79,11 +79,14 @@ export function UniversalAgentDashboard({ agent, onAgentUpdated }: UniversalAgen
   const { data: existingConfig, refetch, isLoading: configLoading } = useQuery({
     queryKey: ['agent-config', agent.id],
     queryFn: async () => {
+      console.log('Fetching agent configuration for agent ID:', agent.id);
       const { data, error } = await supabase
         .from('agent_configurations')
         .select('*')
         .eq('agent_id', agent.id)
         .single();
+      
+      console.log('Agent config query result:', { data, error });
       
       if (error && error.code !== 'PGRST116') {
         console.error('Error fetching agent config:', error);
@@ -92,6 +95,7 @@ export function UniversalAgentDashboard({ agent, onAgentUpdated }: UniversalAgen
       }
       return data;
     },
+    enabled: !!agent.id, // Only run query when agent.id exists
   });
 
   // Initialize configuration from existing data
@@ -988,6 +992,15 @@ export function UniversalAgentDashboard({ agent, onAgentUpdated }: UniversalAgen
       </div>
     );
   }
+
+  console.log('UniversalAgentDashboard render state:', {
+    configLoading,
+    existingConfig,
+    configuration,
+    builderMode,
+    currentStep,
+    agentId: agent.id
+  });
 
   return (
     <div className="space-y-8">
