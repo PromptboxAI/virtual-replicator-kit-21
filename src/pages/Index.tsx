@@ -190,7 +190,7 @@ const Index = () => {
         {/* Hero Section */}
         <div className="text-center mb-12 mt-16">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <h1 className="text-4xl font-bold text-black">
+            <h1 className="text-6xl font-bold text-black">
               Tokenized AI Agents
             </h1>
           </div>
