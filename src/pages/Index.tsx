@@ -180,7 +180,7 @@ const Index = () => {
       
       <main className="container mx-auto px-4 py-8">
         {/* Hero Section */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-12 mt-16">
           <div className="flex items-center justify-center gap-2 mb-4">
             <Activity className="h-8 w-8 text-primary" />
             <h1 className="text-4xl font-bold text-black">
@@ -188,8 +188,9 @@ const Index = () => {
             </h1>
           </div>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-6">
-            Discover, trade, and deploy autonomous AI agents in your tokenized economy. 
-            Loved by Web3 and DeSci Teams
+            Discover, create and trade autonomous AI Agents.<br />
+            Powered by Base Network.<br />
+            Loved by Web3 and DeSci Teams.
           </p>
           <div className="flex justify-center">
             <Button asChild size="lg" className="bg-black text-white hover:bg-black/90">
