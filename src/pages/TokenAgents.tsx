@@ -261,8 +261,11 @@ const TokenAgents = () => {
           }}
         ></div>
         <div className="container mx-auto px-4 text-center relative z-10">
+          <div className="text-sm text-white/60 tracking-widest uppercase mb-4">
+            GET STARTED
+          </div>
           <h2 className="text-4xl font-bold text-white mb-6">
-            Ready to Launch Your Token-First AI Agent?
+            Ready to Launch<br />Your Token-First AI Agent?
           </h2>
           <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
             Join the future of AI agent economics. Create value, build community, 
