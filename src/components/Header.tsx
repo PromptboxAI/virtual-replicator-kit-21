@@ -68,7 +68,7 @@ export function Header() {
             {/* Auth Section - Always visible */}
             {user ? (
               <div className="flex items-center space-x-2">
-                <Button asChild variant="default">
+                <Button asChild variant="dashboard">
                   <Link to="/my-agents">Dashboard</Link>
                 </Button>
                 <DropdownMenu>
