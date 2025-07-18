@@ -129,8 +129,8 @@ export function ContractDeploymentTest() {
 
     setDeployingFactory(true);
     try {
-      // Use a placeholder treasury address for now
-      const treasuryAddress = "0x742d35Cc6634C0532925a3b8D497b94c2F35B740";
+      // Use the deployer address as treasury
+      const treasuryAddress = "0x23d03610584B0f0988A6F9C281a37094D5611388";
       
       const { data, error } = await supabase.functions.invoke('deploy-factory-contract', {
         body: {
