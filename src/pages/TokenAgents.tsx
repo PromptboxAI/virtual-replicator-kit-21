@@ -254,9 +254,9 @@ const TokenAgents = () => {
       <section className="bg-gradient-primary py-20 relative overflow-hidden">
         {/* Dot pattern overlay */}
         <div 
-          className="absolute inset-0 opacity-20"
+          className="absolute inset-0 opacity-40"
           style={{
-            backgroundImage: `radial-gradient(circle, rgba(255,255,255,0.8) 1px, transparent 1px)`,
+            backgroundImage: `radial-gradient(circle, rgba(100,100,100,0.6) 1px, transparent 1px)`,
             backgroundSize: '8px 8px'
           }}
         ></div>
