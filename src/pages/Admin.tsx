@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
-import { ContractDeploymentWidget } from "@/components/ContractDeploymentWidget";
+
 import { ContractDeploymentTest } from "@/components/ContractDeploymentTest";
 import { AppModeToggle } from "@/components/AppModeToggle";
 import { AdminFaucet } from "@/components/AdminFaucet";
@@ -133,21 +133,6 @@ const Admin = () => {
         {/* Contract Deployment Test */}
         <ContractDeploymentTest />
 
-        {/* Contract Deployment */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Database className="h-5 w-5" />
-              Smart Contract Deployment
-            </CardTitle>
-            <CardDescription>
-              Deploy core PROMPT token and AgentTokenFactory contracts
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ContractDeploymentWidget />
-          </CardContent>
-        </Card>
       </div>
     </div>
   );
