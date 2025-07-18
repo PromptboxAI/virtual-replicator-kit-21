@@ -328,27 +328,34 @@ const Index = () => {
           )}
         </section>
 
-        {/* Call to Action */}
-        <section className="text-center py-16 bg-gradient-to-r from-primary/5 to-secondary/5 rounded-2xl">
-          <h2 className="text-3xl font-bold text-foreground mb-4">
-            Ready to Launch Your Own AI Agent?
-          </h2>
-          <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Join the decentralized AI economy. Create intelligent agents that generate value 
-            for you and your community.
-          </p>
-          <div className="flex items-center justify-center gap-4">
-            <Button asChild size="lg" className="bg-black text-white hover:bg-black/90">
-              <Link to="/create">
-                <Zap className="mr-2 h-4 w-4" />
-                Create Agent
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="lg">
-              <Link to="/learn">
-                Learn More
-              </Link>
-            </Button>
+        {/* CTA Section */}
+        <section className="bg-gradient-primary py-20 relative overflow-hidden">
+          {/* Dot pattern overlay */}
+          <div 
+            className="absolute inset-0 opacity-40"
+            style={{
+              backgroundImage: `radial-gradient(circle, rgba(100,100,100,0.6) 1px, transparent 1px)`,
+              backgroundSize: '8px 8px'
+            }}
+          ></div>
+          <div className="container mx-auto px-4 text-center relative z-10">
+            <div className="text-sm text-white/60 tracking-widest uppercase mb-4">
+              CREATE AGENT
+            </div>
+            <h2 className="text-4xl font-bold text-white mb-6">
+              Ready to Launch<br />Your Own AI Agent?
+            </h2>
+            <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
+              Join the decentralized AI economy. Create intelligent agents that generate value 
+              for you and your community.
+            </p>
+            <div className="flex justify-center">
+              <Button asChild size="lg" variant="secondary" className="bg-white text-black hover:bg-white/90">
+                <Link to="/create">
+                  Create Agent
+                </Link>
+              </Button>
+            </div>
           </div>
         </section>
       </main>
