@@ -184,23 +184,31 @@ const About = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 px-4 bg-white">
-        <div className="container mx-auto">
-          <Card className="p-12 bg-primary border-0 shadow-2xl">
-            <div className="text-center">
-              <h2 className="text-4xl font-bold mb-4 text-white">Ready to Get Started?</h2>
-              <p className="text-white/80 text-lg mb-8 max-w-2xl mx-auto">
-                Join our community and be among the first to experience the future of AI agent ownership
-              </p>
-              <div className="flex justify-center">
-                <Link to="/create">
-                  <Button size="lg" className="bg-white text-primary hover:bg-white/90 font-semibold">
-                    Create Agent
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </Card>
+      <section className="bg-gradient-primary py-20 relative overflow-hidden">
+        {/* Dot pattern overlay */}
+        <div 
+          className="absolute inset-0 opacity-40"
+          style={{
+            backgroundImage: `radial-gradient(circle, rgba(100,100,100,0.6) 1px, transparent 1px)`,
+            backgroundSize: '8px 8px'
+          }}
+        ></div>
+        <div className="container mx-auto px-4 text-center relative z-10">
+          <div className="text-sm text-white/60 tracking-widest uppercase mb-4">
+            GET STARTED
+          </div>
+          <h2 className="text-4xl font-bold text-white mb-6">
+            Ready to Launch<br />Your Token-First AI Agent?
+          </h2>
+          <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
+            Join the future of AI agent economics. Create value, build community, 
+            and scale with purpose.
+          </p>
+          <div className="flex justify-center">
+            <Button size="lg" variant="secondary" className="bg-white text-black hover:bg-white/90">
+              Get Started
+            </Button>
+          </div>
         </div>
       </section>
 
