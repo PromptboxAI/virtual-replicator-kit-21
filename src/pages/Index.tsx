@@ -108,12 +108,20 @@ function IndexAgentCard({ agent }: { agent: Agent }) {
           </div>
         </div>
         
-        {/* Simple visual indicator */}
+        {/* Bonding Curve Progress */}
         <div className="h-2 bg-muted/20 rounded relative overflow-hidden">
-          <div 
-            className="h-full bg-gradient-to-r from-primary/60 to-primary transition-all"
-            style={{ width: `${Math.min(Math.max((agent.current_price * 100) % 100, 20), 80)}%` }}
-          />
+          {agent.token_graduated ? (
+            // Graduated agents show full progress bar in green
+            <div className="h-full bg-green-600 transition-all w-full" />
+          ) : (
+            // Non-graduated agents show bonding curve progress
+            <div 
+              className="h-full bg-gradient-to-r from-primary/60 to-primary transition-all"
+              style={{ 
+                width: `${Math.min(((agent.prompt_raised || 0) / (agent.graduation_threshold || 42000)) * 100, 100)}%` 
+              }}
+            />
+          )}
         </div>
       </div>
     </Card>

@@ -404,6 +404,7 @@ export type Database = {
           current_price: number
           description: string | null
           framework: string | null
+          graduation_threshold: number | null
           id: string
           is_active: boolean | null
           market_cap: number | null
@@ -436,6 +437,7 @@ export type Database = {
           current_price?: number
           description?: string | null
           framework?: string | null
+          graduation_threshold?: number | null
           id?: string
           is_active?: boolean | null
           market_cap?: number | null
@@ -468,6 +470,7 @@ export type Database = {
           current_price?: number
           description?: string | null
           framework?: string | null
+          graduation_threshold?: number | null
           id?: string
           is_active?: boolean | null
           market_cap?: number | null
