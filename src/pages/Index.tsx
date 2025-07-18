@@ -184,24 +184,22 @@ const Index = () => {
           <div className="flex items-center justify-center gap-2 mb-4">
             <Activity className="h-8 w-8 text-primary" />
             <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              AI Agent Marketplace
+              Tokenized AI Agents
             </h1>
           </div>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-6">
-            Discover, trade, and deploy autonomous AI agents in the decentralized economy. 
-            From bonding curves to full graduation.
+            Discover, trade, and deploy autonomous AI agents in your tokenized economy. 
+            Loved by Web3 and DeSci Teams
           </p>
           <div className="flex items-center justify-center gap-4">
             <Button asChild size="lg" className="bg-black text-white hover:bg-black/90">
-              <Link to="/create">
-                <Zap className="mr-2 h-4 w-4" />
-                Create Agent
+              <Link to="/agents">
+                Explore Agents
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg">
-              <Link to="/agents">
-                <BarChart3 className="mr-2 h-4 w-4" />
-                View All Agents
+              <Link to="/learn">
+                Learn More
               </Link>
             </Button>
           </div>
