@@ -274,7 +274,7 @@ const Index = () => {
             <h2 className="text-2xl font-bold text-foreground">Discover Agents</h2>
             <Link 
               to="/agents" 
-              className="text-primary hover:text-primary/80 flex items-center gap-1 text-sm font-medium"
+              className="text-black hover:text-gray-700 flex items-center gap-1 text-sm font-medium"
             >
               View All <ArrowRight className="h-4 w-4" />
             </Link>
