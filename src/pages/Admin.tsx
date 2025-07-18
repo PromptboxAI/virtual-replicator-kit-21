@@ -8,9 +8,9 @@ import { AppModeToggle } from "@/components/AppModeToggle";
 import { AdminFaucet } from "@/components/AdminFaucet";
 import { TreasuryManagement } from "@/components/TreasuryManagement";
 import { RevenueDashboard } from "@/components/RevenueDashboard";
+import { Header } from "@/components/Header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield, Settings, Database, Wallet, BarChart3 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -52,7 +52,9 @@ const Admin = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
+      <Header />
+      
+      {/* Admin Header */}
       <div className="border-b bg-card">
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center gap-3">
