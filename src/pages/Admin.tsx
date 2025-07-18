@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { ContractDeploymentWidget } from "@/components/ContractDeploymentWidget";
+import { ContractDeploymentTest } from "@/components/ContractDeploymentTest";
 import { AppModeToggle } from "@/components/AppModeToggle";
 import { AdminFaucet } from "@/components/AdminFaucet";
 import { TreasuryManagement } from "@/components/TreasuryManagement";
@@ -128,6 +129,9 @@ const Admin = () => {
             <RevenueDashboard />
           </CardContent>
         </Card>
+
+        {/* Contract Deployment Test */}
+        <ContractDeploymentTest />
 
         {/* Contract Deployment */}
         <Card>
