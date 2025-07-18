@@ -268,12 +268,9 @@ const TokenAgents = () => {
             Join the future of AI agent economics. Create value, build community, 
             and scale with purpose.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" variant="secondary" className="bg-white text-primary hover:bg-white/90">
-              Get Started Now
-            </Button>
-            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
-              Book a Demo
+          <div className="flex justify-center">
+            <Button size="lg" variant="secondary" className="bg-white text-black hover:bg-white/90">
+              Get Started
             </Button>
           </div>
         </div>
