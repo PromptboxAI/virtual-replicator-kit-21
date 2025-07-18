@@ -31,7 +31,7 @@ export function Header() {
             
             {/* Navigation */}
             <nav className="hidden md:flex items-center space-x-8">
-              <Link to="/index" className="text-foreground hover:text-primary transition-colors font-medium">
+              <Link to="/ai-agents" className="text-foreground hover:text-primary transition-colors font-medium">
                 AI Agents
               </Link>
               <Link to="/create" className="text-foreground hover:text-primary transition-colors font-medium">

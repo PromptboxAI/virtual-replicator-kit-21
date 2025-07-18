@@ -79,7 +79,7 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<TokenAgents />} />
-              <Route path="/index" element={<Index />} />
+              <Route path="/ai-agents" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/about" element={<About />} />
               <Route path="/learn" element={<Learn />} />
