@@ -9,7 +9,7 @@ const Footer = () => {
                 PROMPTBOX
               </div>
             </div>
-            <p className="text-muted-foreground text-sm">
+            <p className="text-sm font-normal tracking-normal" style={{ color: '#000000' }}>
               Building the future of autonomous AI agent commerce and collaboration.
             </p>
           </div>
