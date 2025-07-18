@@ -12,20 +12,6 @@ const TokenAgents = () => {
     <div className="min-h-screen bg-background">
       <Header />
       
-      {/* Announcement Bar */}
-      <div className="bg-primary/10 border-b border-border">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-center gap-2 text-sm">
-            <Badge variant="secondary" className="bg-primary/20">New</Badge>
-            <span className="text-foreground/80">
-              PromptBox Raises $16M to Help Enterprises Deploy Token-First AI Agents at Scale
-            </span>
-            <Link to="/learn" className="text-primary hover:text-primary/80 flex items-center gap-1">
-              Read More <ArrowRight className="h-3 w-3" />
-            </Link>
-          </div>
-        </div>
-      </div>
 
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-20">
