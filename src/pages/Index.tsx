@@ -195,7 +195,7 @@ const Index = () => {
               Tokenized AI Agents
             </h1>
           </div>
-          <p className="text-lg font-normal tracking-normal max-w-2xl mx-auto mb-6" style={{ color: '#000000' }}>
+          <p className="text-base font-normal tracking-normal max-w-2xl mx-auto mb-6" style={{ color: '#000000' }}>
             Discover, create and trade autonomous AI Agents.<br />
             Powered by Base Network.<br />
             Loved by Web3 and DeSci Teams.
