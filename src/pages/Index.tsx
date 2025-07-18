@@ -28,9 +28,10 @@ function IndexAgentCard({ agent }: { agent: Agent }) {
   const isPositive = (agent.price_change_24h || 0) > 0;
   
   const formatPrice = (price: number) => {
+    if (typeof price !== 'number' || isNaN(price)) return '$0.00';
     if (price < 0.000001) return price.toExponential(3);
-    if (price < 0.01) return price.toFixed(6);
-    return price.toFixed(4);
+    if (price < 1) return price.toFixed(6); // 4+ decimals for numbers starting with 0
+    return price.toFixed(2); // 2 decimals for numbers 1 and above
   };
 
   const formatMarketCap = (marketCap?: number | null) => {
@@ -191,7 +192,7 @@ const Index = () => {
             From bonding curves to full graduation.
           </p>
           <div className="flex items-center justify-center gap-4">
-            <Button asChild size="lg" className="bg-gradient-primary hover:opacity-90">
+            <Button asChild size="lg" className="bg-black text-white hover:bg-black/90">
               <Link to="/create">
                 <Zap className="mr-2 h-4 w-4" />
                 Create Agent
@@ -212,7 +213,7 @@ const Index = () => {
         {/* Spotlight Agent */}
         {spotlightAgent && (
           <section className="mb-12">
-            <div className="flex items-center gap-2 mb-6">
+            <div className="flex items-center gap-3 mb-6">
               <Star className="h-6 w-6 text-primary" />
               <h2 className="text-2xl font-bold text-foreground">Spotlight Agent</h2>
             </div>
@@ -237,9 +238,9 @@ const Index = () => {
                 </div>
                 <div className="text-right">
                   <div className="text-3xl font-bold text-foreground">
-                    ${spotlightAgent.current_price < 0.01 
+                    ${spotlightAgent.current_price < 1 
                       ? spotlightAgent.current_price.toFixed(6) 
-                      : spotlightAgent.current_price.toFixed(4)
+                      : spotlightAgent.current_price.toFixed(2)
                     }
                   </div>
                   {spotlightAgent.market_cap && (
@@ -255,7 +256,7 @@ const Index = () => {
               <div className="mt-4">
                 <Button 
                   onClick={() => navigate(`/trade/${spotlightAgent.id}`)}
-                  className="bg-primary text-primary-foreground hover:bg-primary/90"
+                  className="bg-black text-white hover:bg-black/90"
                 >
                   <BarChart3 className="mr-2 h-4 w-4" />
                   Trade {spotlightAgent.symbol}
@@ -337,7 +338,7 @@ const Index = () => {
             for you and your community.
           </p>
           <div className="flex items-center justify-center gap-4">
-            <Button asChild size="lg" className="bg-gradient-primary hover:opacity-90">
+            <Button asChild size="lg" className="bg-black text-white hover:bg-black/90">
               <Link to="/create">
                 <Zap className="mr-2 h-4 w-4" />
                 Create Agent
