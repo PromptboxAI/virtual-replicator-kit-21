@@ -66,14 +66,14 @@ Deno.serve(async (req) => {
   }
 
   try {
-    console.log('Deploying PromptTestToken...');
+    console.log('Starting PromptTestToken deployment...');
     
     const deployerPrivateKey = Deno.env.get('DEPLOYER_PRIVATE_KEY');
     if (!deployerPrivateKey) {
       throw new Error('DEPLOYER_PRIVATE_KEY not found');
     }
 
-    console.log('Creating account and clients...');
+    console.log('Creating account...');
     const account = privateKeyToAccount(deployerPrivateKey as `0x${string}`);
     console.log('Account address:', account.address);
     
@@ -88,59 +88,100 @@ Deno.serve(async (req) => {
       transport: http()
     });
 
-    // Check account balance first
-    console.log('Checking account balance...');
+    // Check balance
+    console.log('Checking balance...');
     const balance = await publicClient.getBalance({ address: account.address });
-    console.log('Account balance:', balance.toString(), 'wei');
+    console.log('Balance:', balance.toString(), 'wei');
     
     if (balance === 0n) {
-      throw new Error(`Deployer wallet ${account.address} has no ETH balance on Base Sepolia. Please fund the wallet with test ETH.`);
+      throw new Error(`No ETH balance in deployer wallet ${account.address}`);
     }
 
-    console.log('Estimating gas for deployment...');
-    
-    // Estimate gas first
+    // Try gas estimation
+    console.log('Estimating gas...');
     try {
       const gasEstimate = await publicClient.estimateContractDeploymentGas({
         abi: PROMPT_TOKEN_ABI,
         bytecode: PROMPT_TOKEN_BYTECODE as `0x${string}`,
         account: account.address,
       });
-      console.log('Gas estimate:', gasEstimate.toString());
+      console.log('Gas estimate successful:', gasEstimate.toString());
     } catch (gasError) {
-      console.error('Gas estimation failed:', gasError);
-      throw new Error(`Gas estimation failed: ${gasError.message}`);
+      console.error('Gas estimation failed:', gasError.message);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: `Gas estimation failed: ${gasError.message}`,
+          details: gasError.stack
+        }),
+        { 
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
     }
 
-    console.log('Deploying PromptTestToken from address:', account.address);
+    // Deploy contract
+    console.log('Deploying contract...');
+    let hash;
+    try {
+      hash = await walletClient.deployContract({
+        abi: PROMPT_TOKEN_ABI,
+        bytecode: PROMPT_TOKEN_BYTECODE as `0x${string}`,
+      });
+      console.log('Deployment transaction hash:', hash);
+    } catch (deployError) {
+      console.error('Contract deployment failed:', deployError.message);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: `Contract deployment failed: ${deployError.message}`,
+          details: deployError.stack
+        }),
+        { 
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
 
-    // Deploy the actual PromptTestToken contract
-    const hash = await walletClient.deployContract({
-      abi: PROMPT_TOKEN_ABI,
-      bytecode: PROMPT_TOKEN_BYTECODE as `0x${string}`,
-    });
+    // Wait for receipt
+    console.log('Waiting for transaction receipt...');
+    try {
+      const receipt = await publicClient.waitForTransactionReceipt({ hash });
+      console.log('Contract deployed at:', receipt.contractAddress);
 
-    console.log('Transaction hash:', hash);
-
-    const receipt = await publicClient.waitForTransactionReceipt({ hash });
-    console.log('Contract deployed at:', receipt.contractAddress);
-
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        contractAddress: receipt.contractAddress,
-        transactionHash: hash,
-        name: "Prompt Test Token",
-        symbol: "PROMPTTEST",
-        message: "PromptTestToken deployed successfully"
-      }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
-    );
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          contractAddress: receipt.contractAddress,
+          transactionHash: hash,
+          name: "Prompt Test Token",
+          symbol: "PROMPTTEST",
+          message: "PromptTestToken deployed successfully"
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    } catch (receiptError) {
+      console.error('Transaction receipt failed:', receiptError.message);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: `Transaction failed: ${receiptError.message}`,
+          transactionHash: hash
+        }),
+        { 
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
 
   } catch (error) {
-    console.error('PROMPTTEST deploy error:', error);
+    console.error('PROMPTTEST deploy error:', error.message);
+    console.error('Stack:', error.stack);
     
     return new Response(
       JSON.stringify({ 
