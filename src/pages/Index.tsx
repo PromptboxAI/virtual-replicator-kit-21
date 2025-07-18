@@ -191,15 +191,10 @@ const Index = () => {
             Discover, trade, and deploy autonomous AI agents in your tokenized economy. 
             Loved by Web3 and DeSci Teams
           </p>
-          <div className="flex items-center justify-center gap-4">
+          <div className="flex justify-center">
             <Button asChild size="lg" className="bg-black text-white hover:bg-black/90">
               <Link to="/agents">
-                Explore Agents
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="lg">
-              <Link to="/learn">
-                Learn More
+                Explore All Agents
               </Link>
             </Button>
           </div>
