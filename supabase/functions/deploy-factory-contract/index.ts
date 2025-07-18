@@ -1,4 +1,4 @@
-import { createPublicClient, createWalletClient, http, parseEther } from 'npm:viem'
+import { createPublicClient, createWalletClient, http, parseEther, getAddress } from 'npm:viem'
 import { base, baseSepolia } from 'npm:viem/chains'
 import { privateKeyToAccount } from 'npm:viem/accounts'
 
@@ -73,11 +73,15 @@ Deno.serve(async (req) => {
     console.log('Prompt token address:', promptTokenAddress)
     console.log('Treasury address:', treasuryAddress)
 
+    // Ensure addresses are properly checksummed
+    const checksummedPromptToken = getAddress(promptTokenAddress)
+    const checksummedTreasury = getAddress(treasuryAddress)
+
     // Deploy the contract
     const hash = await walletClient.deployContract({
       abi: FACTORY_ABI,
       bytecode: FACTORY_BYTECODE,
-      args: [promptTokenAddress, treasuryAddress],
+      args: [checksummedPromptToken, checksummedTreasury],
       gas: 3000000n
     })
 
