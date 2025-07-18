@@ -257,7 +257,7 @@ const TokenAgents = () => {
           className="absolute inset-0 opacity-20"
           style={{
             backgroundImage: `radial-gradient(circle, rgba(255,255,255,0.8) 1px, transparent 1px)`,
-            backgroundSize: '20px 20px'
+            backgroundSize: '8px 8px'
           }}
         ></div>
         <div className="container mx-auto px-4 text-center relative z-10">
