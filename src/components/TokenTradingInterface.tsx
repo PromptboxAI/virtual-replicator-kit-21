@@ -1,0 +1,441 @@
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
+import { TrendingUp, TrendingDown, Wallet, Activity, Target, DollarSign } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useAgentToken } from "@/hooks/useAgentTokens";
+import { useTokenBalance } from "@/hooks/useTokenBalance";
+import { useAuth } from "@/hooks/useAuth";
+import { 
+  getCurrentPrice, 
+  calculateBuyCost, 
+  calculateSellReturn, 
+  calculateTokensFromPrompt,
+  calculateMarketCap,
+  BONDING_CURVE_CONFIG
+} from "@/lib/bondingCurve";
+
+interface Agent {
+  id: string;
+  name: string;
+  symbol: string;
+  current_price: number;
+  prompt_raised: number;
+  graduation_threshold: number;
+  token_graduated: boolean;
+  token_address?: string;
+  market_cap?: number;
+  price_change_24h?: number;
+  volume_24h?: number;
+  token_holders?: number;
+  avatar_url?: string;
+  description?: string;
+}
+
+interface TokenTradingInterfaceProps {
+  agent: Agent;
+  onTradeComplete?: () => void;
+}
+
+export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingInterfaceProps) => {
+  const [tradeType, setTradeType] = useState<"buy" | "sell">("buy");
+  const [promptAmount, setPromptAmount] = useState("");
+  const [tokenAmount, setTokenAmount] = useState("");
+  const [isCalculating, setIsCalculating] = useState(false);
+  const [slippage, setSlippage] = useState("0.5");
+  const [loading, setLoading] = useState(false);
+
+  const { toast } = useToast();
+  const { user, authenticated } = useAuth();
+  const { balance: promptBalance, loading: balanceLoading } = useTokenBalance(user?.id);
+  const { buyAgentTokens, sellAgentTokens } = useAgentToken(agent.token_address);
+
+  // Calculate graduation progress
+  const graduationProgress = Math.min((agent.prompt_raised / agent.graduation_threshold) * 100, 100);
+  const remainingToGraduation = Math.max(agent.graduation_threshold - agent.prompt_raised, 0);
+
+  // Real-time price calculation
+  useEffect(() => {
+    if (promptAmount && !isCalculating) {
+      setIsCalculating(true);
+      const amount = parseFloat(promptAmount);
+      if (amount > 0) {
+        try {
+          // Use tokens sold to calculate, convert from PROMPT raised to tokens sold estimation
+          const tokensSold = agent.prompt_raised * 1000; // Rough conversion for demo
+          const result = calculateTokensFromPrompt(tokensSold, amount);
+          setTokenAmount(result.tokenAmount.toFixed(6));
+        } catch (error) {
+          console.error("Price calculation error:", error);
+          setTokenAmount("0");
+        }
+      } else {
+        setTokenAmount("");
+      }
+      setIsCalculating(false);
+    }
+  }, [promptAmount, agent.prompt_raised]);
+
+  useEffect(() => {
+    if (tokenAmount && !isCalculating && tradeType === "sell") {
+      setIsCalculating(true);
+      const amount = parseFloat(tokenAmount);
+      if (amount > 0) {
+        try {
+          // Use sell return calculation instead of non-existent function
+          const tokensSold = agent.prompt_raised * 1000; // Rough conversion for demo
+          const result = calculateSellReturn(tokensSold, amount);
+          setPromptAmount(result.return.toFixed(6));
+        } catch (error) {
+          console.error("Price calculation error:", error);
+          setPromptAmount("0");
+        }
+      } else {
+        setPromptAmount("");
+      }
+      setIsCalculating(false);
+    }
+  }, [tokenAmount, agent.prompt_raised, tradeType]);
+
+  // Convert PROMPT raised to tokens sold estimation for price calculation
+  const tokensSold = agent.prompt_raised * 1000; // Rough conversion for demo
+  const currentPrice = getCurrentPrice(tokensSold);
+  const priceAfterTrade = promptAmount ? 
+    getCurrentPrice(tokensSold + parseFloat(promptAmount || "0") * 1000) : 
+    currentPrice;
+
+  const priceImpact = promptAmount ? 
+    ((priceAfterTrade - currentPrice) / currentPrice * 100) : 0;
+
+  const handleTrade = async () => {
+    if (!authenticated) {
+      toast({
+        title: "Authentication Required",
+        description: "Please connect your wallet to trade tokens.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!promptAmount || !tokenAmount) {
+      toast({
+        title: "Invalid Amount",
+        description: "Please enter a valid amount to trade.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      if (tradeType === "buy") {
+        await buyAgentTokens(promptAmount);
+        toast({
+          title: "Purchase Successful",
+          description: `Successfully bought ${tokenAmount} ${agent.symbol} tokens!`,
+        });
+      } else {
+        await sellAgentTokens(tokenAmount);
+        toast({
+          title: "Sale Successful",
+          description: `Successfully sold ${tokenAmount} ${agent.symbol} tokens!`,
+        });
+      }
+      
+      setPromptAmount("");
+      setTokenAmount("");
+      onTradeComplete?.();
+    } catch (error) {
+      console.error("Trade error:", error);
+      toast({
+        title: "Trade Failed",
+        description: error instanceof Error ? error.message : "An error occurred during the trade.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatPrice = (price: number) => {
+    return price < 0.01 ? price.toExponential(4) : price.toFixed(6);
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Agent Header */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-4">
+            {agent.avatar_url && (
+              <img 
+                src={agent.avatar_url} 
+                alt={agent.name}
+                className="w-16 h-16 rounded-full"
+              />
+            )}
+            <div className="flex-1">
+              <CardTitle className="flex items-center gap-2">
+                {agent.name}
+                <Badge variant={agent.token_graduated ? "default" : "secondary"}>
+                  {agent.symbol}
+                </Badge>
+              </CardTitle>
+              <CardDescription className="mt-1">
+                {agent.description || "AI Agent Token"}
+              </CardDescription>
+            </div>
+            <div className="text-right">
+              <div className="text-2xl font-bold">
+                ${formatPrice(currentPrice)}
+              </div>
+              {agent.price_change_24h !== undefined && (
+                <div className={`flex items-center gap-1 text-sm ${
+                  agent.price_change_24h >= 0 ? 'text-green-600' : 'text-red-600'
+                }`}>
+                  {agent.price_change_24h >= 0 ? (
+                    <TrendingUp className="h-3 w-3" />
+                  ) : (
+                    <TrendingDown className="h-3 w-3" />
+                  )}
+                  {Math.abs(agent.price_change_24h).toFixed(2)}%
+                </div>
+              )}
+            </div>
+          </div>
+        </CardHeader>
+      </Card>
+
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Trading Panel */}
+        <div className="lg:col-span-2 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Activity className="h-5 w-5" />
+                Trade {agent.symbol}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <Tabs value={tradeType} onValueChange={(value) => setTradeType(value as "buy" | "sell")}>
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="buy" className="text-green-600">Buy</TabsTrigger>
+                  <TabsTrigger value="sell" className="text-red-600">Sell</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="buy" className="space-y-4 mt-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="prompt-amount">PROMPT Amount</Label>
+                    <Input
+                      id="prompt-amount"
+                      type="number"
+                      placeholder="0.0"
+                      value={promptAmount}
+                      onChange={(e) => setPromptAmount(e.target.value)}
+                      disabled={loading}
+                    />
+                    <div className="text-xs text-muted-foreground">
+                      Balance: {balanceLoading ? "..." : `${promptBalance?.toFixed(2) || "0"} PROMPT`}
+                    </div>
+                  </div>
+
+                  <div className="text-center text-muted-foreground">↓</div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="token-amount">{agent.symbol} Amount</Label>
+                    <Input
+                      id="token-amount"
+                      type="number"
+                      placeholder="0.0"
+                      value={tokenAmount}
+                      disabled
+                      className="bg-muted"
+                    />
+                    <div className="text-xs text-muted-foreground">
+                      You will receive approximately {tokenAmount || "0"} {agent.symbol}
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="sell" className="space-y-4 mt-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="sell-token-amount">{agent.symbol} Amount</Label>
+                    <Input
+                      id="sell-token-amount"
+                      type="number"
+                      placeholder="0.0"
+                      value={tokenAmount}
+                      onChange={(e) => setTokenAmount(e.target.value)}
+                      disabled={loading}
+                    />
+                    <div className="text-xs text-muted-foreground">
+                      Balance: 0 {agent.symbol} {/* TODO: Get user's token balance */}
+                    </div>
+                  </div>
+
+                  <div className="text-center text-muted-foreground">↓</div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="sell-prompt-amount">PROMPT Amount</Label>
+                    <Input
+                      id="sell-prompt-amount"
+                      type="number"
+                      placeholder="0.0"
+                      value={promptAmount}
+                      disabled
+                      className="bg-muted"
+                    />
+                    <div className="text-xs text-muted-foreground">
+                      You will receive approximately {promptAmount || "0"} PROMPT
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
+
+              {/* Trade Details */}
+              {promptAmount && (
+                <div className="space-y-3 p-4 bg-muted/50 rounded-lg">
+                  <div className="flex justify-between text-sm">
+                    <span>Price Impact</span>
+                    <span className={priceImpact > 5 ? 'text-red-600' : 'text-green-600'}>
+                      {priceImpact.toFixed(2)}%
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Price After Trade</span>
+                    <span>${formatPrice(priceAfterTrade)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Slippage Tolerance</span>
+                    <span>{slippage}%</span>
+                  </div>
+                </div>
+              )}
+
+              <Button 
+                onClick={handleTrade}
+                disabled={!promptAmount || !tokenAmount || loading || !authenticated}
+                className="w-full"
+                size="lg"
+              >
+                {loading ? "Processing..." : `${tradeType === "buy" ? "Buy" : "Sell"} ${agent.symbol}`}
+              </Button>
+
+              {!authenticated && (
+                <p className="text-center text-sm text-muted-foreground">
+                  Connect your wallet to start trading
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Market Info Sidebar */}
+        <div className="space-y-6">
+          {/* Graduation Progress */}
+          {!agent.token_graduated && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Target className="h-4 w-4" />
+                  Graduation Progress
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>Progress</span>
+                    <span>{graduationProgress.toFixed(1)}%</span>
+                  </div>
+                  <Progress value={graduationProgress} className="h-2" />
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-semibold">
+                    {agent.prompt_raised.toLocaleString()} / {agent.graduation_threshold.toLocaleString()}
+                  </div>
+                  <div className="text-xs text-muted-foreground">PROMPT Raised</div>
+                </div>
+                {remainingToGraduation > 0 && (
+                  <div className="text-center p-3 bg-blue-50 rounded-lg">
+                    <div className="text-sm font-medium text-blue-900">
+                      {remainingToGraduation.toLocaleString()} PROMPT
+                    </div>
+                    <div className="text-xs text-blue-600">needed to graduate</div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Market Stats */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <DollarSign className="h-4 w-4" />
+                Market Stats
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Market Cap</span>
+                <span className="text-sm font-medium">
+                  ${agent.market_cap?.toLocaleString() || "0"}
+                </span>
+              </div>
+              <Separator />
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">24h Volume</span>
+                <span className="text-sm font-medium">
+                  ${agent.volume_24h?.toLocaleString() || "0"}
+                </span>
+              </div>
+              <Separator />
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Holders</span>
+                <span className="text-sm font-medium">
+                  {agent.token_holders?.toLocaleString() || "0"}
+                </span>
+              </div>
+              <Separator />
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Status</span>
+                <Badge variant={agent.token_graduated ? "default" : "secondary"}>
+                  {agent.token_graduated ? "Graduated" : "Bonding Curve"}
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Wallet Info */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Wallet className="h-4 w-4" />
+                Your Wallet
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">PROMPT Balance</span>
+                <span className="text-sm font-medium">
+                  {balanceLoading ? "..." : `${promptBalance?.toFixed(2) || "0"}`}
+                </span>
+              </div>
+              <Separator />
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">{agent.symbol} Balance</span>
+                <span className="text-sm font-medium">0</span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+};

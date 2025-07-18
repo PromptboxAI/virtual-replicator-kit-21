@@ -13,6 +13,7 @@ import Learn from "./pages/Learn";
 import CreateAgent from "./pages/CreateAgent";
 import MyAgents from "./pages/MyAgents";
 import TradingPage from "./pages/TradingPage";
+import TradePage from "./pages/TradePage";
 import AgentManagement from "./pages/AgentManagement";
 import Admin from "./pages/Admin";
 import Market from "./pages/Market";
@@ -87,7 +88,8 @@ const App = () => (
               <Route path="/my-agents" element={<MyAgents />} />
               <Route path="/market" element={<Market />} />
               <Route path="/agents" element={<AllAgents />} />
-              <Route path="/trade/:agentId" element={<TradingPage />} />
+              <Route path="/trade/:agentId" element={<TradePage />} />
+              <Route path="/trading/:agentId" element={<TradingPage />} />
               <Route path="/agent/:agentId" element={<AgentManagement />} />
               <Route path="/manage/:agentId" element={<AgentManagement />} />
               <Route path="/admin" element={<Admin />} />

@@ -75,8 +75,8 @@ function IndexAgentCard({ agent }: { agent: Agent }) {
           </div>
         </div>
         
-        <Button size="sm" variant="ghost" className="opacity-0 group-hover:opacity-100 transition-opacity">
-          <BarChart3 className="w-4 h-4" />
+        <Button size="sm" variant="default" className="opacity-0 group-hover:opacity-100 transition-opacity">
+          Trade
         </Button>
       </div>
       
