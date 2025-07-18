@@ -11,6 +11,7 @@ export function ContractDeploymentTest() {
   const [keyStatus, setKeyStatus] = useState<any>(null);
   const [deployingPrompt, setDeployingPrompt] = useState(false);
   const [deployingFactory, setDeployingFactory] = useState(false);
+  const [debugResult, setDebugResult] = useState<any>(null);
   const [promptTokenResult, setPromptTokenResult] = useState<any>(null);
   const [factoryResult, setFactoryResult] = useState<any>(null);
 
@@ -41,6 +42,40 @@ export function ContractDeploymentTest() {
       setKeyStatus({ success: false, error: 'Network error' });
       toast({
         title: "Test Failed",
+        description: "Network error occurred",
+        variant: "destructive"
+      });
+    }
+    setTesting(false);
+  };
+
+  const debugDeployer = async () => {
+    setTesting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('debug-deployer');
+      
+      if (error) {
+        console.error('Debug error:', error);
+        setDebugResult({ success: false, error: error.message });
+        toast({
+          title: "Debug Failed",
+          description: error.message,
+          variant: "destructive"
+        });
+      } else {
+        console.log('Debug result:', data);
+        setDebugResult(data);
+        toast({
+          title: data.success ? "Debug Passed" : "Debug Failed",
+          description: data.success ? `Balance: ${data.balanceETH} ETH` : data.error,
+          variant: data.success ? "default" : "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Debug error:', error);
+      setDebugResult({ success: false, error: 'Network error' });
+      toast({
+        title: "Debug Failed",
         description: "Network error occurred",
         variant: "destructive"
       });
@@ -168,6 +203,41 @@ export function ContractDeploymentTest() {
                 {keyStatus.success && (
                   <Badge variant="secondary">
                     Key Length: {keyStatus.keyLength}
+                  </Badge>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Debug Deployer */}
+          <div className="space-y-2">
+            <h3 className="font-semibold">1.5. Debug Deployer (Advanced)</h3>
+            <Button 
+              onClick={debugDeployer} 
+              disabled={testing}
+              variant="outline"
+              size="sm"
+            >
+              {testing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Debug Deployer Setup
+            </Button>
+            
+            {debugResult && (
+              <div className="flex items-center gap-2">
+                {debugResult.success ? (
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                ) : (
+                  <XCircle className="h-5 w-5 text-red-600" />
+                )}
+                <span className={debugResult.success ? "text-green-600" : "text-red-600"}>
+                  {debugResult.success 
+                    ? `Balance: ${debugResult.balanceETH} ETH` 
+                    : `Error at ${debugResult.step}: ${debugResult.error}`
+                  }
+                </span>
+                {debugResult.success && (
+                  <Badge variant="secondary">
+                    Address: {debugResult.accountAddress}
                   </Badge>
                 )}
               </div>
