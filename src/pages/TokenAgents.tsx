@@ -251,8 +251,16 @@ const TokenAgents = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-gradient-primary py-20">
-        <div className="container mx-auto px-4 text-center">
+      <section className="bg-gradient-primary py-20 relative overflow-hidden">
+        {/* Dot pattern overlay */}
+        <div 
+          className="absolute inset-0 opacity-20"
+          style={{
+            backgroundImage: `radial-gradient(circle, rgba(255,255,255,0.8) 1px, transparent 1px)`,
+            backgroundSize: '20px 20px'
+          }}
+        ></div>
+        <div className="container mx-auto px-4 text-center relative z-10">
           <h2 className="text-4xl font-bold text-white mb-6">
             Ready to Launch Your Token-First AI Agent?
           </h2>
