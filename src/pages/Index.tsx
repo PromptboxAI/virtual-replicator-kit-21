@@ -283,7 +283,7 @@ const Index = () => {
           {/* Filter Tabs */}
           <div className="flex gap-2 mb-6 overflow-x-auto">
             <Button
-              variant={activeFilter === 'all' ? 'default' : 'outline'}
+              variant={activeFilter === 'all' ? 'dashboard' : 'outline'}
               size="sm"
               onClick={() => setActiveFilter('all')}
             >
