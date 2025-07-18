@@ -1,447 +1,364 @@
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { ArrowRight, Bot, Coins, TrendingUp, Users, Zap } from "lucide-react";
-import { Link } from "react-router-dom";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
-import { useAuth } from "@/hooks/useAuth";
-import { TermsModal } from "@/components/TermsModal";
+import React, { useState } from 'react';
+import { Header } from '@/components/Header';
+import { Footer } from '@/components/Footer';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { MarketStats } from '@/components/MarketStats';
+import { useAgents, type Agent } from '@/hooks/useAgents';
+import { useAuth } from '@/hooks/useAuth';
+import { TermsModal } from '@/components/TermsModal';
+import { 
+  TrendingUp, 
+  TrendingDown,
+  Activity, 
+  Users, 
+  Zap, 
+  Star,
+  BarChart3,
+  ArrowRight,
+  Filter,
+  Search
+} from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+
+// Agent Card Component for Index page
+function IndexAgentCard({ agent }: { agent: Agent }) {
+  const navigate = useNavigate();
+  const isPositive = (agent.price_change_24h || 0) > 0;
+  
+  const formatPrice = (price: number) => {
+    if (price < 0.000001) return price.toExponential(3);
+    if (price < 0.01) return price.toFixed(6);
+    return price.toFixed(4);
+  };
+
+  const formatMarketCap = (marketCap?: number | null) => {
+    if (!marketCap) return 'N/A';
+    if (marketCap >= 1000000) return `$${(marketCap / 1000000).toFixed(1)}M`;
+    if (marketCap >= 1000) return `$${(marketCap / 1000).toFixed(1)}K`;
+    return `$${marketCap.toFixed(0)}`;
+  };
+  
+  const handleCardClick = () => {
+    navigate(`/trade/${agent.id}`);
+  };
+  
+  return (
+    <Card 
+      className="p-4 bg-card/80 backdrop-blur-sm border-border hover:border-primary/50 transition-all duration-300 hover:shadow-glow-primary/20 group cursor-pointer"
+      onClick={handleCardClick}
+    >
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex items-center space-x-3">
+          {agent.avatar_url ? (
+            <img
+              src={agent.avatar_url}
+              alt={agent.name}
+              className="w-12 h-12 rounded-full border-2 border-primary/30 group-hover:border-primary/60 transition-colors object-cover"
+            />
+          ) : (
+            <div className="w-12 h-12 rounded-full border-2 border-primary/30 group-hover:border-primary/60 transition-colors bg-primary/10 flex items-center justify-center">
+              <span className="text-sm font-bold text-primary">
+                {agent.symbol?.substring(0, 2) || agent.name.substring(0, 2)}
+              </span>
+            </div>
+          )}
+          <div>
+            <h4 className="font-semibold text-foreground group-hover:text-primary transition-colors">
+              {agent.name}
+            </h4>
+            <Badge variant="outline" className="text-xs">
+              ${agent.symbol}
+            </Badge>
+          </div>
+        </div>
+        
+        <Button size="sm" variant="ghost" className="opacity-0 group-hover:opacity-100 transition-opacity">
+          <BarChart3 className="w-4 h-4" />
+        </Button>
+      </div>
+      
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="text-lg font-bold text-foreground">${formatPrice(agent.current_price)}</span>
+          {agent.price_change_24h !== undefined && (
+            <div className={`flex items-center space-x-1 ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+              {isPositive ? (
+                <TrendingUp className="w-3 h-3" />
+              ) : (
+                <TrendingDown className="w-3 h-3" />
+              )}
+              <span className="text-sm font-medium">
+                {isPositive ? '+' : ''}{Math.abs(agent.price_change_24h).toFixed(2)}%
+              </span>
+            </div>
+          )}
+        </div>
+        
+        <div className="grid grid-cols-2 gap-2 text-xs">
+          <div>
+            <span className="text-muted-foreground">Market Cap</span>
+            <div className="font-medium text-foreground">{formatMarketCap(agent.market_cap)}</div>
+          </div>
+          <div>
+            <span className="text-muted-foreground">Volume</span>
+            <div className="font-medium text-foreground">{formatMarketCap(agent.volume_24h)}</div>
+          </div>
+        </div>
+        
+        {/* Simple visual indicator */}
+        <div className="h-2 bg-muted/20 rounded relative overflow-hidden">
+          <div 
+            className="h-full bg-gradient-to-r from-primary/60 to-primary transition-all"
+            style={{ width: `${Math.min(Math.max((agent.current_price * 100) % 100, 20), 80)}%` }}
+          />
+        </div>
+      </div>
+    </Card>
+  );
+}
 
 const Index = () => {
+  const { agents, loading, error } = useAgents();
   const { showTermsModal, handleAcceptTerms } = useAuth();
+  const navigate = useNavigate();
+  const [activeFilter, setActiveFilter] = useState<'all' | 'trending' | 'new' | 'active'>('all');
+
+  // Get spotlight agent (highest market cap agent)
+  const spotlightAgent = agents?.sort((a, b) => (b.market_cap || 0) - (a.market_cap || 0))[0];
+  
+  // Get trending agents (top 6 by 24h change)
+  const trendingAgents = agents
+    ?.filter(agent => agent.price_change_24h !== undefined)
+    .sort((a, b) => (b.price_change_24h || 0) - (a.price_change_24h || 0))
+    .slice(0, 6) || [];
+
+  // Get new agents (recent launches, sorted by market cap)
+  const newAgents = agents
+    ?.filter(agent => (agent.market_cap || 0) < 1000000) // Under 1M market cap
+    .sort((a, b) => (b.market_cap || 0) - (a.market_cap || 0))
+    .slice(0, 6) || [];
+
+  // Get active agents (all active agents)
+  const activeAgents = agents
+    ?.filter(agent => agent.is_active)
+    .slice(0, 6) || [];
+
+  const getFilteredAgents = () => {
+    switch (activeFilter) {
+      case 'trending':
+        return trendingAgents;
+      case 'new':
+        return newAgents;
+      case 'active':
+        return activeAgents;
+      default:
+        return agents?.slice(0, 6) || [];
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-4 text-muted-foreground">Loading agents...</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
       
-      {/* Announcement Bar */}
-      <div className="bg-primary/10 border-b border-border">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-center gap-2 text-sm">
-            <Badge variant="secondary" className="bg-primary/20">New</Badge>
-            <span className="text-foreground/80">
-              PromptBox Raises $16M to Help Enterprises Deploy Token-First AI Agents at Scale
-            </span>
-            <Link to="/learn" className="text-primary hover:text-primary/80 flex items-center gap-1">
-              Read More <ArrowRight className="h-3 w-3" />
-            </Link>
+      <main className="container mx-auto px-4 py-8">
+        {/* Hero Section */}
+        <div className="text-center mb-12">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <Activity className="h-8 w-8 text-primary" />
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              AI Agent Marketplace
+            </h1>
           </div>
-        </div>
-      </div>
-
-      {/* Hero Section */}
-      <section className="container mx-auto px-4 py-20">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          <div className="space-y-8">
-            {/* Workflow Visual */}
-            <div className="flex items-center gap-4 mb-8">
-              <Card className="p-4 border-blue-200 bg-blue-50/50">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                  <span className="text-xs font-medium text-blue-700">Token</span>
-                </div>
-              </Card>
-              <ArrowRight className="h-4 w-4 text-muted-foreground" />
-              <Card className="p-4 border-yellow-200 bg-yellow-50/50">
-                <div className="flex items-center gap-2">
-                  <Bot className="h-4 w-4 text-yellow-700" />
-                  <span className="text-xs font-medium text-yellow-700">Agent</span>
-                </div>
-              </Card>
-              <ArrowRight className="h-4 w-4 text-muted-foreground" />
-              <Card className="p-4 border-green-200 bg-green-50/50">
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-green-700" />
-                  <span className="text-xs font-medium text-green-700">Value</span>
-                </div>
-              </Card>
-            </div>
-
-            <div className="space-y-4">
-              <h1 className="text-5xl font-bold text-foreground leading-tight">
-                AI Agents for the{" "}
-                <span className="bg-gradient-primary bg-clip-text text-transparent">
-                  Token Economy
-                </span>
-              </h1>
-              <p className="text-lg text-muted-foreground max-w-lg">
-                Launch tokens first to build community and generate immediate value.
-                Then deploy AI agents that grow your ecosystem.
-                Loved by Web3 and DeFi teams.
-              </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" className="bg-gradient-primary hover:opacity-90">
-                <Zap className="mr-2 h-4 w-4" />
-                Launch Your Token
-              </Button>
-              <Button variant="outline" size="lg">
-                Try Demo
-              </Button>
-            </div>
-
-            {/* Company Logos */}
-            <div className="pt-8">
-              <p className="text-sm text-muted-foreground mb-4">Trusted by leading Web3 projects</p>
-              <div className="flex items-center gap-8 opacity-60">
-                <div className="h-8 bg-muted rounded px-4 flex items-center text-xs font-medium">
-                  Ethereum
-                </div>
-                <div className="h-8 bg-muted rounded px-4 flex items-center text-xs font-medium">
-                  Polygon
-                </div>
-                <div className="h-8 bg-muted rounded px-4 flex items-center text-xs font-medium">
-                  Solana
-                </div>
-                <div className="h-8 bg-muted rounded px-4 flex items-center text-xs font-medium">
-                  Base
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Hero Image */}
-          <div className="relative">
-            <div className="absolute inset-0 bg-gradient-primary opacity-20 blur-3xl"></div>
-            <img
-              src="/lovable-uploads/be05442f-d979-41f4-8395-57aba376cb60.png"
-              alt="Token-First AI Agent Platform"
-              className="relative z-10 w-full h-auto rounded-2xl shadow-2xl"
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* Platform Section */}
-      <section className="bg-muted/30 py-20">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <Badge variant="outline" className="mb-4">PLATFORM</Badge>
-            <h2 className="text-4xl font-bold text-foreground mb-4">
-              A Powerful Interface to Deploy Token-First AI Agents
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Build, deploy, and monetize AI agents while creating sustainable token economies 
-              that benefit your entire community.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            <Card className="p-8 text-center hover:shadow-lg transition-shadow">
-              <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <Coins className="h-8 w-8 text-blue-600" />
-              </div>
-              <h3 className="text-xl font-semibold mb-4">Token Launch</h3>
-              <p className="text-muted-foreground">
-                Launch your token with built-in bonding curves and community incentives. 
-                Generate immediate value and funding for your AI agent development.
-              </p>
-            </Card>
-
-            <Card className="p-8 text-center hover:shadow-lg transition-shadow">
-              <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <Bot className="h-8 w-8 text-purple-600" />
-              </div>
-              <h3 className="text-xl font-semibold mb-4">Agent Deployment</h3>
-              <p className="text-muted-foreground">
-                Deploy sophisticated AI agents that serve your community while generating 
-                revenue that flows back to token holders automatically.
-              </p>
-            </Card>
-
-            <Card className="p-8 text-center hover:shadow-lg transition-shadow">
-              <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <Users className="h-8 w-8 text-green-600" />
-              </div>
-              <h3 className="text-xl font-semibold mb-4">Community Growth</h3>
-              <p className="text-muted-foreground">
-                Build engaged communities around your agents. Token holders share in success 
-                and have governance rights over agent development.
-              </p>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div className="space-y-8">
-              <div>
-                <Badge variant="outline" className="mb-4">WHY TOKEN-FIRST?</Badge>
-                <h2 className="text-4xl font-bold text-foreground mb-6">
-                  Start with Value, Scale with Purpose
-                </h2>
-                <p className="text-lg text-muted-foreground">
-                  Traditional AI agents struggle with funding and adoption. Our token-first approach 
-                  solves both by creating immediate value and aligned incentives.
-                </p>
-              </div>
-
-              <div className="space-y-6">
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <Zap className="h-6 w-6 text-blue-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-2">Instant Funding</h3>
-                    <p className="text-muted-foreground">
-                      Generate capital through token sales before building. No need for traditional funding rounds.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <Users className="h-6 w-6 text-purple-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-2">Built-in Community</h3>
-                    <p className="text-muted-foreground">
-                      Token holders become your first users and advocates, ensuring product-market fit.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <TrendingUp className="h-6 w-6 text-green-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-2">Aligned Incentives</h3>
-                    <p className="text-muted-foreground">
-                      Revenue sharing creates sustainable growth where everyone benefits from agent success.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="relative">
-              <Card className="p-8">
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Agent Revenue</span>
-                    <Badge variant="secondary">+127% this month</Badge>
-                  </div>
-                  <div className="text-3xl font-bold">$2.4M</div>
-                  <div className="text-sm text-muted-foreground">
-                    Distributed to 12,847 token holders
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Community Pool</span>
-                      <span>40%</span>
-                    </div>
-                    <div className="w-full bg-muted rounded-full h-2">
-                      <div className="bg-gradient-primary h-2 rounded-full w-2/5"></div>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span>Token Holders</span>
-                      <span>60%</span>
-                    </div>
-                    <div className="w-full bg-muted rounded-full h-2">
-                      <div className="bg-gradient-primary h-2 rounded-full w-3/5"></div>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <section className="py-20 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <Badge variant="outline" className="mb-4">FAQ</Badge>
-            <h2 className="text-4xl font-bold text-foreground mb-4">
-              Frequently Asked Questions
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Everything you need to know about PromptBox and token-first AI agents
-            </p>
-          </div>
-
-          <div className="max-w-4xl mx-auto">
-            <Accordion type="single" collapsible className="space-y-4">
-              <AccordionItem value="item-1" className="bg-white rounded-lg border border-border">
-                <AccordionTrigger className="px-6 py-4 text-left">
-                  What is Promptbox?
-                </AccordionTrigger>
-                <AccordionContent className="px-6 pb-4">
-                  Promptbox is a Web3-native platform that lets anyone launch and customize their own AI agent. Agents are created by pledging $PROMPT tokens to a bonding curve. Once a token reaches a threshold, it "graduates" and unlocks a fully featured AI workflow builder — no coding required.
-                </AccordionContent>
-              </AccordionItem>
-
-              <AccordionItem value="item-2" className="bg-white rounded-lg border border-border">
-                <AccordionTrigger className="px-6 py-4 text-left">
-                  How do I create an AI agent?
-                </AccordionTrigger>
-                <AccordionContent className="px-6 pb-4">
-                  First, you pledge $PROMPT tokens to a bonding curve tied to a new agent concept. Once the curve reaches 42,000 $PROMPT pledged, your token launches, and the agent becomes live. You'll then unlock access to a private dashboard where you can build your agent using drag-and-drop tools.
-                </AccordionContent>
-              </AccordionItem>
-
-              <AccordionItem value="item-3" className="bg-white rounded-lg border border-border">
-                <AccordionTrigger className="px-6 py-4 text-left">
-                  What can my AI agent do?
-                </AccordionTrigger>
-                <AccordionContent className="px-6 pb-4">
-                  <div className="space-y-2">
-                    <p>Your agent can:</p>
-                    <ul className="list-disc pl-6 space-y-1">
-                      <li>Use LLMs like GPT-4 and Claude</li>
-                      <li>Connect to files, websites, or spreadsheets</li>
-                      <li>Chain logic and memory steps</li>
-                      <li>Output to chatbots, APIs, or even trading bots</li>
-                      <li>Integrate with tools like Zapier, Slack, or custom webhooks</li>
-                    </ul>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-
-              <AccordionItem value="item-4" className="bg-white rounded-lg border border-border">
-                <AccordionTrigger className="px-6 py-4 text-left">
-                  Do I need to know how to code?
-                </AccordionTrigger>
-                <AccordionContent className="px-6 pb-4">
-                  Nope. Promptbox is completely no-code. Our visual builder lets you connect blocks like "Input," "Prompt," "Memory," "Output," and more — just like StackAI or Zapier.
-                </AccordionContent>
-              </AccordionItem>
-
-              <AccordionItem value="item-5" className="bg-white rounded-lg border border-border">
-                <AccordionTrigger className="px-6 py-4 text-left">
-                  What's the difference between Promptbox and StackAI?
-                </AccordionTrigger>
-                <AccordionContent className="px-6 pb-4">
-                  Promptbox is token-gated. Every AI agent on the platform begins as a crypto-backed project. This means agents can be community-owned, tradable, and incentivized — unlocking a whole new layer of utility and value beyond traditional SaaS tools.
-                </AccordionContent>
-              </AccordionItem>
-
-              <AccordionItem value="item-6" className="bg-white rounded-lg border border-border">
-                <AccordionTrigger className="px-6 py-4 text-left">
-                  What happens after I create an agent?
-                </AccordionTrigger>
-                <AccordionContent className="px-6 pb-4">
-                  <div className="space-y-2">
-                    <p>Once your agent is live:</p>
-                    <ul className="list-disc pl-6 space-y-1">
-                      <li>You'll get access to a private builder dashboard</li>
-                      <li>You can export the agent as a chatbot, embed, API, or public interface</li>
-                      <li>Others can interact with, fork, or even govern the agent if tokenized permissions are enabled</li>
-                    </ul>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-
-              <AccordionItem value="item-7" className="bg-white rounded-lg border border-border">
-                <AccordionTrigger className="px-6 py-4 text-left">
-                  Is Promptbox on Ethereum?
-                </AccordionTrigger>
-                <AccordionContent className="px-6 pb-4">
-                  Promptbox is built on Base, an Ethereum Layer 2. This enables fast, low-cost transactions and compatibility with existing wallets like MetaMask, Coinbase Wallet, and others.
-                </AccordionContent>
-              </AccordionItem>
-
-              <AccordionItem value="item-8" className="bg-white rounded-lg border border-border">
-                <AccordionTrigger className="px-6 py-4 text-left">
-                  What is the $PROMPT token used for?
-                </AccordionTrigger>
-                <AccordionContent className="px-6 pb-4">
-                  <div className="space-y-2">
-                    <p>$PROMPT is the native utility token of the platform. It's used to:</p>
-                    <ul className="list-disc pl-6 space-y-1">
-                      <li>Launch AI agents via bonding curves</li>
-                      <li>Access premium features and tools</li>
-                      <li>Participate in governance (future roadmap)</li>
-                      <li>Power incentive mechanisms for agent creators and users</li>
-                    </ul>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-
-              <AccordionItem value="item-9" className="bg-white rounded-lg border border-border">
-                <AccordionTrigger className="px-6 py-4 text-left">
-                  Can I monetize my AI agent?
-                </AccordionTrigger>
-                <AccordionContent className="px-6 pb-4">
-                  <div className="space-y-2">
-                    <p>Yes. You can:</p>
-                    <ul className="list-disc pl-6 space-y-1">
-                      <li>Charge access fees for advanced agent outputs</li>
-                      <li>Create community-owned agents and govern them via tokenomics</li>
-                      <li>Earn $PROMPT through usage, staking, or referral incentives (coming soon)</li>
-                    </ul>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-
-              <AccordionItem value="item-10" className="bg-white rounded-lg border border-border">
-                <AccordionTrigger className="px-6 py-4 text-left">
-                  How do I get started?
-                </AccordionTrigger>
-                <AccordionContent className="px-6 pb-4">
-                  <div className="space-y-2">
-                    <ul className="list-disc pl-6 space-y-1">
-                      <li>Connect your wallet</li>
-                      <li>Choose an idea or template</li>
-                      <li>Pledge $PROMPT to begin</li>
-                      <li>Once launched, build your agent in the visual workflow editor</li>
-                      <li>Export it however you like — as a chatbot, API, or embed for your app</li>
-                    </ul>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="relative py-20">
-        <div className="absolute inset-0 bg-background">
-          <div className="absolute inset-0 opacity-50">
-            <div className="absolute inset-0" style={{
-              backgroundImage: `radial-gradient(circle at 2px 2px, hsl(var(--muted-foreground)) 1px, transparent 0)`,
-              backgroundSize: '40px 40px'
-            }}></div>
-          </div>
-        </div>
-        <div className="relative container mx-auto px-4 text-center">
-          <Badge variant="outline" className="mb-4 bg-background">CREATE AGENT</Badge>
-          <h2 className="text-4xl font-bold text-foreground mb-6">
-            Ready to Launch Your First AI Agent?
-          </h2>
-          <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Join thousands of creators building the future of tokenized AI. 
-            Start with a simple idea and watch your community grow.
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-6">
+            Discover, trade, and deploy autonomous AI agents in the decentralized economy. 
+            From bonding curves to full graduation.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-gradient-primary hover:opacity-90" asChild>
+          <div className="flex items-center justify-center gap-4">
+            <Button asChild size="lg" className="bg-gradient-primary hover:opacity-90">
               <Link to="/create">
+                <Zap className="mr-2 h-4 w-4" />
                 Create Agent
               </Link>
             </Button>
-            <Button variant="outline" size="lg">
-              View Documentation
+            <Button asChild variant="outline" size="lg">
+              <Link to="/agents">
+                <BarChart3 className="mr-2 h-4 w-4" />
+                View All Agents
+              </Link>
             </Button>
           </div>
         </div>
-      </section>
+
+        {/* Market Stats */}
+        <MarketStats />
+
+        {/* Spotlight Agent */}
+        {spotlightAgent && (
+          <section className="mb-12">
+            <div className="flex items-center gap-2 mb-6">
+              <Star className="h-6 w-6 text-primary" />
+              <h2 className="text-2xl font-bold text-foreground">Spotlight Agent</h2>
+            </div>
+            <Card className="p-6 bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/20">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  {spotlightAgent.avatar_url ? (
+                    <img
+                      src={spotlightAgent.avatar_url}
+                      alt={spotlightAgent.name}
+                      className="w-16 h-16 rounded-full border-2 border-primary object-cover"
+                    />
+                  ) : (
+                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center border-2 border-primary">
+                      <Activity className="h-8 w-8 text-primary" />
+                    </div>
+                  )}
+                  <div>
+                    <h3 className="text-2xl font-bold text-foreground">{spotlightAgent.name}</h3>
+                    <Badge className="bg-primary text-primary-foreground">${spotlightAgent.symbol}</Badge>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-3xl font-bold text-foreground">
+                    ${spotlightAgent.current_price < 0.01 
+                      ? spotlightAgent.current_price.toFixed(6) 
+                      : spotlightAgent.current_price.toFixed(4)
+                    }
+                  </div>
+                  {spotlightAgent.market_cap && (
+                    <div className="text-sm text-muted-foreground">
+                      Market Cap: {spotlightAgent.market_cap >= 1000000 
+                        ? `$${(spotlightAgent.market_cap / 1000000).toFixed(1)}M`
+                        : `$${(spotlightAgent.market_cap / 1000).toFixed(1)}K`
+                      }
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="mt-4">
+                <Button 
+                  onClick={() => navigate(`/trade/${spotlightAgent.id}`)}
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  <BarChart3 className="mr-2 h-4 w-4" />
+                  Trade {spotlightAgent.symbol}
+                </Button>
+              </div>
+            </Card>
+          </section>
+        )}
+
+        {/* Agent Categories */}
+        <section className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-foreground">Discover Agents</h2>
+            <Link 
+              to="/agents" 
+              className="text-primary hover:text-primary/80 flex items-center gap-1 text-sm font-medium"
+            >
+              View All <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+
+          {/* Filter Tabs */}
+          <div className="flex gap-2 mb-6 overflow-x-auto">
+            <Button
+              variant={activeFilter === 'all' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setActiveFilter('all')}
+            >
+              All
+            </Button>
+            <Button
+              variant={activeFilter === 'trending' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setActiveFilter('trending')}
+            >
+              <TrendingUp className="mr-2 h-4 w-4" />
+              Trending
+            </Button>
+            <Button
+              variant={activeFilter === 'new' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setActiveFilter('new')}
+            >
+              <Zap className="mr-2 h-4 w-4" />
+              New
+            </Button>
+            <Button
+              variant={activeFilter === 'active' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setActiveFilter('active')}
+            >
+              <Star className="mr-2 h-4 w-4" />
+              Active
+            </Button>
+          </div>
+
+          {/* Agent Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {getFilteredAgents().map((agent) => (
+              <IndexAgentCard key={agent.id} agent={agent} />
+            ))}
+          </div>
+
+          {getFilteredAgents().length === 0 && (
+            <div className="text-center py-12">
+              <Activity className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">No agents found in this category.</p>
+            </div>
+          )}
+        </section>
+
+        {/* Call to Action */}
+        <section className="text-center py-16 bg-gradient-to-r from-primary/5 to-secondary/5 rounded-2xl">
+          <h2 className="text-3xl font-bold text-foreground mb-4">
+            Ready to Launch Your Own AI Agent?
+          </h2>
+          <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+            Join the decentralized AI economy. Create intelligent agents that generate value 
+            for you and your community.
+          </p>
+          <div className="flex items-center justify-center gap-4">
+            <Button asChild size="lg" className="bg-gradient-primary hover:opacity-90">
+              <Link to="/create">
+                <Zap className="mr-2 h-4 w-4" />
+                Create Agent
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="lg">
+              <Link to="/learn">
+                Learn More
+              </Link>
+            </Button>
+          </div>
+        </section>
+      </main>
 
       <Footer />
-      
-      {/* Terms Modal */}
-      <TermsModal 
-        open={showTermsModal} 
-        onAccept={handleAcceptTerms} 
-      />
+      {showTermsModal && (
+        <TermsModal 
+          open={showTermsModal} 
+          onAccept={handleAcceptTerms} 
+        />
+      )}
     </div>
   );
 };
