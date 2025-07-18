@@ -195,7 +195,7 @@ const About = () => {
         ></div>
         <div className="container mx-auto px-4 text-center relative z-10">
           <div className="text-sm text-white/60 tracking-widest uppercase mb-4">
-            GET STARTED
+            CREATE AGENT
           </div>
           <h2 className="text-4xl font-bold text-white mb-6">
             Ready to Launch<br />Your Token-First AI Agent?
@@ -206,7 +206,7 @@ const About = () => {
           </p>
           <div className="flex justify-center">
             <Button size="lg" variant="secondary" className="bg-white text-black hover:bg-white/90">
-              Get Started
+              Create Agent
             </Button>
           </div>
         </div>
