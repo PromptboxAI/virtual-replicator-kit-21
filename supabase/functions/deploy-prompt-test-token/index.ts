@@ -75,6 +75,7 @@ Deno.serve(async (req) => {
 
     console.log('Creating account and clients...');
     const account = privateKeyToAccount(deployerPrivateKey as `0x${string}`);
+    console.log('Account address:', account.address);
     
     const publicClient = createPublicClient({
       chain: baseSepolia,
@@ -86,6 +87,30 @@ Deno.serve(async (req) => {
       chain: baseSepolia,
       transport: http()
     });
+
+    // Check account balance first
+    console.log('Checking account balance...');
+    const balance = await publicClient.getBalance({ address: account.address });
+    console.log('Account balance:', balance.toString(), 'wei');
+    
+    if (balance === 0n) {
+      throw new Error(`Deployer wallet ${account.address} has no ETH balance on Base Sepolia. Please fund the wallet with test ETH.`);
+    }
+
+    console.log('Estimating gas for deployment...');
+    
+    // Estimate gas first
+    try {
+      const gasEstimate = await publicClient.estimateContractDeploymentGas({
+        abi: PROMPT_TOKEN_ABI,
+        bytecode: PROMPT_TOKEN_BYTECODE as `0x${string}`,
+        account: account.address,
+      });
+      console.log('Gas estimate:', gasEstimate.toString());
+    } catch (gasError) {
+      console.error('Gas estimation failed:', gasError);
+      throw new Error(`Gas estimation failed: ${gasError.message}`);
+    }
 
     console.log('Deploying PromptTestToken from address:', account.address);
 
