@@ -1,6 +1,6 @@
 const Footer = () => {
   return (
-    <footer className="py-12 px-4 border-t border-gray-100" style={{ backgroundColor: '#F5FFF9' }}>
+    <footer className="py-12 px-4 border-t border-border bg-white">
       <div className="container mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
