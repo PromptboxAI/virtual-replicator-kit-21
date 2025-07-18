@@ -188,7 +188,7 @@ const Index = () => {
       
       <main className="container mx-auto px-4 py-8">
         {/* Hero Section */}
-        <div className="text-center mb-12 mt-16">
+        <div className="text-center mb-12 mt-12">
           <div className="flex items-center justify-center gap-2 mb-4">
             <h1 className="text-6xl font-bold text-black">
               Tokenized AI Agents
@@ -199,7 +199,7 @@ const Index = () => {
             Powered by Base Network.<br />
             Loved by Web3 and DeSci Teams.
           </p>
-          <div className="flex justify-center">
+          <div className="flex justify-center mb-8">
             <Button asChild size="lg" className="bg-black text-white hover:bg-black/90">
               <Link to="/agents">
                 Explore All Agents
