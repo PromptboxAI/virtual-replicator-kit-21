@@ -9,6 +9,10 @@ const TradePage = () => {
   const { agents, loading } = useAgents();
   
   const agent = agents.find(a => a.id === agentId);
+  
+  console.log("TradePage - agentId from params:", agentId);
+  console.log("TradePage - available agents:", agents.map(a => ({ id: a.id, name: a.name })));
+  console.log("TradePage - found agent:", agent);
 
   if (loading) {
     return (
