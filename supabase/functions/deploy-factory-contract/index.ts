@@ -59,13 +59,13 @@ Deno.serve(async (req) => {
     
     const publicClient = createPublicClient({
       chain,
-      transport: http()
+      transport: http('https://sepolia.base.org')
     })
 
     const walletClient = createWalletClient({
       account,
       chain,
-      transport: http()
+      transport: http('https://sepolia.base.org')
     })
 
     console.log('Deploying AgentTokenFactory contract...')
