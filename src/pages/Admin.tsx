@@ -53,19 +53,6 @@ const Admin = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
-      {/* Admin Header */}
-      <div className="border-b bg-card">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center gap-3">
-            <Shield className="h-8 w-8 text-primary" />
-            <div>
-              <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-              <p className="text-muted-foreground">System administration and configuration</p>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <div className="container mx-auto px-4 py-8 space-y-8">
         {/* App Mode Toggle */}
