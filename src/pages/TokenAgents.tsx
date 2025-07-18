@@ -265,30 +265,30 @@ const TokenAgents = () => {
           </div>
 
           <div className="max-w-4xl mx-auto">
-            <Accordion type="single" collapsible className="space-y-4">
-              <AccordionItem value="item-1" className="bg-white rounded-lg border border-border">
-                <AccordionTrigger className="px-6 py-4 text-left">
+            <Accordion type="single" collapsible className="space-y-0">
+              <AccordionItem value="item-1" className="border-b border-border">
+                <AccordionTrigger className="py-4 text-left hover:no-underline">
                   What is Promptbox?
                 </AccordionTrigger>
-                <AccordionContent className="px-6 pb-4">
+                <AccordionContent className="pb-4 text-muted-foreground">
                   Promptbox is a Web3-native platform that lets anyone launch and customize their own AI agent. Agents are created by pledging $PROMPT tokens to a bonding curve. Once a token reaches a threshold, it "graduates" and unlocks a fully featured AI workflow builder — no coding required.
                 </AccordionContent>
               </AccordionItem>
 
-              <AccordionItem value="item-2" className="bg-white rounded-lg border border-border">
-                <AccordionTrigger className="px-6 py-4 text-left">
+              <AccordionItem value="item-2" className="border-b border-border">
+                <AccordionTrigger className="py-4 text-left hover:no-underline">
                   How do I create an AI agent?
                 </AccordionTrigger>
-                <AccordionContent className="px-6 pb-4">
+                <AccordionContent className="pb-4 text-muted-foreground">
                   First, you pledge $PROMPT tokens to a bonding curve tied to a new agent concept. Once the curve reaches 42,000 $PROMPT pledged, your token launches, and the agent becomes live. You'll then unlock access to a private dashboard where you can build your agent using drag-and-drop tools.
                 </AccordionContent>
               </AccordionItem>
 
-              <AccordionItem value="item-3" className="bg-white rounded-lg border border-border">
-                <AccordionTrigger className="px-6 py-4 text-left">
+              <AccordionItem value="item-3" className="border-b border-border">
+                <AccordionTrigger className="py-4 text-left hover:no-underline">
                   What can my AI agent do?
                 </AccordionTrigger>
-                <AccordionContent className="px-6 pb-4">
+                <AccordionContent className="pb-4 text-muted-foreground">
                   <div className="space-y-2">
                     <p>Your agent can:</p>
                     <ul className="list-disc pl-6 space-y-1">
@@ -302,29 +302,29 @@ const TokenAgents = () => {
                 </AccordionContent>
               </AccordionItem>
 
-              <AccordionItem value="item-4" className="bg-white rounded-lg border border-border">
-                <AccordionTrigger className="px-6 py-4 text-left">
+              <AccordionItem value="item-4" className="border-b border-border">
+                <AccordionTrigger className="py-4 text-left hover:no-underline">
                   Do I need to know how to code?
                 </AccordionTrigger>
-                <AccordionContent className="px-6 pb-4">
+                <AccordionContent className="pb-4 text-muted-foreground">
                   Nope. Promptbox is completely no-code. Our visual builder lets you connect blocks like "Input," "Prompt," "Memory," "Output," and more — just like StackAI or Zapier.
                 </AccordionContent>
               </AccordionItem>
 
-              <AccordionItem value="item-5" className="bg-white rounded-lg border border-border">
-                <AccordionTrigger className="px-6 py-4 text-left">
+              <AccordionItem value="item-5" className="border-b border-border">
+                <AccordionTrigger className="py-4 text-left hover:no-underline">
                   What's the difference between Promptbox and StackAI?
                 </AccordionTrigger>
-                <AccordionContent className="px-6 pb-4">
+                <AccordionContent className="pb-4 text-muted-foreground">
                   Promptbox is token-gated. Every AI agent on the platform begins as a crypto-backed project. This means agents can be community-owned, tradable, and incentivized — unlocking a whole new layer of utility and value beyond traditional SaaS tools.
                 </AccordionContent>
               </AccordionItem>
 
-              <AccordionItem value="item-6" className="bg-white rounded-lg border border-border">
-                <AccordionTrigger className="px-6 py-4 text-left">
+              <AccordionItem value="item-6" className="border-b border-border">
+                <AccordionTrigger className="py-4 text-left hover:no-underline">
                   What happens after I create an agent?
                 </AccordionTrigger>
-                <AccordionContent className="px-6 pb-4">
+                <AccordionContent className="pb-4 text-muted-foreground">
                   <div className="space-y-2">
                     <p>Once your agent is live:</p>
                     <ul className="list-disc pl-6 space-y-1">
@@ -336,20 +336,20 @@ const TokenAgents = () => {
                 </AccordionContent>
               </AccordionItem>
 
-              <AccordionItem value="item-7" className="bg-white rounded-lg border border-border">
-                <AccordionTrigger className="px-6 py-4 text-left">
+              <AccordionItem value="item-7" className="border-b border-border">
+                <AccordionTrigger className="py-4 text-left hover:no-underline">
                   Is Promptbox on Ethereum?
                 </AccordionTrigger>
-                <AccordionContent className="px-6 pb-4">
+                <AccordionContent className="pb-4 text-muted-foreground">
                   Promptbox is built on Base, an Ethereum Layer 2. This enables fast, low-cost transactions and compatibility with existing wallets like MetaMask, Coinbase Wallet, and others.
                 </AccordionContent>
               </AccordionItem>
 
-              <AccordionItem value="item-8" className="bg-white rounded-lg border border-border">
-                <AccordionTrigger className="px-6 py-4 text-left">
+              <AccordionItem value="item-8" className="border-b border-border">
+                <AccordionTrigger className="py-4 text-left hover:no-underline">
                   What is the $PROMPT token used for?
                 </AccordionTrigger>
-                <AccordionContent className="px-6 pb-4">
+                <AccordionContent className="pb-4 text-muted-foreground">
                   <div className="space-y-2">
                     <p>$PROMPT is the native utility token of the platform. It's used to:</p>
                     <ul className="list-disc pl-6 space-y-1">
@@ -362,11 +362,11 @@ const TokenAgents = () => {
                 </AccordionContent>
               </AccordionItem>
 
-              <AccordionItem value="item-9" className="bg-white rounded-lg border border-border">
-                <AccordionTrigger className="px-6 py-4 text-left">
+              <AccordionItem value="item-9" className="border-b border-border">
+                <AccordionTrigger className="py-4 text-left hover:no-underline">
                   Can I monetize my AI agent?
                 </AccordionTrigger>
-                <AccordionContent className="px-6 pb-4">
+                <AccordionContent className="pb-4 text-muted-foreground">
                   <div className="space-y-2">
                     <p>Yes. You can:</p>
                     <ul className="list-disc pl-6 space-y-1">
@@ -378,11 +378,11 @@ const TokenAgents = () => {
                 </AccordionContent>
               </AccordionItem>
 
-              <AccordionItem value="item-10" className="bg-white rounded-lg border border-border">
-                <AccordionTrigger className="px-6 py-4 text-left">
+              <AccordionItem value="item-10" className="border-b border-border">
+                <AccordionTrigger className="py-4 text-left hover:no-underline">
                   How do I get started?
                 </AccordionTrigger>
-                <AccordionContent className="px-6 pb-4">
+                <AccordionContent className="pb-4 text-muted-foreground">
                   <div className="space-y-2">
                     <ol className="list-decimal pl-6 space-y-1">
                       <li>Connect your wallet</li>
