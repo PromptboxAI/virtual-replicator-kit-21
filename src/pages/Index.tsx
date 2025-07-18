@@ -216,7 +216,7 @@ const Index = () => {
         {/* Spotlight Agent */}
         {spotlightAgent && (
           <section className="mb-12">
-            <div className="flex items-center gap-3 mb-12">
+            <div className="flex items-center gap-3 mb-6">
               <h2 className="text-2xl font-bold text-foreground">Spotlight Agent</h2>
             </div>
             <Card className="p-6 bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/20">
