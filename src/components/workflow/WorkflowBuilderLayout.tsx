@@ -32,9 +32,16 @@ export function WorkflowBuilderLayout({ agentId, agentName, onComplete }: Workfl
     setHasUnsavedChanges(false);
   };
 
-  const handlePublish = () => {
-    setLastPublished(new Date());
-    setHasUnsavedChanges(false);
+  const handlePublish = async () => {
+    try {
+      if (canvasRef.current) {
+        await canvasRef.current.exportWorkflow();
+        setLastPublished(new Date());
+        setHasUnsavedChanges(false);
+      }
+    } catch (error) {
+      console.error("Failed to publish workflow:", error);
+    }
   };
 
   const handleRun = () => {

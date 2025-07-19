@@ -79,6 +79,7 @@ interface WorkflowCanvasProps {
 
 export interface WorkflowCanvasRef {
   addNode: (nodeData: any) => void;
+  exportWorkflow: () => Promise<any>;
 }
 
 // Enhanced Node Data Interface
@@ -329,7 +330,7 @@ const WorkflowCanvas = forwardRef<WorkflowCanvasRef, WorkflowCanvasProps>(({ age
   const { toast } = useToast();
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
 
-  // Expose addNode method via ref
+  // Expose addNode and exportWorkflow methods via ref
   useImperativeHandle(ref, () => ({
     addNode: (nodeData: any) => {
       const newNode: Node = {
@@ -341,8 +342,50 @@ const WorkflowCanvas = forwardRef<WorkflowCanvasRef, WorkflowCanvasProps>(({ age
       
       setNodes((nds) => nds.concat(newNode));
       onChange();
-    }
-  }));
+    },
+    exportWorkflow: async () => {
+      const workflowData = {
+        agentId,
+        agentName,
+        nodes,
+        edges,
+        metadata: {
+          description: `Workflow for ${agentName}`,
+          version: '1.0.0',
+        }
+      };
+
+      console.log("Exporting workflow data:", workflowData);
+
+      try {
+        const response = await supabase.functions.invoke('export-workflow', {
+          body: workflowData
+        });
+
+        if (response.error) {
+          throw new Error(response.error.message || 'Failed to export workflow');
+        }
+
+        const result = response.data;
+        console.log("Workflow exported successfully:", result);
+        
+        toast({
+          title: "Workflow Exported",
+          description: `Workflow exported to ${result.fileName}`,
+        });
+        
+        return result;
+      } catch (error) {
+        console.error("Error exporting workflow:", error);
+        toast({
+          title: "Export Failed",
+          description: `Failed to export workflow: ${error.message}`,
+          variant: "destructive",
+        });
+        throw error;
+      }
+    },
+  }), [setNodes, onChange, agentId, agentName, nodes, edges, toast]);
 
   const onConnect = useCallback(
     (params: Connection) => {
