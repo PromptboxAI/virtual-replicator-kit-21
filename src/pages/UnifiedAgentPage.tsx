@@ -11,21 +11,19 @@ import { BondingCurveChart } from '@/components/BondingCurveChart';
 import { AgentActivityFeed } from '@/components/AgentActivityFeed';
 import { AgentChat } from '@/components/AgentChat';
 import { WorkflowBuilder } from '@/components/WorkflowBuilder';
-import { useAgents } from '@/hooks/useAgents';
+import { useAgent } from '@/hooks/useAgent';
 import { useAppMode } from '@/hooks/useAppMode';
 import { useAuth } from '@/hooks/useAuth';
 import { Activity, BarChart3, MessageSquare, Settings, User, ExternalLink, Wrench } from 'lucide-react';
 
 const UnifiedAgentPage = () => {
   const { agentId } = useParams<{ agentId: string }>();
-  const { agents, loading } = useAgents();
-  const { isLoading: appModeLoading } = useAppMode();
+  const { agent, loading, error } = useAgent(agentId);
   const { user } = useAuth();
   
-  const agent = agents.find(a => a.id === agentId);
   const isCreator = user && agent?.creator_id === user.id;
 
-  if (loading || appModeLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
@@ -40,14 +38,14 @@ const UnifiedAgentPage = () => {
     );
   }
 
-  if (!agent) {
+  if (error || !agent) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
         <div className="container mx-auto px-4 py-8">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-foreground mb-4">Agent Not Found</h1>
-            <p className="text-muted-foreground">The agent you're looking for doesn't exist or may be in a different mode.</p>
+            <p className="text-muted-foreground">{error || "The agent you're looking for doesn't exist or may be in a different mode."}</p>
           </div>
         </div>
         <Footer />
