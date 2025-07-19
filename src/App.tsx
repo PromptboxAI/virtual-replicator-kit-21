@@ -19,6 +19,7 @@ import Market from "./pages/Market";
 import AllAgents from "./pages/AllAgents";
 import NotFound from "./pages/NotFound";
 import TokenAgents from "./pages/TokenAgents";
+import { LegacyTradeRedirect } from "./components/LegacyRedirect";
 
 const queryClient = new QueryClient();
 
@@ -91,7 +92,7 @@ const App = () => (
               <Route path="/admin" element={<Admin />} />
               <Route path="/token-agents" element={<TokenAgents />} />
               {/* Legacy redirect for old trade routes */}
-              <Route path="/trade/:agentId" element={<Navigate to="/agent/:agentId" replace />} />
+              <Route path="/trade/:agentId" element={<LegacyTradeRedirect />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

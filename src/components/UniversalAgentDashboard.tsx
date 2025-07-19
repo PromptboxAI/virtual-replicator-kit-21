@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
-import { WorkflowBuilder } from './WorkflowBuilder';
+import { AgentTabsInterface } from './AgentTabsInterface';
 import { Loader2 } from 'lucide-react';
 
 interface UniversalAgentDashboardProps {
@@ -96,11 +96,10 @@ export function UniversalAgentDashboard({ agent, onAgentUpdated }: UniversalAgen
         </div>
       </div>
 
-      {/* Workflow Builder */}
-      <WorkflowBuilder 
-        agentId={agent.id} 
-        agentName={agent.name}
-        onComplete={() => {
+      {/* Agent Tabs Interface */}
+      <AgentTabsInterface 
+        agent={agent}
+        onAgentUpdated={() => {
           refetch();
           onAgentUpdated?.();
         }}
