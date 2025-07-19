@@ -37,13 +37,17 @@ const UnifiedAgentPage = () => {
           .from('agents')
           .select('*')
           .eq('id', agentId)
-          .single();
+          .maybeSingle(); // Use maybeSingle() instead of single() to avoid errors
           
         console.log('Agent fetch result:', { data, error });
           
         if (error) {
           console.error('Error fetching agent:', error);
           setError(error.message);
+          setAgent(null);
+        } else if (!data) {
+          console.log('No agent found with ID:', agentId);
+          setError('Agent not found');
           setAgent(null);
         } else {
           console.log('Agent found:', data);
@@ -64,24 +68,15 @@ const UnifiedAgentPage = () => {
   
   const isCreator = user && agent?.creator_id === user.id;
 
-  console.log('UnifiedAgentPage render state:', {
-    agentId,
-    loading,
-    error,
-    agent: agent ? { id: agent.id, name: agent.name } : null,
-    appModeLoading,
-    isCreator
-  });
-
-  if (loading || appModeLoading) {
+  // Early return with minimal UI if there's a critical issue
+  if (loading) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
         <div className="flex items-center justify-center min-h-[50vh]">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-muted-foreground">Loading agent...</p>
-            <p className="mt-2 text-xs text-muted-foreground">Agent ID: {agentId}</p>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-2 text-sm text-muted-foreground">Loading...</p>
           </div>
         </div>
         <Footer />
