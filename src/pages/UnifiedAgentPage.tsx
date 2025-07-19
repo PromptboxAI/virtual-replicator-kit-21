@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { useParams } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -18,11 +19,41 @@ import { Activity, BarChart3, MessageSquare, Settings, User, ExternalLink, Wrenc
 
 const UnifiedAgentPage = () => {
   const { agentId } = useParams<{ agentId: string }>();
-  const { agents, loading } = useAgents();
   const { isLoading: appModeLoading } = useAppMode();
   const { user } = useAuth();
   
-  const agent = agents.find(a => a.id === agentId);
+  // Fetch the specific agent by ID regardless of test mode filtering
+  const [agent, setAgent] = React.useState<any>(null);
+  const [loading, setLoading] = React.useState(true);
+  
+  React.useEffect(() => {
+    if (!agentId) return;
+    
+    const fetchAgent = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('agents')
+          .select('*')
+          .eq('id', agentId)
+          .single();
+          
+        if (error) {
+          console.error('Error fetching agent:', error);
+          setAgent(null);
+        } else {
+          setAgent(data);
+        }
+      } catch (err) {
+        console.error('Error fetching agent:', err);
+        setAgent(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchAgent();
+  }, [agentId]);
+  
   const isCreator = user && agent?.creator_id === user.id;
 
   if (loading || appModeLoading) {
