@@ -13,6 +13,8 @@ const TradePage = () => {
   console.log("TradePage - agentId from params:", agentId);
   console.log("TradePage - available agents:", agents.map(a => ({ id: a.id, name: a.name })));
   console.log("TradePage - found agent:", agent);
+  console.log("TradePage - agents loading:", loading);
+  console.log("TradePage - agents length:", agents.length);
 
   if (loading) {
     return (
