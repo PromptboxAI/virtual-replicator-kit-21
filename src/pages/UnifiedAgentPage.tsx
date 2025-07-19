@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -12,87 +11,28 @@ import { BondingCurveChart } from '@/components/BondingCurveChart';
 import { AgentActivityFeed } from '@/components/AgentActivityFeed';
 import { AgentChat } from '@/components/AgentChat';
 import { WorkflowBuilder } from '@/components/WorkflowBuilder';
-
+import { useAgents } from '@/hooks/useAgents';
 import { useAppMode } from '@/hooks/useAppMode';
 import { useAuth } from '@/hooks/useAuth';
 import { Activity, BarChart3, MessageSquare, Settings, User, ExternalLink, Wrench } from 'lucide-react';
 
 const UnifiedAgentPage = () => {
   const { agentId } = useParams<{ agentId: string }>();
+  const { agents, loading } = useAgents();
   const { isLoading: appModeLoading } = useAppMode();
   const { user } = useAuth();
   
-  // Fetch the specific agent by ID regardless of test mode filtering
-  const [agent, setAgent] = React.useState<any>(null);
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
-  
-  React.useEffect(() => {
-    if (!agentId) return;
-    
-    const fetchAgent = async () => {
-      try {
-        console.log('Fetching agent with ID:', agentId);
-        const { data, error } = await supabase
-          .from('agents')
-          .select('*')
-          .eq('id', agentId)
-          .maybeSingle(); // Use maybeSingle() instead of single() to avoid errors
-          
-        console.log('Agent fetch result:', { data, error });
-          
-        if (error) {
-          console.error('Error fetching agent:', error);
-          setError(error.message);
-          setAgent(null);
-        } else if (!data) {
-          console.log('No agent found with ID:', agentId);
-          setError('Agent not found');
-          setAgent(null);
-        } else {
-          console.log('Agent found:', data);
-          setAgent(data);
-          setError(null);
-        }
-      } catch (err) {
-        console.error('Exception while fetching agent:', err);
-        setError('Failed to load agent');
-        setAgent(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchAgent();
-  }, [agentId]);
-  
+  const agent = agents.find(a => a.id === agentId);
   const isCreator = user && agent?.creator_id === user.id;
 
-  // Early return with minimal UI if there's a critical issue
-  if (loading) {
+  if (loading || appModeLoading) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
         <div className="flex items-center justify-center min-h-[50vh]">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-2 text-sm text-muted-foreground">Loading...</p>
-          </div>
-        </div>
-        <Footer />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-foreground mb-4">Error Loading Agent</h1>
-            <p className="text-muted-foreground mb-4">{error}</p>
-            <p className="text-xs text-muted-foreground">Agent ID: {agentId}</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-4 text-muted-foreground">Loading agent...</p>
           </div>
         </div>
         <Footer />
@@ -107,8 +47,7 @@ const UnifiedAgentPage = () => {
         <div className="container mx-auto px-4 py-8">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-foreground mb-4">Agent Not Found</h1>
-            <p className="text-muted-foreground">The agent you're looking for doesn't exist.</p>
-            <p className="text-xs text-muted-foreground mt-2">Agent ID: {agentId}</p>
+            <p className="text-muted-foreground">The agent you're looking for doesn't exist or may be in a different mode.</p>
           </div>
         </div>
         <Footer />
