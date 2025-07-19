@@ -10,10 +10,11 @@ import { TradingInterface } from '@/components/TradingInterface';
 import { BondingCurveChart } from '@/components/BondingCurveChart';
 import { AgentActivityFeed } from '@/components/AgentActivityFeed';
 import { AgentChat } from '@/components/AgentChat';
+import { WorkflowBuilder } from '@/components/WorkflowBuilder';
 import { useAgents } from '@/hooks/useAgents';
 import { useAppMode } from '@/hooks/useAppMode';
 import { useAuth } from '@/hooks/useAuth';
-import { Activity, BarChart3, MessageSquare, Settings, User, ExternalLink } from 'lucide-react';
+import { Activity, BarChart3, MessageSquare, Settings, User, ExternalLink, Wrench } from 'lucide-react';
 
 const UnifiedAgentPage = () => {
   const { agentId } = useParams<{ agentId: string }>();
@@ -100,7 +101,7 @@ const UnifiedAgentPage = () => {
 
         {/* Tabbed Interface */}
         <Tabs defaultValue="trade" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-8">
+          <TabsList className={`grid w-full ${isCreator ? 'grid-cols-5' : 'grid-cols-4'} mb-8`}>
             <TabsTrigger value="trade" className="flex items-center gap-2">
               <BarChart3 className="w-4 h-4" />
               Trade
@@ -113,6 +114,12 @@ const UnifiedAgentPage = () => {
               <Activity className="w-4 h-4" />
               Activity
             </TabsTrigger>
+            {isCreator && (
+              <TabsTrigger value="workflow" className="flex items-center gap-2">
+                <Wrench className="w-4 h-4" />
+                Workflow Builder
+              </TabsTrigger>
+            )}
             {isCreator && (
               <TabsTrigger value="manage" className="flex items-center gap-2">
                 <Settings className="w-4 h-4" />
@@ -235,6 +242,19 @@ const UnifiedAgentPage = () => {
               <AgentChat agent={agent} />
             </div>
           </TabsContent>
+
+          {/* Workflow Builder Tab (only for creators) */}
+          {isCreator && (
+            <TabsContent value="workflow" className="space-y-6">
+              <WorkflowBuilder 
+                agentId={agent.id} 
+                agentName={agent.name}
+                onComplete={() => {
+                  // Optional: handle workflow completion
+                }}
+              />
+            </TabsContent>
+          )}
 
           {/* Manage Tab (only for creators) */}
           {isCreator && (
