@@ -12,7 +12,6 @@ import { AgentActivityFeed } from '@/components/AgentActivityFeed';
 import { AgentChat } from '@/components/AgentChat';
 import { WorkflowBuilder } from '@/components/WorkflowBuilder';
 import { useAgent } from '@/hooks/useAgent';
-import { useAppMode } from '@/hooks/useAppMode';
 import { useAuth } from '@/hooks/useAuth';
 import { Activity, BarChart3, MessageSquare, Settings, User, ExternalLink, Wrench } from 'lucide-react';
 
@@ -20,6 +19,8 @@ const UnifiedAgentPage = () => {
   const { agentId } = useParams<{ agentId: string }>();
   const { agent, loading, error } = useAgent(agentId);
   const { user } = useAuth();
+  
+  console.log('UnifiedAgentPage state:', { agentId, agent: agent ? { id: agent.id, name: agent.name } : null, loading, error });
   
   const isCreator = user && agent?.creator_id === user.id;
 
