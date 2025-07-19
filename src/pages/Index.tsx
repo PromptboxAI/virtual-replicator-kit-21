@@ -134,6 +134,9 @@ const Index = () => {
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState<'all' | 'trending' | 'new' | 'active'>('all');
 
+  console.log("Index page - agents loaded:", agents.length, "agents");
+  console.log("Index page - sample agent:", agents[0]);
+
   // Get spotlight agent (highest market cap agent)
   const spotlightAgent = agents?.sort((a, b) => (b.market_cap || 0) - (a.market_cap || 0))[0];
   
