@@ -3,10 +3,12 @@ import { Header } from "@/components/Header";
 import { TokenTradingInterface } from "@/components/TokenTradingInterface";
 import { BondingCurveChart } from "@/components/BondingCurveChart";
 import { useAgents } from "@/hooks/useAgents";
+import { useAppMode } from "@/hooks/useAppMode";
 
 const TradePage = () => {
   const { agentId } = useParams<{ agentId: string }>();
   const { agents, loading } = useAgents();
+  const { isLoading: appModeLoading } = useAppMode();
   
   const agent = agents.find(a => a.id === agentId);
   
@@ -15,8 +17,9 @@ const TradePage = () => {
   console.log("TradePage - found agent:", agent);
   console.log("TradePage - agents loading:", loading);
   console.log("TradePage - agents length:", agents.length);
+  console.log("TradePage - app mode loading:", appModeLoading);
 
-  if (loading) {
+  if (loading || appModeLoading) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
