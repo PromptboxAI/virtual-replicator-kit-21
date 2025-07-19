@@ -127,21 +127,21 @@ const UnifiedAgentPage = () => {
               agentId={agent.id}
               agentName={agent.name}
               agentSymbol={agent.symbol}
-              tokenAddress={agent.token_address}
+              tokenAddress=""
               isConnected={!!user}
               currentPrice={agent.current_price}
               marketCap={agent.market_cap || 0}
               volume24h={agent.volume_24h || 0}
               priceChange24h={agent.price_change_24h || 0}
               promptRaised={agent.prompt_raised || 0}
-              tokenHolders={agent.token_holders || 0}
-              circulatingSupply={agent.circulating_supply || 0}
+              tokenHolders={0}
+              circulatingSupply={0}
               tokenGraduated={agent.token_graduated || false}
             />
             
             {!agent.token_graduated && (
               <BondingCurveChart
-                currentTokensSold={agent.tokens_sold || 0}
+                currentTokensSold={0}
                 graduationThreshold={agent.graduation_threshold || 42000}
                 promptRaised={agent.prompt_raised || 0}
               />
@@ -212,21 +212,17 @@ const UnifiedAgentPage = () => {
                   </div>
                   <div>
                     <h4 className="font-medium text-sm text-muted-foreground mb-1">Token Holders</h4>
-                    <p className="text-foreground">
-                      {agent.token_holders?.toLocaleString() || '0'}
-                    </p>
+                    <p className="text-foreground">0</p>
                   </div>
-                  {agent.token_address && (
-                    <div>
-                      <h4 className="font-medium text-sm text-muted-foreground mb-1">Contract Address</h4>
-                      <div className="flex items-center gap-2">
-                        <code className="text-xs bg-muted px-2 py-1 rounded">
-                          {agent.token_address.slice(0, 6)}...{agent.token_address.slice(-4)}
-                        </code>
-                        <ExternalLink className="w-4 h-4 text-muted-foreground cursor-pointer hover:text-foreground" />
-                      </div>
+                  <div>
+                    <h4 className="font-medium text-sm text-muted-foreground mb-1">Contract Address</h4>
+                    <div className="flex items-center gap-2">
+                      <code className="text-xs bg-muted px-2 py-1 rounded">
+                        Not deployed yet
+                      </code>
+                      <ExternalLink className="w-4 h-4 text-muted-foreground cursor-pointer hover:text-foreground" />
                     </div>
-                  )}
+                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -235,7 +231,7 @@ const UnifiedAgentPage = () => {
           {/* Activity Tab */}
           <TabsContent value="activity" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <AgentActivityFeed agentId={agent.id} />
+              <AgentActivityFeed agent={agent} />
               <AgentChat agent={agent} />
             </div>
           </TabsContent>
