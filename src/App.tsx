@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,9 +13,7 @@ import About from "./pages/About";
 import Learn from "./pages/Learn";
 import CreateAgent from "./pages/CreateAgent";
 import MyAgents from "./pages/MyAgents";
-import TradingPage from "./pages/TradingPage";
-import TradePage from "./pages/TradePage";
-import AgentManagement from "./pages/AgentManagement";
+import UnifiedAgentPage from "./pages/UnifiedAgentPage";
 import Admin from "./pages/Admin";
 import Market from "./pages/Market";
 import AllAgents from "./pages/AllAgents";
@@ -88,10 +87,7 @@ const App = () => (
               <Route path="/my-agents" element={<MyAgents />} />
               <Route path="/market" element={<Market />} />
               <Route path="/agents" element={<AllAgents />} />
-              <Route path="/trade/:agentId" element={<TradePage />} />
-              <Route path="/trading/:agentId" element={<TradingPage />} />
-              <Route path="/agent/:agentId" element={<AgentManagement />} />
-              <Route path="/manage/:agentId" element={<AgentManagement />} />
+              <Route path="/agent/:agentId" element={<UnifiedAgentPage />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/token-agents" element={<TokenAgents />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

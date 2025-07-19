@@ -42,7 +42,7 @@ function IndexAgentCard({ agent }: { agent: Agent }) {
   };
   
   const handleCardClick = () => {
-    navigate(`/trade/${agent.id}`);
+    navigate(`/agent/${agent.id}`);
   };
   
   return (
@@ -260,7 +260,7 @@ const Index = () => {
               </div>
               <div className="mt-4">
                 <Button 
-                  onClick={() => navigate(`/trade/${spotlightAgent.id}`)}
+                  onClick={() => navigate(`/agent/${spotlightAgent.id}`)}
                   className="bg-black text-white hover:bg-black/90"
                 >
                   <BarChart3 className="mr-2 h-4 w-4" />

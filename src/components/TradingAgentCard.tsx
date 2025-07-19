@@ -26,7 +26,7 @@ export function TradingAgentCard({ agent }: AgentCardProps) {
   const navigate = useNavigate();
   
   const handleTradeClick = () => {
-    navigate(`/trade/${agent.id}`);
+    navigate(`/agent/${agent.id}`);
   };
 
   const formatPrice = (price?: number) => {

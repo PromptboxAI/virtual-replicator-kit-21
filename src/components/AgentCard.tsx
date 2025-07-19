@@ -1,3 +1,4 @@
+
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,8 +24,8 @@ export function AgentCard({ agent }: AgentCardProps) {
   const isPositive = agent.change > 0;
   
   const handleCardClick = () => {
-    console.log('AgentCard clicked, navigating to:', `/trade/${agent.id}`);
-    navigate(`/trade/${agent.id}`);
+    console.log('AgentCard clicked, navigating to:', `/agent/${agent.id}`);
+    navigate(`/agent/${agent.id}`);
   };
 
   // Generate volume-based chart points (fallback to basic pattern if no volume data)
