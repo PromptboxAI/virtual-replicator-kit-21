@@ -16,10 +16,13 @@ export interface Agent {
   creator_id: string | null;
   status: string | null;
   test_mode: boolean | null;
+  created_at: string;
+  framework: string | null;
   // Bonding curve fields
   prompt_raised: number | null;
   token_graduated: boolean | null;
   graduation_threshold: number | null;
+  token_holders: number | null;
 }
 
 export function useAgent(agentId: string | undefined) {

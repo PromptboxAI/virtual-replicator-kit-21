@@ -13,6 +13,14 @@ interface UniversalAgentDashboardProps {
     description?: string;
     avatar_url?: string;
     category?: string;
+    framework?: string;
+    creator_id?: string;
+    created_at: string;
+    current_price: number;
+    market_cap?: number;
+    token_holders?: number;
+    prompt_raised?: number;
+    token_graduated?: boolean;
     is_active?: boolean;
   };
   onAgentUpdated?: () => void;

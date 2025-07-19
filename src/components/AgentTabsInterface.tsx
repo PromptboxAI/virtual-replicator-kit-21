@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart3, Bot } from 'lucide-react';
-import { WorkflowBuilder } from './WorkflowBuilder';
+import { AgentMarketingTab } from './AgentMarketingTab';
 
 interface AgentTabsInterfaceProps {
   agent: {
@@ -11,6 +11,14 @@ interface AgentTabsInterfaceProps {
     description?: string;
     avatar_url?: string;
     category?: string;
+    framework?: string;
+    creator_id?: string;
+    created_at: string;
+    current_price: number;
+    market_cap?: number;
+    token_holders?: number;
+    prompt_raised?: number;
+    token_graduated?: boolean;
     is_active?: boolean;
   };
   onAgentUpdated?: () => void;
@@ -42,13 +50,7 @@ export function AgentTabsInterface({ agent, onAgentUpdated }: AgentTabsInterface
       </TabsContent>
 
       <TabsContent value="ai-agent" className="space-y-6">
-        <WorkflowBuilder 
-          agentId={agent.id} 
-          agentName={agent.name}
-          onComplete={() => {
-            onAgentUpdated?.();
-          }}
-        />
+        <AgentMarketingTab agent={agent} />
       </TabsContent>
     </Tabs>
   );
