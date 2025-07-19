@@ -152,7 +152,7 @@ export default function AllAgents() {
               <div 
                 key={agent.id} 
                 className="grid grid-cols-12 gap-4 p-4 hover:bg-muted/20 transition-colors cursor-pointer group"
-                onClick={() => navigate(`/trade/${agent.id}`)}
+                onClick={() => navigate(`/agent/${agent.id}`)}
               >
                 {/* Agent Info */}
                 <div className="col-span-3 flex items-center gap-3">
@@ -245,7 +245,7 @@ export default function AllAgents() {
                     className="opacity-0 group-hover:opacity-100 transition-opacity"
                     onClick={(e) => {
                       e.stopPropagation();
-                      navigate(`/trade/${agent.id}`);
+                      navigate(`/agent/${agent.id}`);
                     }}
                   >
                     <BarChart3 className="h-3 w-3" />

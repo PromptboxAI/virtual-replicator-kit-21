@@ -27,7 +27,7 @@ export function SpotlightAgent({ agent }: SpotlightAgentProps) {
   const isPositive = (agent.price_change_24h || 0) > 0;
   
   const handleTradeClick = () => {
-    navigate(`/trade/${agent.id}`);
+    navigate(`/agent/${agent.id}`);
   };
   
   const formatPrice = (price?: number) => {
