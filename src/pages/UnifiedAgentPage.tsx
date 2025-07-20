@@ -48,6 +48,13 @@ const UnifiedAgentPage = () => {
 
   console.log('UnifiedAgentPage: About to render UniversalAgentDashboard with agent:', agent.name);
 
+  // 🔍 Claude's debugging: Check parent component props
+  console.log('[UnifiedAgentPage] Passing to UniversalAgentDashboard:', {
+    agent,
+    agentType: typeof agent,
+    agentKeys: agent ? Object.keys(agent) : 'null'
+  });
+
   return (
     <div className="min-h-screen bg-background">
       <Header />

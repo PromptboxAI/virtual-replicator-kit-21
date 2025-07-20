@@ -156,6 +156,15 @@ export function EnhancedTradingInterface({
     }
   }, [sellAmount, promptRaised]);
 
+  // 🔍 Claude's debugging: Render checkpoint logging  
+  console.log('[EnhancedTradingInterface] Render checkpoint:', {
+    hasAgent: !!agent,
+    agentId: agent?.id,
+    isLoading: 'N/A',
+    willReturn: !agent ? 'LoadingAgent' : 'MainUI',
+    agentKeys: agent ? Object.keys(agent) : 'null'
+  });
+
   // 🔍 CLAUDE'S RECOMMENDATION: Show agent data regardless of auth state 
   if (!agent) {
     console.log('[EnhancedTradingInterface] No agent data available');
@@ -171,6 +180,35 @@ export function EnhancedTradingInterface({
   }
 
   console.log('[EnhancedTradingInterface] All checks passed, rendering interface. Auth status:', { ready, authenticated });
+
+  // 🔍 Claude's debugging: Safe wrapper with try-catch
+  try {
+    console.log('[EnhancedTradingInterface] About to render main UI');
+    
+    // 🔍 Claude's binary search: Start with just text
+    return (
+      <div className="space-y-6">
+        <div>Agent: {agent.name}</div>
+        <div>Debug: Agent Loaded Successfully</div>
+        <pre style={{fontSize: '12px', background: '#f5f5f5', padding: '10px'}}>
+          {JSON.stringify(agent, null, 2)}
+        </pre>
+      </div>
+    );
+    
+  } catch (error: any) {
+    console.error('[EnhancedTradingInterface] Render error:', error);
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="p-6 text-center">
+            <h3>Error rendering agent</h3>
+            <p>{error.message}</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const handleConnectWallet = () => {
     login();
