@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { CalendarDays, Users, TrendingUp, Activity, Code, Zap, Camera, BarChart3 } from 'lucide-react';
+import { CalendarDays, Users, Activity, Code, Zap, Camera, BarChart3 } from 'lucide-react';
 
 interface AgentMarketingTabProps {
   agent: {
@@ -127,7 +127,7 @@ export function AgentMarketingTab({ agent }: AgentMarketingTabProps) {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
+              <BarChart3 className="h-5 w-5" />
               Market Stats
             </CardTitle>
           </CardHeader>
@@ -183,7 +183,7 @@ export function AgentMarketingTab({ agent }: AgentMarketingTabProps) {
                 <p className="text-sm text-muted-foreground">Responds to market conditions and user inputs</p>
               </div>
               <div className="text-center p-4 border rounded-lg">
-                <TrendingUp className="h-8 w-8 mx-auto mb-2 text-primary" />
+                <BarChart3 className="h-8 w-8 mx-auto mb-2 text-primary" />
                 <h4 className="font-medium mb-1">Performance Tracking</h4>
                 <p className="text-sm text-muted-foreground">Monitors and optimizes its own performance</p>
               </div>
