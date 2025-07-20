@@ -97,6 +97,24 @@ export function EnhancedTradingInterface({
     isMigrating
   });
 
+  console.log('EnhancedTradingInterface: About to render main interface');
+
+  // Early return to debug rendering
+  if (true) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="p-6">
+            <h3 className="text-lg font-semibold mb-4">SIMPLE DEBUG: Trading Interface</h3>
+            <p>Component is rendering successfully</p>
+            <p>isGraduated: {String(isGraduated)}</p>
+            <p>Agent: {agent.name}</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   // Calculate tokens from PROMPT input
   useEffect(() => {
     if (buyAmount && parseFloat(buyAmount) > 0) {
