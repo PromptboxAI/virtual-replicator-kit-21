@@ -83,7 +83,6 @@ export function AgentTabsInterface({ agent, onAgentUpdated }: AgentTabsInterface
         <EnhancedTradingInterface 
           agent={agent}
           onAgentUpdated={onAgentUpdated}
-          isMigrating={isMigrating}
         />
       </TabsContent>
 

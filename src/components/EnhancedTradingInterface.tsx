@@ -125,6 +125,8 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
     tokenAddress: agent?.token_address,
     isGraduated,
     promptRaised,
+    bondingCurveProgress: bondingCurve.progress,
+    graduationThreshold,
     isMigrating
   });
 
