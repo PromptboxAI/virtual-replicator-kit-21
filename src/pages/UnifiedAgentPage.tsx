@@ -39,6 +39,8 @@ const UnifiedAgentPage = () => {
     );
   }
 
+  console.log('UnifiedAgentPage: About to render UniversalAgentDashboard with agent:', agent.name);
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
