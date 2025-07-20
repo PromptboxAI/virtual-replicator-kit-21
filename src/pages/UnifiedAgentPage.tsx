@@ -47,7 +47,13 @@ const UnifiedAgentPage = () => {
       <Header />
       
       <main className="container mx-auto px-4 py-8">
-        <UniversalAgentDashboard agent={agent} />
+        <UniversalAgentDashboard 
+          agent={agent} 
+          isCreatorView={false}
+          onAgentUpdated={() => {
+            console.log('UnifiedAgentPage: Agent updated callback triggered');
+          }}
+        />
       </main>
 
       <Footer />
