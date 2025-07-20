@@ -3,6 +3,7 @@ import { WorkflowTopNav } from './WorkflowTopNav';
 import { WorkflowSidebar } from './WorkflowSidebar';
 import { WorkflowCanvas, WorkflowCanvasRef } from './WorkflowCanvas';
 import { WorkflowBottomStatus } from './WorkflowBottomStatus';
+import { AgentMarketingManager } from '../AgentMarketingManager';
 import { Node, Edge } from '@xyflow/react';
 
 interface WorkflowBuilderLayoutProps {
@@ -71,36 +72,46 @@ export function WorkflowBuilderLayout({ agentId, agentName, onComplete }: Workfl
         hasUnsavedChanges={hasUnsavedChanges}
       />
       
-      {/* Main Content Area */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Enhanced Sidebar - Stack AI style (~400px) */}
-        <WorkflowSidebar 
-          activeTab={activeTab}
-          onChange={handleChange}
-          onAddNode={handleAddNode}
-          agentId={agentId}
-          agentName={agentName}
-        />
-        
-        {/* Canvas Area */}
-        <div className="flex-1 flex flex-col">
-          <WorkflowCanvas 
-            ref={canvasRef}
-            agentId={agentId}
+      {/* Marketing tab uses full width */}
+      {activeTab === 'marketing' ? (
+        <div className="flex-1 overflow-auto">
+          <AgentMarketingManager 
+            agentId={agentId} 
             agentName={agentName}
-            activeTab={activeTab}
-            onComplete={onComplete}
-            onChange={handleChange}
-          />
-          
-          {/* Bottom Status Bar */}
-          <WorkflowBottomStatus 
-            lastSaved={lastSaved}
-            lastPublished={lastPublished}
-            hasUnsavedChanges={hasUnsavedChanges}
           />
         </div>
-      </div>
+      ) : (
+        /* Main Content Area for other tabs */
+        <div className="flex flex-1 overflow-hidden">
+          {/* Enhanced Sidebar - Stack AI style (~400px) */}
+          <WorkflowSidebar 
+            activeTab={activeTab}
+            onChange={handleChange}
+            onAddNode={handleAddNode}
+            agentId={agentId}
+            agentName={agentName}
+          />
+          
+          {/* Canvas Area */}
+          <div className="flex-1 flex flex-col">
+            <WorkflowCanvas 
+              ref={canvasRef}
+              agentId={agentId}
+              agentName={agentName}
+              activeTab={activeTab}
+              onComplete={onComplete}
+              onChange={handleChange}
+            />
+            
+            {/* Bottom Status Bar */}
+            <WorkflowBottomStatus 
+              lastSaved={lastSaved}
+              lastPublished={lastPublished}
+              hasUnsavedChanges={hasUnsavedChanges}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

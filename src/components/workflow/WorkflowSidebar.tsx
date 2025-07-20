@@ -179,16 +179,7 @@ export function WorkflowSidebar({ activeTab, onChange, onAddNode, agentId, agent
     )
   })).filter(category => category.nodes.length > 0);
 
-  if (activeTab === 'marketing') {
-    return (
-      <div className="w-96 border-r bg-card/30 backdrop-blur-sm h-full">
-        <AgentMarketingManager 
-          agentId={agentId || ''} 
-          agentName={agentName || ''}
-        />
-      </div>
-    );
-  }
+  // Marketing tab is now handled in WorkflowBuilderLayout
 
   if (activeTab !== 'workflow') {
     return (
