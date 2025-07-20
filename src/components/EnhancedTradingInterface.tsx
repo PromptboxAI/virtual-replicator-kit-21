@@ -77,10 +77,8 @@ export function EnhancedTradingInterface({
     } as any;
   }
   
-  console.log('EnhancedTradingInterface: 1 - Component start');
-  
-  // 🔍 DEBUG: Log states at EnhancedTradingInterface level
-  console.log("EnhancedTradingInterface - Agent:", agent);
+  console.log('[EnhancedTradingInterface] Mounting');
+  console.log('[EnhancedTradingInterface] Agent state:', { agent: agent?.name, loading: 'N/A' });
   
   // ALL HOOKS MUST BE AT THE TOP - NEVER CONDITIONAL
   const [buyAmount, setBuyAmount] = useState('');
@@ -89,17 +87,36 @@ export function EnhancedTradingInterface({
   const [calculatedPrompt, setCalculatedPrompt] = useState('');
   const [priceImpact, setPriceImpact] = useState(0);
   const [transaction, setTransaction] = useState<TransactionState>({ type: null, amount: '', status: 'idle' });
+  const [authStable, setAuthStable] = useState(false);
   
-  console.log('EnhancedTradingInterface: 2 - State hooks initialized');
+  console.log('[EnhancedTradingInterface] State hooks initialized');
   
   const { toast } = useToast();
-  console.log('EnhancedTradingInterface: 3 - Toast hook');
+  console.log('[EnhancedTradingInterface] Toast hook initialized');
   
-  const { login, ready, authenticated } = usePrivy();
-  console.log('EnhancedTradingInterface: 4 - Privy hook, ready:', ready, 'authenticated:', authenticated);
+  // 🔍 Single source of truth for auth
+  const { login, ready, authenticated, user } = usePrivy();
   
-  // 🔍 DEBUG: Log Privy state at EnhancedTradingInterface level
-  console.log("EnhancedTradingInterface - Privy state:", { ready, authenticated });
+  // 🔍 Claude's auth debug logging
+  useEffect(() => {
+    console.log('[EnhancedTradingInterface] Auth Debug:', {
+      privyReady: ready,
+      authenticated: authenticated,
+      user: user?.id,
+      timestamp: Date.now()
+    });
+  }, [ready, authenticated, user]);
+  
+  // 🔍 Stability check as Claude suggested
+  useEffect(() => {
+    if (ready) {
+      console.log('[EnhancedTradingInterface] Auth ready, setting stable after timeout');
+      // Wait one tick for auth to stabilize
+      setTimeout(() => setAuthStable(true), 0);
+    }
+  }, [ready]);
+  
+  console.log('[EnhancedTradingInterface] Auth state:', { authenticated, user: user?.id, ready, authStable });
   
   const {
     address,
@@ -111,7 +128,7 @@ export function EnhancedTradingInterface({
     isTestMode
   } = usePrivyWallet();
   
-  console.log('EnhancedTradingInterface: 5 - usePrivyWallet called successfully');
+  console.log('[EnhancedTradingInterface] usePrivyWallet called successfully');
 
   // Calculate bonding curve metrics
   const promptRaised = agent.prompt_raised || 0;
@@ -119,7 +136,7 @@ export function EnhancedTradingInterface({
   const graduationProgress = (promptRaised / graduationTarget) * 100;
   const isGraduated = agent.token_graduated || false;
 
-  console.log('EnhancedTradingInterface Debug:', {
+  console.log('[EnhancedTradingInterface] Bonding curve calculated:', {
     agentName: agent.name,
     tokenGraduated: agent.token_graduated,
     tokenAddress: agent.token_address,
@@ -159,8 +176,36 @@ export function EnhancedTradingInterface({
     }
   }, [sellAmount, promptRaised]);
 
-  // Continue with normal rendering - remove the Privy ready check
-  // since authentication works on other pages
+  // 🔍 CLAUDE'S RECOMMENDATION: Don't block on auth for viewing, show read-only if needed
+  if (!authStable) {
+    console.log('[EnhancedTradingInterface] Auth not stable yet, showing loading');
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="p-6 text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+            <p>Stabilizing authentication...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // 🔍 Show agent data regardless of auth state (Claude's recommendation)
+  if (!agent) {
+    console.log('[EnhancedTradingInterface] No agent data available');
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="p-6 text-center">
+            <p>No agent data available</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  console.log('[EnhancedTradingInterface] All checks passed, rendering full interface');
 
   const handleConnectWallet = () => {
     login();
