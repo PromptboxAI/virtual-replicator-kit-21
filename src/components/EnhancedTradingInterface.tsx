@@ -63,6 +63,7 @@ export function EnhancedTradingInterface({
   onAgentUpdated, 
   isMigrating = false 
 }: EnhancedTradingInterfaceProps) {
+  // ALL HOOKS MUST BE AT THE TOP - NEVER CONDITIONAL
   const [buyAmount, setBuyAmount] = useState('');
   const [sellAmount, setSellAmount] = useState('');
   const [calculatedTokens, setCalculatedTokens] = useState('');
@@ -96,8 +97,6 @@ export function EnhancedTradingInterface({
     promptRaised,
     isMigrating
   });
-
-  console.log('EnhancedTradingInterface: About to render main interface');
 
   // Calculate tokens from PROMPT input
   useEffect(() => {
@@ -350,7 +349,7 @@ export function EnhancedTradingInterface({
     setTransaction({ type: null, amount: '', status: 'idle' });
   };
 
-  // Show graduated token interface if graduated (will be implemented in Phase 6)
+  // CONDITIONAL RENDERING INSTEAD OF EARLY RETURN
   if (isGraduated) {
     return (
       <div className="space-y-6">
