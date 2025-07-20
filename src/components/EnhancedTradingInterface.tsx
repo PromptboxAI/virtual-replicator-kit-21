@@ -87,7 +87,6 @@ export function EnhancedTradingInterface({
   const [calculatedPrompt, setCalculatedPrompt] = useState('');
   const [priceImpact, setPriceImpact] = useState(0);
   const [transaction, setTransaction] = useState<TransactionState>({ type: null, amount: '', status: 'idle' });
-  const [authStable, setAuthStable] = useState(false);
   
   console.log('[EnhancedTradingInterface] State hooks initialized');
   
@@ -97,26 +96,7 @@ export function EnhancedTradingInterface({
   // 🔍 Single source of truth for auth
   const { login, ready, authenticated, user } = usePrivy();
   
-  // 🔍 Claude's auth debug logging
-  useEffect(() => {
-    console.log('[EnhancedTradingInterface] Auth Debug:', {
-      privyReady: ready,
-      authenticated: authenticated,
-      user: user?.id,
-      timestamp: Date.now()
-    });
-  }, [ready, authenticated, user]);
-  
-  // 🔍 Stability check as Claude suggested
-  useEffect(() => {
-    if (ready) {
-      console.log('[EnhancedTradingInterface] Auth ready, setting stable after timeout');
-      // Wait one tick for auth to stabilize
-      setTimeout(() => setAuthStable(true), 0);
-    }
-  }, [ready]);
-  
-  console.log('[EnhancedTradingInterface] Auth state:', { authenticated, user: user?.id, ready, authStable });
+  console.log('[EnhancedTradingInterface] Auth state:', { authenticated, user: user?.id, ready });
   
   const {
     address,
@@ -176,22 +156,7 @@ export function EnhancedTradingInterface({
     }
   }, [sellAmount, promptRaised]);
 
-  // 🔍 CLAUDE'S RECOMMENDATION: Don't block on auth for viewing, show read-only if needed
-  if (!authStable) {
-    console.log('[EnhancedTradingInterface] Auth not stable yet, showing loading');
-    return (
-      <div className="space-y-6">
-        <Card>
-          <CardContent className="p-6 text-center">
-            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-            <p>Stabilizing authentication...</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  // 🔍 Show agent data regardless of auth state (Claude's recommendation)
+  // 🔍 CLAUDE'S RECOMMENDATION: Show agent data regardless of auth state 
   if (!agent) {
     console.log('[EnhancedTradingInterface] No agent data available');
     return (
@@ -205,7 +170,7 @@ export function EnhancedTradingInterface({
     );
   }
 
-  console.log('[EnhancedTradingInterface] All checks passed, rendering full interface');
+  console.log('[EnhancedTradingInterface] All checks passed, rendering interface. Auth status:', { ready, authenticated });
 
   const handleConnectWallet = () => {
     login();
