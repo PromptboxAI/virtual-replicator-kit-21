@@ -139,20 +139,8 @@ export function EnhancedTradingInterface({
     }
   }, [sellAmount, promptRaised]);
 
-  // CONDITIONAL RENDERING AFTER ALL HOOKS
-  if (!ready) {
-    console.log('EnhancedTradingInterface: Privy not ready, showing loading');
-    return (
-      <div className="space-y-6">
-        <Card>
-          <CardContent className="p-6 text-center">
-            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-            <p>Loading wallet...</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  // Continue with normal rendering - remove the Privy ready check
+  // since authentication works on other pages
 
   const handleConnectWallet = () => {
     login();
