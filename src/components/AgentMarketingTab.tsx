@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { CalendarDays, Users, TrendingUp, Activity, Code, Zap } from 'lucide-react';
+import { CalendarDays, Users, TrendingUp, Activity, Code, Zap, Camera, BarChart3 } from 'lucide-react';
 
 interface AgentMarketingTabProps {
   agent: {
@@ -192,31 +192,42 @@ export function AgentMarketingTab({ agent }: AgentMarketingTabProps) {
         </CardContent>
       </Card>
 
-      {/* Graduation Progress (if not graduated) */}
-      {!agent.token_graduated && agent.prompt_raised !== undefined && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Graduation Progress</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Progress to DEX Listing</span>
-                <span>{agent.prompt_raised.toLocaleString()} / 42,000 PROMPT</span>
+      {/* Screenshots & Media */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Camera className="h-5 w-5" />
+            Screenshots & Media
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <p className="text-muted-foreground">
+              Visual demonstrations of the agent's capabilities and interface.
+            </p>
+            
+            {/* Placeholder for when we have screenshots */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
+                <div className="text-center text-muted-foreground">
+                  <Camera className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">Agent Interface Preview</p>
+                </div>
               </div>
-              <div className="w-full bg-muted rounded-full h-3">
-                <div 
-                  className="bg-primary h-3 rounded-full transition-all"
-                  style={{ width: `${Math.min((agent.prompt_raised / 42000) * 100, 100)}%` }}
-                />
+              <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
+                <div className="text-center text-muted-foreground">
+                  <BarChart3 className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">Performance Dashboard</p>
+                </div>
               </div>
-              <p className="text-sm text-muted-foreground mt-2">
-                Once 42,000 PROMPT is raised, this agent will graduate to full DEX trading.
-              </p>
             </div>
-          </CardContent>
-        </Card>
-      )}
+            
+            <p className="text-xs text-muted-foreground">
+              Screenshots will be available once the creator uploads them via the Marketing tab.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -66,6 +66,12 @@ export function WorkflowTopNav({
             >
               Manager
             </TabsTrigger>
+            <TabsTrigger 
+              value="marketing" 
+              className="px-4 data-[state=active]:bg-transparent data-[state=active]:border-foreground data-[state=active]:border-b-2 data-[state=active]:rounded-none rounded-none border-b-2 border-transparent"
+            >
+              Marketing
+            </TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
