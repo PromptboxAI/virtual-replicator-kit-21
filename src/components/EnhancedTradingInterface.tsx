@@ -86,7 +86,9 @@ export function EnhancedTradingInterface({
   const [calculatedTokens, setCalculatedTokens] = useState('');
   const [calculatedPrompt, setCalculatedPrompt] = useState('');
   const [priceImpact, setPriceImpact] = useState(0);
+  const [slippage, setSlippage] = useState('0.5');
   const [transaction, setTransaction] = useState<TransactionState>({ type: null, amount: '', status: 'idle' });
+  const [graduationCountdown, setGraduationCountdown] = useState<number | null>(null);
   
   console.log('[EnhancedTradingInterface] State hooks initialized');
   
@@ -115,6 +117,7 @@ export function EnhancedTradingInterface({
   const graduationTarget = 42000;
   const graduationProgress = (promptRaised / graduationTarget) * 100;
   const isGraduated = agent.token_graduated || false;
+  const dexSwapsEnabled = graduationCountdown === null || graduationCountdown <= 0;
 
   console.log('[EnhancedTradingInterface] Bonding curve calculated:', {
     agentName: agent.name,
@@ -155,6 +158,23 @@ export function EnhancedTradingInterface({
       setCalculatedPrompt('');
     }
   }, [sellAmount, promptRaised]);
+
+  // Graduation countdown timer
+  useEffect(() => {
+    if (isGraduated && graduationCountdown === null) {
+      // Start with 24 hours countdown when agent graduates
+      setGraduationCountdown(24 * 60 * 60); // 24 hours in seconds
+    }
+  }, [isGraduated, graduationCountdown]);
+
+  useEffect(() => {
+    if (graduationCountdown !== null && graduationCountdown > 0) {
+      const timer = setInterval(() => {
+        setGraduationCountdown(prev => prev !== null ? Math.max(0, prev - 1) : null);
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [graduationCountdown]);
 
   // 🔍 Claude's debugging: Render checkpoint logging  
   console.log('[EnhancedTradingInterface] Render checkpoint:', {
@@ -232,57 +252,165 @@ export function EnhancedTradingInterface({
               </TabsList>
               
               <TabsContent value="buy" className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">PROMPT Amount</label>
-                  <Input
-                    type="number"
-                    placeholder="0.0"
-                    value={buyAmount}
-                    onChange={(e) => setBuyAmount(e.target.value)}
-                    disabled={!isConnected}
-                  />
-                  {calculatedTokens && (
-                    <p className="text-sm text-muted-foreground">
-                      ≈ {calculatedTokens} {agent.symbol}
-                    </p>
-                  )}
-                  {priceImpact > 0 && (
-                    <p className="text-sm text-yellow-600">
-                      Price impact: {priceImpact.toFixed(2)}%
-                    </p>
-                  )}
+                {isGraduated && !dexSwapsEnabled && (
+                  <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      DEX swaps will be enabled in {Math.floor(graduationCountdown! / 3600)}h {Math.floor((graduationCountdown! % 3600) / 60)}m {graduationCountdown! % 60}s
+                    </AlertDescription>
+                  </Alert>
+                )}
+                
+                <div className="space-y-3">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">PROMPT Amount</label>
+                    <Input
+                      type="number"
+                      placeholder="0.0"
+                      value={buyAmount}
+                      onChange={(e) => setBuyAmount(e.target.value)}
+                      disabled={!isConnected || transaction.status === 'pending' || (isGraduated && !dexSwapsEnabled)}
+                    />
+                    {calculatedTokens && (
+                      <p className="text-sm text-muted-foreground">
+                        ≈ {calculatedTokens} {agent.symbol}
+                      </p>
+                    )}
+                    {priceImpact > 0 && (
+                      <p className="text-sm text-yellow-600">
+                        Price impact: {priceImpact.toFixed(2)}%
+                      </p>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Slippage Tolerance</label>
+                    <div className="flex gap-2">
+                      {['0.1', '0.5', '1.0'].map((preset) => (
+                        <Button
+                          key={preset}
+                          variant={slippage === preset ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setSlippage(preset)}
+                          disabled={transaction.status === 'pending'}
+                        >
+                          {preset}%
+                        </Button>
+                      ))}
+                      <Input
+                        type="number"
+                        placeholder="Custom"
+                        value={slippage}
+                        onChange={(e) => setSlippage(e.target.value)}
+                        className="w-20"
+                        disabled={transaction.status === 'pending'}
+                      />
+                    </div>
+                  </div>
                 </div>
+                
                 <Button 
-                  onClick={() => console.log('Buy clicked:', buyAmount)}
-                  disabled={!isConnected || !buyAmount}
+                  onClick={() => {
+                    if (!isConnected) {
+                      toast({
+                        title: "Wallet Required",
+                        description: "You need to connect your wallet to trade",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+                    console.log('Buy clicked:', buyAmount)
+                  }}
+                  disabled={!buyAmount || transaction.status === 'pending' || (isGraduated && !dexSwapsEnabled)}
                   className="w-full"
                 >
-                  Buy {agent.symbol}
+                  {transaction.status === 'pending' && transaction.type === 'buy' ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    `Buy ${agent.symbol}`
+                  )}
                 </Button>
               </TabsContent>
               
               <TabsContent value="sell" className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Token Amount</label>
-                  <Input
-                    type="number"
-                    placeholder="0.0"
-                    value={sellAmount}
-                    onChange={(e) => setSellAmount(e.target.value)}
-                    disabled={!isConnected}
-                  />
-                  {calculatedPrompt && (
-                    <p className="text-sm text-muted-foreground">
-                      ≈ {calculatedPrompt} $PROMPT
-                    </p>
-                  )}
+                {isGraduated && !dexSwapsEnabled && (
+                  <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      DEX swaps will be enabled in {Math.floor(graduationCountdown! / 3600)}h {Math.floor((graduationCountdown! % 3600) / 60)}m {graduationCountdown! % 60}s
+                    </AlertDescription>
+                  </Alert>
+                )}
+                
+                <div className="space-y-3">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Token Amount</label>
+                    <Input
+                      type="number"
+                      placeholder="0.0"
+                      value={sellAmount}
+                      onChange={(e) => setSellAmount(e.target.value)}
+                      disabled={!isConnected || transaction.status === 'pending' || (isGraduated && !dexSwapsEnabled)}
+                    />
+                    {calculatedPrompt && (
+                      <p className="text-sm text-muted-foreground">
+                        ≈ {calculatedPrompt} $PROMPT
+                      </p>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Slippage Tolerance</label>
+                    <div className="flex gap-2">
+                      {['0.1', '0.5', '1.0'].map((preset) => (
+                        <Button
+                          key={preset}
+                          variant={slippage === preset ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setSlippage(preset)}
+                          disabled={transaction.status === 'pending'}
+                        >
+                          {preset}%
+                        </Button>
+                      ))}
+                      <Input
+                        type="number"
+                        placeholder="Custom"
+                        value={slippage}
+                        onChange={(e) => setSlippage(e.target.value)}
+                        className="w-20"
+                        disabled={transaction.status === 'pending'}
+                      />
+                    </div>
+                  </div>
                 </div>
+                
                 <Button 
-                  onClick={() => console.log('Sell clicked:', sellAmount)}
-                  disabled={!isConnected || !sellAmount}
+                  onClick={() => {
+                    if (!isConnected) {
+                      toast({
+                        title: "Wallet Required",
+                        description: "You need to connect your wallet to trade",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+                    console.log('Sell clicked:', sellAmount)
+                  }}
+                  disabled={!sellAmount || transaction.status === 'pending' || (isGraduated && !dexSwapsEnabled)}
                   className="w-full"
                 >
-                  Sell {agent.symbol}
+                  {transaction.status === 'pending' && transaction.type === 'sell' ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    `Sell ${agent.symbol}`
+                  )}
                 </Button>
               </TabsContent>
             </Tabs>
