@@ -97,27 +97,6 @@ export function EnhancedTradingInterface({
     isMigrating
   });
 
-  // Early return with simple debug UI to test rendering
-  if (true) {
-    return (
-      <div className="space-y-6">
-        <Card>
-          <CardContent className="p-6">
-            <h3 className="text-lg font-semibold mb-4">DEBUG: Enhanced Trading Interface</h3>
-            <div className="space-y-2 text-sm">
-              <p><strong>Agent:</strong> {agent.name}</p>
-              <p><strong>Token Graduated:</strong> {String(agent.token_graduated)}</p>
-              <p><strong>Token Address:</strong> {agent.token_address || 'None'}</p>
-              <p><strong>Is Graduated:</strong> {String(isGraduated)}</p>
-              <p><strong>PROMPT Raised:</strong> {promptRaised}</p>
-              <p><strong>Is Migrating:</strong> {String(isMigrating)}</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   // Calculate tokens from PROMPT input
   useEffect(() => {
     if (buyAmount && parseFloat(buyAmount) > 0) {
