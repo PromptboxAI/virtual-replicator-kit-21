@@ -29,6 +29,10 @@ interface UniversalAgentDashboardProps {
 }
 
 export function UniversalAgentDashboard({ agent, onAgentUpdated, isCreatorView = false }: UniversalAgentDashboardProps) {
+  // 🔍 DEBUG: Log states at UniversalAgentDashboard level
+  console.log("UniversalAgentDashboard - Privy state:", "N/A - no privy here");
+  console.log("UniversalAgentDashboard - Agent:", agent);
+  console.log("UniversalAgentDashboard - isCreatorView:", isCreatorView);
   // Fetch existing configuration - only for creator view or when needed
   const { data: existingConfig, refetch, isLoading: configLoading } = useQuery({
     queryKey: ['agent-config', agent.id],

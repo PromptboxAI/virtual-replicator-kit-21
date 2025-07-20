@@ -30,6 +30,10 @@ interface AgentTabsInterfaceProps {
 }
 
 export function AgentTabsInterface({ agent, onAgentUpdated }: AgentTabsInterfaceProps) {
+  // 🔍 DEBUG: Log states at AgentTabsInterface level  
+  console.log("AgentTabsInterface - Privy state:", "N/A - no privy here");
+  console.log("AgentTabsInterface - Agent:", agent);
+  
   console.log('AgentTabsInterface rendering with agent:', agent.name);
   const [activeTab, setActiveTab] = useState('trade');
 

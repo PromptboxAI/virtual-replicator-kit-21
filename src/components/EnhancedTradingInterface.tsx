@@ -63,7 +63,24 @@ export function EnhancedTradingInterface({
   onAgentUpdated, 
   isMigrating = false 
 }: EnhancedTradingInterfaceProps) {
+  // 🧪 Hard-code fallback agent for testing
+  if (!agent) {
+    console.log("EnhancedTradingInterface - No agent provided, using fallback");
+    agent = { 
+      id: "fallback", 
+      name: "Fallback Agent",
+      symbol: "TEST", 
+      prompt_raised: 0, 
+      token_address: null,
+      current_price: 0.001,
+      token_graduated: false
+    } as any;
+  }
+  
   console.log('EnhancedTradingInterface: 1 - Component start');
+  
+  // 🔍 DEBUG: Log states at EnhancedTradingInterface level
+  console.log("EnhancedTradingInterface - Agent:", agent);
   
   // ALL HOOKS MUST BE AT THE TOP - NEVER CONDITIONAL
   const [buyAmount, setBuyAmount] = useState('');
@@ -80,6 +97,9 @@ export function EnhancedTradingInterface({
   
   const { login, ready, authenticated } = usePrivy();
   console.log('EnhancedTradingInterface: 4 - Privy hook, ready:', ready, 'authenticated:', authenticated);
+  
+  // 🔍 DEBUG: Log Privy state at EnhancedTradingInterface level
+  console.log("EnhancedTradingInterface - Privy state:", { ready, authenticated });
   
   const {
     address,

@@ -9,6 +9,12 @@ import { useAgent } from '@/hooks/useAgent';
 const UnifiedAgentPage = () => {
   const { agentId } = useParams<{ agentId: string }>();
   const { agent, loading, error } = useAgent(agentId);
+  
+  // 🔍 DEBUG: Log states at UnifiedAgentPage level
+  console.log("UnifiedAgentPage - Privy state:", "N/A - no privy here");
+  console.log("UnifiedAgentPage - Agent:", agent);
+  console.log("UnifiedAgentPage - Loading:", loading);
+  console.log("UnifiedAgentPage - Error:", error);
 
   if (loading) {
     console.log('UnifiedAgentPage: SHOWING LOADING STATE - loading:', loading, 'error:', error, 'agent:', agent);
