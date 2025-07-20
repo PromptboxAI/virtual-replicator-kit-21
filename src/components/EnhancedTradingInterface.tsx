@@ -93,21 +93,6 @@ export function EnhancedTradingInterface({
   
   console.log('EnhancedTradingInterface: 5 - usePrivyWallet called successfully');
 
-  // CONDITIONAL RENDERING AFTER ALL HOOKS
-  if (!ready) {
-    console.log('EnhancedTradingInterface: Privy not ready, showing loading');
-    return (
-      <div className="space-y-6">
-        <Card>
-          <CardContent className="p-6 text-center">
-            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-            <p>Loading wallet...</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   // Calculate bonding curve metrics
   const promptRaised = agent.prompt_raised || 0;
   const graduationTarget = 42000;
@@ -123,6 +108,7 @@ export function EnhancedTradingInterface({
     isMigrating
   });
 
+  // ALL useEffect HOOKS MUST BE HERE TOO
   // Calculate tokens from PROMPT input
   useEffect(() => {
     if (buyAmount && parseFloat(buyAmount) > 0) {
@@ -152,6 +138,21 @@ export function EnhancedTradingInterface({
       setCalculatedPrompt('');
     }
   }, [sellAmount, promptRaised]);
+
+  // CONDITIONAL RENDERING AFTER ALL HOOKS
+  if (!ready) {
+    console.log('EnhancedTradingInterface: Privy not ready, showing loading');
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="p-6 text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+            <p>Loading wallet...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const handleConnectWallet = () => {
     login();
