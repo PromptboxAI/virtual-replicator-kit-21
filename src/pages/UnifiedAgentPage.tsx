@@ -11,6 +11,7 @@ const UnifiedAgentPage = () => {
   const { agent, loading, error } = useAgent(agentId);
 
   if (loading) {
+    console.log('UnifiedAgentPage: SHOWING LOADING STATE - loading:', loading, 'error:', error, 'agent:', agent);
     return (
       <div className="min-h-screen bg-background">
         <Header />
