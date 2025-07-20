@@ -29,7 +29,7 @@ interface UniversalAgentDashboardProps {
 }
 
 export function UniversalAgentDashboard({ agent, onAgentUpdated, isCreatorView = false }: UniversalAgentDashboardProps) {
-  // Fetch existing configuration
+  // Fetch existing configuration - only for creator view or when needed
   const { data: existingConfig, refetch, isLoading: configLoading } = useQuery({
     queryKey: ['agent-config', agent.id],
     queryFn: async () => {
@@ -48,11 +48,11 @@ export function UniversalAgentDashboard({ agent, onAgentUpdated, isCreatorView =
       }
       return data;
     },
-    enabled: !!agent.id,
+    enabled: !!agent.id && isCreatorView, // Only fetch config for creator view
   });
 
-  // Show loading state while configuration is loading
-  if (configLoading) {
+  // Show loading state only for creator view when configuration is loading
+  if (isCreatorView && configLoading) {
     return (
       <div className="space-y-8">
         <div className="text-center space-y-4">
