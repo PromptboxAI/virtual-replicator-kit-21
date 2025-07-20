@@ -14,6 +14,7 @@ import Learn from "./pages/Learn";
 import CreateAgent from "./pages/CreateAgent";
 import MyAgents from "./pages/MyAgents";
 import UnifiedAgentPage from "./pages/UnifiedAgentPage";
+import CreatorAgentDashboard from "./pages/CreatorAgentDashboard";
 import Admin from "./pages/Admin";
 import Market from "./pages/Market";
 import AllAgents from "./pages/AllAgents";
@@ -86,6 +87,7 @@ const App = () => (
               <Route path="/learn" element={<Learn />} />
               <Route path="/create" element={<CreateAgent />} />
               <Route path="/my-agents" element={<MyAgents />} />
+              <Route path="/my-agents/:agentId" element={<CreatorAgentDashboard />} />
               <Route path="/market" element={<Market />} />
               <Route path="/agents" element={<AllAgents />} />
               <Route path="/agent/:agentId" element={<UnifiedAgentPage />} />

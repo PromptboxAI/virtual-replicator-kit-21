@@ -3,6 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { AgentTabsInterface } from './AgentTabsInterface';
+import { WorkflowBuilder } from './WorkflowBuilder';
 import { Loader2 } from 'lucide-react';
 
 interface UniversalAgentDashboardProps {
@@ -24,9 +25,10 @@ interface UniversalAgentDashboardProps {
     is_active?: boolean;
   };
   onAgentUpdated?: () => void;
+  isCreatorView?: boolean; // New prop to distinguish creator vs public view
 }
 
-export function UniversalAgentDashboard({ agent, onAgentUpdated }: UniversalAgentDashboardProps) {
+export function UniversalAgentDashboard({ agent, onAgentUpdated, isCreatorView = false }: UniversalAgentDashboardProps) {
   // Fetch existing configuration
   const { data: existingConfig, refetch, isLoading: configLoading } = useQuery({
     queryKey: ['agent-config', agent.id],
@@ -104,14 +106,25 @@ export function UniversalAgentDashboard({ agent, onAgentUpdated }: UniversalAgen
         </div>
       </div>
 
-      {/* Agent Tabs Interface */}
-      <AgentTabsInterface 
-        agent={agent}
-        onAgentUpdated={() => {
-          refetch();
-          onAgentUpdated?.();
-        }}
-      />
+      {/* Show workflow builder for creator, tabs interface for public */}
+      {isCreatorView ? (
+        <WorkflowBuilder 
+          agentId={agent.id}
+          agentName={agent.name}
+          onComplete={() => {
+            refetch();
+            onAgentUpdated?.();
+          }}
+        />
+      ) : (
+        <AgentTabsInterface 
+          agent={agent}
+          onAgentUpdated={() => {
+            refetch();
+            onAgentUpdated?.();
+          }}
+        />
+      )}
     </div>
   );
 }
