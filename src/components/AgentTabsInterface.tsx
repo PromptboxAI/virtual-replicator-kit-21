@@ -50,7 +50,15 @@ export function AgentTabsInterface({ agent, onAgentUpdated }: AgentTabsInterface
       </TabsContent>
 
       <TabsContent value="ai-agent" className="space-y-6">
-        <AgentMarketingTab agent={agent} />
+        <div className="text-center py-12">
+          <h3 className="text-lg font-semibold mb-2">AI Agent Interface</h3>
+          <p className="text-muted-foreground">
+            AI Agent interaction interface will be implemented in Phase 4
+          </p>
+          <div className="mt-6">
+            <AgentMarketingTab agent={agent} />
+          </div>
+        </div>
       </TabsContent>
     </Tabs>
   );
