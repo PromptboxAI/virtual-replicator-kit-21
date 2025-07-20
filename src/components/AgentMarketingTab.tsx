@@ -222,8 +222,9 @@ export function AgentMarketingTab({ agent }: AgentMarketingTabProps) {
               </div>
             </div>
             
+            {/* Only show placeholder text when no screenshots are available */}
             <p className="text-xs text-muted-foreground">
-              Screenshots will be available once the creator uploads them via the Marketing tab.
+              Screenshots will be available once the creator uploads them via the Agent Dashboard.
             </p>
           </div>
         </CardContent>
