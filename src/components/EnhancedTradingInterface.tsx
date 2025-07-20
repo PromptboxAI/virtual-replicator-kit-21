@@ -1,144 +1,190 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useToast } from '@/hooks/use-toast';
+import { usePrivy } from '@privy-io/react-auth';
+import { usePrivyWallet } from '@/hooks/usePrivyWallet';
+import { useAgentRealtime } from '@/hooks/useAgentRealtime';
+import { useMigrationPolling } from '@/hooks/useMigrationPolling';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   TrendingUp, 
   TrendingDown, 
-  BarChart3, 
   Users, 
-  Wallet, 
+  DollarSign, 
+  CheckCircle, 
+  Loader2, 
+  Settings, 
   ExternalLink,
-  Loader2,
-  AlertCircle,
-  CheckCircle,
-  RefreshCw 
+  AlertTriangle 
 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { usePrivyWallet } from '@/hooks/usePrivyWallet';
-import { BondingCurveChart } from './BondingCurveChart';
-import { 
-  calculateBuyCost, 
-  calculateSellReturn, 
-  formatPrice, 
-  formatPromptAmount, 
-  getCurrentPrice, 
-  calculateTokensFromPrompt 
+import {
+  calculateTokensFromPrompt,
+  calculateSellReturn,
+  getCurrentPrice,
+  calculateGraduationProgress,
+  BONDING_CURVE_CONFIG,
+  isAgentGraduated,
+  isAgentMigrating
 } from '@/lib/bondingCurve';
-import { supabase } from '@/integrations/supabase/client';
-import { usePrivy } from '@privy-io/react-auth';
 
 interface Agent {
   id: string;
   name: string;
   symbol: string;
+  description?: string;
+  avatar_url?: string;
   current_price: number;
   market_cap?: number;
+  volume_24h?: number;
+  price_change_24h?: number;
   token_holders?: number;
   prompt_raised?: number;
-  token_graduated?: boolean;
   token_address?: string | null;
-}
-
-interface EnhancedTradingInterfaceProps {
-  agent: Agent;
-  onAgentUpdated?: () => void;
-  isMigrating?: boolean;
+  token_graduated?: boolean;
+  test_mode?: boolean;
+  graduation_threshold?: number;
 }
 
 interface TransactionState {
   type: 'buy' | 'sell' | null;
   amount: string;
-  hash?: string;
   status: 'idle' | 'pending' | 'success' | 'error';
+  hash?: string;
   error?: string;
 }
 
-export function EnhancedTradingInterface({ 
-  agent, 
-  onAgentUpdated, 
-  isMigrating = false 
-}: EnhancedTradingInterfaceProps) {
-  // 🧪 Hard-code fallback agent for testing
-  if (!agent) {
-    console.log("EnhancedTradingInterface - No agent provided, using fallback");
-    agent = { 
-      id: "fallback", 
-      name: "Fallback Agent",
-      symbol: "TEST", 
-      prompt_raised: 0, 
-      token_address: null,
-      current_price: 0.001,
-      token_graduated: false
-    } as any;
-  }
-  
+interface EnhancedTradingInterfaceProps {
+  agent: Agent;
+  onAgentUpdated?: () => void;
+}
+
+export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTradingInterfaceProps) {
   console.log('[EnhancedTradingInterface] Mounting');
-  console.log('[EnhancedTradingInterface] Agent state:', { agent: agent?.name, loading: 'N/A' });
-  
-  // ALL HOOKS MUST BE AT THE TOP - NEVER CONDITIONAL
+  console.log('[EnhancedTradingInterface] Agent state:', { 
+    agent: agent?.name, 
+    loading: 'N/A' 
+  });
+
+  // STATE HOOKS MUST BE FIRST
   const [buyAmount, setBuyAmount] = useState('');
   const [sellAmount, setSellAmount] = useState('');
   const [calculatedTokens, setCalculatedTokens] = useState('');
   const [calculatedPrompt, setCalculatedPrompt] = useState('');
   const [priceImpact, setPriceImpact] = useState(0);
-  const [slippage, setSlippage] = useState('0.5');
-  const [transaction, setTransaction] = useState<TransactionState>({ type: null, amount: '', status: 'idle' });
-  
+  const [slippage, setSlippage] = useState('2.0');
+  const [transaction, setTransaction] = useState<TransactionState>({ 
+    type: null, 
+    amount: '', 
+    status: 'idle' 
+  });
+
   console.log('[EnhancedTradingInterface] State hooks initialized');
-  
+
+  // HOOK CALLS MUST BE NEXT
   const { toast } = useToast();
   console.log('[EnhancedTradingInterface] Toast hook initialized');
-  
-  // 🔍 Single source of truth for auth
-  const { login, ready, authenticated, user } = usePrivy();
-  
-  console.log('[EnhancedTradingInterface] Auth state:', { authenticated, user: user?.id, ready });
-  
+
+  const { authenticated, ready, login, user } = usePrivy();
+  console.log('[EnhancedTradingInterface] Auth state:', { 
+    authenticated, 
+    user: user?.id, 
+    ready 
+  });
+
   const {
     address,
     isConnected,
     promptBalance,
-    isLoading: walletLoading,
     refreshBalances,
-    payForAgentCreation,
     isTestMode
   } = usePrivyWallet();
-  
   console.log('[EnhancedTradingInterface] usePrivyWallet called successfully');
 
-  // Calculate bonding curve metrics
-  const promptRaised = agent.prompt_raised || 0;
-  const graduationTarget = 42000;
-  const graduationProgress = (promptRaised / graduationTarget) * 100;
-  const isGraduated = agent.token_graduated || false;
-  const dexSwapsEnabled = !!agent.token_address;
+  // DERIVED STATE FROM PROPS
+  const promptRaised = agent?.prompt_raised || 0;
+  const tokenHolders = agent?.token_holders || 0;
+  const currentPrice = agent?.current_price || 0;
+  const marketCap = agent?.market_cap || 0;
+  const volume24h = agent?.volume_24h || 0;
+  const graduationThreshold = agent?.graduation_threshold || BONDING_CURVE_CONFIG.GRADUATION_PROMPT_AMOUNT;
+
+  // BONDING CURVE CALCULATIONS
+  const bondingCurve = calculateGraduationProgress(promptRaised);
+  const isGraduated = isAgentGraduated(promptRaised);
+  const isMigrating = isAgentMigrating(promptRaised, agent?.token_address);
 
   console.log('[EnhancedTradingInterface] Bonding curve calculated:', {
-    agentName: agent.name,
-    tokenGraduated: agent.token_graduated,
-    tokenAddress: agent.token_address,
+    agentName: agent?.name,
+    tokenGraduated: agent?.token_graduated,
+    tokenAddress: agent?.token_address,
     isGraduated,
     promptRaised,
     isMigrating
   });
 
-  // ALL useEffect HOOKS MUST BE HERE TOO
-  // Calculate tokens from PROMPT input
+  // EARLY RETURN CHECK
+  if (!agent) {
+    console.log('[EnhancedTradingInterface] No agent data available');
+    return (
+      <Card>
+        <CardContent className="p-6 text-center">
+          <p>No agent data available</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  console.log('[EnhancedTradingInterface] Render checkpoint:', {
+    hasAgent: !!agent,
+    agentId: agent?.id,
+    isLoading: 'N/A',
+    willReturn: 'MainUI',
+    agentKeys: agent ? Object.keys(agent) : []
+  });
+
+  // CHECK AUTH STATE
+  if (!ready) {
+    return (
+      <Card>
+        <CardContent className="p-6 text-center">
+          <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
+          <p>Loading...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  console.log('[EnhancedTradingInterface] All checks passed, rendering interface. Auth status:', { ready, authenticated });
+
+  // MIGRATION POLLING
+  const { isPolling } = useMigrationPolling({
+    agentId: agent.id,
+    isEnabled: isMigrating,
+    onComplete: () => {
+      onAgentUpdated?.();
+      toast({
+        title: "Token Deployed!",
+        description: "Your agent token has been deployed to Uniswap. Trading is now available on DEX.",
+      });
+    }
+  });
+
+  // ALL useEffect HOOKS
   useEffect(() => {
     if (buyAmount && parseFloat(buyAmount) > 0) {
       const promptAmount = parseFloat(buyAmount);
       const result = calculateTokensFromPrompt(promptRaised, promptAmount);
       setCalculatedTokens(result.tokenAmount.toFixed(4));
       
-      // Calculate price impact
-      const currentPrice = getCurrentPrice(promptRaised / 1000);
+      const currentPriceCalc = getCurrentPrice(promptRaised / 1000);
       const newPrice = getCurrentPrice(result.newTokensSold);
-      const impact = ((newPrice - currentPrice) / currentPrice) * 100;
+      const impact = ((newPrice - currentPriceCalc) / currentPriceCalc) * 100;
       setPriceImpact(impact);
     } else {
       setCalculatedTokens('');
@@ -146,11 +192,10 @@ export function EnhancedTradingInterface({
     }
   }, [buyAmount, promptRaised]);
 
-  // Calculate PROMPT from token input
   useEffect(() => {
     if (sellAmount && parseFloat(sellAmount) > 0) {
       const tokenAmount = parseFloat(sellAmount);
-      const currentTokensSold = promptRaised * 1000; // Approximate conversion
+      const currentTokensSold = promptRaised * 1000;
       const result = calculateSellReturn(currentTokensSold, tokenAmount);
       setCalculatedPrompt(result.return.toFixed(4));
     } else {
@@ -158,263 +203,7 @@ export function EnhancedTradingInterface({
     }
   }, [sellAmount, promptRaised]);
 
-  // 🔍 Claude's debugging: Render checkpoint logging  
-  console.log('[EnhancedTradingInterface] Render checkpoint:', {
-    hasAgent: !!agent,
-    agentId: agent?.id,
-    isLoading: 'N/A',
-    willReturn: !agent ? 'LoadingAgent' : 'MainUI',
-    agentKeys: agent ? Object.keys(agent) : 'null'
-  });
-
-  // 🔍 CLAUDE'S RECOMMENDATION: Show agent data regardless of auth state 
-  if (!agent) {
-    console.log('[EnhancedTradingInterface] No agent data available');
-    return (
-      <div className="space-y-6">
-        <Card>
-          <CardContent className="p-6 text-center">
-            <p>No agent data available</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  console.log('[EnhancedTradingInterface] All checks passed, rendering interface. Auth status:', { ready, authenticated });
-
-  // 🔍 Claude's debugging: Safe wrapper with try-catch
-  try {
-    console.log('[EnhancedTradingInterface] About to render main UI');
-    
-    // 🔍 Claude's binary search: Step 3 - Add Tabs structure
-    return (
-      <div className="space-y-6">
-        {/* Basic agent info */}
-        <Card>
-          <CardContent className="p-4">
-            <h2>Agent: {agent.name} ({agent.symbol})</h2>
-            <p>Price: ${agent.current_price}</p>
-            <p>Auth Status: {authenticated ? 'Connected' : 'Not Connected'}</p>
-          </CardContent>
-        </Card>
-        
-        {/* Wallet Status */}
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Wallet className="h-5 w-5" />
-                <div>
-                  <p className="font-medium">
-                    {isConnected ? 'Wallet Connected' : 'Connect Wallet'}
-                  </p>
-                  {isConnected && (
-                    <p className="text-sm text-muted-foreground">
-                      {address?.slice(0, 6)}...{address?.slice(-4)}
-                    </p>
-                  )}
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="text-sm text-muted-foreground">$PROMPT Balance</p>
-                <p className="font-semibold">{promptBalance}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        {/* Trading Interface with Tabs */}
-        <Card>
-          <CardContent className="p-4">
-            <Tabs defaultValue="buy" className="space-y-4">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="buy">Buy</TabsTrigger>
-                <TabsTrigger value="sell">Sell</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="buy" className="space-y-4">
-                {isGraduated && !dexSwapsEnabled && (
-                  <Alert>
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>
-                      DEX swaps will be enabled once the token is deployed to the blockchain.
-                    </AlertDescription>
-                  </Alert>
-                )}
-                
-                <div className="space-y-3">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">PROMPT Amount</label>
-                    <Input
-                      type="number"
-                      placeholder="0.0"
-                      value={buyAmount}
-                      onChange={(e) => setBuyAmount(e.target.value)}
-                      disabled={!isConnected || transaction.status === 'pending' || (isGraduated && !dexSwapsEnabled)}
-                    />
-                    {calculatedTokens && (
-                      <p className="text-sm text-muted-foreground">
-                        ≈ {calculatedTokens} {agent.symbol}
-                      </p>
-                    )}
-                    {priceImpact > 0 && (
-                      <p className="text-sm text-yellow-600">
-                        Price impact: {priceImpact.toFixed(2)}%
-                      </p>
-                    )}
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Slippage Tolerance</label>
-                    <div className="flex gap-2">
-                      {['0.1', '0.5', '1.0'].map((preset) => (
-                        <Button
-                          key={preset}
-                          variant={slippage === preset ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => setSlippage(preset)}
-                          disabled={transaction.status === 'pending'}
-                        >
-                          {preset}%
-                        </Button>
-                      ))}
-                      <Input
-                        type="number"
-                        placeholder="Custom"
-                        value={slippage}
-                        onChange={(e) => setSlippage(e.target.value)}
-                        className="w-20"
-                        disabled={transaction.status === 'pending'}
-                      />
-                    </div>
-                  </div>
-                </div>
-                
-                <Button 
-                  onClick={() => {
-                    if (!isConnected) {
-                      toast({
-                        title: "Wallet Required",
-                        description: "You need to connect your wallet to trade",
-                        variant: "destructive",
-                      });
-                      return;
-                    }
-                    console.log('Buy clicked:', buyAmount)
-                  }}
-                  disabled={!buyAmount || transaction.status === 'pending' || (isGraduated && !dexSwapsEnabled)}
-                  className="w-full"
-                >
-                  {transaction.status === 'pending' && transaction.type === 'buy' ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    `Buy ${agent.symbol}`
-                  )}
-                </Button>
-              </TabsContent>
-              
-              <TabsContent value="sell" className="space-y-4">
-                {isGraduated && !dexSwapsEnabled && (
-                  <Alert>
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>
-                      DEX swaps will be enabled once the token is deployed to the blockchain.
-                    </AlertDescription>
-                  </Alert>
-                )}
-                
-                <div className="space-y-3">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Token Amount</label>
-                    <Input
-                      type="number"
-                      placeholder="0.0"
-                      value={sellAmount}
-                      onChange={(e) => setSellAmount(e.target.value)}
-                      disabled={!isConnected || transaction.status === 'pending' || (isGraduated && !dexSwapsEnabled)}
-                    />
-                    {calculatedPrompt && (
-                      <p className="text-sm text-muted-foreground">
-                        ≈ {calculatedPrompt} $PROMPT
-                      </p>
-                    )}
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Slippage Tolerance</label>
-                    <div className="flex gap-2">
-                      {['0.1', '0.5', '1.0'].map((preset) => (
-                        <Button
-                          key={preset}
-                          variant={slippage === preset ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => setSlippage(preset)}
-                          disabled={transaction.status === 'pending'}
-                        >
-                          {preset}%
-                        </Button>
-                      ))}
-                      <Input
-                        type="number"
-                        placeholder="Custom"
-                        value={slippage}
-                        onChange={(e) => setSlippage(e.target.value)}
-                        className="w-20"
-                        disabled={transaction.status === 'pending'}
-                      />
-                    </div>
-                  </div>
-                </div>
-                
-                <Button 
-                  onClick={() => {
-                    if (!isConnected) {
-                      toast({
-                        title: "Wallet Required",
-                        description: "You need to connect your wallet to trade",
-                        variant: "destructive",
-                      });
-                      return;
-                    }
-                    console.log('Sell clicked:', sellAmount)
-                  }}
-                  disabled={!sellAmount || transaction.status === 'pending' || (isGraduated && !dexSwapsEnabled)}
-                  className="w-full"
-                >
-                  {transaction.status === 'pending' && transaction.type === 'sell' ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    `Sell ${agent.symbol}`
-                  )}
-                </Button>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
-      </div>
-    );
-    
-  } catch (error: any) {
-    console.error('[EnhancedTradingInterface] Render error:', error);
-    return (
-      <div className="space-y-6">
-        <Card>
-          <CardContent className="p-6 text-center">
-            <h3>Error rendering agent</h3>
-            <p>{error.message}</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
+  // TRANSACTION HANDLERS
   const handleConnectWallet = () => {
     login();
   };
@@ -441,6 +230,18 @@ export function EnhancedTradingInterface({
       return;
     }
 
+    // Check slippage protection
+    const result = calculateTokensFromPrompt(promptRaised, promptAmount);
+    const slippageNumber = parseFloat(slippage);
+    if (Math.abs(result.tokenAmount * getCurrentPrice(promptRaised) - promptAmount) / promptAmount > slippageNumber / 100) {
+      toast({
+        title: "Price Impact Too High",
+        description: `Price impact exceeds ${slippageNumber}% slippage tolerance`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     setTransaction({ 
       type: 'buy', 
       amount: buyAmount, 
@@ -448,69 +249,165 @@ export function EnhancedTradingInterface({
     });
 
     try {
-      // Calculate tokens and new state
-      const result = calculateTokensFromPrompt(promptRaised, promptAmount);
-      const newPromptRaised = promptRaised + promptAmount;
-      const newPrice = getCurrentPrice(result.newTokensSold);
+      if (isTestMode) {
+        // TEST MODE: Mock logic for admin testing
+        const newPromptRaised = promptRaised + promptAmount;
+        const newPrice = getCurrentPrice(result.newTokensSold);
+        const mockHash = `0x${Math.random().toString(16).substr(2, 64)}`;
+        
+        setTransaction(prev => ({ 
+          ...prev, 
+          hash: mockHash,
+          status: 'pending' 
+        }));
 
-      // Simulate transaction hash
-      const mockHash = `0x${Math.random().toString(16).substr(2, 64)}`;
-      
-      setTransaction(prev => ({ 
-        ...prev, 
-        hash: mockHash,
-        status: 'pending' 
-      }));
+        toast({
+          title: "Transaction Submitted",
+          description: `[TEST MODE] Processing ${promptAmount} $PROMPT purchase...`,
+        });
 
-      toast({
-        title: "Transaction Submitted",
-        description: isTestMode ? 
-          `[TEST MODE] Processing ${promptAmount} $PROMPT purchase...` :
-          `Processing ${promptAmount} $PROMPT purchase...`,
-      });
+        await new Promise(resolve => setTimeout(resolve, 2000));
 
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
+        const { error } = await supabase
+          .from('agents')
+          .update({
+            prompt_raised: newPromptRaised,
+            current_price: newPrice,
+            token_holders: (agent.token_holders || 0) + 1
+          })
+          .eq('id', agent.id);
 
-      // Update database
-      const { error } = await supabase
-        .from('agents')
-        .update({
-          prompt_raised: newPromptRaised,
-          current_price: newPrice,
-          token_holders: (agent.token_holders || 0) + 1
-        })
-        .eq('id', agent.id);
+        if (error) throw error;
 
-      if (error) throw error;
+        // Check for graduation
+        if (newPromptRaised >= graduationThreshold) {
+          toast({
+            title: "🎉 Token Graduating!",
+            description: "Your agent has reached the graduation threshold. Token deployment starting...",
+          });
+        }
 
-      setTransaction(prev => ({ 
-        ...prev, 
-        status: 'success' 
-      }));
+        setTransaction(prev => ({ 
+          ...prev, 
+          status: 'success' 
+        }));
 
-      toast({
-        title: "Purchase Successful!",
-        description: (
-          <div className="space-y-2">
-            <p>Bought {result.tokenAmount.toFixed(2)} {agent.symbol}</p>
-            <div className="flex items-center gap-2">
-              <span>Transaction:</span>
-              <Button 
-                variant="link" 
-                size="sm" 
-                className="h-auto p-0 text-xs"
-                onClick={() => window.open(`https://etherscan.io/tx/${mockHash}`, '_blank')}
-              >
-                {mockHash.slice(0, 10)}...{mockHash.slice(-8)}
-                <ExternalLink className="h-3 w-3 ml-1" />
-              </Button>
+        toast({
+          title: "Purchase Successful!",
+          description: (
+            <div className="space-y-2">
+              <p>Bought {result.tokenAmount.toFixed(2)} {agent.symbol}</p>
+              <div className="flex items-center gap-2">
+                <span>Transaction:</span>
+                <Button 
+                  variant="link" 
+                  size="sm" 
+                  className="h-auto p-0 text-xs"
+                  onClick={() => window.open(`https://etherscan.io/tx/${mockHash}`, '_blank')}
+                >
+                  {mockHash.slice(0, 10)}...{mockHash.slice(-8)}
+                  <ExternalLink className="h-3 w-3 ml-1" />
+                </Button>
+              </div>
             </div>
-          </div>
-        ),
-      });
+          ),
+        });
+      } else {
+        // PRODUCTION MODE: Real smart contract interaction
+        if (!address) {
+          toast({
+            title: "Wallet Not Connected",
+            description: "Please connect your wallet to make purchases.",
+            variant: "destructive",
+          });
+          return;
+        }
 
-      // Refresh balances and agent data
+        if (!agent.token_address) {
+          toast({
+            title: "Token Not Deployed",
+            description: "Agent token contract has not been deployed yet.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        toast({
+          title: "Confirming Transaction",
+          description: "Please confirm the transaction in your wallet...",
+        });
+
+        // Call smart contract buy function
+        const { data, error } = await supabase.functions.invoke('execute-buy-transaction', {
+          body: {
+            tokenAddress: agent.token_address,
+            promptAmount: promptAmount.toString(),
+            buyerAddress: address,
+            agentId: agent.id,
+            slippageTolerance: slippageNumber,
+            minTokensOut: result.tokenAmount * (1 - slippageNumber / 100)
+          }
+        });
+
+        if (error || !data.success) {
+          throw new Error(data?.error || error?.message || 'Transaction failed');
+        }
+
+        setTransaction(prev => ({ 
+          ...prev, 
+          hash: data.transactionHash,
+          status: 'pending' 
+        }));
+
+        toast({
+          title: "Transaction Submitted",
+          description: "Transaction sent to blockchain. Waiting for confirmation...",
+        });
+
+        // Wait for transaction confirmation
+        let confirmationAttempts = 0;
+        const maxAttempts = 30;
+
+        while (confirmationAttempts < maxAttempts) {
+          await new Promise(resolve => setTimeout(resolve, 10000));
+          
+          const { data: confirmData } = await supabase.functions.invoke('check-transaction-status', {
+            body: { transactionHash: data.transactionHash }
+          });
+
+          if (confirmData?.confirmed) {
+            setTransaction(prev => ({ 
+              ...prev, 
+              status: 'success' 
+            }));
+
+            toast({
+              title: "Purchase Successful!",
+              description: (
+                <div className="space-y-2">
+                  <p>Bought {confirmData.tokensReceived} {agent.symbol}</p>
+                  <div className="flex items-center gap-2">
+                    <span>Transaction:</span>
+                    <Button 
+                      variant="link" 
+                      size="sm" 
+                      className="h-auto p-0 text-xs"
+                      onClick={() => window.open(`https://basescan.org/tx/${data.transactionHash}`, '_blank')}
+                    >
+                      {data.transactionHash.slice(0, 10)}...{data.transactionHash.slice(-8)}
+                      <ExternalLink className="h-3 w-3 ml-1" />
+                    </Button>
+                  </div>
+                </div>
+              ),
+            });
+            break;
+          }
+          
+          confirmationAttempts++;
+        }
+      }
+
       await refreshBalances();
       onAgentUpdated?.();
       setBuyAmount('');
@@ -523,9 +420,21 @@ export function EnhancedTradingInterface({
         error: error.message || 'Transaction failed'
       }));
 
+      let errorMessage = error.message || "Transaction failed. Please try again.";
+      
+      if (error.message?.includes('insufficient funds')) {
+        errorMessage = "Insufficient funds to complete transaction. Check your PROMPT balance and gas fees.";
+      } else if (error.message?.includes('reverted')) {
+        errorMessage = "Transaction was reverted by the smart contract. Check slippage settings and try again.";
+      } else if (error.message?.includes('gas')) {
+        errorMessage = "Gas estimation failed. The network may be congested. Try again later.";
+      } else if (error.message?.includes('user rejected')) {
+        errorMessage = "Transaction was cancelled in your wallet.";
+      }
+
       toast({
         title: "Purchase Failed",
-        description: error.message || "Transaction failed. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     }
@@ -541,6 +450,20 @@ export function EnhancedTradingInterface({
       return;
     }
 
+    const tokenAmount = parseFloat(sellAmount);
+    const currentTokensSold = promptRaised * 1000;
+    const result = calculateSellReturn(currentTokensSold, tokenAmount);
+
+    const slippageNumber = parseFloat(slippage);
+    if (Math.abs(result.priceImpact) > slippageNumber) {
+      toast({
+        title: "Price Impact Too High",
+        description: `Price impact exceeds ${slippageNumber}% slippage tolerance`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     setTransaction({ 
       type: 'sell', 
       amount: sellAmount, 
@@ -548,70 +471,124 @@ export function EnhancedTradingInterface({
     });
 
     try {
-      const tokenAmount = parseFloat(sellAmount);
-      const currentTokensSold = promptRaised * 1000; // Approximate
-      const result = calculateSellReturn(currentTokensSold, tokenAmount);
-      const newPromptRaised = Math.max(0, promptRaised - result.return);
-      const newPrice = getCurrentPrice(result.newTokensSold);
+      if (isTestMode) {
+        // TEST MODE: Mock logic
+        const newPromptRaised = Math.max(0, promptRaised - result.return);
+        const newPrice = getCurrentPrice(result.newTokensSold);
+        const mockHash = `0x${Math.random().toString(16).substr(2, 64)}`;
+        
+        setTransaction(prev => ({ 
+          ...prev, 
+          hash: mockHash,
+          status: 'pending' 
+        }));
 
-      // Simulate transaction hash
-      const mockHash = `0x${Math.random().toString(16).substr(2, 64)}`;
-      
-      setTransaction(prev => ({ 
-        ...prev, 
-        hash: mockHash,
-        status: 'pending' 
-      }));
+        toast({
+          title: "Transaction Submitted",
+          description: `[TEST MODE] Processing ${tokenAmount} ${agent.symbol} sale...`,
+        });
 
-      toast({
-        title: "Transaction Submitted",
-        description: isTestMode ?
-          `[TEST MODE] Processing ${tokenAmount} ${agent.symbol} sale...` :
-          `Processing ${tokenAmount} ${agent.symbol} sale...`,
-      });
+        await new Promise(resolve => setTimeout(resolve, 2000));
 
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
+        const { error } = await supabase
+          .from('agents')
+          .update({
+            prompt_raised: newPromptRaised,
+            current_price: newPrice,
+            token_holders: Math.max(0, (agent.token_holders || 1) - 1)
+          })
+          .eq('id', agent.id);
 
-      // Update database
-      const { error } = await supabase
-        .from('agents')
-        .update({
-          prompt_raised: newPromptRaised,
-          current_price: newPrice,
-          token_holders: Math.max(0, (agent.token_holders || 1) - 1)
-        })
-        .eq('id', agent.id);
+        if (error) throw error;
 
-      if (error) throw error;
+        setTransaction(prev => ({ 
+          ...prev, 
+          status: 'success' 
+        }));
 
-      setTransaction(prev => ({ 
-        ...prev, 
-        status: 'success' 
-      }));
-
-      toast({
-        title: "Sale Successful!",
-        description: (
-          <div className="space-y-2">
-            <p>Sold {tokenAmount} {agent.symbol} for {result.return.toFixed(4)} $PROMPT</p>
-            <div className="flex items-center gap-2">
-              <span>Transaction:</span>
-              <Button 
-                variant="link" 
-                size="sm" 
-                className="h-auto p-0 text-xs"
-                onClick={() => window.open(`https://etherscan.io/tx/${mockHash}`, '_blank')}
-              >
-                {mockHash.slice(0, 10)}...{mockHash.slice(-8)}
-                <ExternalLink className="h-3 w-3 ml-1" />
-              </Button>
+        toast({
+          title: "Sale Successful!",
+          description: (
+            <div className="space-y-2">
+              <p>Sold {tokenAmount} {agent.symbol} for {result.return.toFixed(4)} $PROMPT</p>
+              <div className="flex items-center gap-2">
+                <span>Transaction:</span>
+                <Button 
+                  variant="link" 
+                  size="sm" 
+                  className="h-auto p-0 text-xs"
+                  onClick={() => window.open(`https://etherscan.io/tx/${mockHash}`, '_blank')}
+                >
+                  {mockHash.slice(0, 10)}...{mockHash.slice(-8)}
+                  <ExternalLink className="h-3 w-3 ml-1" />
+                </Button>
+              </div>
             </div>
-          </div>
-        ),
-      });
+          ),
+        });
+      } else {
+        // PRODUCTION MODE: Real smart contract
+        if (!address) {
+          toast({
+            title: "Wallet Not Connected",
+            description: "Please connect your wallet to make sales.",
+            variant: "destructive",
+          });
+          return;
+        }
 
-      // Refresh balances and agent data
+        if (!agent.token_address) {
+          toast({
+            title: "Token Not Deployed",
+            description: "Agent token contract has not been deployed yet.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        const { data, error } = await supabase.functions.invoke('execute-sell-transaction', {
+          body: {
+            tokenAddress: agent.token_address,
+            tokenAmount: tokenAmount.toString(),
+            sellerAddress: address,
+            agentId: agent.id,
+            slippageTolerance: slippageNumber,
+            minPromptOut: result.return * (1 - slippageNumber / 100)
+          }
+        });
+
+        if (error || !data.success) {
+          throw new Error(data?.error || error?.message || 'Transaction failed');
+        }
+
+        setTransaction(prev => ({ 
+          ...prev, 
+          hash: data.transactionHash,
+          status: 'success' 
+        }));
+
+        toast({
+          title: "Sale Successful!",
+          description: (
+            <div className="space-y-2">
+              <p>Sold {tokenAmount} {agent.symbol}</p>
+              <div className="flex items-center gap-2">
+                <span>Transaction:</span>
+                <Button 
+                  variant="link" 
+                  size="sm" 
+                  className="h-auto p-0 text-xs"
+                  onClick={() => window.open(`https://basescan.org/tx/${data.transactionHash}`, '_blank')}
+                >
+                  {data.transactionHash.slice(0, 10)}...{data.transactionHash.slice(-8)}
+                  <ExternalLink className="h-3 w-3 ml-1" />
+                </Button>
+              </div>
+            </div>
+          ),
+        });
+      }
+
       await refreshBalances();
       onAgentUpdated?.();
       setSellAmount('');
@@ -624,9 +601,21 @@ export function EnhancedTradingInterface({
         error: error.message || 'Transaction failed'
       }));
 
+      let errorMessage = error.message || "Transaction failed. Please try again.";
+      
+      if (error.message?.includes('insufficient funds')) {
+        errorMessage = "Insufficient token balance or gas fees to complete transaction.";
+      } else if (error.message?.includes('reverted')) {
+        errorMessage = "Transaction was reverted by the smart contract. Check slippage settings and try again.";
+      } else if (error.message?.includes('gas')) {
+        errorMessage = "Gas estimation failed. The network may be congested. Try again later.";
+      } else if (error.message?.includes('user rejected')) {
+        errorMessage = "Transaction was cancelled in your wallet.";
+      }
+
       toast({
         title: "Sale Failed",
-        description: error.message || "Transaction failed. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     }
@@ -636,8 +625,10 @@ export function EnhancedTradingInterface({
     setTransaction({ type: null, amount: '', status: 'idle' });
   };
 
-  // CONDITIONAL RENDERING INSTEAD OF EARLY RETURN
-  if (isGraduated) {
+  console.log('[EnhancedTradingInterface] About to render main UI');
+
+  // CONDITIONAL RENDERING FOR GRADUATED TOKENS
+  if (isGraduated && !isMigrating) {
     return (
       <div className="space-y-6">
         <Card>
@@ -656,117 +647,167 @@ export function EnhancedTradingInterface({
     );
   }
 
+  // MIGRATION STATE DISPLAY
+  if (isMigrating) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="p-6 text-center">
+            <div className="flex items-center justify-center mb-4">
+              {isPolling ? (
+                <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+              ) : (
+                <AlertTriangle className="h-8 w-8 text-yellow-500" />
+              )}
+            </div>
+            <h3 className="text-lg font-semibold mb-2">Token Migration in Progress</h3>
+            <p className="text-muted-foreground mb-4">
+              Your agent has graduated! Token deployment to Uniswap is in progress...
+            </p>
+            <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+              {isPolling ? 'Deploying...' : 'Waiting for deployment'}
+            </Badge>
+            
+            {/* Disable all trading during migration */}
+            <div className="mt-6 p-4 bg-yellow-50 rounded-lg">
+              <p className="text-sm text-yellow-700">
+                Trading is temporarily disabled during token deployment.
+                This process usually takes 2-5 minutes.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // MAIN TRADING INTERFACE
   return (
     <div className="space-y-6">
-      {/* Wallet Status */}
+      {/* Agent Info Header */}
       <Card>
-        <CardContent className="p-4">
+        <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Wallet className="h-5 w-5" />
+              {agent.avatar_url && (
+                <img src={agent.avatar_url} alt={agent.name} className="h-12 w-12 rounded-full" />
+              )}
               <div>
-                <p className="font-medium">
-                  {isConnected ? 'Wallet Connected' : 'Connect Wallet'}
-                </p>
-                {isConnected && (
-                  <p className="text-sm text-muted-foreground">
-                    {address?.slice(0, 6)}...{address?.slice(-4)}
-                  </p>
-                )}
+                <CardTitle className="text-xl">{agent.name}</CardTitle>
+                <p className="text-muted-foreground">${agent.symbol}</p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              {isConnected && (
-                <div className="text-right">
-                  <p className="text-sm text-muted-foreground">$PROMPT Balance</p>
-                  <div className="flex items-center gap-2">
-                    <p className="font-semibold">{formatPromptAmount(parseFloat(promptBalance))}</p>
-                    {isTestMode && <Badge variant="secondary">TEST</Badge>}
-                  </div>
-                </div>
-              )}
-              {!isConnected ? (
-                <Button onClick={handleConnectWallet}>
-                  Connect Wallet
-                </Button>
-              ) : (
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={refreshBalances}
-                  disabled={walletLoading}
-                >
-                  <RefreshCw className={`h-4 w-4 ${walletLoading ? 'animate-spin' : ''}`} />
-                </Button>
-              )}
+            <div className="text-right">
+              <p className="text-2xl font-bold">${currentPrice.toFixed(6)}</p>
+              <p className="text-sm text-muted-foreground">Current Price</p>
             </div>
           </div>
-        </CardContent>
+        </CardHeader>
       </Card>
+
+      {/* Wallet Status */}
+      {!authenticated ? (
+        <Card>
+          <CardContent className="p-6 text-center">
+            <h3 className="text-lg font-semibold mb-2">Connect Your Wallet</h3>
+            <p className="text-muted-foreground mb-4">
+              Connect your wallet to start trading {agent.symbol} tokens
+            </p>
+            <Button onClick={handleConnectWallet}>
+              Connect Wallet
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Wallet Connected</p>
+                <p className="text-xs text-muted-foreground">
+                  {address?.slice(0, 6)}...{address?.slice(-4)}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-medium">{promptBalance} $PROMPT</p>
+                <p className="text-xs text-muted-foreground">Available Balance</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Bonding Curve Progress */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5" />
-            Bonding Curve Progress
-          </CardTitle>
+          <CardTitle className="text-lg">Graduation Progress</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span>PROMPT Raised</span>
-              <span>{formatPromptAmount(promptRaised)} / {formatPromptAmount(graduationTarget)}</span>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between text-sm">
+              <span>Progress to Uniswap</span>
+              <span>{bondingCurve.progress.toFixed(1)}%</span>
             </div>
-            <Progress value={graduationProgress} className="h-3" />
-            <p className="text-xs text-muted-foreground">
-              {(graduationTarget - promptRaised).toLocaleString()} $PROMPT remaining until Uniswap graduation
-            </p>
-          </div>
-
-          {/* Token Metrics */}
-          <div className="grid grid-cols-3 gap-4 pt-4 border-t">
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground">Price</p>
-              <p className="font-semibold">{formatPrice(agent.current_price)}</p>
-            </div>
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground">Market Cap</p>
-              <p className="font-semibold">${(agent.market_cap || 0).toLocaleString()}</p>
-            </div>
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground">Holders</p>
-              <div className="flex items-center justify-center gap-1">
-                <Users className="h-4 w-4 text-muted-foreground" />
-                <p className="font-semibold">{(agent.token_holders || 0).toLocaleString()}</p>
+            <Progress value={bondingCurve.progress} className="h-2" />
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="text-muted-foreground">Raised</p>
+                <p className="font-medium">{promptRaised.toFixed(0)} PROMPT</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground">Target</p>
+                <p className="font-medium">{graduationThreshold.toFixed(0)} PROMPT</p>
               </div>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Bonding Curve Chart */}
-      <BondingCurveChart 
-        currentTokensSold={promptRaised * 1000}
-        graduationThreshold={graduationTarget}
-        promptRaised={promptRaised}
-      />
+      {/* Token Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4 text-center">
+            <DollarSign className="h-6 w-6 mx-auto mb-2 text-blue-500" />
+            <p className="text-xs text-muted-foreground">Market Cap</p>
+            <p className="font-medium">${marketCap.toFixed(0)}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 text-center">
+            <Users className="h-6 w-6 mx-auto mb-2 text-green-500" />
+            <p className="text-xs text-muted-foreground">Holders</p>
+            <p className="font-medium">{tokenHolders}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 text-center">
+            <TrendingUp className="h-6 w-6 mx-auto mb-2 text-purple-500" />
+            <p className="text-xs text-muted-foreground">24h Volume</p>
+            <p className="font-medium">${volume24h.toFixed(0)}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 text-center">
+            <TrendingDown className="h-6 w-6 mx-auto mb-2 text-orange-500" />
+            <p className="text-xs text-muted-foreground">24h Change</p>
+            <p className="font-medium">{agent.price_change_24h?.toFixed(2) || 0}%</p>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Trading Interface */}
       <Card>
         <CardHeader>
-          <CardTitle>Trade {agent.symbol}</CardTitle>
-          {!isConnected && (
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                Connect your wallet to start trading
-              </AlertDescription>
-            </Alert>
-          )}
+          <div className="flex items-center justify-between">
+            <CardTitle>Trade {agent.symbol}</CardTitle>
+            <div className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              <span className="text-sm">Slippage: {slippage}%</span>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="buy" className="space-y-4">
+          <Tabs defaultValue="buy" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="buy">Buy</TabsTrigger>
               <TabsTrigger value="sell">Sell</TabsTrigger>
@@ -780,35 +821,70 @@ export function EnhancedTradingInterface({
                   placeholder="0.0"
                   value={buyAmount}
                   onChange={(e) => setBuyAmount(e.target.value)}
-                  disabled={!isConnected || isMigrating}
+                  disabled={transaction.status === 'pending' || isMigrating}
                 />
                 {calculatedTokens && (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     ≈ {calculatedTokens} {agent.symbol}
+                    {priceImpact > 0 && (
+                      <span className="text-orange-500 ml-2">
+                        ({priceImpact.toFixed(2)}% price impact)
+                      </span>
+                    )}
                   </p>
                 )}
               </div>
-
-              {priceImpact > 0 && (
-                <Alert>
-                  <AlertDescription>
-                    Price impact: {priceImpact.toFixed(2)}%
-                  </AlertDescription>
-                </Alert>
-              )}
               
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Slippage Tolerance</label>
+                <div className="flex gap-2">
+                  <Button
+                    variant={slippage === '1.0' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setSlippage('1.0')}
+                    disabled={transaction.status === 'pending' || isMigrating}
+                  >
+                    1%
+                  </Button>
+                  <Button
+                    variant={slippage === '2.0' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setSlippage('2.0')}
+                    disabled={transaction.status === 'pending' || isMigrating}
+                  >
+                    2%
+                  </Button>
+                  <Button
+                    variant={slippage === '5.0' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setSlippage('5.0')}
+                    disabled={transaction.status === 'pending' || isMigrating}
+                  >
+                    5%
+                  </Button>
+                  <Input
+                    type="number"
+                    placeholder="Custom"
+                    value={slippage}
+                    onChange={(e) => setSlippage(e.target.value)}
+                    className="w-20"
+                    disabled={transaction.status === 'pending' || isMigrating}
+                  />
+                </div>
+              </div>
+
               <Button 
                 onClick={handleBuy}
-                disabled={!buyAmount || !isConnected || transaction.status === 'pending' || isMigrating}
+                disabled={!authenticated || !buyAmount || transaction.status === 'pending' || isMigrating}
                 className="w-full"
               >
                 {transaction.status === 'pending' && transaction.type === 'buy' ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     Processing...
                   </>
                 ) : (
-                  'Buy Tokens'
+                  `Buy ${agent.symbol}`
                 )}
               </Button>
             </TabsContent>
@@ -821,47 +897,52 @@ export function EnhancedTradingInterface({
                   placeholder="0.0"
                   value={sellAmount}
                   onChange={(e) => setSellAmount(e.target.value)}
-                  disabled={!isConnected || isMigrating}
+                  disabled={transaction.status === 'pending' || isMigrating}
                 />
                 {calculatedPrompt && (
-                  <p className="text-sm text-muted-foreground">
-                    ≈ {calculatedPrompt} $PROMPT
+                  <p className="text-xs text-muted-foreground">
+                    ≈ {calculatedPrompt} PROMPT
                   </p>
                 )}
               </div>
-              
+
               <Button 
                 onClick={handleSell}
-                disabled={!sellAmount || !isConnected || transaction.status === 'pending' || isMigrating}
-                variant="outline"
+                disabled={!authenticated || !sellAmount || transaction.status === 'pending' || isMigrating}
                 className="w-full"
+                variant="outline"
               >
                 {transaction.status === 'pending' && transaction.type === 'sell' ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     Processing...
                   </>
                 ) : (
-                  'Sell Tokens'
+                  `Sell ${agent.symbol}`
                 )}
               </Button>
             </TabsContent>
           </Tabs>
-
-          {/* Transaction Status */}
-          {transaction.status === 'error' && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription className="flex items-center justify-between">
-                <span>{transaction.error}</span>
-                <Button variant="outline" size="sm" onClick={resetTransaction}>
-                  Retry
-                </Button>
-              </AlertDescription>
-            </Alert>
-          )}
         </CardContent>
       </Card>
+
+      {/* Transaction Status */}
+      {transaction.status === 'error' && (
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            {transaction.error}
+            <Button 
+              variant="link" 
+              size="sm" 
+              onClick={resetTransaction}
+              className="ml-2 h-auto p-0"
+            >
+              Retry
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
     </div>
   );
 }
