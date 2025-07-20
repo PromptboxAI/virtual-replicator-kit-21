@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { TrendingUp, TrendingDown, Activity, BarChart3 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { isAgentGraduated } from '@/lib/bondingCurve';
+import { useAgentRealtime } from '@/hooks/useAgentRealtime';
 
 interface SpotlightAgentProps {
   agent: {
@@ -26,8 +27,14 @@ interface SpotlightAgentProps {
 export function SpotlightAgent({ agent }: SpotlightAgentProps) {
   const navigate = useNavigate();
   
-  // Live graduation calculation - Phase 3 implementation
-  const isGraduated = isAgentGraduated(agent.prompt_raised || 0);
+  // Real-time graduation status - Phase 3 implementation
+  const { isGraduated } = useAgentRealtime(agent.id, {
+    id: agent.id,
+    prompt_raised: agent.prompt_raised || 0,
+    current_price: agent.current_price,
+    market_cap: agent.market_cap,
+    token_holders: agent.token_holders
+  });
   
   const isPositive = (agent.price_change_24h || 0) > 0;
   

@@ -22,6 +22,7 @@ import {
   isAgentGraduated,
   calculateGraduationProgress
 } from "@/lib/bondingCurve";
+import { useAgentRealtime } from '@/hooks/useAgentRealtime';
 
 interface Agent {
   id: string;
@@ -58,9 +59,18 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
   const { balance: promptBalance, loading: balanceLoading } = useTokenBalance(user?.id);
   const { buyAgentTokens, sellAgentTokens } = useAgentToken(agent.token_address);
 
-  // Live graduation calculation - Phase 3 implementation
-  const isGraduated = isAgentGraduated(agent.prompt_raised);
-  const graduationProgress = calculateGraduationProgress(agent.prompt_raised);
+  // Real-time graduation status and data - Phase 3 implementation
+  const { isGraduated, agentData } = useAgentRealtime(agent.id, {
+    id: agent.id,
+    prompt_raised: agent.prompt_raised,
+    current_price: agent.current_price,
+    market_cap: agent.market_cap,
+    token_holders: agent.token_holders
+  });
+  
+  // Use real-time data if available, fallback to props
+  const currentPromptRaised = agentData?.prompt_raised ?? agent.prompt_raised;
+  const graduationProgress = calculateGraduationProgress(currentPromptRaised);
   const remainingToGraduation = graduationProgress.remaining;
 
   // Real-time price calculation

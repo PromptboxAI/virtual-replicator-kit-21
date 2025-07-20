@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CalendarDays, Users, Activity, Code, Zap, Camera, BarChart3, ExternalLink } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { isAgentGraduated } from '@/lib/bondingCurve';
+import { useAgentRealtime } from '@/hooks/useAgentRealtime';
 
 interface AgentMarketingTabProps {
   agent: {
@@ -90,8 +91,14 @@ export function AgentMarketingTab({ agent }: AgentMarketingTabProps) {
   const hasScreenshots = marketingData?.screenshots && Array.isArray(marketingData.screenshots) && marketingData.screenshots.length > 0;
   const hasMarketingDescription = marketingData?.description;
   
-  // Live graduation calculation - Phase 3 implementation
-  const isGraduated = isAgentGraduated(agent.prompt_raised || 0);
+  // Real-time graduation status - Phase 3 implementation
+  const { isGraduated } = useAgentRealtime(agent.id, {
+    id: agent.id,
+    prompt_raised: agent.prompt_raised || 0,
+    current_price: agent.current_price,
+    market_cap: agent.market_cap,
+    token_holders: agent.token_holders
+  });
 
   return (
     <div className="space-y-6">
