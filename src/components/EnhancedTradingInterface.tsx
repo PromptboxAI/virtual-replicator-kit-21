@@ -232,19 +232,58 @@ export function EnhancedTradingInterface({
               </TabsList>
               
               <TabsContent value="buy" className="space-y-4">
-                <div>
-                  <p>Buy Tab Content</p>
-                  <p>PROMPT Amount input would go here</p>
-                  <p>Calculated tokens: {calculatedTokens || 'None'}</p>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">PROMPT Amount</label>
+                  <Input
+                    type="number"
+                    placeholder="0.0"
+                    value={buyAmount}
+                    onChange={(e) => setBuyAmount(e.target.value)}
+                    disabled={!isConnected}
+                  />
+                  {calculatedTokens && (
+                    <p className="text-sm text-muted-foreground">
+                      ≈ {calculatedTokens} {agent.symbol}
+                    </p>
+                  )}
+                  {priceImpact > 0 && (
+                    <p className="text-sm text-yellow-600">
+                      Price impact: {priceImpact.toFixed(2)}%
+                    </p>
+                  )}
                 </div>
+                <Button 
+                  onClick={() => console.log('Buy clicked:', buyAmount)}
+                  disabled={!isConnected || !buyAmount}
+                  className="w-full"
+                >
+                  Buy {agent.symbol}
+                </Button>
               </TabsContent>
               
               <TabsContent value="sell" className="space-y-4">
-                <div>
-                  <p>Sell Tab Content</p>
-                  <p>Token amount input would go here</p>
-                  <p>Calculated PROMPT: {calculatedPrompt || 'None'}</p>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Token Amount</label>
+                  <Input
+                    type="number"
+                    placeholder="0.0"
+                    value={sellAmount}
+                    onChange={(e) => setSellAmount(e.target.value)}
+                    disabled={!isConnected}
+                  />
+                  {calculatedPrompt && (
+                    <p className="text-sm text-muted-foreground">
+                      ≈ {calculatedPrompt} $PROMPT
+                    </p>
+                  )}
                 </div>
+                <Button 
+                  onClick={() => console.log('Sell clicked:', sellAmount)}
+                  disabled={!isConnected || !sellAmount}
+                  className="w-full"
+                >
+                  Sell {agent.symbol}
+                </Button>
               </TabsContent>
             </Tabs>
           </CardContent>
