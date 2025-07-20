@@ -5,10 +5,28 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { UniversalAgentDashboard } from '@/components/UniversalAgentDashboard';
 import { useAgent } from '@/hooks/useAgent';
+import { useAgentRealtime } from '@/hooks/useAgentRealtime';
 
 const UnifiedAgentPage = () => {
   const { agentId } = useParams<{ agentId: string }>();
   const { agent, loading, error } = useAgent(agentId);
+  
+  // Real-time updates for agent data
+  const { agentData } = useAgentRealtime(agentId || '', agent || undefined);
+  
+  // Use real-time data if available, fallback to static data
+  // Merge real-time updates with full agent data to preserve all fields
+  const currentAgent = agent ? {
+    ...agent,
+    ...(agentData ? {
+      prompt_raised: agentData.prompt_raised,
+      current_price: agentData.current_price,
+      market_cap: agentData.market_cap,
+      token_holders: agentData.token_holders,
+      volume_24h: agentData.volume_24h,
+      token_address: agentData.token_address
+    } : {})
+  } : null;
   
   // 🔍 DEBUG: Log states at UnifiedAgentPage level
   console.log("UnifiedAgentPage - Privy state:", "N/A - no privy here");
@@ -61,7 +79,7 @@ const UnifiedAgentPage = () => {
       
       <main className="container mx-auto px-4 py-8">
         <UniversalAgentDashboard 
-          agent={agent} 
+          agent={currentAgent} 
           isCreatorView={false}
           onAgentUpdated={() => {
             console.log('UnifiedAgentPage: Agent updated callback triggered');
