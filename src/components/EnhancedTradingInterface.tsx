@@ -88,6 +88,15 @@ export function EnhancedTradingInterface({
   const graduationProgress = (promptRaised / graduationTarget) * 100;
   const isGraduated = agent.token_graduated || false;
 
+  console.log('EnhancedTradingInterface Debug:', {
+    agentName: agent.name,
+    tokenGraduated: agent.token_graduated,
+    tokenAddress: agent.token_address,
+    isGraduated,
+    promptRaised,
+    isMigrating
+  });
+
   // Calculate tokens from PROMPT input
   useEffect(() => {
     if (buyAmount && parseFloat(buyAmount) > 0) {
