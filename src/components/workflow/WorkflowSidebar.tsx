@@ -35,11 +35,14 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { WorkflowTab } from './WorkflowBuilderLayout';
+import { AgentMarketingManager } from '../AgentMarketingManager';
 
 interface WorkflowSidebarProps {
   activeTab: WorkflowTab;
   onChange: () => void;
-  onAddNode: (nodeData: any) => void; // Add this prop
+  onAddNode: (nodeData: any) => void;
+  agentId?: string;
+  agentName?: string;
 }
 
 // Stack AI style node categories
@@ -155,7 +158,7 @@ const stackAICategories = [
   }
 ];
 
-export function WorkflowSidebar({ activeTab, onChange, onAddNode }: WorkflowSidebarProps) {
+export function WorkflowSidebar({ activeTab, onChange, onAddNode, agentId, agentName }: WorkflowSidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>(
     Object.fromEntries(stackAICategories.map(cat => [cat.name, cat.expanded]))
@@ -176,6 +179,17 @@ export function WorkflowSidebar({ activeTab, onChange, onAddNode }: WorkflowSide
     )
   })).filter(category => category.nodes.length > 0);
 
+  if (activeTab === 'marketing') {
+    return (
+      <div className="w-96 border-r bg-card/30 backdrop-blur-sm h-full">
+        <AgentMarketingManager 
+          agentId={agentId || ''} 
+          agentName={agentName || ''}
+        />
+      </div>
+    );
+  }
+
   if (activeTab !== 'workflow') {
     return (
       <div className="w-96 border-r bg-card/30 backdrop-blur-sm p-6">
@@ -185,34 +199,7 @@ export function WorkflowSidebar({ activeTab, onChange, onAddNode }: WorkflowSide
             {activeTab === 'export' && 'Export your workflow as JSON, share links, or generate embed codes.'}
             {activeTab === 'analytics' && 'View execution history, performance metrics, and usage statistics.'}
             {activeTab === 'manager' && 'Manage workflow settings, versions, and collaboration.'}
-            {activeTab === 'marketing' && 'Upload screenshots, demos, and marketing materials for your agent.'}
           </div>
-          
-          {activeTab === 'marketing' && (
-            <div className="space-y-4 mt-6">
-              <div>
-                <h4 className="font-medium mb-2">Upload Screenshots</h4>
-                <Button variant="outline" className="w-full">
-                  <Image className="w-4 h-4 mr-2" />
-                  Add Screenshot
-                </Button>
-              </div>
-              <div>
-                <h4 className="font-medium mb-2">Agent Description</h4>
-                <textarea 
-                  className="w-full h-24 p-3 text-sm border rounded-md resize-none"
-                  placeholder="Describe what your agent does and its key features..."
-                />
-              </div>
-              <div>
-                <h4 className="font-medium mb-2">Demo Video</h4>
-                <Button variant="outline" className="w-full">
-                  <FileText className="w-4 h-4 mr-2" />
-                  Upload Demo
-                </Button>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     );

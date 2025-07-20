@@ -78,6 +78,8 @@ export function WorkflowBuilderLayout({ agentId, agentName, onComplete }: Workfl
           activeTab={activeTab}
           onChange={handleChange}
           onAddNode={handleAddNode}
+          agentId={agentId}
+          agentName={agentName}
         />
         
         {/* Canvas Area */}

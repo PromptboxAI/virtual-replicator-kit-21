@@ -169,6 +169,54 @@ export type Database = {
           },
         ]
       }
+      agent_marketing: {
+        Row: {
+          agent_id: string
+          created_at: string
+          demo_videos: Json | null
+          description: string | null
+          discord_url: string | null
+          id: string
+          screenshots: Json | null
+          telegram_url: string | null
+          twitter_url: string | null
+          updated_at: string
+          website_url: string | null
+          whitepaper_url: string | null
+          youtube_url: string | null
+        }
+        Insert: {
+          agent_id: string
+          created_at?: string
+          demo_videos?: Json | null
+          description?: string | null
+          discord_url?: string | null
+          id?: string
+          screenshots?: Json | null
+          telegram_url?: string | null
+          twitter_url?: string | null
+          updated_at?: string
+          website_url?: string | null
+          whitepaper_url?: string | null
+          youtube_url?: string | null
+        }
+        Update: {
+          agent_id?: string
+          created_at?: string
+          demo_videos?: Json | null
+          description?: string | null
+          discord_url?: string | null
+          id?: string
+          screenshots?: Json | null
+          telegram_url?: string | null
+          twitter_url?: string | null
+          updated_at?: string
+          website_url?: string | null
+          whitepaper_url?: string | null
+          youtube_url?: string | null
+        }
+        Relationships: []
+      }
       agent_price_history: {
         Row: {
           agent_id: string
