@@ -31,14 +31,18 @@ export function useAgent(agentId: string | undefined) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log('[useAgent] Effect triggered with agentId:', agentId);
+    
     if (!agentId) {
+      console.log('[useAgent] No agentId provided, setting loading false');
       setLoading(false);
       return;
     }
 
     async function fetchAgent() {
       try {
-        console.log('Fetching single agent with ID:', agentId);
+        console.log('[useAgent] Starting fetch for agent ID:', agentId);
+        setLoading(true);
         
         const { data, error } = await supabase
           .from('agents')
@@ -46,26 +50,27 @@ export function useAgent(agentId: string | undefined) {
           .eq('id', agentId)
           .maybeSingle();
 
-        console.log('Single agent fetch result:', { data, error });
+        console.log('[useAgent] Fetch completed:', { data: !!data, error: !!error, loading: 'about to set false' });
 
         if (error) {
-          console.error('Error fetching agent:', error);
+          console.error('[useAgent] Error fetching agent:', error);
           setError(error.message);
           setAgent(null);
         } else if (!data) {
-          console.log('No agent found with ID:', agentId);
+          console.log('[useAgent] No agent found with ID:', agentId);
           setError('Agent not found');
           setAgent(null);
         } else {
-          console.log('Agent found:', data);
+          console.log('[useAgent] Agent found successfully:', data.name);
           setAgent(data);
           setError(null);
         }
       } catch (err: any) {
-        console.error('Exception while fetching agent:', err);
+        console.error('[useAgent] Exception while fetching agent:', err);
         setError('Failed to load agent');
         setAgent(null);
       } finally {
+        console.log('[useAgent] Finally block - setting loading to false');
         setLoading(false);
       }
     }
