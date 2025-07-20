@@ -30,6 +30,7 @@ interface AgentTabsInterfaceProps {
 }
 
 export function AgentTabsInterface({ agent, onAgentUpdated }: AgentTabsInterfaceProps) {
+  console.log('AgentTabsInterface rendering with agent:', agent.name);
   const [activeTab, setActiveTab] = useState('trade');
 
   // Real-time migration status - Phase 4 implementation
