@@ -18,7 +18,9 @@ import {
   FileText,
   X,
   Plus,
-  Save
+  Save,
+  CheckCircle,
+  AlertCircle
 } from 'lucide-react';
 
 interface AgentMarketingManagerProps {
@@ -368,18 +370,67 @@ export function AgentMarketingManager({ agentId, agentName }: AgentMarketingMana
         </Card>
       </div>
 
-      {/* Preview Section */}
+      {/* Status Checklist */}
       <Card>
         <CardHeader>
-          <CardTitle>Preview</CardTitle>
+          <CardTitle>Content Status</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-sm text-muted-foreground space-y-2">
-            <p>✅ {marketingData.description ? 'Description added' : 'Description needed'}</p>
-            <p>✅ {marketingData.screenshots.length > 0 ? `${marketingData.screenshots.length} screenshot(s) added` : 'Screenshots needed'}</p>
-            <p>✅ {marketingData.demo_videos.length > 0 ? `${marketingData.demo_videos.length} demo video(s) added` : 'Demo videos optional'}</p>
-            <p>✅ {(marketingData.website_url || marketingData.youtube_url) ? 'Links added' : 'Links optional'}</p>
-            <p>✅ {(marketingData.twitter_url || marketingData.discord_url || marketingData.telegram_url) ? 'Social media connected' : 'Social media optional'}</p>
+          <div className="text-sm space-y-2">
+            <div className="flex items-center gap-2">
+              {marketingData.description ? (
+                <CheckCircle className="h-4 w-4 text-green-600" />
+              ) : (
+                <AlertCircle className="h-4 w-4 text-orange-500" />
+              )}
+              <span className={marketingData.description ? 'text-foreground' : 'text-muted-foreground'}>
+                {marketingData.description ? 'Description added' : 'Description needed'}
+              </span>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              {marketingData.screenshots.length > 0 ? (
+                <CheckCircle className="h-4 w-4 text-green-600" />
+              ) : (
+                <AlertCircle className="h-4 w-4 text-orange-500" />
+              )}
+              <span className={marketingData.screenshots.length > 0 ? 'text-foreground' : 'text-muted-foreground'}>
+                {marketingData.screenshots.length > 0 ? `${marketingData.screenshots.length} screenshot(s) added` : 'Screenshots needed'}
+              </span>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              {marketingData.demo_videos.length > 0 ? (
+                <CheckCircle className="h-4 w-4 text-green-600" />
+              ) : (
+                <div className="h-4 w-4 rounded-full border-2 border-muted-foreground/30" />
+              )}
+              <span className={marketingData.demo_videos.length > 0 ? 'text-foreground' : 'text-muted-foreground'}>
+                {marketingData.demo_videos.length > 0 ? `${marketingData.demo_videos.length} demo video(s) added` : 'Demo videos optional'}
+              </span>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              {(marketingData.website_url || marketingData.youtube_url) ? (
+                <CheckCircle className="h-4 w-4 text-green-600" />
+              ) : (
+                <div className="h-4 w-4 rounded-full border-2 border-muted-foreground/30" />
+              )}
+              <span className={(marketingData.website_url || marketingData.youtube_url) ? 'text-foreground' : 'text-muted-foreground'}>
+                {(marketingData.website_url || marketingData.youtube_url) ? 'Links added' : 'Links optional'}
+              </span>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              {(marketingData.twitter_url || marketingData.discord_url || marketingData.telegram_url) ? (
+                <CheckCircle className="h-4 w-4 text-green-600" />
+              ) : (
+                <div className="h-4 w-4 rounded-full border-2 border-muted-foreground/30" />
+              )}
+              <span className={(marketingData.twitter_url || marketingData.discord_url || marketingData.telegram_url) ? 'text-foreground' : 'text-muted-foreground'}>
+                {(marketingData.twitter_url || marketingData.discord_url || marketingData.telegram_url) ? 'Social media connected' : 'Social media optional'}
+              </span>
+            </div>
           </div>
         </CardContent>
       </Card>
