@@ -88,7 +88,6 @@ export function EnhancedTradingInterface({
   const [priceImpact, setPriceImpact] = useState(0);
   const [slippage, setSlippage] = useState('0.5');
   const [transaction, setTransaction] = useState<TransactionState>({ type: null, amount: '', status: 'idle' });
-  const [graduationCountdown, setGraduationCountdown] = useState<number | null>(null);
   
   console.log('[EnhancedTradingInterface] State hooks initialized');
   
@@ -117,7 +116,7 @@ export function EnhancedTradingInterface({
   const graduationTarget = 42000;
   const graduationProgress = (promptRaised / graduationTarget) * 100;
   const isGraduated = agent.token_graduated || false;
-  const dexSwapsEnabled = graduationCountdown === null || graduationCountdown <= 0;
+  const dexSwapsEnabled = !!agent.token_address;
 
   console.log('[EnhancedTradingInterface] Bonding curve calculated:', {
     agentName: agent.name,
@@ -158,23 +157,6 @@ export function EnhancedTradingInterface({
       setCalculatedPrompt('');
     }
   }, [sellAmount, promptRaised]);
-
-  // Graduation countdown timer
-  useEffect(() => {
-    if (isGraduated && graduationCountdown === null) {
-      // Start with 24 hours countdown when agent graduates
-      setGraduationCountdown(24 * 60 * 60); // 24 hours in seconds
-    }
-  }, [isGraduated, graduationCountdown]);
-
-  useEffect(() => {
-    if (graduationCountdown !== null && graduationCountdown > 0) {
-      const timer = setInterval(() => {
-        setGraduationCountdown(prev => prev !== null ? Math.max(0, prev - 1) : null);
-      }, 1000);
-      return () => clearInterval(timer);
-    }
-  }, [graduationCountdown]);
 
   // 🔍 Claude's debugging: Render checkpoint logging  
   console.log('[EnhancedTradingInterface] Render checkpoint:', {
@@ -256,7 +238,7 @@ export function EnhancedTradingInterface({
                   <Alert>
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>
-                      DEX swaps will be enabled in {Math.floor(graduationCountdown! / 3600)}h {Math.floor((graduationCountdown! % 3600) / 60)}m {graduationCountdown! % 60}s
+                      DEX swaps will be enabled once the token is deployed to the blockchain.
                     </AlertDescription>
                   </Alert>
                 )}
@@ -340,7 +322,7 @@ export function EnhancedTradingInterface({
                   <Alert>
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>
-                      DEX swaps will be enabled in {Math.floor(graduationCountdown! / 3600)}h {Math.floor((graduationCountdown! % 3600) / 60)}m {graduationCountdown! % 60}s
+                      DEX swaps will be enabled once the token is deployed to the blockchain.
                     </AlertDescription>
                   </Alert>
                 )}
