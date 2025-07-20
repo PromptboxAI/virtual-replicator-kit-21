@@ -185,7 +185,7 @@ export function EnhancedTradingInterface({
   try {
     console.log('[EnhancedTradingInterface] About to render main UI');
     
-    // 🔍 Claude's binary search: Step 2 - Add basic structure
+    // 🔍 Claude's binary search: Step 3 - Add Tabs structure
     return (
       <div className="space-y-6">
         {/* Basic agent info */}
@@ -197,19 +197,56 @@ export function EnhancedTradingInterface({
           </CardContent>
         </Card>
         
-        {/* Wallet Status - Simple version */}
+        {/* Wallet Status */}
         <Card>
           <CardContent className="p-4">
-            <p>Wallet Section</p>
-            <p>Balance: {promptBalance || '0'} $PROMPT</p>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Wallet className="h-5 w-5" />
+                <div>
+                  <p className="font-medium">
+                    {isConnected ? 'Wallet Connected' : 'Connect Wallet'}
+                  </p>
+                  {isConnected && (
+                    <p className="text-sm text-muted-foreground">
+                      {address?.slice(0, 6)}...{address?.slice(-4)}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-sm text-muted-foreground">$PROMPT Balance</p>
+                <p className="font-semibold">{promptBalance}</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
         
-        {/* Trading Section - Simple version */}
+        {/* Trading Interface with Tabs */}
         <Card>
           <CardContent className="p-4">
-            <p>Trading Section</p>
-            <p>Buy/Sell interface would go here</p>
+            <Tabs defaultValue="buy" className="space-y-4">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="buy">Buy</TabsTrigger>
+                <TabsTrigger value="sell">Sell</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="buy" className="space-y-4">
+                <div>
+                  <p>Buy Tab Content</p>
+                  <p>PROMPT Amount input would go here</p>
+                  <p>Calculated tokens: {calculatedTokens || 'None'}</p>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="sell" className="space-y-4">
+                <div>
+                  <p>Sell Tab Content</p>
+                  <p>Token amount input would go here</p>
+                  <p>Calculated PROMPT: {calculatedPrompt || 'None'}</p>
+                </div>
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
       </div>
