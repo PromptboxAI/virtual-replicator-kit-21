@@ -106,7 +106,7 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
   } = usePrivyWallet();
   console.log('[EnhancedTradingInterface] usePrivyWallet called successfully');
 
-  // DERIVED STATE FROM PROPS
+  // DERIVED STATE FROM PROPS (with safe defaults for when agent is null)
   const promptRaised = agent?.prompt_raised || 0;
   const tokenHolders = agent?.token_holders || 0;
   const currentPrice = agent?.current_price || 0;
@@ -114,7 +114,7 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
   const volume24h = agent?.volume_24h || 0;
   const graduationThreshold = agent?.graduation_threshold || BONDING_CURVE_CONFIG.GRADUATION_PROMPT_AMOUNT;
 
-  // BONDING CURVE CALCULATIONS
+  // BONDING CURVE CALCULATIONS (safe with defaults)
   const bondingCurve = calculateGraduationProgress(promptRaised);
   const isGraduated = isAgentGraduated(promptRaised);
   const isMigrating = isAgentMigrating(promptRaised, agent?.token_address);
@@ -130,7 +130,48 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
     isMigrating
   });
 
-  // EARLY RETURN CHECK
+  // MIGRATION POLLING - MUST BE CALLED BEFORE ANY EARLY RETURNS
+  const { isPolling } = useMigrationPolling({
+    agentId: agent?.id || '', // Safe default
+    isEnabled: isMigrating && !!agent, // Only enable if agent exists and is migrating
+    onComplete: () => {
+      onAgentUpdated?.();
+      toast({
+        title: "Token Deployed!",
+        description: "Your agent token has been deployed to Uniswap. Trading is now available on DEX.",
+      });
+    }
+  });
+
+  // ALL useEffect HOOKS MUST BE HERE
+  useEffect(() => {
+    if (buyAmount && parseFloat(buyAmount) > 0) {
+      const promptAmount = parseFloat(buyAmount);
+      const result = calculateTokensFromPrompt(promptRaised, promptAmount);
+      setCalculatedTokens(result.tokenAmount.toFixed(4));
+      
+      const currentPriceCalc = getCurrentPrice(promptRaised / 1000);
+      const newPrice = getCurrentPrice(result.newTokensSold);
+      const impact = ((newPrice - currentPriceCalc) / currentPriceCalc) * 100;
+      setPriceImpact(impact);
+    } else {
+      setCalculatedTokens('');
+      setPriceImpact(0);
+    }
+  }, [buyAmount, promptRaised]);
+
+  useEffect(() => {
+    if (sellAmount && parseFloat(sellAmount) > 0) {
+      const tokenAmount = parseFloat(sellAmount);
+      const currentTokensSold = promptRaised * 1000;
+      const result = calculateSellReturn(currentTokensSold, tokenAmount);
+      setCalculatedPrompt(result.return.toFixed(4));
+    } else {
+      setCalculatedPrompt('');
+    }
+  }, [sellAmount, promptRaised]);
+
+  // NOW SAFE TO DO EARLY RETURNS AFTER ALL HOOKS
   if (!agent) {
     console.log('[EnhancedTradingInterface] No agent data available');
     return (
@@ -163,47 +204,6 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
   }
 
   console.log('[EnhancedTradingInterface] All checks passed, rendering interface. Auth status:', { ready, authenticated });
-
-  // MIGRATION POLLING
-  const { isPolling } = useMigrationPolling({
-    agentId: agent.id,
-    isEnabled: isMigrating,
-    onComplete: () => {
-      onAgentUpdated?.();
-      toast({
-        title: "Token Deployed!",
-        description: "Your agent token has been deployed to Uniswap. Trading is now available on DEX.",
-      });
-    }
-  });
-
-  // ALL useEffect HOOKS
-  useEffect(() => {
-    if (buyAmount && parseFloat(buyAmount) > 0) {
-      const promptAmount = parseFloat(buyAmount);
-      const result = calculateTokensFromPrompt(promptRaised, promptAmount);
-      setCalculatedTokens(result.tokenAmount.toFixed(4));
-      
-      const currentPriceCalc = getCurrentPrice(promptRaised / 1000);
-      const newPrice = getCurrentPrice(result.newTokensSold);
-      const impact = ((newPrice - currentPriceCalc) / currentPriceCalc) * 100;
-      setPriceImpact(impact);
-    } else {
-      setCalculatedTokens('');
-      setPriceImpact(0);
-    }
-  }, [buyAmount, promptRaised]);
-
-  useEffect(() => {
-    if (sellAmount && parseFloat(sellAmount) > 0) {
-      const tokenAmount = parseFloat(sellAmount);
-      const currentTokensSold = promptRaised * 1000;
-      const result = calculateSellReturn(currentTokensSold, tokenAmount);
-      setCalculatedPrompt(result.return.toFixed(4));
-    } else {
-      setCalculatedPrompt('');
-    }
-  }, [sellAmount, promptRaised]);
 
   // TRANSACTION HANDLERS
   const handleConnectWallet = () => {
