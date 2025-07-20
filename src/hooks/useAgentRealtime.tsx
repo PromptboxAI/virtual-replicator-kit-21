@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { isAgentGraduated } from '@/lib/bondingCurve';
+import { isAgentGraduated, isAgentMigrating } from '@/lib/bondingCurve';
 
 interface AgentRealtimeData {
   id: string;
@@ -9,6 +9,7 @@ interface AgentRealtimeData {
   market_cap?: number;
   token_holders?: number;
   volume_24h?: number;
+  token_address?: string | null; // Phase 4: Track token deployment status
 }
 
 /**
@@ -18,13 +19,15 @@ interface AgentRealtimeData {
 export function useAgentRealtime(agentId: string, initialData?: AgentRealtimeData) {
   const [agentData, setAgentData] = useState<AgentRealtimeData | null>(initialData || null);
   const [isGraduated, setIsGraduated] = useState(false);
+  const [isMigrating, setIsMigrating] = useState(false); // Phase 4: Migration state
 
   useEffect(() => {
     if (!agentId) return;
 
-    // Calculate initial graduation status
+    // Calculate initial graduation and migration status
     if (agentData) {
       setIsGraduated(isAgentGraduated(agentData.prompt_raised));
+      setIsMigrating(isAgentMigrating(agentData.prompt_raised, agentData.token_address));
     }
 
     // Subscribe to real-time updates for this agent
@@ -44,6 +47,7 @@ export function useAgentRealtime(agentId: string, initialData?: AgentRealtimeDat
           
           setAgentData(newData);
           setIsGraduated(isAgentGraduated(newData.prompt_raised));
+          setIsMigrating(isAgentMigrating(newData.prompt_raised, newData.token_address));
         }
       )
       .subscribe();
@@ -56,7 +60,10 @@ export function useAgentRealtime(agentId: string, initialData?: AgentRealtimeDat
   return {
     agentData,
     isGraduated,
-    // Utility function to check graduation status from any prompt_raised value
-    checkGraduation: (promptRaised: number) => isAgentGraduated(promptRaised)
+    isMigrating, // Phase 4: Migration state
+    // Utility functions
+    checkGraduation: (promptRaised: number) => isAgentGraduated(promptRaised),
+    checkMigration: (promptRaised: number, tokenAddress?: string | null) => 
+      isAgentMigrating(promptRaised, tokenAddress)
   };
 }

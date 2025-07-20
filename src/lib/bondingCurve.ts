@@ -196,6 +196,21 @@ export function isAgentGraduated(promptRaised: number): boolean {
 }
 
 /**
+ * Migration state detection - Phase 4 implementation
+ * An agent is "migrating" when it has graduated but hasn't been deployed to DEX yet
+ */
+export function isAgentMigrating(promptRaised: number, tokenAddress?: string | null): boolean {
+  const isGraduated = isAgentGraduated(promptRaised);
+  const isTokenDeployed = Boolean(tokenAddress);
+  return isGraduated && !isTokenDeployed;
+}
+
+// TODO: Future refactor - Remove token_graduated field from TypeScript interfaces
+// The database field still exists but UI logic now uses live calculation via isAgentGraduated()
+// Files to update: AgentMarketingTab.tsx, AgentTabsInterface.tsx, SpotlightAgent.tsx, 
+// TradingAgentCard.tsx, UniversalAgentDashboard.tsx interfaces
+
+/**
  * Calculate the amount of tokens that can be bought with a specific PROMPT amount
  * Solves the constant product equation for token amount
  */

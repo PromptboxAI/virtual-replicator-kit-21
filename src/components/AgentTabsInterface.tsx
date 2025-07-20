@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart3, Bot } from 'lucide-react';
 import { AgentMarketingTab } from './AgentMarketingTab';
+import { MigrationBanner } from './MigrationBanner';
+import { useAgentRealtime } from '@/hooks/useAgentRealtime';
+import { useMigrationPolling } from '@/hooks/useMigrationPolling';
 
 interface AgentTabsInterfaceProps {
   agent: {
@@ -20,6 +23,7 @@ interface AgentTabsInterfaceProps {
     prompt_raised?: number;
     token_graduated?: boolean;
     is_active?: boolean;
+    token_address?: string | null; // Phase 4: Track token deployment
   };
   onAgentUpdated?: () => void;
 }
@@ -27,8 +31,37 @@ interface AgentTabsInterfaceProps {
 export function AgentTabsInterface({ agent, onAgentUpdated }: AgentTabsInterfaceProps) {
   const [activeTab, setActiveTab] = useState('trade');
 
+  // Real-time migration status - Phase 4 implementation
+  const { isMigrating } = useAgentRealtime(agent.id, {
+    id: agent.id,
+    prompt_raised: agent.prompt_raised || 0,
+    current_price: agent.current_price,
+    market_cap: agent.market_cap,
+    token_holders: agent.token_holders,
+    token_address: agent.token_address
+  });
+
+  // Migration polling
+  useMigrationPolling({
+    agentId: agent.id,
+    isEnabled: isMigrating,
+    onComplete: () => {
+      console.log('Migration completed for agent:', agent.id);
+      onAgentUpdated?.();
+    }
+  });
+
   return (
-    <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+    <div className="space-y-6">
+      {/* Migration Banner - Phase 4 */}
+      {isMigrating && (
+        <MigrationBanner 
+          agentName={agent.name}
+          onComplete={() => console.log('Migration banner acknowledged')}
+        />
+      )}
+      
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
       <TabsList className="grid w-full grid-cols-2">
         <TabsTrigger value="trade" className="flex items-center gap-2">
           <BarChart3 className="h-4 w-4" />
@@ -52,6 +85,7 @@ export function AgentTabsInterface({ agent, onAgentUpdated }: AgentTabsInterface
       <TabsContent value="ai-agent" className="space-y-6">
         <AgentMarketingTab agent={agent} />
       </TabsContent>
-    </Tabs>
+      </Tabs>
+    </div>
   );
 }

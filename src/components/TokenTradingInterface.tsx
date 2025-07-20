@@ -23,6 +23,8 @@ import {
   calculateGraduationProgress
 } from "@/lib/bondingCurve";
 import { useAgentRealtime } from '@/hooks/useAgentRealtime';
+import { useMigrationPolling } from '@/hooks/useMigrationPolling';
+import { MigrationBanner } from './MigrationBanner';
 
 interface Agent {
   id: string;
@@ -59,13 +61,24 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
   const { balance: promptBalance, loading: balanceLoading } = useTokenBalance(user?.id);
   const { buyAgentTokens, sellAgentTokens } = useAgentToken(agent.token_address);
 
-  // Real-time graduation status and data - Phase 3 implementation
-  const { isGraduated, agentData } = useAgentRealtime(agent.id, {
+  // Real-time graduation status and data - Phase 3 & 4 implementation
+  const { isGraduated, isMigrating, agentData } = useAgentRealtime(agent.id, {
     id: agent.id,
     prompt_raised: agent.prompt_raised,
     current_price: agent.current_price,
     market_cap: agent.market_cap,
-    token_holders: agent.token_holders
+    token_holders: agent.token_holders,
+    token_address: agent.token_address
+  });
+  
+  // Migration polling - Phase 4 implementation
+  useMigrationPolling({
+    agentId: agent.id,
+    isEnabled: isMigrating,
+    onComplete: () => {
+      // Migration complete, agent data will update via real-time subscription
+      console.log('Migration completed for agent:', agent.id);
+    }
   });
   
   // Use real-time data if available, fallback to props
@@ -182,6 +195,14 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
 
   return (
     <div className="space-y-6">
+      {/* Migration Banner - Phase 4 */}
+      {isMigrating && (
+        <MigrationBanner 
+          agentName={agent.name}
+          onComplete={() => console.log('Migration banner dismissed')}
+        />
+      )}
+      
       {/* Agent Header */}
       <Card>
         <CardHeader>
@@ -251,7 +272,7 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
                       placeholder="0.0"
                       value={promptAmount}
                       onChange={(e) => setPromptAmount(e.target.value)}
-                      disabled={loading}
+                      disabled={loading || isMigrating} // Phase 4: Disable during migration
                     />
                     <div className="text-xs text-muted-foreground">
                       Balance: {balanceLoading ? "..." : `${promptBalance?.toFixed(2) || "0"} PROMPT`}
@@ -285,7 +306,7 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
                       placeholder="0.0"
                       value={tokenAmount}
                       onChange={(e) => setTokenAmount(e.target.value)}
-                      disabled={loading}
+                      disabled={loading || isMigrating} // Phase 4: Disable during migration
                     />
                     <div className="text-xs text-muted-foreground">
                       Balance: 0 {agent.symbol} {/* TODO: Get user's token balance */}
@@ -333,7 +354,7 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
 
               <Button 
                 onClick={handleTrade}
-                disabled={!promptAmount || !tokenAmount || loading || !authenticated}
+                disabled={!promptAmount || !tokenAmount || loading || !authenticated || isMigrating} // Phase 4: Disable during migration
                 className="w-full"
                 size="lg"
               >
