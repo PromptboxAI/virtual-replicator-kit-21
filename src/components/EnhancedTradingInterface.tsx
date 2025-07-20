@@ -81,7 +81,19 @@ export function EnhancedTradingInterface({
   const { login, ready, authenticated } = usePrivy();
   console.log('EnhancedTradingInterface: 4 - Privy hook, ready:', ready, 'authenticated:', authenticated);
   
-  // Guard against non-ready Privy state
+  const {
+    address,
+    isConnected,
+    promptBalance,
+    isLoading: walletLoading,
+    refreshBalances,
+    payForAgentCreation,
+    isTestMode
+  } = usePrivyWallet();
+  
+  console.log('EnhancedTradingInterface: 5 - usePrivyWallet called successfully');
+
+  // CONDITIONAL RENDERING AFTER ALL HOOKS
   if (!ready) {
     console.log('EnhancedTradingInterface: Privy not ready, showing loading');
     return (
@@ -95,20 +107,6 @@ export function EnhancedTradingInterface({
       </div>
     );
   }
-  
-  console.log('EnhancedTradingInterface: 5 - About to call usePrivyWallet');
-  
-  const {
-    address,
-    isConnected,
-    promptBalance,
-    isLoading: walletLoading,
-    refreshBalances,
-    payForAgentCreation,
-    isTestMode
-  } = usePrivyWallet();
-  
-  console.log('EnhancedTradingInterface: 6 - usePrivyWallet called successfully');
 
   // Calculate bonding curve metrics
   const promptRaised = agent.prompt_raised || 0;
