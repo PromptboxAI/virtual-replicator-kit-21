@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CalendarDays, Users, Activity, Code, Zap, Camera, BarChart3, ExternalLink } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { isAgentGraduated } from '@/lib/bondingCurve';
 
 interface AgentMarketingTabProps {
   agent: {
@@ -88,6 +89,9 @@ export function AgentMarketingTab({ agent }: AgentMarketingTabProps) {
 
   const hasScreenshots = marketingData?.screenshots && Array.isArray(marketingData.screenshots) && marketingData.screenshots.length > 0;
   const hasMarketingDescription = marketingData?.description;
+  
+  // Live graduation calculation - Phase 3 implementation
+  const isGraduated = isAgentGraduated(agent.prompt_raised || 0);
 
   return (
     <div className="space-y-6">
@@ -115,7 +119,7 @@ export function AgentMarketingTab({ agent }: AgentMarketingTabProps) {
               <div className="flex flex-wrap gap-2">
                 <Badge variant="secondary">{agent.category || 'AI Agent'}</Badge>
                 <Badge variant="outline">{agent.framework || 'G.A.M.E.'}</Badge>
-                {agent.token_graduated && (
+                {isGraduated && (
                   <Badge className="bg-green-600 text-white hover:bg-green-700">Graduated</Badge>
                 )}
                 {agent.is_active && (
@@ -191,7 +195,7 @@ export function AgentMarketingTab({ agent }: AgentMarketingTabProps) {
                 <span className="font-medium">{agent.token_holders?.toLocaleString() || '0'}</span>
               </div>
             </div>
-            {!agent.token_graduated && agent.prompt_raised !== undefined && (
+            {!isGraduated && agent.prompt_raised !== undefined && (
               <div className="flex justify-between">
                 <span className="text-muted-foreground">PROMPT Raised:</span>
                 <span className="font-medium">{agent.prompt_raised.toLocaleString()}</span>

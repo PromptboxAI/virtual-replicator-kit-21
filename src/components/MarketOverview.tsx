@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { TrendingUp, BarChart3, Users, Activity, ExternalLink } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { TradingAgentCard } from '@/components/TradingAgentCard';
+import { isAgentGraduated } from '@/lib/bondingCurve';
 
 interface MarketOverviewProps {
   agents?: any[];
@@ -18,7 +19,8 @@ export function MarketOverview({ agents = [] }: MarketOverviewProps) {
   const totalMarketCap = agentsToShow.reduce((sum, agent) => sum + (agent.market_cap || 0), 0);
   const totalVolume = agentsToShow.reduce((sum, agent) => sum + (agent.volume_24h || 0), 0);
   const totalAgents = agentsToShow.length;
-  const graduatedAgents = agentsToShow.filter(agent => agent.token_graduated).length;
+  // Live graduation calculation - Phase 3 implementation
+  const graduatedAgents = agentsToShow.filter(agent => isAgentGraduated(agent.prompt_raised || 0)).length;
 
   return (
     <div className="space-y-6">

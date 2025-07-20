@@ -188,6 +188,14 @@ export function calculateGraduationProgress(currentPromptRaised: number): {
 }
 
 /**
+ * Live graduation check - always use this instead of database token_graduated field
+ */
+export function isAgentGraduated(promptRaised: number): boolean {
+  const { GRADUATION_PROMPT_AMOUNT } = BONDING_CURVE_CONFIG;
+  return promptRaised >= GRADUATION_PROMPT_AMOUNT;
+}
+
+/**
  * Calculate the amount of tokens that can be bought with a specific PROMPT amount
  * Solves the constant product equation for token amount
  */

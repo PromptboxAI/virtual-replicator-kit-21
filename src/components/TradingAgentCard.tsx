@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { TrendingUp, TrendingDown, Activity, Users, DollarSign, BarChart3 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { isAgentGraduated } from '@/lib/bondingCurve';
 
 interface AgentCardProps {
   agent: {
@@ -24,6 +25,9 @@ interface AgentCardProps {
 
 export function TradingAgentCard({ agent }: AgentCardProps) {
   const navigate = useNavigate();
+  
+  // Live graduation calculation - Phase 3 implementation
+  const isGraduated = isAgentGraduated(agent.prompt_raised || 0);
   
   const handleTradeClick = () => {
     navigate(`/agent/${agent.id}`);
@@ -63,7 +67,7 @@ export function TradingAgentCard({ agent }: AgentCardProps) {
               <CardTitle className="text-lg">{agent.name}</CardTitle>
               <div className="flex items-center gap-2">
                 <Badge variant="secondary">${agent.symbol}</Badge>
-                {agent.token_graduated && (
+                {isGraduated && (
                   <Badge className="bg-black text-white hover:bg-gray-800">Graduated</Badge>
                 )}
               </div>
@@ -135,7 +139,7 @@ export function TradingAgentCard({ agent }: AgentCardProps) {
         </div>
 
         {/* Bonding Curve Progress / Live Status */}
-        {agent.token_graduated ? (
+        {isGraduated ? (
           <div className="space-y-2">
             <div className="flex justify-between text-xs">
               <span className="text-green-600 font-medium">LIVE</span>

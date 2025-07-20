@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TrendingUp, TrendingDown, Activity, BarChart3 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { isAgentGraduated } from '@/lib/bondingCurve';
 
 interface SpotlightAgentProps {
   agent: {
@@ -24,6 +25,10 @@ interface SpotlightAgentProps {
 
 export function SpotlightAgent({ agent }: SpotlightAgentProps) {
   const navigate = useNavigate();
+  
+  // Live graduation calculation - Phase 3 implementation
+  const isGraduated = isAgentGraduated(agent.prompt_raised || 0);
+  
   const isPositive = (agent.price_change_24h || 0) > 0;
   
   const handleTradeClick = () => {
@@ -76,7 +81,7 @@ export function SpotlightAgent({ agent }: SpotlightAgentProps) {
               <h3 className="text-xl font-bold text-foreground">{agent.name}</h3>
               <div className="flex items-center gap-2">
                 <Badge variant="secondary" className="text-xs">${agent.symbol}</Badge>
-                {agent.token_graduated && (
+                {isGraduated && (
                   <Badge className="bg-black text-white hover:bg-gray-800">Graduated</Badge>
                 )}
               </div>
@@ -133,7 +138,7 @@ export function SpotlightAgent({ agent }: SpotlightAgentProps) {
         </div>
 
         {/* Bonding Curve Progress / Live Status */}
-        {agent.token_graduated ? (
+        {isGraduated ? (
           <div className="space-y-2 mb-4">
             <div className="flex justify-between text-sm">
               <span className="text-green-600 font-medium">LIVE</span>

@@ -18,7 +18,9 @@ import {
   calculateSellReturn, 
   calculateTokensFromPrompt,
   calculateMarketCap,
-  BONDING_CURVE_CONFIG
+  BONDING_CURVE_CONFIG,
+  isAgentGraduated,
+  calculateGraduationProgress
 } from "@/lib/bondingCurve";
 
 interface Agent {
@@ -56,9 +58,10 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
   const { balance: promptBalance, loading: balanceLoading } = useTokenBalance(user?.id);
   const { buyAgentTokens, sellAgentTokens } = useAgentToken(agent.token_address);
 
-  // Calculate graduation progress
-  const graduationProgress = Math.min((agent.prompt_raised / agent.graduation_threshold) * 100, 100);
-  const remainingToGraduation = Math.max(agent.graduation_threshold - agent.prompt_raised, 0);
+  // Live graduation calculation - Phase 3 implementation
+  const isGraduated = isAgentGraduated(agent.prompt_raised);
+  const graduationProgress = calculateGraduationProgress(agent.prompt_raised);
+  const remainingToGraduation = graduationProgress.remaining;
 
   // Real-time price calculation
   useEffect(() => {
@@ -183,7 +186,7 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
             <div className="flex-1">
               <CardTitle className="flex items-center gap-2">
                 {agent.name}
-                <Badge variant={agent.token_graduated ? "default" : "secondary"}>
+                <Badge variant={isGraduated ? "default" : "secondary"}>
                   {agent.symbol}
                 </Badge>
               </CardTitle>
@@ -339,7 +342,7 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
         {/* Market Info Sidebar */}
         <div className="space-y-6">
           {/* Graduation Progress */}
-          {!agent.token_graduated && (
+          {!isGraduated && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
@@ -351,13 +354,13 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Progress</span>
-                    <span>{graduationProgress.toFixed(1)}%</span>
+                    <span>{graduationProgress.progress.toFixed(1)}%</span>
                   </div>
-                  <Progress value={graduationProgress} className="h-2" />
+                  <Progress value={graduationProgress.progress} className="h-2" />
                 </div>
                 <div className="text-center">
                   <div className="text-lg font-semibold">
-                    {agent.prompt_raised.toLocaleString()} / {agent.graduation_threshold.toLocaleString()}
+                    {agent.prompt_raised.toLocaleString()} / 42,000
                   </div>
                   <div className="text-xs text-muted-foreground">PROMPT Raised</div>
                 </div>
@@ -405,8 +408,8 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
               <Separator />
               <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">Status</span>
-                <Badge variant={agent.token_graduated ? "default" : "secondary"}>
-                  {agent.token_graduated ? "Graduated" : "Bonding Curve"}
+                <Badge variant={isGraduated ? "default" : "secondary"}>
+                  {isGraduated ? "Graduated" : "Bonding Curve"}
                 </Badge>
               </div>
             </CardContent>
