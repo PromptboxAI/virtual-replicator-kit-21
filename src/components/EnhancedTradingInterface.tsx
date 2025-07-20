@@ -185,14 +185,33 @@ export function EnhancedTradingInterface({
   try {
     console.log('[EnhancedTradingInterface] About to render main UI');
     
-    // 🔍 Claude's binary search: Start with just text
+    // 🔍 Claude's binary search: Step 2 - Add basic structure
     return (
       <div className="space-y-6">
-        <div>Agent: {agent.name}</div>
-        <div>Debug: Agent Loaded Successfully</div>
-        <pre style={{fontSize: '12px', background: '#f5f5f5', padding: '10px'}}>
-          {JSON.stringify(agent, null, 2)}
-        </pre>
+        {/* Basic agent info */}
+        <Card>
+          <CardContent className="p-4">
+            <h2>Agent: {agent.name} ({agent.symbol})</h2>
+            <p>Price: ${agent.current_price}</p>
+            <p>Auth Status: {authenticated ? 'Connected' : 'Not Connected'}</p>
+          </CardContent>
+        </Card>
+        
+        {/* Wallet Status - Simple version */}
+        <Card>
+          <CardContent className="p-4">
+            <p>Wallet Section</p>
+            <p>Balance: {promptBalance || '0'} $PROMPT</p>
+          </CardContent>
+        </Card>
+        
+        {/* Trading Section - Simple version */}
+        <Card>
+          <CardContent className="p-4">
+            <p>Trading Section</p>
+            <p>Buy/Sell interface would go here</p>
+          </CardContent>
+        </Card>
       </div>
     );
     
