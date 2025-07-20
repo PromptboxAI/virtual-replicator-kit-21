@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart3, Bot } from 'lucide-react';
 import { AgentMarketingTab } from './AgentMarketingTab';
 import { MigrationBanner } from './MigrationBanner';
+import { EnhancedTradingInterface } from './EnhancedTradingInterface';
 import { useAgentRealtime } from '@/hooks/useAgentRealtime';
 import { useMigrationPolling } from '@/hooks/useMigrationPolling';
 
@@ -74,12 +75,11 @@ export function AgentTabsInterface({ agent, onAgentUpdated }: AgentTabsInterface
       </TabsList>
 
       <TabsContent value="trade" className="space-y-6">
-        <div className="text-center py-12">
-          <h3 className="text-lg font-semibold mb-2">Trading Interface</h3>
-          <p className="text-muted-foreground">
-            Trading interface will be implemented in Phase 5 & 6
-          </p>
-        </div>
+        <EnhancedTradingInterface 
+          agent={agent}
+          onAgentUpdated={onAgentUpdated}
+          isMigrating={isMigrating}
+        />
       </TabsContent>
 
       <TabsContent value="ai-agent" className="space-y-6">
