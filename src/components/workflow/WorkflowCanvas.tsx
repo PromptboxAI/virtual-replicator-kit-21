@@ -715,6 +715,15 @@ const WorkflowCanvas = forwardRef<WorkflowCanvasRef, WorkflowCanvasProps>(({ age
 
   // Render different content based on active tab
   if (activeTab !== 'workflow') {
+    // Marketing tab is fully handled in sidebar, show empty canvas
+    if (activeTab === 'marketing') {
+      return (
+        <div className="flex-1 bg-muted/10">
+          {/* Marketing content is fully managed in the sidebar */}
+        </div>
+      );
+    }
+    
     return (
       <div className="flex-1 flex items-center justify-center bg-muted/30">
         <div className="text-center space-y-4">
