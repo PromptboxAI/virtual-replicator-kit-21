@@ -63,6 +63,8 @@ export function EnhancedTradingInterface({
   onAgentUpdated, 
   isMigrating = false 
 }: EnhancedTradingInterfaceProps) {
+  console.log('EnhancedTradingInterface: 1 - Component start');
+  
   // ALL HOOKS MUST BE AT THE TOP - NEVER CONDITIONAL
   const [buyAmount, setBuyAmount] = useState('');
   const [sellAmount, setSellAmount] = useState('');
@@ -71,8 +73,31 @@ export function EnhancedTradingInterface({
   const [priceImpact, setPriceImpact] = useState(0);
   const [transaction, setTransaction] = useState<TransactionState>({ type: null, amount: '', status: 'idle' });
   
+  console.log('EnhancedTradingInterface: 2 - State hooks initialized');
+  
   const { toast } = useToast();
-  const { login } = usePrivy();
+  console.log('EnhancedTradingInterface: 3 - Toast hook');
+  
+  const { login, ready, authenticated } = usePrivy();
+  console.log('EnhancedTradingInterface: 4 - Privy hook, ready:', ready, 'authenticated:', authenticated);
+  
+  // Guard against non-ready Privy state
+  if (!ready) {
+    console.log('EnhancedTradingInterface: Privy not ready, showing loading');
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="p-6 text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+            <p>Loading wallet...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+  
+  console.log('EnhancedTradingInterface: 5 - About to call usePrivyWallet');
+  
   const {
     address,
     isConnected,
@@ -82,6 +107,8 @@ export function EnhancedTradingInterface({
     payForAgentCreation,
     isTestMode
   } = usePrivyWallet();
+  
+  console.log('EnhancedTradingInterface: 6 - usePrivyWallet called successfully');
 
   // Calculate bonding curve metrics
   const promptRaised = agent.prompt_raised || 0;
