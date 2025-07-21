@@ -97,13 +97,43 @@ serve(async (req) => {
       // Bonding curve trading - simulate in database
       console.log(`Executing bonding curve ${action} for ${agent.symbol}`);
       
-      // This would call your existing bonding curve logic
+      const tradeAmount = parseFloat(amount);
+      const feeConfig = { feePercent: 0.01, creatorSplit: 0.7, platformSplit: 0.3 }; // Default config
+      
+      // Calculate fees
+      const feeAmount = tradeAmount * feeConfig.feePercent;
+      const creatorAmount = feeAmount * feeConfig.creatorSplit;
+      const platformAmount = feeAmount * feeConfig.platformSplit;
+      
+      // Log revenue event
+      await supabase
+        .from('revenue_events')
+        .insert({
+          agent_id: agentId,
+          source: action, // 'buy' or 'sell'
+          fee_amount: feeAmount,
+          creator_amount: creatorAmount,
+          platform_amount: platformAmount,
+          status: 'completed',
+          metadata: {
+            trade_amount: tradeAmount,
+            slippage,
+            trade_type: 'bonding_curve',
+            appMode
+          }
+        });
+      
       return new Response(
         JSON.stringify({ 
           success: true,
           type: 'bonding_curve',
           message: `Bonding curve ${action} executed`,
-          agent: agent.symbol
+          agent: agent.symbol,
+          fees: {
+            total: feeAmount,
+            creator: creatorAmount,
+            platform: platformAmount
+          }
         }),
         { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }

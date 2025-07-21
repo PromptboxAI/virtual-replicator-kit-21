@@ -8,9 +8,10 @@ import { AppModeToggle } from "@/components/AppModeToggle";
 import { AdminFaucet } from "@/components/AdminFaucet";
 import { TreasuryManagement } from "@/components/TreasuryManagement";
 import { RevenueDashboard } from "@/components/RevenueDashboard";
+import { RevenueAuditDashboard } from "@/components/RevenueAuditDashboard";
 import { Header } from "@/components/Header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield, Settings, Database, Wallet, BarChart3 } from "lucide-react";
+import { Shield, Settings, Database, Wallet, BarChart3, Activity } from "lucide-react";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -116,6 +117,22 @@ const Admin = () => {
           </CardHeader>
           <CardContent>
             <RevenueDashboard />
+          </CardContent>
+        </Card>
+
+        {/* Revenue Audit Dashboard */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="h-5 w-5" />
+              Revenue Audit & Activity
+            </CardTitle>
+            <CardDescription>
+              Detailed audit trail of all revenue events and agent performance
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <RevenueAuditDashboard />
           </CardContent>
         </Card>
 

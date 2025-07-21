@@ -820,6 +820,51 @@ export type Database = {
           },
         ]
       }
+      revenue_events: {
+        Row: {
+          agent_id: string
+          created_at: string
+          creator_amount: number
+          fee_amount: number
+          id: string
+          metadata: Json | null
+          platform_amount: number
+          source: string
+          status: string
+          timestamp: string
+          tx_hash: string | null
+          updated_at: string
+        }
+        Insert: {
+          agent_id: string
+          created_at?: string
+          creator_amount?: number
+          fee_amount?: number
+          id?: string
+          metadata?: Json | null
+          platform_amount?: number
+          source: string
+          status?: string
+          timestamp?: string
+          tx_hash?: string | null
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string
+          created_at?: string
+          creator_amount?: number
+          fee_amount?: number
+          id?: string
+          metadata?: Json | null
+          platform_amount?: number
+          source?: string
+          status?: string
+          timestamp?: string
+          tx_hash?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       revenue_failures: {
         Row: {
           agent_id: string
