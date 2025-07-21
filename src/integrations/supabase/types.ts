@@ -448,7 +448,9 @@ export type Database = {
           circulating_supply: number | null
           created_at: string
           creation_cost: number | null
+          creator_ens_name: string | null
           creator_id: string | null
+          creator_wallet_address: string | null
           current_price: number
           description: string | null
           framework: string | null
@@ -481,7 +483,9 @@ export type Database = {
           circulating_supply?: number | null
           created_at?: string
           creation_cost?: number | null
+          creator_ens_name?: string | null
           creator_id?: string | null
+          creator_wallet_address?: string | null
           current_price?: number
           description?: string | null
           framework?: string | null
@@ -514,7 +518,9 @@ export type Database = {
           circulating_supply?: number | null
           created_at?: string
           creation_cost?: number | null
+          creator_ens_name?: string | null
           creator_id?: string | null
+          creator_wallet_address?: string | null
           current_price?: number
           description?: string | null
           framework?: string | null
@@ -640,7 +646,9 @@ export type Database = {
           bio: string | null
           created_at: string
           display_name: string | null
+          ens_name: string | null
           id: string
+          resolved_wallet: string | null
           terms_accepted_at: string | null
           total_portfolio_value: number | null
           twitter_access_token: string | null
@@ -653,6 +661,7 @@ export type Database = {
           user_id: string
           username: string | null
           wallet_address: string | null
+          wallet_last_updated: string | null
         }
         Insert: {
           auth_method?: string
@@ -660,7 +669,9 @@ export type Database = {
           bio?: string | null
           created_at?: string
           display_name?: string | null
+          ens_name?: string | null
           id?: string
+          resolved_wallet?: string | null
           terms_accepted_at?: string | null
           total_portfolio_value?: number | null
           twitter_access_token?: string | null
@@ -673,6 +684,7 @@ export type Database = {
           user_id: string
           username?: string | null
           wallet_address?: string | null
+          wallet_last_updated?: string | null
         }
         Update: {
           auth_method?: string
@@ -680,7 +692,9 @@ export type Database = {
           bio?: string | null
           created_at?: string
           display_name?: string | null
+          ens_name?: string | null
           id?: string
+          resolved_wallet?: string | null
           terms_accepted_at?: string | null
           total_portfolio_value?: number | null
           twitter_access_token?: string | null
@@ -693,6 +707,7 @@ export type Database = {
           user_id?: string
           username?: string | null
           wallet_address?: string | null
+          wallet_last_updated?: string | null
         }
         Relationships: []
       }
