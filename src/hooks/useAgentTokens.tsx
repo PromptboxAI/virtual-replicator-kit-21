@@ -204,6 +204,13 @@ export function useAgentToken(tokenAddress?: string) {
       return;
     }
 
+    // Show contract upgrade warning
+    toast({
+      title: "ℹ️ Slippage Protection",
+      description: "Note: Slippage protection only applies once upgraded contracts are deployed.",
+      variant: "default",
+    });
+
     try {
       const promptAmountFloat = parseFloat(promptAmount);
       const slippagePct = Number(slippage) / 100;
@@ -259,6 +266,13 @@ export function useAgentToken(tokenAddress?: string) {
       });
       return;
     }
+
+    // Show contract upgrade warning
+    toast({
+      title: "ℹ️ Slippage Protection",
+      description: "Note: Slippage protection only applies once upgraded contracts are deployed.",
+      variant: "default",
+    });
 
     try {
       const tokenAmountFloat = parseFloat(tokenAmount);
