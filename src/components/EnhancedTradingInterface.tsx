@@ -729,6 +729,38 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
         </CardHeader>
       </Card>
 
+      {/* Token Stats - Moved up directly under tabs */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4 text-center">
+            <DollarSign className="h-6 w-6 mx-auto mb-2 text-blue-500" />
+            <p className="text-xs text-muted-foreground">Market Cap</p>
+            <p className="font-medium">${marketCap.toFixed(0)}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 text-center">
+            <Users className="h-6 w-6 mx-auto mb-2 text-green-500" />
+            <p className="text-xs text-muted-foreground">Holders</p>
+            <p className="font-medium">{tokenHolders}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 text-center">
+            <TrendingUp className="h-6 w-6 mx-auto mb-2 text-purple-500" />
+            <p className="text-xs text-muted-foreground">24h Volume</p>
+            <p className="font-medium">${volume24h.toFixed(0)}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 text-center">
+            <TrendingDown className="h-6 w-6 mx-auto mb-2 text-orange-500" />
+            <p className="text-xs text-muted-foreground">24h Change</p>
+            <p className="font-medium">{agent.price_change_24h?.toFixed(2) || 0}%</p>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Live Token Price Display */}
       <LiveTokenPriceDisplay
         agentSymbol={agent.symbol}
@@ -805,37 +837,6 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
         </CardContent>
       </Card>
 
-      {/* Token Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4 text-center">
-            <DollarSign className="h-6 w-6 mx-auto mb-2 text-blue-500" />
-            <p className="text-xs text-muted-foreground">Market Cap</p>
-            <p className="font-medium">${marketCap.toFixed(0)}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <Users className="h-6 w-6 mx-auto mb-2 text-green-500" />
-            <p className="text-xs text-muted-foreground">Holders</p>
-            <p className="font-medium">{tokenHolders}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <TrendingUp className="h-6 w-6 mx-auto mb-2 text-purple-500" />
-            <p className="text-xs text-muted-foreground">24h Volume</p>
-            <p className="font-medium">${volume24h.toFixed(0)}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <TrendingDown className="h-6 w-6 mx-auto mb-2 text-orange-500" />
-            <p className="text-xs text-muted-foreground">24h Change</p>
-            <p className="font-medium">{agent.price_change_24h?.toFixed(2) || 0}%</p>
-          </CardContent>
-        </Card>
-      </div>
 
       {/* Trading Interface */}
       <Card>
