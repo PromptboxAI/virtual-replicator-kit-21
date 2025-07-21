@@ -763,10 +763,12 @@ export type Database = {
           creator_wallet: string | null
           error_reason: string | null
           fee_amount: number
+          has_failures: boolean
           id: string
           platform_amount: number
           platform_wallet: string | null
           processed_by: string | null
+          retry_count: number
           status: Database["public"]["Enums"]["revenue_status"]
           total_revenue: number
           transaction_hash: string | null
@@ -779,10 +781,12 @@ export type Database = {
           creator_wallet?: string | null
           error_reason?: string | null
           fee_amount: number
+          has_failures?: boolean
           id?: string
           platform_amount: number
           platform_wallet?: string | null
           processed_by?: string | null
+          retry_count?: number
           status?: Database["public"]["Enums"]["revenue_status"]
           total_revenue: number
           transaction_hash?: string | null
@@ -795,10 +799,12 @@ export type Database = {
           creator_wallet?: string | null
           error_reason?: string | null
           fee_amount?: number
+          has_failures?: boolean
           id?: string
           platform_amount?: number
           platform_wallet?: string | null
           processed_by?: string | null
+          retry_count?: number
           status?: Database["public"]["Enums"]["revenue_status"]
           total_revenue?: number
           transaction_hash?: string | null
@@ -810,6 +816,72 @@ export type Database = {
             columns: ["agent_id"]
             isOneToOne: false
             referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      revenue_failures: {
+        Row: {
+          agent_id: string
+          amount: number
+          created_at: string
+          distribution_id: string | null
+          failure_reason: string
+          id: string
+          intended_recipient: string
+          last_retry_at: string | null
+          max_retries: number
+          recipient_type: string
+          resolved_at: string | null
+          retry_count: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          agent_id: string
+          amount: number
+          created_at?: string
+          distribution_id?: string | null
+          failure_reason: string
+          id?: string
+          intended_recipient: string
+          last_retry_at?: string | null
+          max_retries?: number
+          recipient_type: string
+          resolved_at?: string | null
+          retry_count?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string
+          amount?: number
+          created_at?: string
+          distribution_id?: string | null
+          failure_reason?: string
+          id?: string
+          intended_recipient?: string
+          last_retry_at?: string | null
+          max_retries?: number
+          recipient_type?: string
+          resolved_at?: string | null
+          retry_count?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "revenue_failures_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "revenue_failures_distribution_id_fkey"
+            columns: ["distribution_id"]
+            isOneToOne: false
+            referencedRelation: "revenue_distributions"
             referencedColumns: ["id"]
           },
         ]
