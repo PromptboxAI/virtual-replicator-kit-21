@@ -40,6 +40,9 @@ export function Header() {
               <Link to="/learn" className="text-foreground hover:text-primary transition-colors font-medium">
                 Learn
               </Link>
+              <Link to="/test-lab" className="text-purple-600 hover:text-purple-700 transition-colors font-medium">
+                Test Lab
+              </Link>
               <Link to="/about" className="text-foreground hover:text-primary transition-colors font-medium">
                 About
               </Link>
