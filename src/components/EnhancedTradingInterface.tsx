@@ -784,32 +784,6 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
       )}
 
 
-      {/* Bonding Curve Progress */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Graduation Progress</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between text-sm">
-              <span>Progress to Uniswap</span>
-              <span>{bondingCurve.progress.toFixed(1)}%</span>
-            </div>
-            <Progress value={bondingCurve.progress} className="h-2" />
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <p className="text-muted-foreground">Raised</p>
-                <p className="font-medium">{promptRaised.toFixed(0)} PROMPT</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Target</p>
-                <p className="font-medium">{graduationThreshold.toFixed(0)} PROMPT</p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
 
       {/* Trading Interface */}
       <Card>
