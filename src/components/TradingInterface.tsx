@@ -11,6 +11,7 @@ import { TradingChart } from './TradingChart';
 import { OKXDEXWidget } from './OKXDEXWidget';
 import { AgentDashboard } from './AgentDashboard';
 import { LiveTokenPriceDisplay } from './LiveTokenPriceDisplay';
+import { WalletBalanceDisplay } from './WalletBalanceDisplay';
 import { useAgentToken } from '@/hooks/useAgentTokens';
 import { calculateBuyCost, calculateSellReturn, formatPrice, formatPromptAmount, getCurrentPrice, calculateTokensFromPrompt } from '@/lib/bondingCurve';
 import { supabase } from '@/integrations/supabase/client';
@@ -461,12 +462,18 @@ export function TradingInterface({
                   placeholder="0.0"
                   value={buyAmount}
                   onChange={(e) => setBuyAmount(e.target.value)}
+                  disabled={loading}
                 />
+                <div className="text-xs text-muted-foreground">
+                  {parseFloat(buyAmount || '0') > 0 && (
+                    <span>You will receive approximately {calculateTokensFromPrompt(metrics.promptRaised, parseFloat(buyAmount)).tokenAmount.toFixed(2)} {agentSymbol}</span>
+                  )}
+                </div>
               </div>
               
               <Button 
                 onClick={handleBuy}
-                disabled={!buyAmount || loading}
+                disabled={!buyAmount || loading || !isConnected}
                 className="w-full"
               >
                 {loading ? "Processing..." : isConnected ? "Buy Tokens" : "Connect Wallet"}

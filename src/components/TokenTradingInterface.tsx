@@ -28,6 +28,7 @@ import { useAgentRealtime } from '@/hooks/useAgentRealtime';
 import { useMigrationPolling } from '@/hooks/useMigrationPolling';
 import { MigrationBanner } from './MigrationBanner';
 import { LiveTokenPriceDisplay } from './LiveTokenPriceDisplay';
+import { WalletBalanceDisplay } from './WalletBalanceDisplay';
 
 interface Agent {
   id: string;
@@ -63,6 +64,9 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
   const { user, authenticated } = useAuth();
   const { balance: promptBalance, loading: balanceLoading } = useTokenBalance(user?.id);
   const { buyAgentTokens, sellAgentTokens } = useAgentToken(agent.token_address);
+  
+  // Mock agent token balance - in real implementation, this would come from a hook
+  const agentTokenBalance = 0; // TODO: Implement useAgentTokenBalance hook
   
   // Fee configuration (default values until integrated with useAgentTokens)
   const feeConfig = {
@@ -298,10 +302,13 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
                       placeholder="0.0"
                       value={promptAmount}
                       onChange={(e) => setPromptAmount(e.target.value)}
-                      disabled={loading || isMigrating} // Phase 4: Disable during migration
+                      disabled={loading || isMigrating || (promptBalance || 0) <= 0} // Disable if no balance
                     />
                     <div className="text-xs text-muted-foreground">
                       Balance: {balanceLoading ? "..." : `${promptBalance?.toFixed(2) || "0"} PROMPT`}
+                      {(promptBalance || 0) > 0 && parseFloat(promptAmount || '0') > (promptBalance || 0) && (
+                        <span className="text-red-500 ml-2">Insufficient balance</span>
+                      )}
                     </div>
                   </div>
 
@@ -332,10 +339,13 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
                       placeholder="0.0"
                       value={tokenAmount}
                       onChange={(e) => setTokenAmount(e.target.value)}
-                      disabled={loading || isMigrating} // Phase 4: Disable during migration
+                      disabled={loading || isMigrating || agentTokenBalance <= 0} // Disable if no tokens to sell
                     />
                     <div className="text-xs text-muted-foreground">
-                      Balance: 0 {agent.symbol} {/* TODO: Get user's token balance */}
+                      Balance: {agentTokenBalance.toFixed(2)} {agent.symbol}
+                      {agentTokenBalance > 0 && parseFloat(tokenAmount || '0') > agentTokenBalance && (
+                        <span className="text-red-500 ml-2">Insufficient tokens</span>
+                      )}
                     </div>
                   </div>
 
@@ -392,7 +402,15 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
 
               <Button 
                 onClick={handleTrade}
-                disabled={!promptAmount || !tokenAmount || loading || !authenticated || isMigrating} // Phase 4: Disable during migration
+                disabled={
+                  !promptAmount || 
+                  !tokenAmount || 
+                  loading || 
+                  !authenticated || 
+                  isMigrating ||
+                  (tradeType === 'buy' && (promptBalance || 0) < parseFloat(promptAmount || '0')) ||
+                  (tradeType === 'sell' && agentTokenBalance < parseFloat(tokenAmount || '0'))
+                }
                 className="w-full"
                 size="lg"
               >
@@ -453,6 +471,14 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
               </CardContent>
             </Card>
           )}
+
+          {/* Wallet Balances */}
+          <WalletBalanceDisplay 
+            showAgentTokenBalance={true}
+            agentTokenBalance={agentTokenBalance}
+            agentSymbol={agent.symbol}
+            showAddTestTokens={true}
+          />
 
           {/* Market Stats */}
           <Card>
