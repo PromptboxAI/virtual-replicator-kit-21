@@ -1,5 +1,6 @@
-import { createPublicClient, http, formatUnits } from 'npm:viem'
+import { createPublicClient, http, formatUnits, isAddress } from 'npm:viem'
 import { baseSepolia } from 'npm:viem/chains'
+import { createClient } from 'npm:@supabase/supabase-js'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,11 +14,74 @@ const PROMPT_TOKEN_ABI = [
     "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
     "stateMutability": "view",
     "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "name",
+    "outputs": [{"internalType": "string", "name": "", "type": "string"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "symbol",
+    "outputs": [{"internalType": "string", "name": "", "type": "string"}],
+    "stateMutability": "view",
+    "type": "function"
   }
 ] as const;
 
-// This will be updated after the real token is deployed
-const PROMPT_TOKEN_ADDRESS = "0x62fa50ce04dd11d2be35f1dee04063e63118c727" as `0x${string}`;
+// Initialize Supabase client
+const supabase = createClient(
+  Deno.env.get('SUPABASE_URL') ?? '',
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+);
+
+async function getPromptTokenAddress(): Promise<string | null> {
+  try {
+    // First try to get from environment or localStorage equivalent
+    const envAddress = Deno.env.get('PROMPT_TOKEN_ADDRESS');
+    if (envAddress && isAddress(envAddress)) {
+      return envAddress;
+    }
+
+    // Fall back to database lookup for deployed contracts
+    // This would contain actual deployed addresses
+    const { data: contracts } = await supabase
+      .from('deployed_contracts') // This table would need to exist
+      .select('contract_address')
+      .eq('contract_type', 'prompt_token')
+      .eq('network', 'base_sepolia')
+      .eq('is_active', true)
+      .single();
+
+    return contracts?.contract_address || null;
+  } catch (error) {
+    console.warn('Could not fetch prompt token address:', error);
+    return null;
+  }
+}
+
+async function validateContract(address: string): Promise<boolean> {
+  try {
+    const publicClient = createPublicClient({
+      chain: baseSepolia,
+      transport: http()
+    });
+
+    // Try to call a simple view function to validate the contract
+    await publicClient.readContract({
+      address: address as `0x${string}`,
+      abi: PROMPT_TOKEN_ABI,
+      functionName: 'name'
+    });
+
+    return true;
+  } catch (error) {
+    console.warn(`Contract validation failed for ${address}:`, error);
+    return false;
+  }
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -25,10 +89,36 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { address } = await req.json();
+    const body = await req.json();
+    const { address, tokenAddress } = body;
     
     if (!address) {
-      throw new Error('Address parameter is required');
+      throw new Error('User address parameter is required');
+    }
+
+    if (!isAddress(address)) {
+      throw new Error('Invalid user address format');
+    }
+
+    // Get the token address to query
+    let promptTokenAddress = tokenAddress;
+    
+    if (!promptTokenAddress) {
+      promptTokenAddress = await getPromptTokenAddress();
+    }
+
+    if (!promptTokenAddress) {
+      throw new Error('No PROMPT token contract address found. Please deploy the token contract first.');
+    }
+
+    if (!isAddress(promptTokenAddress)) {
+      throw new Error('Invalid token contract address format');
+    }
+
+    // Validate the contract exists and has the expected interface
+    const isValidContract = await validateContract(promptTokenAddress);
+    if (!isValidContract) {
+      throw new Error(`Contract at ${promptTokenAddress} does not appear to be a valid ERC20 token`);
     }
 
     const publicClient = createPublicClient({
@@ -36,11 +126,11 @@ Deno.serve(async (req) => {
       transport: http()
     });
 
-    console.log('Querying PROMPTTEST token balance for:', address);
+    console.log(`Querying token balance for user: ${address} on contract: ${promptTokenAddress}`);
 
     // Query the token balance
     const balance = await publicClient.readContract({
-      address: PROMPT_TOKEN_ADDRESS,
+      address: promptTokenAddress as `0x${string}`,
       abi: PROMPT_TOKEN_ABI,
       functionName: 'balanceOf',
       args: [address as `0x${string}`]
@@ -52,11 +142,34 @@ Deno.serve(async (req) => {
     console.log('Raw balance:', balance.toString());
     console.log('Formatted balance:', formattedBalance);
 
+    // Get token info for additional context
+    let tokenInfo = {};
+    try {
+      const [name, symbol] = await Promise.all([
+        publicClient.readContract({
+          address: promptTokenAddress as `0x${string}`,
+          abi: PROMPT_TOKEN_ABI,
+          functionName: 'name'
+        }),
+        publicClient.readContract({
+          address: promptTokenAddress as `0x${string}`,
+          abi: PROMPT_TOKEN_ABI,
+          functionName: 'symbol'
+        })
+      ]);
+      
+      tokenInfo = { name, symbol };
+    } catch (error) {
+      console.warn('Could not fetch token info:', error);
+    }
+
     return new Response(JSON.stringify({
       success: true,
       balance: formattedBalance,
       balanceWei: balance.toString(),
-      address: address
+      userAddress: address,
+      tokenAddress: promptTokenAddress,
+      tokenInfo
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
@@ -67,7 +180,11 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({
       success: false,
       error: error.message || 'Failed to query token balance',
-      balance: '0'
+      balance: '0',
+      details: {
+        stack: error.stack,
+        name: error.name
+      }
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
