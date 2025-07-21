@@ -542,6 +542,59 @@ export type Database = {
         }
         Relationships: []
       }
+      deployed_contracts: {
+        Row: {
+          agent_id: string | null
+          contract_address: string
+          contract_type: string
+          created_at: string
+          deployment_timestamp: string
+          id: string
+          is_active: boolean
+          name: string | null
+          network: string
+          symbol: string | null
+          updated_at: string
+          version: string
+        }
+        Insert: {
+          agent_id?: string | null
+          contract_address: string
+          contract_type: string
+          created_at?: string
+          deployment_timestamp?: string
+          id?: string
+          is_active?: boolean
+          name?: string | null
+          network?: string
+          symbol?: string | null
+          updated_at?: string
+          version?: string
+        }
+        Update: {
+          agent_id?: string | null
+          contract_address?: string
+          contract_type?: string
+          created_at?: string
+          deployment_timestamp?: string
+          id?: string
+          is_active?: boolean
+          name?: string | null
+          network?: string
+          symbol?: string | null
+          updated_at?: string
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deployed_contracts_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       platform_revenue: {
         Row: {
           agent_id: string | null
