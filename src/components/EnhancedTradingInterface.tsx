@@ -36,6 +36,7 @@ import {
 import { cn, formatDecimalPlaces } from '@/lib/utils';
 import { LiveTokenPriceDisplay } from './LiveTokenPriceDisplay';
 import { BondingCurvePreview } from './BondingCurvePreview';
+import { WalletStatus } from './WalletStatus';
 
 interface Agent {
   id: string;
@@ -761,6 +762,9 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
         </Card>
       </div>
 
+      {/* Wallet Status */}
+      <WalletStatus />
+
       {/* Live Token Price Display */}
       <LiveTokenPriceDisplay
         agentSymbol={agent.symbol}
@@ -779,37 +783,6 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
         />
       )}
 
-      {/* Wallet Status */}
-      {!authenticated ? (
-        <Card>
-          <CardContent className="p-6 text-center">
-            <h3 className="text-lg font-semibold mb-2">Connect Your Wallet</h3>
-            <p className="text-muted-foreground mb-4">
-              Connect your wallet to start trading {agent.symbol} tokens
-            </p>
-            <Button onClick={handleConnectWallet}>
-              Connect Wallet
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">Wallet Connected</p>
-                <p className="text-xs text-muted-foreground">
-                  {address?.slice(0, 6)}...{address?.slice(-4)}
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="text-sm font-medium">{promptBalance} $PROMPT</p>
-                <p className="text-xs text-muted-foreground">Available Balance</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Bonding Curve Progress */}
       <Card>
