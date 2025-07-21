@@ -22,8 +22,23 @@ import NotFound from "./pages/NotFound";
 import TokenAgents from "./pages/TokenAgents";
 import TestLab from "./pages/TestLab";
 import { LegacyTradeRedirect } from "./components/LegacyRedirect";
+import { useUserRole } from "./hooks/useUserRole";
 
 const queryClient = new QueryClient();
+
+const AdminProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isAdmin, isLoading } = useUserRole();
+  
+  if (isLoading) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
+  
+  if (!isAdmin) {
+    return <Navigate to="/" replace />;
+  }
+  
+  return <>{children}</>;
+};
 
 const App = () => (
   <PrivyProvider
@@ -93,7 +108,7 @@ const App = () => (
               <Route path="/agents" element={<AllAgents />} />
               <Route path="/agent/:agentId" element={<UnifiedAgentPage />} />
               <Route path="/admin" element={<Admin />} />
-              <Route path="/test-lab" element={<TestLab />} />
+              <Route path="/test-lab" element={<AdminProtectedRoute><TestLab /></AdminProtectedRoute>} />
               <Route path="/token-agents" element={<TokenAgents />} />
               {/* Legacy redirect for old trade routes */}
               <Route path="/trade/:agentId" element={<LegacyTradeRedirect />} />
