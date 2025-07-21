@@ -365,6 +365,10 @@ export function useAgentToken(tokenAddress?: string) {
       return;
     }
 
+    // 🔐 PRODUCTION SAFETY: Hard block on real contract trading in test mode
+    // Note: useAppMode() must be called at component level, not here
+    // This check is implemented at the UI layer in TradingInterface
+
     // Show contract upgrade warning
     toast({
       title: "ℹ️ Slippage Protection",

@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, TrendingDown, BarChart3, Users, Activity } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAppMode } from '@/hooks/useAppMode';
 import { TradingChart } from './TradingChart';
 import { OKXDEXWidget } from './OKXDEXWidget';
 import { AgentDashboard } from './AgentDashboard';
@@ -159,6 +160,18 @@ export function TradingInterface({
     setLoading(true);
     try {
       if (tokenAddress && tokenGraduated) {
+        // 🔐 PRODUCTION SAFETY: Check app mode before real contract trading
+        const { mode: appMode } = useAppMode();
+        if (appMode === 'test') {
+          toast({
+            title: "🚨 Trading Blocked",
+            description: "Real contract trading is disabled in test mode. Switch to production mode for live trading.",
+            variant: "destructive",
+          });
+          setLoading(false);
+          return;
+        }
+        
         // Use smart contract for graduated tokens
         await buyAgentTokens(buyAmount);
       } else {
@@ -215,6 +228,18 @@ export function TradingInterface({
     setLoading(true);
     try {
       if (tokenAddress && tokenGraduated) {
+        // 🔐 PRODUCTION SAFETY: Check app mode before real contract trading
+        const { mode: appMode } = useAppMode();
+        if (appMode === 'test') {
+          toast({
+            title: "🚨 Trading Blocked",
+            description: "Real contract trading is disabled in test mode. Switch to production mode for live trading.",
+            variant: "destructive",
+          });
+          setLoading(false);
+          return;
+        }
+        
         // Use smart contract for graduated tokens
         await sellAgentTokens(sellAmount);
       } else {

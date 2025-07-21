@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAgentToken } from "@/hooks/useAgentTokens";
 import { useTokenBalance } from "@/hooks/useTokenBalance";
 import { useAuth } from "@/hooks/useAuth";
+import { TradingModeGuard } from './TradingModeGuard';
 import { 
   getCurrentPrice, 
   calculateBuyCost, 
@@ -249,13 +250,14 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Trading Panel */}
         <div className="lg:col-span-2 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5" />
-                Trade {agent.symbol}
-              </CardTitle>
-            </CardHeader>
+          <TradingModeGuard tokenAddress={agent.token_address} tokenGraduated={isGraduated}>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Activity className="h-5 w-5" />
+                  Trade {agent.symbol}
+                </CardTitle>
+              </CardHeader>
             <CardContent className="space-y-6">
               <Tabs value={tradeType} onValueChange={(value) => setTradeType(value as "buy" | "sell")}>
                 <TabsList className="grid w-full grid-cols-2">
@@ -368,6 +370,7 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
               )}
             </CardContent>
           </Card>
+          </TradingModeGuard>
         </div>
 
         {/* Market Info Sidebar */}
