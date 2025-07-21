@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
-import { useAccount, useReadContract, useWriteContract } from 'wagmi';
+import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { parseEther, formatEther } from 'viem';
 import { useToast } from '@/hooks/use-toast';
 import { baseSepolia } from 'viem/chains';
 import { useAppMode } from '@/hooks/useAppMode';
 import { calculateTokensFromPrompt, calculateSellReturn } from '@/lib/bondingCurve';
+
+// Transaction states
+type TransactionState = 'idle' | 'pending' | 'confirmed' | 'error';
 
 // Get contract addresses from localStorage (set by deployment hook)
 const getContractAddress = (key: string, fallback: string = '0x0000000000000000000000000000000000000000') => {
@@ -163,8 +166,24 @@ export function useAgentToken(tokenAddress?: string) {
   const { address } = useAccount();
   const { toast } = useToast();
   const [metrics, setMetrics] = useState<any>(null);
-  const { writeContract: writeBuy, isPending: isBuying } = useWriteContract();
-  const { writeContract: writeSell, isPending: isSelling } = useWriteContract();
+  
+  // Transaction state management
+  const [buyTxState, setBuyTxState] = useState<TransactionState>('idle');
+  const [sellTxState, setSellTxState] = useState<TransactionState>('idle');
+  const [buyTxHash, setBuyTxHash] = useState<`0x${string}` | undefined>();
+  const [sellTxHash, setSellTxHash] = useState<`0x${string}` | undefined>();
+  
+  const { writeContract: writeBuy } = useWriteContract();
+  const { writeContract: writeSell } = useWriteContract();
+  
+  // Wait for transaction receipts
+  const { isLoading: isBuyConfirming } = useWaitForTransactionReceipt({
+    hash: buyTxHash,
+  });
+  
+  const { isLoading: isSellConfirming } = useWaitForTransactionReceipt({
+    hash: sellTxHash,
+  });
 
   // Get Token Metrics
   const { data: tokenMetrics, refetch: refetchMetrics } = useReadContract({
@@ -184,6 +203,42 @@ export function useAgentToken(tokenAddress?: string) {
       });
     }
   }, [tokenMetrics]);
+
+  // Reset transaction states
+  const resetBuyState = () => {
+    setBuyTxState('idle');
+    setBuyTxHash(undefined);
+  };
+
+  const resetSellState = () => {
+    setSellTxState('idle');
+    setSellTxHash(undefined);
+  };
+
+  // Handle transaction confirmation
+  useEffect(() => {
+    if (buyTxHash && !isBuyConfirming && buyTxState === 'pending') {
+      setBuyTxState('confirmed');
+      toast({
+        title: "Purchase Confirmed",
+        description: "Transaction confirmed on blockchain!",
+      });
+      refetchMetrics();
+      resetBuyState();
+    }
+  }, [buyTxHash, isBuyConfirming, buyTxState, toast, refetchMetrics]);
+
+  useEffect(() => {
+    if (sellTxHash && !isSellConfirming && sellTxState === 'pending') {
+      setSellTxState('confirmed');
+      toast({
+        title: "Sale Confirmed", 
+        description: "Transaction confirmed on blockchain!",
+      });
+      refetchMetrics();
+      resetSellState();
+    }
+  }, [sellTxHash, isSellConfirming, sellTxState, toast, refetchMetrics]);
 
   const buyAgentTokens = async (promptAmount: string, slippage: string = "2") => {
     if (!address) {
@@ -212,6 +267,8 @@ export function useAgentToken(tokenAddress?: string) {
     });
 
     try {
+      setBuyTxState('pending');
+      
       const promptAmountFloat = parseFloat(promptAmount);
       const slippagePct = Number(slippage) / 100;
       
@@ -225,26 +282,40 @@ export function useAgentToken(tokenAddress?: string) {
       const promptAmountWei = parseEther(promptAmount);
       const minTokensOutWei = parseEther(minTokensOut.toString());
       
-      await writeBuy({
+      writeBuy({
         address: tokenAddress as `0x${string}`,
         abi: AGENT_TOKEN_ABI,
         functionName: 'buyTokens',
         args: [promptAmountWei, minTokensOutWei],
         account: address,
         chain: baseSepolia,
+      }, {
+        onSuccess: (txHash) => {
+          setBuyTxHash(txHash);
+          toast({
+            title: "Transaction Sent",
+            description: "Waiting for confirmation...",
+          });
+        },
+        onError: (error) => {
+          setBuyTxState('error');
+          toast({
+            title: "Purchase Failed",
+            description: error.message || "Failed to purchase tokens",
+            variant: "destructive",
+          });
+          resetBuyState();
+        }
       });
       
-      toast({
-        title: "Purchase Successful",
-        description: `Tokens purchased with ${slippage}% slippage protection!`,
-      });
-      refetchMetrics();
     } catch (error: any) {
+      setBuyTxState('error');
       toast({
         title: "Purchase Failed",
         description: error.message || "Failed to purchase tokens",
         variant: "destructive",
       });
+      resetBuyState();
     }
   };
 
@@ -275,6 +346,8 @@ export function useAgentToken(tokenAddress?: string) {
     });
 
     try {
+      setSellTxState('pending');
+      
       const tokenAmountFloat = parseFloat(tokenAmount);
       const slippagePct = Number(slippage) / 100;
       
@@ -289,26 +362,40 @@ export function useAgentToken(tokenAddress?: string) {
       const tokenAmountWei = parseEther(tokenAmount);
       const minPromptOutWei = parseEther(minPromptOut.toString());
       
-      await writeSell({
+      writeSell({
         address: tokenAddress as `0x${string}`,
         abi: AGENT_TOKEN_ABI,
         functionName: 'sellTokens',
         args: [tokenAmountWei, minPromptOutWei],
         account: address,
         chain: baseSepolia,
+      }, {
+        onSuccess: (txHash) => {
+          setSellTxHash(txHash);
+          toast({
+            title: "Transaction Sent",
+            description: "Waiting for confirmation...",
+          });
+        },
+        onError: (error) => {
+          setSellTxState('error');
+          toast({
+            title: "Sale Failed",
+            description: error.message || "Failed to sell tokens",
+            variant: "destructive",
+          });
+          resetSellState();
+        }
       });
       
-      toast({
-        title: "Sale Successful",
-        description: `Tokens sold with ${slippage}% slippage protection!`,
-      });
-      refetchMetrics();
     } catch (error: any) {
+      setSellTxState('error');
       toast({
         title: "Sale Failed",
         description: error.message || "Failed to sell tokens",
         variant: "destructive",
       });
+      resetSellState();
     }
   };
 
@@ -316,8 +403,14 @@ export function useAgentToken(tokenAddress?: string) {
     metrics,
     buyAgentTokens,
     sellAgentTokens,
-    isBuying,
-    isSelling,
+    // Transaction states for UI components
+    buyTxState,
+    sellTxState,
+    isBuying: buyTxState === 'pending' || isBuyConfirming,
+    isSelling: sellTxState === 'pending' || isSellConfirming,
+    // Additional state helpers
+    resetBuyState,
+    resetSellState,
     refetchMetrics,
   };
 }
