@@ -32,6 +32,7 @@ import {
   isAgentGraduated,
   isAgentMigrating
 } from '@/lib/bondingCurve';
+import { cn, formatDecimalPlaces } from '@/lib/utils';
 
 interface Agent {
   id: string;
@@ -148,7 +149,7 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
     if (buyAmount && parseFloat(buyAmount) > 0) {
       const promptAmount = parseFloat(buyAmount);
       const result = calculateTokensFromPrompt(promptRaised, promptAmount);
-      setCalculatedTokens(result.tokenAmount.toFixed(4));
+      setCalculatedTokens(formatDecimalPlaces(result.tokenAmount));
       
       const currentPriceCalc = getCurrentPrice(promptRaised / 1000);
       const newPrice = getCurrentPrice(result.newTokensSold);
@@ -165,7 +166,7 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
       const tokenAmount = parseFloat(sellAmount);
       const currentTokensSold = promptRaised * 1000;
       const result = calculateSellReturn(currentTokensSold, tokenAmount);
-      setCalculatedPrompt(result.return.toFixed(4));
+      setCalculatedPrompt(formatDecimalPlaces(result.return));
     } else {
       setCalculatedPrompt('');
     }
@@ -298,7 +299,7 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
           title: "Purchase Successful!",
           description: (
             <div className="space-y-2">
-              <p>Bought {result.tokenAmount.toFixed(2)} {agent.symbol}</p>
+              <p>Bought {formatDecimalPlaces(result.tokenAmount)} {agent.symbol}</p>
               <div className="flex items-center gap-2">
                 <span>Transaction:</span>
                 <Button 
@@ -512,7 +513,7 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
           title: "Sale Successful!",
           description: (
             <div className="space-y-2">
-              <p>Sold {tokenAmount} {agent.symbol} for {result.return.toFixed(4)} $PROMPT</p>
+              <p>Sold {tokenAmount} {agent.symbol} for {formatDecimalPlaces(result.return)} $PROMPT</p>
               <div className="flex items-center gap-2">
                 <span>Transaction:</span>
                 <Button 
@@ -700,7 +701,7 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
               </div>
             </div>
             <div className="text-right">
-              <p className="text-2xl font-bold">${currentPrice.toFixed(6)}</p>
+              <p className="text-2xl font-bold">${formatDecimalPlaces(currentPrice)}</p>
               <p className="text-sm text-muted-foreground">Current Price</p>
             </div>
           </div>
