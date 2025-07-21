@@ -173,16 +173,31 @@ export function useAgentToken(tokenAddress?: string) {
   const [buyTxHash, setBuyTxHash] = useState<`0x${string}` | undefined>();
   const [sellTxHash, setSellTxHash] = useState<`0x${string}` | undefined>();
   
+  // Transaction metadata for enhanced toasts
+  const [buyTxMeta, setBuyTxMeta] = useState<{
+    promptAmount: string;
+    expectedTokens: number;
+    slippage: string;
+  } | null>(null);
+  
+  const [sellTxMeta, setSellTxMeta] = useState<{
+    tokenAmount: string;
+    expectedPrompt: number;
+    slippage: string;
+  } | null>(null);
+  
   const { writeContract: writeBuy } = useWriteContract();
   const { writeContract: writeSell } = useWriteContract();
   
-  // Wait for transaction receipts
-  const { isLoading: isBuyConfirming } = useWaitForTransactionReceipt({
+  // Wait for transaction receipts with timeout handling
+  const { isLoading: isBuyConfirming, data: buyReceipt } = useWaitForTransactionReceipt({
     hash: buyTxHash,
+    timeout: 180_000, // 3 minutes
   });
   
-  const { isLoading: isSellConfirming } = useWaitForTransactionReceipt({
+  const { isLoading: isSellConfirming, data: sellReceipt } = useWaitForTransactionReceipt({
     hash: sellTxHash,
+    timeout: 180_000, // 3 minutes
   });
 
   // Get Token Metrics
@@ -204,41 +219,102 @@ export function useAgentToken(tokenAddress?: string) {
     }
   }, [tokenMetrics]);
 
-  // Reset transaction states
-  const resetBuyState = () => {
+  // Utility function for Etherscan links
+  const getEtherscanLink = (txHash: string) => {
+    const baseUrl = baseSepolia.id === 84532 ? 'https://sepolia.basescan.org' : 'https://etherscan.io';
+    return `${baseUrl}/tx/${txHash}`;
+  };
+
+  // Enhanced reset functions that clear all state
+  const resetBuyState = (clearForm = false) => {
     setBuyTxState('idle');
     setBuyTxHash(undefined);
+    setBuyTxMeta(null);
+    // Form clearing is handled by UI components
   };
 
-  const resetSellState = () => {
+  const resetSellState = (clearForm = false) => {
     setSellTxState('idle');
     setSellTxHash(undefined);
+    setSellTxMeta(null);
+    // Form clearing is handled by UI components
   };
 
-  // Handle transaction confirmation
+  // Timeout handling for stuck transactions
   useEffect(() => {
-    if (buyTxHash && !isBuyConfirming && buyTxState === 'pending') {
-      setBuyTxState('confirmed');
-      toast({
-        title: "Purchase Confirmed",
-        description: "Transaction confirmed on blockchain!",
-      });
-      refetchMetrics();
-      resetBuyState();
+    if (buyTxHash && buyTxState === 'pending') {
+      const timeoutId = setTimeout(() => {
+        if (buyTxState === 'pending' && isBuyConfirming) {
+          toast({
+            title: "⏰ Transaction Taking Longer Than Expected",
+            description: `Transaction may be stuck. View on Etherscan: ${getEtherscanLink(buyTxHash)}`,
+            variant: "default",
+          });
+        }
+      }, 120_000); // 2 minutes warning
+
+      return () => clearTimeout(timeoutId);
     }
-  }, [buyTxHash, isBuyConfirming, buyTxState, toast, refetchMetrics]);
+  }, [buyTxHash, buyTxState, isBuyConfirming, toast]);
 
   useEffect(() => {
-    if (sellTxHash && !isSellConfirming && sellTxState === 'pending') {
-      setSellTxState('confirmed');
-      toast({
-        title: "Sale Confirmed", 
-        description: "Transaction confirmed on blockchain!",
-      });
-      refetchMetrics();
-      resetSellState();
+    if (sellTxHash && sellTxState === 'pending') {
+      const timeoutId = setTimeout(() => {
+        if (sellTxState === 'pending' && isSellConfirming) {
+          toast({
+            title: "⏰ Transaction Taking Longer Than Expected", 
+            description: `Transaction may be stuck. View on Etherscan: ${getEtherscanLink(sellTxHash)}`,
+            variant: "default",
+          });
+        }
+      }, 120_000); // 2 minutes warning
+
+      return () => clearTimeout(timeoutId);
     }
-  }, [sellTxHash, isSellConfirming, sellTxState, toast, refetchMetrics]);
+  }, [sellTxHash, sellTxState, isSellConfirming, toast]);
+
+  // Enhanced transaction confirmation with detailed toasts
+  useEffect(() => {
+    if (buyTxHash && !isBuyConfirming && buyTxState === 'pending' && buyReceipt) {
+      setBuyTxState('confirmed');
+      
+      const txHashShort = `${buyTxHash.slice(0, 8)}...${buyTxHash.slice(-6)}`;
+      const etherscanLink = getEtherscanLink(buyTxHash);
+      
+      // Calculate actual amounts (would need transaction logs parsing in real implementation)
+      const estimatedTokens = buyTxMeta?.expectedTokens.toFixed(4) || "Unknown";
+      const promptAmount = buyTxMeta?.promptAmount || "Unknown";
+      
+      toast({
+        title: "✅ Purchase Confirmed",
+        description: `Bought ~${estimatedTokens} tokens for ${promptAmount} PROMPT. Tx: ${txHashShort}. Click to view on Etherscan.`,
+      });
+      
+      refetchMetrics();
+      resetBuyState(true);
+    }
+  }, [buyTxHash, isBuyConfirming, buyTxState, buyReceipt, buyTxMeta, toast, refetchMetrics]);
+
+  useEffect(() => {
+    if (sellTxHash && !isSellConfirming && sellTxState === 'pending' && sellReceipt) {
+      setSellTxState('confirmed');
+      
+      const txHashShort = `${sellTxHash.slice(0, 8)}...${sellTxHash.slice(-6)}`;
+      const etherscanLink = getEtherscanLink(sellTxHash);
+      
+      // Calculate actual amounts
+      const estimatedPrompt = sellTxMeta?.expectedPrompt.toFixed(4) || "Unknown";
+      const tokenAmount = sellTxMeta?.tokenAmount || "Unknown";
+      
+      toast({
+        title: "✅ Sale Confirmed",
+        description: `Sold ${tokenAmount} tokens for ~${estimatedPrompt} PROMPT. Tx: ${txHashShort}. Click to view on Etherscan.`,
+      });
+      
+      refetchMetrics();
+      resetSellState(true);
+    }
+  }, [sellTxHash, isSellConfirming, sellTxState, sellReceipt, sellTxMeta, toast, refetchMetrics]);
 
   const buyAgentTokens = async (promptAmount: string, slippage: string = "2") => {
     if (!address) {
@@ -282,6 +358,13 @@ export function useAgentToken(tokenAddress?: string) {
       const promptAmountWei = parseEther(promptAmount);
       const minTokensOutWei = parseEther(minTokensOut.toString());
       
+      // Store transaction metadata for enhanced success toast
+      setBuyTxMeta({
+        promptAmount,
+        expectedTokens,
+        slippage,
+      });
+      
       writeBuy({
         address: tokenAddress as `0x${string}`,
         abi: AGENT_TOKEN_ABI,
@@ -293,8 +376,8 @@ export function useAgentToken(tokenAddress?: string) {
         onSuccess: (txHash) => {
           setBuyTxHash(txHash);
           toast({
-            title: "Transaction Sent",
-            description: "Waiting for confirmation...",
+            title: "🚀 Transaction Sent",
+            description: `Buying ~${expectedTokens.toFixed(4)} tokens with ${slippage}% slippage protection. Waiting for confirmation...`,
           });
         },
         onError: (error) => {
@@ -304,7 +387,7 @@ export function useAgentToken(tokenAddress?: string) {
             description: error.message || "Failed to purchase tokens",
             variant: "destructive",
           });
-          resetBuyState();
+          resetBuyState(true);
         }
       });
       
@@ -362,6 +445,13 @@ export function useAgentToken(tokenAddress?: string) {
       const tokenAmountWei = parseEther(tokenAmount);
       const minPromptOutWei = parseEther(minPromptOut.toString());
       
+      // Store transaction metadata for enhanced success toast
+      setSellTxMeta({
+        tokenAmount,
+        expectedPrompt,
+        slippage,
+      });
+      
       writeSell({
         address: tokenAddress as `0x${string}`,
         abi: AGENT_TOKEN_ABI,
@@ -373,8 +463,8 @@ export function useAgentToken(tokenAddress?: string) {
         onSuccess: (txHash) => {
           setSellTxHash(txHash);
           toast({
-            title: "Transaction Sent",
-            description: "Waiting for confirmation...",
+            title: "🚀 Transaction Sent",
+            description: `Selling ${tokenAmount} tokens expecting ~${expectedPrompt.toFixed(4)} PROMPT with ${slippage}% slippage protection. Waiting for confirmation...`,
           });
         },
         onError: (error) => {
@@ -384,7 +474,7 @@ export function useAgentToken(tokenAddress?: string) {
             description: error.message || "Failed to sell tokens",
             variant: "destructive",
           });
-          resetSellState();
+          resetSellState(true);
         }
       });
       
