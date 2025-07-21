@@ -129,23 +129,5 @@ export const TradeFeeDisplay: React.FC<TradeFeeDisplayProps> = ({
   )
 }
 
-// Hook to get revenue configuration for fee calculation
-export const useTradeFees = (agentId: string) => {
-  const [feeConfig, setFeeConfig] = React.useState({
-    feePercent: 0.01,
-    creatorSplit: 0.7,
-    platformSplit: 0.3
-  })
-
-  React.useEffect(() => {
-    // In a real implementation, this would fetch from the revenue_config table
-    // For now, we'll use defaults
-    setFeeConfig({
-      feePercent: 0.01,
-      creatorSplit: 0.7,
-      platformSplit: 0.3
-    })
-  }, [agentId])
-
-  return feeConfig
-}
+// Note: Fee configuration is now handled by useAgentTokens hook
+// This component receives fee data as props

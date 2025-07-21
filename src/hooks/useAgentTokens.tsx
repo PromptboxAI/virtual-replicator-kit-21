@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { baseSepolia } from 'viem/chains';
 import { useAppMode } from '@/hooks/useAppMode';
 import { calculateTokensFromPrompt, calculateSellReturn } from '@/lib/bondingCurve';
+import { supabase } from '@/integrations/supabase/client';
 
 // Transaction states
 type TransactionState = 'idle' | 'pending' | 'confirmed' | 'error';
@@ -162,10 +163,30 @@ export function useAgentTokenFactory() {
   };
 }
 
-export function useAgentToken(tokenAddress?: string) {
+interface FeeConfig {
+  feePercent: number;
+  creatorSplit: number;
+  platformSplit: number;
+  creatorWalletAddress?: string;
+  platformWalletAddress?: string;
+}
+
+interface TransactionFees {
+  feeAmount: number;
+  creatorAmount: number;
+  platformAmount: number;
+  netAmount: number;
+}
+
+export function useAgentToken(tokenAddress?: string, agentId?: string) {
   const { address } = useAccount();
   const { toast } = useToast();
   const [metrics, setMetrics] = useState<any>(null);
+  const [feeConfig, setFeeConfig] = useState<FeeConfig>({
+    feePercent: 0.01,
+    creatorSplit: 0.7,
+    platformSplit: 0.3
+  });
   
   // Transaction state management
   const [buyTxState, setBuyTxState] = useState<TransactionState>('idle');
@@ -207,6 +228,40 @@ export function useAgentToken(tokenAddress?: string) {
     functionName: 'getTokenMetrics',
   });
 
+  // Fetch fee configuration for the agent
+  useEffect(() => {
+    if (agentId) {
+      const fetchFeeConfig = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('revenue_config')
+            .select('*')
+            .eq('agent_id', agentId)
+            .single();
+
+          if (error && error.code !== 'PGRST116') {
+            console.error('Error fetching fee config:', error);
+            return;
+          }
+
+          if (data) {
+            setFeeConfig({
+              feePercent: data.fee_percent,
+              creatorSplit: data.creator_split,
+              platformSplit: data.platform_split,
+              creatorWalletAddress: data.creator_wallet_address,
+              platformWalletAddress: data.platform_wallet_address
+            });
+          }
+        } catch (error) {
+          console.error('Error fetching fee config:', error);
+        }
+      };
+
+      fetchFeeConfig();
+    }
+  }, [agentId]);
+
   useEffect(() => {
     if (tokenMetrics) {
       setMetrics({
@@ -218,6 +273,44 @@ export function useAgentToken(tokenAddress?: string) {
       });
     }
   }, [tokenMetrics]);
+
+  // Calculate transaction fees for a given amount
+  const calculateTransactionFees = (tradeAmount: number): TransactionFees => {
+    const feeAmount = tradeAmount * feeConfig.feePercent;
+    const creatorAmount = feeAmount * feeConfig.creatorSplit;
+    const platformAmount = feeAmount * feeConfig.platformSplit;
+    const netAmount = tradeAmount - feeAmount;
+
+    return {
+      feeAmount,
+      creatorAmount,
+      platformAmount,
+      netAmount
+    };
+  };
+
+  // Prepare transaction amounts with fee adjustments (for frontend validation)
+  const prepareTransactionAmounts = (promptAmount: number, isBuy: boolean = true) => {
+    if (isBuy) {
+      // For buying, user pays the full amount + fees
+      const fees = calculateTransactionFees(promptAmount);
+      return {
+        totalAmount: promptAmount,
+        netTradeAmount: fees.netAmount,
+        fees: fees,
+        displayAmount: promptAmount
+      };
+    } else {
+      // For selling, user receives amount - fees
+      const fees = calculateTransactionFees(promptAmount);
+      return {
+        totalAmount: promptAmount,
+        netReceiveAmount: fees.netAmount,
+        fees: fees,
+        displayAmount: fees.netAmount
+      };
+    }
+  };
 
   // Utility function for Etherscan links
   const getEtherscanLink = (txHash: string) => {
@@ -536,5 +629,9 @@ export function useAgentToken(tokenAddress?: string) {
     resetBuyState,
     resetSellState,
     refetchMetrics,
+    // Fee configuration and calculations
+    feeConfig,
+    calculateTransactionFees,
+    prepareTransactionAmounts,
   };
 }

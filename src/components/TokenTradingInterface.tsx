@@ -13,7 +13,7 @@ import { useAgentToken } from "@/hooks/useAgentTokens";
 import { useTokenBalance } from "@/hooks/useTokenBalance";
 import { useAuth } from "@/hooks/useAuth";
 import { TradingModeGuard } from './TradingModeGuard';
-import { TradeFeeDisplay, useTradeFees } from './TradeFeeDisplay';
+import { TradeFeeDisplay } from './TradeFeeDisplay';
 import { 
   getCurrentPrice, 
   calculateBuyCost, 
@@ -63,8 +63,12 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
   const { balance: promptBalance, loading: balanceLoading } = useTokenBalance(user?.id);
   const { buyAgentTokens, sellAgentTokens } = useAgentToken(agent.token_address);
   
-  // Fee configuration
-  const feeConfig = useTradeFees(agent.id);
+  // Fee configuration (default values until integrated with useAgentTokens)
+  const feeConfig = {
+    feePercent: 0.01,
+    creatorSplit: 0.7,
+    platformSplit: 0.3
+  };
 
   // Real-time graduation status and data - Phase 3 & 4 implementation
   const { isGraduated, isMigrating, agentData } = useAgentRealtime(agent.id, {

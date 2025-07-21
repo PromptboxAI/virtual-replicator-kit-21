@@ -12,7 +12,7 @@ import { usePrivyWallet } from '@/hooks/usePrivyWallet';
 import { useAgentRealtime } from '@/hooks/useAgentRealtime';
 import { useMigrationPolling } from '@/hooks/useMigrationPolling';
 import { supabase } from '@/integrations/supabase/client';
-import { TradeFeeDisplay, useTradeFees } from './TradeFeeDisplay';
+import { TradeFeeDisplay } from './TradeFeeDisplay';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -108,9 +108,13 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
   } = usePrivyWallet();
   console.log('[EnhancedTradingInterface] usePrivyWallet called successfully');
 
-  // Fee configuration hook
-  const feeConfig = useTradeFees(agent?.id || '');
-  console.log('[EnhancedTradingInterface] Fee config loaded:', feeConfig);
+  // Note: Fee configuration will be integrated with useAgentTokens hook when available
+  const defaultFeeConfig = {
+    feePercent: 0.01,
+    creatorSplit: 0.7,
+    platformSplit: 0.3
+  };
+  console.log('[EnhancedTradingInterface] Using default fee config');
 
   // DERIVED STATE FROM PROPS (with safe defaults for when agent is null)
   const promptRaised = agent?.prompt_raised || 0;
@@ -301,9 +305,9 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
         }));
 
         // Calculate fee information
-        const feeAmount = promptAmount * feeConfig.feePercent;
-        const creatorFee = feeAmount * feeConfig.creatorSplit;
-        const platformFee = feeAmount * feeConfig.platformSplit;
+        const feeAmount = promptAmount * defaultFeeConfig.feePercent;
+        const creatorFee = feeAmount * defaultFeeConfig.creatorSplit;
+        const platformFee = feeAmount * defaultFeeConfig.platformSplit;
 
         toast({
           title: "Purchase Successful!",
@@ -311,7 +315,7 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
             <div className="space-y-2">
               <p>Bought {formatDecimalPlaces(result.tokenAmount)} {agent.symbol}</p>
               <div className="text-xs text-muted-foreground">
-                <p>Trading fee: {feeAmount.toFixed(4)} PROMPT ({(feeConfig.feePercent * 100).toFixed(1)}%)</p>
+                <p>Trading fee: {feeAmount.toFixed(4)} PROMPT ({(defaultFeeConfig.feePercent * 100).toFixed(1)}%)</p>
                 <p>• Creator: {creatorFee.toFixed(4)} PROMPT</p>
                 <p>• Platform: {platformFee.toFixed(4)} PROMPT</p>
               </div>
@@ -857,9 +861,9 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
                {buyAmount && parseFloat(buyAmount) > 0 && (
                  <TradeFeeDisplay
                    tradeAmount={parseFloat(buyAmount)}
-                   feePercent={feeConfig.feePercent}
-                   creatorSplit={feeConfig.creatorSplit}
-                   platformSplit={feeConfig.platformSplit}
+                    feePercent={defaultFeeConfig.feePercent}
+                    creatorSplit={defaultFeeConfig.creatorSplit}
+                    platformSplit={defaultFeeConfig.platformSplit}
                    agentName={agent.name}
                    showBreakdown={true}
                  />
