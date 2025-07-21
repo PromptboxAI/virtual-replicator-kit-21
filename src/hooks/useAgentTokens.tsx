@@ -273,7 +273,7 @@ export function useAgentToken(tokenAddress?: string) {
     }
   }, [sellTxHash, sellTxState, isSellConfirming, toast]);
 
-  // Enhanced transaction confirmation with detailed toasts
+  // Enhanced transaction confirmation with detailed logging
   useEffect(() => {
     if (buyTxHash && !isBuyConfirming && buyTxState === 'pending' && buyReceipt) {
       setBuyTxState('confirmed');
@@ -281,9 +281,24 @@ export function useAgentToken(tokenAddress?: string) {
       const txHashShort = `${buyTxHash.slice(0, 8)}...${buyTxHash.slice(-6)}`;
       const etherscanLink = getEtherscanLink(buyTxHash);
       
-      // Calculate actual amounts (would need transaction logs parsing in real implementation)
+      // TODO: Parse actual amounts from transaction logs for accurate comparison
       const estimatedTokens = buyTxMeta?.expectedTokens.toFixed(4) || "Unknown";
       const promptAmount = buyTxMeta?.promptAmount || "Unknown";
+      
+      // Debug logging for slippage analysis
+      console.log('🔍 Buy Transaction Analysis:', {
+        txHash: buyTxHash,
+        expected: {
+          tokens: buyTxMeta?.expectedTokens,
+          promptAmount: buyTxMeta?.promptAmount,
+          slippage: buyTxMeta?.slippage + '%'
+        },
+        // actual: parseTransactionLogs(buyReceipt.logs), // TODO: Implement log parsing
+        slippageProtectionUsed: buyTxMeta?.slippage,
+        timestamp: new Date().toISOString(),
+        gasUsed: buyReceipt.gasUsed?.toString(),
+        effectiveGasPrice: buyReceipt.effectiveGasPrice?.toString()
+      });
       
       toast({
         title: "✅ Purchase Confirmed",
@@ -301,6 +316,21 @@ export function useAgentToken(tokenAddress?: string) {
       
       const txHashShort = `${sellTxHash.slice(0, 8)}...${sellTxHash.slice(-6)}`;
       const etherscanLink = getEtherscanLink(sellTxHash);
+      
+      // Debug logging for slippage analysis
+      console.log('🔍 Sell Transaction Analysis:', {
+        txHash: sellTxHash,
+        expected: {
+          promptReturn: sellTxMeta?.expectedPrompt,
+          tokenAmount: sellTxMeta?.tokenAmount,
+          slippage: sellTxMeta?.slippage + '%'
+        },
+        // actual: parseTransactionLogs(sellReceipt.logs), // TODO: Implement log parsing
+        slippageProtectionUsed: sellTxMeta?.slippage,
+        timestamp: new Date().toISOString(),
+        gasUsed: sellReceipt.gasUsed?.toString(),
+        effectiveGasPrice: sellReceipt.effectiveGasPrice?.toString()
+      });
       
       // Calculate actual amounts
       const estimatedPrompt = sellTxMeta?.expectedPrompt.toFixed(4) || "Unknown";
