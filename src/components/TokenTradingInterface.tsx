@@ -13,6 +13,7 @@ import { useAgentToken } from "@/hooks/useAgentTokens";
 import { useTokenBalance } from "@/hooks/useTokenBalance";
 import { useAuth } from "@/hooks/useAuth";
 import { TradingModeGuard } from './TradingModeGuard';
+import { TradeFeeDisplay, useTradeFees } from './TradeFeeDisplay';
 import { 
   getCurrentPrice, 
   calculateBuyCost, 
@@ -61,6 +62,9 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
   const { user, authenticated } = useAuth();
   const { balance: promptBalance, loading: balanceLoading } = useTokenBalance(user?.id);
   const { buyAgentTokens, sellAgentTokens } = useAgentToken(agent.token_address);
+  
+  // Fee configuration
+  const feeConfig = useTradeFees(agent.id);
 
   // Real-time graduation status and data - Phase 3 & 4 implementation
   const { isGraduated, isMigrating, agentData } = useAgentRealtime(agent.id, {
@@ -163,9 +167,24 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
     try {
       if (tradeType === "buy") {
         await buyAgentTokens(promptAmount);
+        
+        // Calculate fee information for display
+        const feeAmount = parseFloat(promptAmount) * feeConfig.feePercent;
+        const creatorFee = feeAmount * feeConfig.creatorSplit;
+        const platformFee = feeAmount * feeConfig.platformSplit;
+        
         toast({
           title: "Purchase Successful",
-          description: `Successfully bought ${tokenAmount} ${agent.symbol} tokens!`,
+          description: (
+            <div className="space-y-2">
+              <p>Successfully bought {tokenAmount} {agent.symbol} tokens!</p>
+              <div className="text-xs text-muted-foreground">
+                <p>Trading fee: {feeAmount.toFixed(4)} PROMPT ({(feeConfig.feePercent * 100).toFixed(1)}%)</p>
+                <p>• Creator: {creatorFee.toFixed(4)} PROMPT</p>
+                <p>• Platform: {platformFee.toFixed(4)} PROMPT</p>
+              </div>
+            </div>
+          ),
         });
       } else {
         await sellAgentTokens(tokenAmount);
@@ -333,6 +352,18 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
                   </div>
                 </TabsContent>
               </Tabs>
+
+              {/* Fee Display for Buy Trades */}
+              {tradeType === "buy" && promptAmount && parseFloat(promptAmount) > 0 && (
+                <TradeFeeDisplay
+                  tradeAmount={parseFloat(promptAmount)}
+                  feePercent={feeConfig.feePercent}
+                  creatorSplit={feeConfig.creatorSplit}
+                  platformSplit={feeConfig.platformSplit}
+                  agentName={agent.name}
+                  showBreakdown={true}
+                />
+              )}
 
               {/* Trade Details */}
               {promptAmount && (

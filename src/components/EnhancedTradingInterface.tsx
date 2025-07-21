@@ -12,6 +12,7 @@ import { usePrivyWallet } from '@/hooks/usePrivyWallet';
 import { useAgentRealtime } from '@/hooks/useAgentRealtime';
 import { useMigrationPolling } from '@/hooks/useMigrationPolling';
 import { supabase } from '@/integrations/supabase/client';
+import { TradeFeeDisplay, useTradeFees } from './TradeFeeDisplay';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -106,6 +107,10 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
     isTestMode
   } = usePrivyWallet();
   console.log('[EnhancedTradingInterface] usePrivyWallet called successfully');
+
+  // Fee configuration hook
+  const feeConfig = useTradeFees(agent?.id || '');
+  console.log('[EnhancedTradingInterface] Fee config loaded:', feeConfig);
 
   // DERIVED STATE FROM PROPS (with safe defaults for when agent is null)
   const promptRaised = agent?.prompt_raised || 0;
@@ -295,11 +300,21 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
           status: 'success' 
         }));
 
+        // Calculate fee information
+        const feeAmount = promptAmount * feeConfig.feePercent;
+        const creatorFee = feeAmount * feeConfig.creatorSplit;
+        const platformFee = feeAmount * feeConfig.platformSplit;
+
         toast({
           title: "Purchase Successful!",
           description: (
             <div className="space-y-2">
               <p>Bought {formatDecimalPlaces(result.tokenAmount)} {agent.symbol}</p>
+              <div className="text-xs text-muted-foreground">
+                <p>Trading fee: {feeAmount.toFixed(4)} PROMPT ({(feeConfig.feePercent * 100).toFixed(1)}%)</p>
+                <p>• Creator: {creatorFee.toFixed(4)} PROMPT</p>
+                <p>• Platform: {platformFee.toFixed(4)} PROMPT</p>
+              </div>
               <div className="flex items-center gap-2">
                 <span>Transaction:</span>
                 <Button 
@@ -835,10 +850,22 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
                       </span>
                     )}
                   </p>
-                )}
-              </div>
-              
-              <div className="space-y-2">
+                 )}
+               </div>
+               
+               {/* Fee Display */}
+               {buyAmount && parseFloat(buyAmount) > 0 && (
+                 <TradeFeeDisplay
+                   tradeAmount={parseFloat(buyAmount)}
+                   feePercent={feeConfig.feePercent}
+                   creatorSplit={feeConfig.creatorSplit}
+                   platformSplit={feeConfig.platformSplit}
+                   agentName={agent.name}
+                   showBreakdown={true}
+                 />
+               )}
+               
+               <div className="space-y-2">
                 <label className="text-sm font-medium">Slippage Tolerance</label>
                 <div className="flex gap-2">
                   <Button
