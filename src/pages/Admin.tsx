@@ -9,6 +9,7 @@ import { AdminFaucet } from "@/components/AdminFaucet";
 import { TreasuryManagement } from "@/components/TreasuryManagement";
 import { RevenueDashboard } from "@/components/RevenueDashboard";
 import { RevenueAuditDashboard } from "@/components/RevenueAuditDashboard";
+import { RevenueFunctionTest } from "@/components/RevenueFunctionTest";
 import { Header } from "@/components/Header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield, Settings, Database, Wallet, BarChart3, Activity } from "lucide-react";
@@ -135,6 +136,9 @@ const Admin = () => {
             <RevenueAuditDashboard />
           </CardContent>
         </Card>
+
+        {/* Revenue Function Testing */}
+        <RevenueFunctionTest />
 
         {/* Contract Deployment Test */}
         <ContractDeploymentTest />
