@@ -3,6 +3,8 @@ import { useAccount, useReadContract, useWriteContract } from 'wagmi';
 import { parseEther, formatEther } from 'viem';
 import { useToast } from '@/hooks/use-toast';
 import { baseSepolia } from 'viem/chains';
+import { useAppMode } from '@/hooks/useAppMode';
+import { calculateTokensFromPrompt, calculateSellReturn } from '@/lib/bondingCurve';
 
 // Get contract addresses from localStorage (set by deployment hook)
 const getContractAddress = (key: string, fallback: string = '0x0000000000000000000000000000000000000000') => {
@@ -38,14 +40,20 @@ const FACTORY_ABI = [
 
 const AGENT_TOKEN_ABI = [
   {
-    "inputs": [{"internalType": "uint256", "name": "promptAmount", "type": "uint256"}],
+    "inputs": [
+      {"internalType": "uint256", "name": "promptAmount", "type": "uint256"},
+      {"internalType": "uint256", "name": "minTokensOut", "type": "uint256"}
+    ],
     "name": "buyTokens",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "inputs": [{"internalType": "uint256", "name": "tokenAmount", "type": "uint256"}],
+    "inputs": [
+      {"internalType": "uint256", "name": "tokenAmount", "type": "uint256"},
+      {"internalType": "uint256", "name": "minPromptOut", "type": "uint256"}
+    ],
     "name": "sellTokens",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -177,7 +185,7 @@ export function useAgentToken(tokenAddress?: string) {
     }
   }, [tokenMetrics]);
 
-  const buyAgentTokens = async (promptAmount: string) => {
+  const buyAgentTokens = async (promptAmount: string, slippage: string = "2") => {
     if (!address) {
       toast({
         title: "Wallet Not Connected",
@@ -187,20 +195,41 @@ export function useAgentToken(tokenAddress?: string) {
       return;
     }
 
+    if (!metrics) {
+      toast({
+        title: "⚠️ Slippage Protection Disabled",
+        description: "Token metrics not loaded. Proceeding without slippage protection.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
-      const amountWei = parseEther(promptAmount);
+      const promptAmountFloat = parseFloat(promptAmount);
+      const slippagePct = Number(slippage) / 100;
+      
+      // Calculate expected tokens from bonding curve
+      const expectedResult = calculateTokensFromPrompt(metrics.promptRaised, promptAmountFloat);
+      const expectedTokens = expectedResult.tokenAmount;
+      
+      // Apply slippage protection
+      const minTokensOut = expectedTokens * (1 - slippagePct);
+      
+      const promptAmountWei = parseEther(promptAmount);
+      const minTokensOutWei = parseEther(minTokensOut.toString());
+      
       await writeBuy({
         address: tokenAddress as `0x${string}`,
         abi: AGENT_TOKEN_ABI,
         functionName: 'buyTokens',
-        args: [amountWei],
+        args: [promptAmountWei, minTokensOutWei],
         account: address,
         chain: baseSepolia,
       });
       
       toast({
         title: "Purchase Successful",
-        description: "Tokens purchased successfully!",
+        description: `Tokens purchased with ${slippage}% slippage protection!`,
       });
       refetchMetrics();
     } catch (error: any) {
@@ -212,7 +241,7 @@ export function useAgentToken(tokenAddress?: string) {
     }
   };
 
-  const sellAgentTokens = async (tokenAmount: string) => {
+  const sellAgentTokens = async (tokenAmount: string, slippage: string = "2") => {
     if (!address) {
       toast({
         title: "Wallet Not Connected",
@@ -222,20 +251,42 @@ export function useAgentToken(tokenAddress?: string) {
       return;
     }
 
+    if (!metrics) {
+      toast({
+        title: "⚠️ Slippage Protection Disabled",
+        description: "Token metrics not loaded. Proceeding without slippage protection.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
-      const amountWei = parseEther(tokenAmount);
+      const tokenAmountFloat = parseFloat(tokenAmount);
+      const slippagePct = Number(slippage) / 100;
+      
+      // Calculate expected PROMPT return from bonding curve
+      const currentTokensSold = metrics.promptRaised * 1000; // Convert to tokens
+      const expectedResult = calculateSellReturn(currentTokensSold, tokenAmountFloat);
+      const expectedPrompt = expectedResult.return;
+      
+      // Apply slippage protection
+      const minPromptOut = expectedPrompt * (1 - slippagePct);
+      
+      const tokenAmountWei = parseEther(tokenAmount);
+      const minPromptOutWei = parseEther(minPromptOut.toString());
+      
       await writeSell({
         address: tokenAddress as `0x${string}`,
         abi: AGENT_TOKEN_ABI,
         functionName: 'sellTokens',
-        args: [amountWei],
+        args: [tokenAmountWei, minPromptOutWei],
         account: address,
         chain: baseSepolia,
       });
       
       toast({
         title: "Sale Successful",
-        description: "Tokens sold successfully!",
+        description: `Tokens sold with ${slippage}% slippage protection!`,
       });
       refetchMetrics();
     } catch (error: any) {
