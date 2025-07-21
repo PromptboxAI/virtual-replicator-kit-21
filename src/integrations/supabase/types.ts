@@ -696,6 +696,109 @@ export type Database = {
         }
         Relationships: []
       }
+      revenue_config: {
+        Row: {
+          agent_id: string
+          created_at: string
+          creator_split: number
+          creator_wallet_address: string | null
+          fee_percent: number
+          id: string
+          platform_split: number
+          platform_wallet_address: string | null
+          updated_at: string
+        }
+        Insert: {
+          agent_id: string
+          created_at?: string
+          creator_split?: number
+          creator_wallet_address?: string | null
+          fee_percent?: number
+          id?: string
+          platform_split?: number
+          platform_wallet_address?: string | null
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string
+          created_at?: string
+          creator_split?: number
+          creator_wallet_address?: string | null
+          fee_percent?: number
+          id?: string
+          platform_split?: number
+          platform_wallet_address?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "revenue_config_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: true
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      revenue_distributions: {
+        Row: {
+          agent_id: string
+          created_at: string
+          creator_amount: number
+          creator_wallet: string | null
+          error_reason: string | null
+          fee_amount: number
+          id: string
+          platform_amount: number
+          platform_wallet: string | null
+          processed_by: string | null
+          status: Database["public"]["Enums"]["revenue_status"]
+          total_revenue: number
+          transaction_hash: string | null
+          updated_at: string
+        }
+        Insert: {
+          agent_id: string
+          created_at?: string
+          creator_amount: number
+          creator_wallet?: string | null
+          error_reason?: string | null
+          fee_amount: number
+          id?: string
+          platform_amount: number
+          platform_wallet?: string | null
+          processed_by?: string | null
+          status?: Database["public"]["Enums"]["revenue_status"]
+          total_revenue: number
+          transaction_hash?: string | null
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string
+          created_at?: string
+          creator_amount?: number
+          creator_wallet?: string | null
+          error_reason?: string | null
+          fee_amount?: number
+          id?: string
+          platform_amount?: number
+          platform_wallet?: string | null
+          processed_by?: string | null
+          status?: Database["public"]["Enums"]["revenue_status"]
+          total_revenue?: number
+          transaction_hash?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "revenue_distributions_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       transactions: {
         Row: {
           agent_id: string
@@ -922,6 +1025,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      revenue_status: "pending" | "completed" | "failed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1050,6 +1154,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      revenue_status: ["pending", "completed", "failed"],
     },
   },
 } as const
