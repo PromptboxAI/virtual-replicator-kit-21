@@ -34,6 +34,7 @@ import {
   isAgentMigrating
 } from '@/lib/bondingCurve';
 import { cn, formatDecimalPlaces } from '@/lib/utils';
+import { LiveTokenPriceDisplay } from './LiveTokenPriceDisplay';
 
 interface Agent {
   id: string;
@@ -726,6 +727,14 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
           </div>
         </CardHeader>
       </Card>
+
+      {/* Live Token Price Display */}
+      <LiveTokenPriceDisplay
+        agentSymbol={agent.symbol}
+        promptRaised={promptRaised}
+        tradeAmount={parseFloat(buyAmount || sellAmount || '0')}
+        tradeType={buyAmount ? 'buy' : 'sell'}
+      />
 
       {/* Wallet Status */}
       {!authenticated ? (

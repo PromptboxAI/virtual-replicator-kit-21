@@ -10,6 +10,7 @@ import { useAppMode } from '@/hooks/useAppMode';
 import { TradingChart } from './TradingChart';
 import { OKXDEXWidget } from './OKXDEXWidget';
 import { AgentDashboard } from './AgentDashboard';
+import { LiveTokenPriceDisplay } from './LiveTokenPriceDisplay';
 import { useAgentToken } from '@/hooks/useAgentTokens';
 import { calculateBuyCost, calculateSellReturn, formatPrice, formatPromptAmount, getCurrentPrice, calculateTokensFromPrompt } from '@/lib/bondingCurve';
 import { supabase } from '@/integrations/supabase/client';
@@ -360,6 +361,15 @@ export function TradingInterface({
   // Original layout for bonding curve tokens
   return (
     <div className="space-y-6">{/* Removed AgentDashboard - this should only show trading interface */}
+
+      {/* Live Token Price Display */}
+      <LiveTokenPriceDisplay
+        agentSymbol={agentSymbol}
+        promptRaised={metrics.promptRaised}
+        tradeAmount={parseFloat(buyAmount || sellAmount || '0')}
+        tradeType={activeTab as 'buy' | 'sell'}
+        className="mb-6"
+      />
 
       {/* Token Metrics */}
       <Card>
