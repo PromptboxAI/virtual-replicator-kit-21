@@ -35,6 +35,7 @@ import {
 } from '@/lib/bondingCurve';
 import { cn, formatDecimalPlaces } from '@/lib/utils';
 import { LiveTokenPriceDisplay } from './LiveTokenPriceDisplay';
+import { BondingCurvePreview } from './BondingCurvePreview';
 
 interface Agent {
   id: string;
@@ -735,6 +736,16 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
         tradeAmount={parseFloat(buyAmount || sellAmount || '0')}
         tradeType={buyAmount ? 'buy' : 'sell'}
       />
+
+      {/* Bonding Curve Preview - Only for non-graduated tokens */}
+      {!isGraduated && (
+        <BondingCurvePreview
+          agentSymbol={agent.symbol}
+          promptRaised={promptRaised}
+          graduationThreshold={agent.graduation_threshold}
+          tradeAmount={parseFloat(buyAmount || '0')}
+        />
+      )}
 
       {/* Wallet Status */}
       {!authenticated ? (

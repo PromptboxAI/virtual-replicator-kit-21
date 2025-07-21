@@ -12,6 +12,7 @@ import { OKXDEXWidget } from './OKXDEXWidget';
 import { AgentDashboard } from './AgentDashboard';
 import { LiveTokenPriceDisplay } from './LiveTokenPriceDisplay';
 import { WalletBalanceDisplay } from './WalletBalanceDisplay';
+import { BondingCurvePreview } from './BondingCurvePreview';
 import { useAgentToken } from '@/hooks/useAgentTokens';
 import { calculateBuyCost, calculateSellReturn, formatPrice, formatPromptAmount, getCurrentPrice, calculateTokensFromPrompt } from '@/lib/bondingCurve';
 import { supabase } from '@/integrations/supabase/client';
@@ -371,6 +372,16 @@ export function TradingInterface({
         tradeType={activeTab as 'buy' | 'sell'}
         className="mb-6"
       />
+
+      {/* Bonding Curve Preview - Only for non-graduated tokens */}
+      {!metrics.graduated && (
+        <BondingCurvePreview
+          agentSymbol={agentSymbol}
+          promptRaised={metrics.promptRaised}
+          tradeAmount={parseFloat(buyAmount || '0')}
+          className="mb-6"
+        />
+      )}
 
       {/* Token Metrics */}
       <Card>

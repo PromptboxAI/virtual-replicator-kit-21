@@ -29,6 +29,7 @@ import { useMigrationPolling } from '@/hooks/useMigrationPolling';
 import { MigrationBanner } from './MigrationBanner';
 import { LiveTokenPriceDisplay } from './LiveTokenPriceDisplay';
 import { WalletBalanceDisplay } from './WalletBalanceDisplay';
+import { BondingCurvePreview } from './BondingCurvePreview';
 
 interface Agent {
   id: string;
@@ -470,6 +471,16 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
                 )}
               </CardContent>
             </Card>
+          )}
+
+          {/* Bonding Curve Preview - Only for non-graduated tokens */}
+          {!isGraduated && (
+            <BondingCurvePreview
+              agentSymbol={agent.symbol}
+              promptRaised={currentPromptRaised}
+              graduationThreshold={agent.graduation_threshold}
+              tradeAmount={tradeType === 'buy' ? parseFloat(promptAmount || '0') : 0}
+            />
           )}
 
           {/* Wallet Balances */}
