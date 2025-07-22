@@ -8,6 +8,7 @@ import { TokenTradingInterface } from './TokenTradingInterface';
 import { TradingModeGuard } from './TradingModeGuard';
 import { useAgentRealtime } from '@/hooks/useAgentRealtime';
 import { formatPromptAmount, formatPrice, formatTokenAmount } from '@/lib/bondingCurve';
+import { AgentInformationSections } from './AgentInformationSections';
 
 interface Agent {
   id: string;
@@ -222,6 +223,9 @@ export const ProfessionalTradingInterface = ({
           </>
         )}
       </div>
+
+      {/* Agent Information Sections */}
+      <AgentInformationSections agent={agent} />
     </div>
   );
 };
