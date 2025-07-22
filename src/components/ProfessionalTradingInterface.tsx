@@ -144,40 +144,83 @@ export const ProfessionalTradingInterface = ({
 
       {/* Metrics Footer */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <Card className="p-4 text-center">
-          <div className="text-lg font-bold text-foreground">
-            ${agent.market_cap.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          </div>
-          <div className="text-sm text-muted-foreground">FDV</div>
-        </Card>
+        {!isGraduated ? (
+          // Pre-graduated token metrics
+          <>
+            <Card className="p-4 text-center">
+              <div className="text-lg font-bold text-foreground">
+                ${agent.market_cap.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
+              <div className="text-sm text-muted-foreground">FDV</div>
+            </Card>
 
-        <Card className="p-4 text-center">
-          <div className="text-lg font-bold text-foreground">
-            ${((agent.prompt_raised * 30) / 1000).toFixed(2)}k
-          </div>
-          <div className="text-sm text-muted-foreground">Liquidity</div>
-        </Card>
+            <Card className="p-4 text-center">
+              <div className="text-lg font-bold text-foreground">
+                ${((agent.prompt_raised * 30) / 1000).toFixed(2)}k
+              </div>
+              <div className="text-sm text-muted-foreground">Liquidity</div>
+            </Card>
 
-        <Card className="p-4 text-center">
-          <div className="text-lg font-bold text-foreground">
-            {agent.token_holders}
-          </div>
-          <div className="text-sm text-muted-foreground">Holders</div>
-        </Card>
+            <Card className="p-4 text-center">
+              <div className="text-lg font-bold text-foreground">
+                {agent.token_holders}
+              </div>
+              <div className="text-sm text-muted-foreground">Holders</div>
+            </Card>
 
-        <Card className="p-4 text-center">
-          <div className="text-lg font-bold text-foreground">
-            ${agent.volume_24h.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          </div>
-          <div className="text-sm text-muted-foreground">24h Vol</div>
-        </Card>
+            <Card className="p-4 text-center">
+              <div className="text-lg font-bold text-foreground">
+                ${agent.volume_24h.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
+              <div className="text-sm text-muted-foreground">24h Vol</div>
+            </Card>
 
-        <Card className="p-4 text-center">
-          <div className="text-lg font-bold text-foreground">
-            0%
-          </div>
-          <div className="text-sm text-muted-foreground">Top 10</div>
-        </Card>
+            <Card className="p-4 text-center">
+              <div className="text-lg font-bold text-foreground">
+                0%
+              </div>
+              <div className="text-sm text-muted-foreground">Top 10</div>
+            </Card>
+          </>
+        ) : (
+          // Post-graduated DEX token metrics
+          <>
+            <Card className="p-4 text-center">
+              <div className="text-lg font-bold text-foreground">
+                ${agent.market_cap.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
+              <div className="text-sm text-muted-foreground">Market Cap</div>
+            </Card>
+
+            <Card className="p-4 text-center">
+              <div className="text-lg font-bold text-foreground">
+                ${(liquidityPool * 1000).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
+              <div className="text-sm text-muted-foreground">DEX Liquidity</div>
+            </Card>
+
+            <Card className="p-4 text-center">
+              <div className="text-lg font-bold text-foreground">
+                {agent.token_holders}
+              </div>
+              <div className="text-sm text-muted-foreground">Holders</div>
+            </Card>
+
+            <Card className="p-4 text-center">
+              <div className="text-lg font-bold text-foreground">
+                ${agent.volume_24h.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
+              <div className="text-sm text-muted-foreground">24h Volume</div>
+            </Card>
+
+            <Card className="p-4 text-center">
+              <div className="text-lg font-bold text-foreground">
+                {topHolders.toFixed(1)}%
+              </div>
+              <div className="text-sm text-muted-foreground">Top 10 Hold</div>
+            </Card>
+          </>
+        )}
       </div>
     </div>
   );
