@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -26,6 +27,20 @@ export const useContractDeployment = () => {
       }
 
       setPromptTokenAddress(data.contractAddress);
+      
+      // Store in database for future reference
+      await supabase
+        .from('deployed_contracts')
+        .insert({
+          contract_address: data.contractAddress,
+          contract_type: 'prompt_token',
+          network: 'base_sepolia',
+          version: 'v1',
+          name: 'PROMPTTEST',
+          symbol: 'PROMPT',
+          is_active: true
+        });
+
       toast.success(`Real PROMPTTEST token deployed at: ${data.contractAddress}`);
       
       return data.contractAddress;
@@ -59,6 +74,20 @@ export const useContractDeployment = () => {
       }
 
       setFactoryAddress(data.contractAddress);
+      
+      // Store in database
+      await supabase
+        .from('deployed_contracts')
+        .insert({
+          contract_address: data.contractAddress,
+          contract_type: 'factory',
+          network: 'base_sepolia',
+          version: 'v2',
+          name: 'AgentTokenFactory',
+          symbol: 'FACTORY',
+          is_active: true
+        });
+
       toast.success(`Factory deployed at: ${data.contractAddress}`);
       
       return data.contractAddress;
@@ -99,10 +128,36 @@ export const useContractDeployment = () => {
     }
   };
 
+  // Get deployed contract addresses from database
+  const getDeployedContracts = async () => {
+    try {
+      const { data: contracts, error } = await supabase
+        .from('deployed_contracts')
+        .select('contract_address, contract_type, name, symbol')
+        .eq('network', 'base_sepolia')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const promptToken = contracts?.find(c => c.contract_type === 'prompt_token');
+      const factory = contracts?.find(c => c.contract_type === 'factory');
+
+      if (promptToken) setPromptTokenAddress(promptToken.contract_address);
+      if (factory) setFactoryAddress(factory.contract_address);
+
+      return contracts || [];
+    } catch (error) {
+      console.error('Error fetching deployed contracts:', error);
+      return [];
+    }
+  };
+
   return {
     deployPromptTestToken,
     deployFactory,
     deployAll,
+    getDeployedContracts,
     isDeploying,
     promptTokenAddress,
     factoryAddress

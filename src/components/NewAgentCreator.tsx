@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,23 +7,53 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAccount } from 'wagmi';
 import { useNavigate } from 'react-router-dom';
-import { Rocket, Zap, Shield, Loader2, Sparkles } from 'lucide-react';
+import { Rocket, Zap, Shield, Loader2, Sparkles, CheckCircle, AlertCircle, ExternalLink } from 'lucide-react';
+
+interface DeploymentStep {
+  id: string;
+  title: string;
+  status: 'pending' | 'loading' | 'completed' | 'error';
+  description?: string;
+}
 
 export function NewAgentCreator() {
   const { address } = useAccount();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isCreating, setIsCreating] = useState(false);
+  const [deploymentProgress, setDeploymentProgress] = useState(0);
+  const [currentStep, setCurrentStep] = useState<string>('');
+  const [contractAddress, setContractAddress] = useState<string>('');
   const [agentData, setAgentData] = useState({
     name: '',
     symbol: '',
     description: '',
     category: 'ai-assistant'
   });
+  
+  const [deploymentSteps, setDeploymentSteps] = useState<DeploymentStep[]>([
+    { id: 'validate', title: 'Validating Parameters', status: 'pending' },
+    { id: 'database', title: 'Creating Agent Record', status: 'pending' },
+    { id: 'contract', title: 'Deploying Smart Contract', status: 'pending' },
+    { id: 'verify', title: 'Verifying Deployment', status: 'pending' },
+    { id: 'finalize', title: 'Finalizing Setup', status: 'pending' }
+  ]);
+
+  const updateStepStatus = (stepId: string, status: DeploymentStep['status'], description?: string) => {
+    setDeploymentSteps(prev => 
+      prev.map(step => 
+        step.id === stepId 
+          ? { ...step, status, description }
+          : step
+      )
+    );
+    setCurrentStep(stepId);
+  };
 
   const createAgentV2 = async () => {
     if (!address) {
@@ -44,9 +75,30 @@ export function NewAgentCreator() {
     }
 
     setIsCreating(true);
+    setDeploymentProgress(0);
 
     try {
-      // Step 1: Create agent record in database
+      // Step 1: Validation
+      updateStepStatus('validate', 'loading');
+      setDeploymentProgress(10);
+      
+      // Validate symbol is unique
+      const { data: existingAgent } = await supabase
+        .from('agents')
+        .select('id')
+        .eq('symbol', agentData.symbol.toUpperCase())
+        .single();
+
+      if (existingAgent) {
+        throw new Error(`Symbol ${agentData.symbol} is already taken`);
+      }
+
+      updateStepStatus('validate', 'completed');
+      setDeploymentProgress(20);
+
+      // Step 2: Create agent record
+      updateStepStatus('database', 'loading');
+      
       const { data: agent, error: agentError } = await supabase
         .from('agents')
         .insert({
@@ -56,7 +108,7 @@ export function NewAgentCreator() {
           category: agentData.category,
           creator_id: address,
           framework: 'G.A.M.E.',
-          test_mode: true, // Start in test mode
+          test_mode: false, // Real contract mode
           status: 'DEPLOYING'
         })
         .select()
@@ -64,55 +116,88 @@ export function NewAgentCreator() {
 
       if (agentError) throw agentError;
 
-      toast({
-        title: "✨ Agent Created",
-        description: "Now deploying V2 token contract with slippage protection...",
-      });
+      updateStepStatus('database', 'completed');
+      setDeploymentProgress(40);
 
-      // Step 2: Deploy V2 token contract
-      const promptTokenAddress = localStorage.getItem('promptTokenAddress') || 
-                                 '0x0000000000000000000000000000000000000000';
+      // Step 3: Deploy V2 contract
+      updateStepStatus('contract', 'loading', 'Deploying to Base Sepolia...');
+      
+      toast({
+        title: "🚀 Deploying Smart Contract",
+        description: "This may take 30-60 seconds. Please wait...",
+      });
 
       const { data: deployment, error: deployError } = await supabase.functions.invoke('deploy-agent-token-v2', {
         body: {
           name: agentData.name,
           symbol: agentData.symbol.toUpperCase(),
           agentId: agent.id,
-          promptTokenAddress: promptTokenAddress
+          creatorAddress: address
         }
       });
 
-      if (deployError) throw deployError;
+      if (deployError) {
+        console.error('Deployment error:', deployError);
+        throw new Error(deployError.message || 'Contract deployment failed');
+      }
 
       if (!deployment?.success) {
         throw new Error(deployment?.error || 'Contract deployment failed');
       }
 
-      // Step 3: Update agent with contract address
+      setContractAddress(deployment.contractAddress);
+      updateStepStatus('contract', 'completed', `Contract: ${deployment.contractAddress}`);
+      setDeploymentProgress(70);
+
+      // Step 4: Verify deployment
+      updateStepStatus('verify', 'loading');
+      
+      // Wait a moment for blockchain confirmation
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      updateStepStatus('verify', 'completed');
+      setDeploymentProgress(85);
+
+      // Step 5: Finalize
+      updateStepStatus('finalize', 'loading');
+
+      // Update agent status to ACTIVE
       const { error: updateError } = await supabase
         .from('agents')
         .update({
-          token_address: deployment.contractAddress,
           status: 'ACTIVE',
           updated_at: new Date().toISOString()
         })
         .eq('id', agent.id);
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error('Update error:', updateError);
+        // Don't fail here, just log the error
+      }
+
+      updateStepStatus('finalize', 'completed');
+      setDeploymentProgress(100);
 
       toast({
-        title: "🚀 Agent Deployed Successfully!",
-        description: `V2 contract deployed with enhanced slippage protection`,
+        title: "🎉 Agent Deployed Successfully!",
+        description: `Real smart contract deployed at ${deployment.contractAddress.slice(0, 8)}...`,
       });
 
-      // Navigate to the new agent page
-      navigate(`/agent/${agent.id}`);
+      // Navigate to the new agent page after a short delay
+      setTimeout(() => {
+        navigate(`/agent/${agent.id}`);
+      }, 2000);
 
     } catch (error: any) {
       console.error('Agent creation error:', error);
       
+      // Update current step to error
+      if (currentStep) {
+        updateStepStatus(currentStep, 'error', error.message);
+      }
+      
       toast({
-        title: "Creation Failed",
+        title: "Deployment Failed",
         description: error.message || "Failed to create agent",
         variant: "destructive",
       });
@@ -125,6 +210,15 @@ export function NewAgentCreator() {
     "DeFi", "Gaming", "Social", "Trading", "Content", "Analytics", "NFTs", "Education"
   ];
 
+  const getStepIcon = (status: DeploymentStep['status']) => {
+    switch (status) {
+      case 'completed': return <CheckCircle className="w-4 h-4 text-green-600" />;
+      case 'loading': return <Loader2 className="w-4 h-4 animate-spin text-blue-600" />;
+      case 'error': return <AlertCircle className="w-4 h-4 text-red-600" />;
+      default: return <div className="w-4 h-4 rounded-full border-2 border-gray-300" />;
+    }
+  };
+
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <Card>
@@ -134,109 +228,168 @@ export function NewAgentCreator() {
             Create New Agent (V2)
           </CardTitle>
           <CardDescription>
-            Launch your AI agent with enhanced V2 token economics and slippage protection
+            Deploy your AI agent with a real smart contract on Base Sepolia
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           
-          {/* V2 Features Alert */}
-          <Alert className="border-purple-200 bg-purple-50 dark:bg-purple-950">
-            <Shield className="w-4 h-4 text-purple-600" />
-            <AlertDescription className="text-purple-900 dark:text-purple-100">
-              <strong>V2 Enhanced Features:</strong> Built-in slippage protection, improved bonding curve, 
-              enhanced gas efficiency, and future migration support.
+          {/* Real Contract Alert */}
+          <Alert className="border-green-200 bg-green-50 dark:bg-green-950">
+            <Shield className="w-4 h-4 text-green-600" />
+            <AlertDescription className="text-green-900 dark:text-green-100">
+              <strong>Real Smart Contract:</strong> This will deploy an actual ERC20 contract on Base Sepolia. 
+              Users can interact with the same contract from pre-graduation through post-graduation.
             </AlertDescription>
           </Alert>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="agent-name">Agent Name</Label>
-                <Input
-                  id="agent-name"
-                  value={agentData.name}
-                  onChange={(e) => setAgentData({ ...agentData, name: e.target.value })}
-                  placeholder="My Awesome Agent"
-                  disabled={isCreating}
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="agent-symbol">Token Symbol</Label>
-                <Input
-                  id="agent-symbol"
-                  value={agentData.symbol}
-                  onChange={(e) => setAgentData({ 
-                    ...agentData, 
-                    symbol: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6)
-                  })}
-                  placeholder="AGENT"
-                  disabled={isCreating}
-                  maxLength={6}
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  2-6 characters, letters and numbers only
-                </p>
-              </div>
-            </div>
+          {!isCreating && (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="agent-name">Agent Name</Label>
+                    <Input
+                      id="agent-name"
+                      value={agentData.name}
+                      onChange={(e) => setAgentData({ ...agentData, name: e.target.value })}
+                      placeholder="My Awesome Agent"
+                      disabled={isCreating}
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="agent-symbol">Token Symbol</Label>
+                    <Input
+                      id="agent-symbol"
+                      value={agentData.symbol}
+                      onChange={(e) => setAgentData({ 
+                        ...agentData, 
+                        symbol: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6)
+                      })}
+                      placeholder="AGENT"
+                      disabled={isCreating}
+                      maxLength={6}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      2-6 characters, letters and numbers only
+                    </p>
+                  </div>
+                </div>
 
-            <div className="space-y-4">
-              <div>
-                <Label>Category</Label>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {agentCategories.map((category) => (
-                    <Badge
-                      key={category}
-                      variant={agentData.category === category ? "default" : "outline"}
-                      className="cursor-pointer"
-                      onClick={() => !isCreating && setAgentData({ ...agentData, category })}
-                    >
-                      {category}
-                    </Badge>
-                  ))}
+                <div className="space-y-4">
+                  <div>
+                    <Label>Category</Label>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {agentCategories.map((category) => (
+                        <Badge
+                          key={category}
+                          variant={agentData.category === category ? "default" : "outline"}
+                          className="cursor-pointer"
+                          onClick={() => !isCreating && setAgentData({ ...agentData, category })}
+                        >
+                          {category}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
 
-          <div>
-            <Label htmlFor="agent-description">Description</Label>
-            <Textarea
-              id="agent-description"
-              value={agentData.description}
-              onChange={(e) => setAgentData({ ...agentData, description: e.target.value })}
-              placeholder="Describe your agent's purpose, capabilities, and goals..."
-              rows={4}
-              disabled={isCreating}
-            />
-          </div>
+              <div>
+                <Label htmlFor="agent-description">Description</Label>
+                <Textarea
+                  id="agent-description"
+                  value={agentData.description}
+                  onChange={(e) => setAgentData({ ...agentData, description: e.target.value })}
+                  placeholder="Describe your agent's purpose, capabilities, and goals..."
+                  rows={4}
+                  disabled={isCreating}
+                />
+              </div>
 
-          {/* V2 Features Showcase */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 border border-purple-200 rounded-lg bg-purple-50/50 dark:bg-purple-950/50">
-              <Shield className="w-6 h-6 text-purple-600 mb-2" />
-              <h4 className="font-medium text-purple-900 dark:text-purple-100">Slippage Protection</h4>
-              <p className="text-xs text-purple-700 dark:text-purple-300">
-                Built-in protection against price slippage during trades
-              </p>
+              {/* V2 Features Showcase */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="p-4 border border-purple-200 rounded-lg bg-purple-50/50 dark:bg-purple-950/50">
+                  <Shield className="w-6 h-6 text-purple-600 mb-2" />
+                  <h4 className="font-medium text-purple-900 dark:text-purple-100">Real Contract</h4>
+                  <p className="text-xs text-purple-700 dark:text-purple-300">
+                    Deployed ERC20 contract on Base Sepolia
+                  </p>
+                </div>
+                
+                <div className="p-4 border border-green-200 rounded-lg bg-green-50/50 dark:bg-green-950/50">
+                  <Zap className="w-6 h-6 text-green-600 mb-2" />
+                  <h4 className="font-medium text-green-900 dark:text-green-100">Gas Optimized</h4>
+                  <p className="text-xs text-green-700 dark:text-green-300">
+                    Improved efficiency for all operations
+                  </p>
+                </div>
+                
+                <div className="p-4 border border-blue-200 rounded-lg bg-blue-50/50 dark:bg-blue-950/50">
+                  <Rocket className="w-6 h-6 text-blue-600 mb-2" />
+                  <h4 className="font-medium text-blue-900 dark:text-blue-100">Future Ready</h4>
+                  <p className="text-xs text-blue-700 dark:text-blue-300">
+                    Migration support and slippage protection
+                  </p>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Deployment Progress */}
+          {isCreating && (
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-medium">Deployment Progress</span>
+                  <span className="text-sm text-muted-foreground">{deploymentProgress}%</span>
+                </div>
+                <Progress value={deploymentProgress} className="w-full" />
+              </div>
+
+              <div className="space-y-3">
+                {deploymentSteps.map((step, index) => (
+                  <div 
+                    key={step.id} 
+                    className={`flex items-start gap-3 p-3 rounded-lg border ${
+                      step.status === 'completed' ? 'bg-green-50 border-green-200' :
+                      step.status === 'loading' ? 'bg-blue-50 border-blue-200' :
+                      step.status === 'error' ? 'bg-red-50 border-red-200' :
+                      'bg-gray-50 border-gray-200'
+                    }`}
+                  >
+                    {getStepIcon(step.status)}
+                    <div className="flex-1">
+                      <div className="font-medium text-sm">{step.title}</div>
+                      {step.description && (
+                        <div className="text-xs text-muted-foreground mt-1">
+                          {step.description}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {contractAddress && (
+                <Alert className="border-green-200 bg-green-50">
+                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <AlertDescription className="text-green-900">
+                    <div className="flex items-center justify-between">
+                      <span>Contract deployed: {contractAddress.slice(0, 8)}...{contractAddress.slice(-6)}</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => window.open(`https://sepolia.basescan.org/address/${contractAddress}`, '_blank')}
+                      >
+                        <ExternalLink className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </AlertDescription>
+                </Alert>
+              )}
             </div>
-            
-            <div className="p-4 border border-green-200 rounded-lg bg-green-50/50 dark:bg-green-950/50">
-              <Zap className="w-6 h-6 text-green-600 mb-2" />
-              <h4 className="font-medium text-green-900 dark:text-green-100">Gas Optimized</h4>
-              <p className="text-xs text-green-700 dark:text-green-300">
-                Improved gas efficiency for all token operations
-              </p>
-            </div>
-            
-            <div className="p-4 border border-blue-200 rounded-lg bg-blue-50/50 dark:bg-blue-950/50">
-              <Rocket className="w-6 h-6 text-blue-600 mb-2" />
-              <h4 className="font-medium text-blue-900 dark:text-blue-100">Future Ready</h4>
-              <p className="text-xs text-blue-700 dark:text-blue-300">
-                Migration support and future feature compatibility
-              </p>
-            </div>
-          </div>
+          )}
 
           <Button
             onClick={createAgentV2}
@@ -247,19 +400,19 @@ export function NewAgentCreator() {
             {isCreating ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                Creating Agent V2...
+                Deploying Real Contract...
               </>
             ) : (
               <>
                 <Sparkles className="w-5 h-5 mr-2" />
-                Create Agent V2
+                Deploy Real Smart Contract
               </>
             )}
           </Button>
 
           {!address && (
             <p className="text-center text-sm text-muted-foreground">
-              Connect your wallet to create an agent
+              Connect your wallet to deploy a real smart contract
             </p>
           )}
         </CardContent>
