@@ -93,58 +93,37 @@ export const TradeFeeDisplay: React.FC<TradeFeeDisplayProps> = ({
   )
 
   return (
-    <div className={`space-y-3 ${className}`}>
-      {/* Fee Summary - Made wider with better spacing */}
-      <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Info className="h-4 w-4 text-yellow-600" />
-            <span className="text-sm font-medium">Trading Fee</span>
-          </div>
-          <span className="font-mono text-sm font-medium">
-            {feeAmount.toFixed(4)} PROMPT ({(feePercent * 100).toFixed(1)}%)
-          </span>
+    <div className={`space-y-2 ${className}`}>
+      {/* Fee Summary */}
+      <div className="flex items-center justify-between p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <div className="flex items-center gap-2">
+          <Info className="h-4 w-4 text-yellow-600" />
+          <span className="text-sm font-medium">Trading Fee</span>
         </div>
         
-        {/* Fee Breakdown - Now shown directly instead of in tooltip */}
-        {showBreakdown && (
-          <div className="space-y-2 pt-2 border-t border-yellow-200">
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <User className="h-3 w-3" />
-                  <span className="text-xs">{agentName} Creator</span>
-                </div>
-                <span className="font-mono text-green-600 text-xs">
-                  {creatorAmount.toFixed(4)} PROMPT
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center gap-2 cursor-help">
+                <span className="font-mono text-sm">
+                  {feeAmount.toFixed(4)} PROMPT ({(feePercent * 100).toFixed(1)}%)
                 </span>
+                <Badge variant="outline" className="text-xs">
+                  {(creatorSplit * 100)}%/{(platformSplit * 100)}%
+                </Badge>
               </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Building className="h-3 w-3" />
-                  <span className="text-xs">Platform</span>
-                </div>
-                <span className="font-mono text-blue-600 text-xs">
-                  {platformAmount.toFixed(4)} PROMPT
-                </span>
-              </div>
-            </div>
-            
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">Split:</span>
-              <Badge variant="outline" className="text-xs">
-                {(creatorSplit * 100)}% / {(platformSplit * 100)}%
-              </Badge>
-            </div>
-          </div>
-        )}
+            </TooltipTrigger>
+            <TooltipContent side="left" className="max-w-sm">
+              <FeeBreakdown />
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
 
-      {/* Net Amount Display - Made more prominent */}
-      <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-        <span className="text-sm font-medium">Amount after fees:</span>
-        <span className="font-mono text-lg font-bold">{netAmount.toFixed(4)} PROMPT</span>
+      {/* Net Amount Display */}
+      <div className="flex justify-between text-sm">
+        <span className="text-muted-foreground">Amount after fees:</span>
+        <span className="font-mono font-medium">{netAmount.toFixed(4)} PROMPT</span>
       </div>
     </div>
   )
