@@ -484,44 +484,6 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
             showAddTestTokens={true}
           />
 
-          {/* Market Stats */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <DollarSign className="h-4 w-4" />
-                Market Stats
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Market Cap</span>
-                <span className="text-sm font-medium">
-                  ${agent.market_cap?.toLocaleString() || "0"}
-                </span>
-              </div>
-              <Separator />
-              <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">24h Volume</span>
-                <span className="text-sm font-medium">
-                  ${agent.volume_24h?.toLocaleString() || "0"}
-                </span>
-              </div>
-              <Separator />
-              <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Holders</span>
-                <span className="text-sm font-medium">
-                  {agent.token_holders?.toLocaleString() || "0"}
-                </span>
-              </div>
-              <Separator />
-              <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Status</span>
-                <Badge variant={isGraduated ? "default" : "secondary"}>
-                  {isGraduated ? "Graduated" : "Bonding Curve"}
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
 
         </div>
       </div>
