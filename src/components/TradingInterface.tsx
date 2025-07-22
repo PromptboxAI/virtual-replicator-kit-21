@@ -391,7 +391,7 @@ export function TradingInterface({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Price (PROMPT)</p>
               <div className="flex items-center gap-2">
@@ -408,21 +408,31 @@ export function TradingInterface({
             </div>
             
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Market Cap</p>
-              <p className="text-lg font-semibold">${metrics.marketCap.toLocaleString()}</p>
+              <p className="text-sm text-muted-foreground">FDV</p>
+              <p className="text-lg font-semibold">${(metrics.marketCap / 1000).toFixed(2)}k</p>
             </div>
             
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">24h Volume</p>
-              <p className="text-lg font-semibold">${metrics.volume24h.toLocaleString()}</p>
+              <p className="text-sm text-muted-foreground">Liquidity</p>
+              <p className="text-lg font-semibold">${((metrics.promptRaised * 30) / 1000).toFixed(2)}k</p>
+            </div>
+            
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">24h Vol</p>
+              <p className="text-lg font-semibold">${(metrics.volume24h / 1000).toFixed(2)}k</p>
             </div>
             
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Holders</p>
               <div className="flex items-center gap-1">
                 <Users className="h-4 w-4 text-muted-foreground" />
-                <p className="text-lg font-semibold">{metrics.holders.toLocaleString()}</p>
+                <p className="text-lg font-semibold">{metrics.holders}</p>
               </div>
+            </div>
+            
+            <div className="space-y-1 md:col-span-5">
+              <p className="text-sm text-muted-foreground">Top 10</p>
+              <p className="text-lg font-semibold">0%</p>
             </div>
           </div>
         </CardContent>
