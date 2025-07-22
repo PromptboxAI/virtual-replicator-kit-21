@@ -72,7 +72,7 @@ export const LightweightCandlestickChart = ({
       },
     });
 
-    // Use correct API for adding series
+    // Add series using the correct v5 API pattern from docs
     const candlestickSeriesInstance = chart.addSeries(CandlestickSeries, {
       upColor: '#22c55e',
       downColor: '#ef4444',
@@ -82,6 +82,7 @@ export const LightweightCandlestickChart = ({
       wickUpColor: '#22c55e',
     });
 
+    // Add volume histogram series  
     const volumeSeriesInstance = chart.addSeries(HistogramSeries, {
       color: '#26a69a',
       priceFormat: {
