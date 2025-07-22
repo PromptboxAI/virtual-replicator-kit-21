@@ -3,7 +3,7 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
-import { UniversalAgentDashboard } from '@/components/UniversalAgentDashboard';
+import { ProfessionalTradingInterface } from '@/components/ProfessionalTradingInterface';
 import { useAgent } from '@/hooks/useAgent';
 import { useAgentRealtime } from '@/hooks/useAgentRealtime';
 
@@ -78,11 +78,10 @@ const UnifiedAgentPage = () => {
       <Header />
       
       <main className="container mx-auto px-4 py-8">
-        <UniversalAgentDashboard 
+        <ProfessionalTradingInterface 
           agent={currentAgent} 
-          isCreatorView={false}
-          onAgentUpdated={() => {
-            console.log('UnifiedAgentPage: Agent updated callback triggered');
+          onTradeComplete={() => {
+            console.log('UnifiedAgentPage: Trade completed callback triggered');
           }}
         />
       </main>

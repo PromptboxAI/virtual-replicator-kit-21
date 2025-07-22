@@ -1,0 +1,188 @@
+import React, { useState, useCallback } from 'react';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { formatDistanceToNow } from 'date-fns';
+import { ProfessionalTradingChart } from './ProfessionalTradingChart';
+import { TokenTradingInterface } from './TokenTradingInterface';
+import { TradingModeGuard } from './TradingModeGuard';
+import { useAgentRealtime } from '@/hooks/useAgentRealtime';
+import { formatPromptAmount, formatPrice, formatTokenAmount } from '@/lib/bondingCurve';
+
+interface Agent {
+  id: string;
+  name: string;
+  symbol: string;
+  avatar_url?: string;
+  current_price: number;
+  prompt_raised: number;
+  token_holders: number;
+  volume_24h: number;
+  market_cap: number;
+  created_at: string;
+  token_graduated: boolean;
+  graduation_threshold: number;
+}
+
+interface ProfessionalTradingInterfaceProps {
+  agent: Agent;
+  onTradeComplete?: () => void;
+}
+
+export const ProfessionalTradingInterface = ({ 
+  agent, 
+  onTradeComplete 
+}: ProfessionalTradingInterfaceProps) => {
+  const [currentPrice, setCurrentPrice] = useState(agent.current_price);
+  const [promptAmount, setPromptAmount] = useState<number>(0);
+  const [tradeType, setTradeType] = useState<'buy' | 'sell'>('buy');
+
+  const { isGraduated } = useAgentRealtime(agent.id, {
+    id: agent.id,
+    prompt_raised: agent.prompt_raised,
+    current_price: agent.current_price,
+    market_cap: agent.market_cap,
+    token_holders: agent.token_holders,
+    volume_24h: agent.volume_24h,
+    token_address: null
+  });
+
+  const handlePriceUpdate = useCallback((price: number) => {
+    setCurrentPrice(price);
+  }, []);
+
+  const progressPercentage = Math.min((agent.prompt_raised / agent.graduation_threshold) * 100, 100);
+  const liquidityPool = agent.prompt_raised * 0.8; // 80% goes to liquidity
+  const topHolders = Math.min(agent.token_holders * 0.1, 10); // Estimate top 10 holders percentage
+
+  return (
+    <div className="w-full space-y-6">
+      {/* Token Header */}
+      <Card className="p-6 bg-gradient-to-r from-background to-background/95 border-border">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Avatar className="h-16 w-16 border-2 border-border">
+              <AvatarImage src={agent.avatar_url} alt={agent.name} />
+              <AvatarFallback className="text-lg font-bold">
+                {agent.symbol.substring(0, 2)}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold text-foreground">{agent.name}</h1>
+                <Badge variant="outline" className="text-sm">
+                  ${agent.symbol}
+                </Badge>
+              </div>
+              <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
+                <span>Created {formatDistanceToNow(new Date(agent.created_at))} ago</span>
+                <span>•</span>
+                <span>{agent.token_holders} holders</span>
+              </div>
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-3xl font-bold text-foreground">
+              {formatPrice(currentPrice)}
+            </div>
+            <div className="text-sm text-muted-foreground">
+              PROMPT per token
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* Main Trading Interface */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Chart Area - 70% width on desktop */}
+        <div className="lg:col-span-2">
+          <ProfessionalTradingChart
+            agentId={agent.id}
+            promptAmount={promptAmount}
+            tradeType={tradeType}
+            onPriceUpdate={handlePriceUpdate}
+          />
+        </div>
+
+        {/* Trading Panel - 30% width on desktop */}
+        <div className="lg:col-span-1">
+          <TradingModeGuard 
+            tokenAddress={agent.token_graduated ? "mock-address" : undefined}
+            tokenGraduated={agent.token_graduated}
+          >
+            <TokenTradingInterface
+              agent={agent}
+              onTradeComplete={onTradeComplete}
+            />
+          </TradingModeGuard>
+        </div>
+      </div>
+
+      {/* Metrics Footer */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <Card className="p-4 text-center">
+          <div className="text-lg font-bold text-foreground">
+            {formatPromptAmount(agent.market_cap)}
+          </div>
+          <div className="text-sm text-muted-foreground">Market Cap</div>
+        </Card>
+
+        <Card className="p-4 text-center">
+          <div className="text-lg font-bold text-foreground">
+            {formatPromptAmount(liquidityPool)}
+          </div>
+          <div className="text-sm text-muted-foreground">
+            {isGraduated ? 'DEX Liquidity' : 'Bonding Liquidity'}
+          </div>
+        </Card>
+
+        <Card className="p-4 text-center">
+          <div className="text-lg font-bold text-foreground">
+            {agent.token_holders.toLocaleString()}
+          </div>
+          <div className="text-sm text-muted-foreground">Holders</div>
+        </Card>
+
+        <Card className="p-4 text-center">
+          <div className="text-lg font-bold text-foreground">
+            {formatPromptAmount(agent.volume_24h)}
+          </div>
+          <div className="text-sm text-muted-foreground">24h Volume</div>
+        </Card>
+
+        <Card className="p-4 text-center">
+          <div className="text-lg font-bold text-foreground">
+            {topHolders.toFixed(1)}%
+          </div>
+          <div className="text-sm text-muted-foreground">Top 10 Hold</div>
+        </Card>
+      </div>
+
+      {/* Graduation Progress (only for non-graduated tokens) */}
+      {!isGraduated && (
+        <Card className="p-6">
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-semibold text-foreground">Ascension Progress</h3>
+              <Badge variant="secondary">
+                {progressPercentage.toFixed(1)}% Complete
+              </Badge>
+            </div>
+            <div className="w-full bg-muted rounded-full h-3">
+              <div 
+                className="bg-gradient-to-r from-primary to-primary/80 h-3 rounded-full transition-all duration-500"
+                style={{ width: `${progressPercentage}%` }}
+              />
+            </div>
+            <div className="flex justify-between text-sm text-muted-foreground">
+              <span>{formatPromptAmount(agent.prompt_raised)} raised</span>
+              <span>{formatPromptAmount(agent.graduation_threshold)} needed</span>
+            </div>
+          </div>
+        </Card>
+      )}
+    </div>
+  );
+};
+
+export default ProfessionalTradingInterface;
