@@ -52,8 +52,38 @@ export function useAgentRealtime(agentId: string, initialData?: AgentRealtimeDat
       )
       .subscribe();
 
+    // Subscribe to trade events for real-time volume updates
+    const tradesChannel = supabase
+      .channel(`agent-trades-${agentId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'agent_token_buy_trades',
+          filter: `agent_id=eq.${agentId}`
+        },
+        async (payload) => {
+          console.log('New trade detected, refreshing agent data');
+          // Fetch fresh agent data when new trades occur
+          const { data } = await supabase
+            .from('agents')
+            .select('*')
+            .eq('id', agentId)
+            .single();
+            
+          if (data) {
+            setAgentData(data);
+            setIsGraduated(isAgentGraduated(data.prompt_raised));
+            setIsMigrating(isAgentMigrating(data.prompt_raised, data.token_address));
+          }
+        }
+      )
+      .subscribe();
+
     return () => {
       supabase.removeChannel(channel);
+      supabase.removeChannel(tradesChannel);
     };
   }, [agentId, agentData]);
 
