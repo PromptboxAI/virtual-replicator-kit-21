@@ -283,6 +283,21 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
 
         await new Promise(resolve => setTimeout(resolve, 2000));
 
+        // Insert trade record for chart data
+        const { error: tradeError } = await supabase
+          .from('agent_token_buy_trades')
+          .insert({
+            agent_id: agent.id,
+            user_id: user?.id || 'anonymous',
+            token_amount: result.tokenAmount,
+            prompt_amount: promptAmount,
+            price_per_token: getCurrentPrice(promptRaised + promptAmount),
+            bonding_curve_price: newPrice,
+            transaction_hash: mockHash
+          });
+
+        if (tradeError) console.error('Failed to record trade:', tradeError);
+
         const { error } = await supabase
           .from('agents')
           .update({

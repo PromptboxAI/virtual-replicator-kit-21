@@ -167,8 +167,13 @@ export class ChartDataService {
         },
         (payload) => {
           console.log('New buy trade for real-time chart update:', payload);
-          // In a production environment, this would trigger a re-fetch of recent OHLCV data
-          // or calculate the new candle data from the trade information
+          // Trigger immediate data refresh
+          this.getChartData(agentId).then(({ data }) => {
+            if (data.length > 0) {
+              const latestData = data[data.length - 1];
+              onUpdate(latestData);
+            }
+          }).catch(console.error);
         }
       )
       .on(
@@ -181,7 +186,13 @@ export class ChartDataService {
         },
         (payload) => {
           console.log('New sell trade for real-time chart update:', payload);
-          // In a production environment, this would trigger a re-fetch of recent OHLCV data
+          // Trigger immediate data refresh
+          this.getChartData(agentId).then(({ data }) => {
+            if (data.length > 0) {
+              const latestData = data[data.length - 1];
+              onUpdate(latestData);
+            }
+          }).catch(console.error);
         }
       )
       .subscribe();

@@ -170,34 +170,83 @@ export const LightweightCandlestickChart = ({
 
   // Real-time updates subscription
   useEffect(() => {
-    const unsubscribe = ChartDataService.subscribeToRealTimeUpdates(agentId, (newData) => {
-      if (candlestickSeriesRef.current && volumeSeriesRef.current) {
-        // Update the latest candle or add new one
-        const candlestickPoint = {
-          time: newData.time,
-          open: newData.open,
-          high: newData.high,
-          low: newData.low,
-          close: newData.close,
-        };
+    let refreshInterval: number;
 
-        const volumePoint = {
-          time: newData.time,
-          value: newData.volume,
-          color: newData.close >= newData.open ? '#22c55e4D' : '#ef44444D',
-        };
+    const unsubscribe = ChartDataService.subscribeToRealTimeUpdates(agentId, async (newData) => {
+      console.log('Received real-time chart update:', newData);
+      
+      // Refresh chart data to get latest candles
+      try {
+        const { data } = await ChartDataService.getChartData(agentId, interval);
+        setChartData(data);
+        
+        if (candlestickSeriesRef.current && volumeSeriesRef.current && data.length > 0) {
+          const candlestickData = data.map(item => ({
+            time: item.time,
+            open: item.open,
+            high: item.high,
+            low: item.low,
+            close: item.close,
+          }));
 
-        candlestickSeriesRef.current.update(candlestickPoint);
-        volumeSeriesRef.current.update(volumePoint);
+          const volumeData = data.map(item => ({
+            time: item.time,
+            value: item.volume,
+            color: item.close >= item.open ? '#22c55e4D' : '#ef44444D',
+          }));
 
-        if (onPriceUpdate) {
-          onPriceUpdate(newData.close);
+          candlestickSeriesRef.current.setData(candlestickData);
+          volumeSeriesRef.current.setData(volumeData);
+
+          if (onPriceUpdate) {
+            onPriceUpdate(data[data.length - 1].close);
+          }
         }
+      } catch (error) {
+        console.error('Failed to refresh chart after trade:', error);
       }
     });
 
-    return unsubscribe;
-  }, [agentId, onPriceUpdate]);
+    // Also set up periodic refresh every 10 seconds to catch any missed updates
+    refreshInterval = window.setInterval(async () => {
+      try {
+        const { data } = await ChartDataService.getChartData(agentId, interval);
+        if (data.length !== chartData.length) {
+          setChartData(data);
+          
+          if (candlestickSeriesRef.current && volumeSeriesRef.current && data.length > 0) {
+            const candlestickData = data.map(item => ({
+              time: item.time,
+              open: item.open,
+              high: item.high,
+              low: item.low,
+              close: item.close,
+            }));
+
+            const volumeData = data.map(item => ({
+              time: item.time,
+              value: item.volume,
+              color: item.close >= item.open ? '#22c55e4D' : '#ef44444D',
+            }));
+
+            candlestickSeriesRef.current.setData(candlestickData);
+            volumeSeriesRef.current.setData(volumeData);
+
+            if (onPriceUpdate) {
+              onPriceUpdate(data[data.length - 1].close);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Periodic chart refresh failed:', error);
+      }
+    }, 10000);
+
+    return () => {
+      unsubscribe();
+      window.clearInterval(refreshInterval);
+    };
+  }, [agentId, onPriceUpdate, interval, chartData.length]);
 
   return (
     <div className="w-full bg-card border border-border rounded-lg">
