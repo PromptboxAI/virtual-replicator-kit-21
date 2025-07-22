@@ -146,7 +146,7 @@ export const ProfessionalTradingInterface = ({
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card className="p-4 text-center">
           <div className="text-lg font-bold text-foreground">
-            ${agent.market_cap.toLocaleString()}
+            ${agent.market_cap.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
           <div className="text-sm text-muted-foreground">FDV</div>
         </Card>
@@ -167,7 +167,7 @@ export const ProfessionalTradingInterface = ({
 
         <Card className="p-4 text-center">
           <div className="text-lg font-bold text-foreground">
-            ${agent.volume_24h.toLocaleString()}
+            ${agent.volume_24h.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
           <div className="text-sm text-muted-foreground">24h Vol</div>
         </Card>
