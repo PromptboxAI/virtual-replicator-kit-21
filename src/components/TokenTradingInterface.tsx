@@ -530,28 +530,6 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
             </CardContent>
           </Card>
 
-          {/* Wallet Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Wallet className="h-4 w-4" />
-                Your Wallet
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">PROMPT Balance</span>
-                <span className="text-sm font-medium">
-                  {balanceLoading ? "..." : `${promptBalance?.toFixed(2) || "0"}`}
-                </span>
-              </div>
-              <Separator />
-              <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">{agent.symbol} Balance</span>
-                <span className="text-sm font-medium">0</span>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </div>
     </div>
