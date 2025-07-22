@@ -786,7 +786,7 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
 
 
       {/* Trading Interface */}
-      <Card className="w-[125%] max-w-4xl mx-auto">
+      <Card className="w-full">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Trade {agent.symbol}</CardTitle>
