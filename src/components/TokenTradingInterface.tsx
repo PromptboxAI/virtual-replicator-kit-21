@@ -176,7 +176,7 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
     setLoading(true);
     try {
       if (tradeType === "buy") {
-        await buyAgentTokens(promptAmount);
+        await buyAgentTokens(promptAmount, "2", agent);
         
         // Calculate fee information for display
         const feeAmount = parseFloat(promptAmount) * feeConfig.feePercent;

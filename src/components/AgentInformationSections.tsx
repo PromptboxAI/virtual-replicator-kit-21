@@ -81,7 +81,19 @@ export const AgentInformationSections = ({ agent }: AgentInformationSectionsProp
         .eq('agent_id', agent.id)
         .maybeSingle();
 
-      setMarketingData(marketing);
+      if (marketing) {
+        setMarketingData({
+          screenshots: Array.isArray(marketing.screenshots) ? marketing.screenshots.map(String) : [],
+          demo_videos: Array.isArray(marketing.demo_videos) ? marketing.demo_videos.map(String) : [],
+          description: marketing.description,
+          website_url: marketing.website_url,
+          youtube_url: marketing.youtube_url,
+          twitter_url: marketing.twitter_url,
+          discord_url: marketing.discord_url,
+          telegram_url: marketing.telegram_url,
+          whitepaper_url: marketing.whitepaper_url
+        });
+      }
 
       // Load recent trades
       const { data: buyTrades } = await supabase

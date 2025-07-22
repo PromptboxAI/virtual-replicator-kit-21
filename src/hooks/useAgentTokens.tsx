@@ -4,7 +4,7 @@ import { parseEther, formatEther } from 'viem';
 import { useToast } from '@/hooks/use-toast';
 import { baseSepolia } from 'viem/chains';
 import { useAppMode } from '@/hooks/useAppMode';
-import { calculateTokensFromPrompt, calculateSellReturn } from '@/lib/bondingCurve';
+import { calculateTokensFromPrompt, calculateSellReturn, getCurrentPrice } from '@/lib/bondingCurve';
 import { supabase } from '@/integrations/supabase/client';
 
 // Transaction states
@@ -439,7 +439,7 @@ export function useAgentToken(tokenAddress?: string, agentId?: string) {
     }
   }, [sellTxHash, isSellConfirming, sellTxState, sellReceipt, sellTxMeta, toast, refetchMetrics]);
 
-  const buyAgentTokens = async (promptAmount: string, slippage: string = "2") => {
+  const buyAgentTokens = async (promptAmount: string, slippage: string = "2", agentData?: any) => {
     if (!address) {
       toast({
         title: "Wallet Not Connected",
@@ -449,6 +449,124 @@ export function useAgentToken(tokenAddress?: string, agentId?: string) {
       return;
     }
 
+    const promptAmountFloat = parseFloat(promptAmount);
+    
+    // Check if this is a pre-graduated token (bonding curve)
+    const isPreGraduated = !tokenAddress || tokenAddress === undefined;
+    
+    if (isPreGraduated) {
+      // Handle pre-graduated token via database operations
+      try {
+        setBuyTxState('pending');
+        
+        // Get current agent data
+        const currentPromptRaised = agentData?.prompt_raised || 0;
+        
+        // Calculate tokens to receive using bonding curve
+        const result = calculateTokensFromPrompt(currentPromptRaised, promptAmountFloat);
+        const tokenAmount = result.tokenAmount;
+        const newPromptRaised = currentPromptRaised + promptAmountFloat;
+        const newPrice = getCurrentPrice(result.newTokensSold);
+        
+        // Store transaction metadata
+        setBuyTxMeta({
+          promptAmount,
+          expectedTokens: tokenAmount,
+          slippage,
+        });
+        
+        // Insert the trade record
+        const { error: tradeError } = await supabase
+          .from('agent_token_buy_trades')
+          .insert({
+            agent_id: agentId,
+            user_id: address,
+            prompt_amount: promptAmountFloat,
+            token_amount: tokenAmount,
+            price_per_token: newPrice,
+            bonding_curve_price: newPrice
+          });
+          
+        if (tradeError) throw tradeError;
+        
+        // Update agent's prompt raised and price
+        const { error: agentError } = await supabase
+          .from('agents')
+          .update({
+            prompt_raised: newPromptRaised,
+            current_price: newPrice,
+            market_cap: newPrice * result.newTokensSold,
+            volume_24h: promptAmountFloat // Simple volume tracking
+          })
+          .eq('id', agentId);
+          
+        if (agentError) throw agentError;
+        
+        // Get current user balance first
+        const { data: currentBalance } = await supabase
+          .from('user_token_balances')
+          .select('balance')
+          .eq('user_id', address)
+          .single();
+          
+        // Update user's PROMPT balance
+        const { error: balanceError } = await supabase
+          .from('user_token_balances')
+          .update({
+            balance: (currentBalance?.balance || 1000) - promptAmountFloat
+          })
+          .eq('user_id', address);
+          
+        if (balanceError) throw balanceError;
+        
+        // Get current holder record if exists
+        const { data: currentHolder } = await supabase
+          .from('agent_token_holders')
+          .select('token_balance, total_invested')
+          .eq('agent_id', agentId)
+          .eq('user_id', address)
+          .single();
+          
+        // Update or create token holder record
+        const { error: holderError } = await supabase
+          .from('agent_token_holders')
+          .upsert({
+            agent_id: agentId,
+            user_id: address,
+            token_balance: (currentHolder?.token_balance || 0) + tokenAmount,
+            total_invested: (currentHolder?.total_invested || 0) + promptAmountFloat,
+            average_buy_price: newPrice
+          }, {
+            onConflict: 'agent_id,user_id'
+          });
+          
+        if (holderError) throw holderError;
+        
+        setBuyTxState('confirmed');
+        
+        toast({
+          title: "✅ Purchase Successful",
+          description: `Bought ${tokenAmount.toFixed(4)} ${agentData?.symbol || 'tokens'} for ${promptAmountFloat} PROMPT`,
+        });
+        
+        // Trigger refetch of data
+        if (refetchMetrics) refetchMetrics();
+        resetBuyState(true);
+        
+      } catch (error: any) {
+        setBuyTxState('error');
+        console.error('Bonding curve trade error:', error);
+        toast({
+          title: "Purchase Failed",
+          description: error.message || "Failed to complete trade",
+          variant: "destructive",
+        });
+        resetBuyState();
+      }
+      return;
+    }
+
+    // Original smart contract logic for graduated tokens
     if (!metrics) {
       toast({
         title: "⚠️ Slippage Protection Disabled",
@@ -472,7 +590,6 @@ export function useAgentToken(tokenAddress?: string, agentId?: string) {
     try {
       setBuyTxState('pending');
       
-      const promptAmountFloat = parseFloat(promptAmount);
       const slippagePct = Number(slippage) / 100;
       
       // Calculate expected tokens from bonding curve
