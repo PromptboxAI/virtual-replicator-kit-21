@@ -233,49 +233,6 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
         />
       )}
       
-      {/* Agent Header */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-4">
-            {agent.avatar_url && (
-              <img 
-                src={agent.avatar_url} 
-                alt={agent.name}
-                className="w-16 h-16 rounded-full"
-              />
-            )}
-            <div className="flex-1">
-              <CardTitle className="flex items-center gap-2">
-                {agent.name}
-                <Badge variant={isGraduated ? "default" : "secondary"}>
-                  {agent.symbol}
-                </Badge>
-              </CardTitle>
-              <CardDescription className="mt-1">
-                {agent.description || "AI Agent Token"}
-              </CardDescription>
-            </div>
-            <div className="text-right">
-              <div className="text-2xl font-bold">
-                ${formatPrice(currentPrice)}
-              </div>
-              {agent.price_change_24h !== undefined && (
-                <div className={`flex items-center gap-1 text-sm ${
-                  agent.price_change_24h >= 0 ? 'text-green-600' : 'text-red-600'
-                }`}>
-                  {agent.price_change_24h >= 0 ? (
-                    <TrendingUp className="h-3 w-3" />
-                  ) : (
-                    <TrendingDown className="h-3 w-3" />
-                  )}
-                  {Math.abs(agent.price_change_24h).toFixed(2)}%
-                </div>
-              )}
-            </div>
-          </div>
-        </CardHeader>
-      </Card>
-
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Trading Panel */}
         <div className="lg:col-span-2 space-y-6">
