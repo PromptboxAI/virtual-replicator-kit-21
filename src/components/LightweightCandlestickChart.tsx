@@ -67,6 +67,7 @@ export const LightweightCandlestickChart = ({
       },
     });
 
+    // Use correct API for adding series
     const candlestickSeries = chart.addSeries(CandlestickSeries, {
       upColor: '#22c55e',
       downColor: '#ef4444',

@@ -1213,6 +1213,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_agent_token_address: {
+        Args: { p_agent_id: string }
+        Returns: string
+      }
       get_agent_ohlcv_data: {
         Args: {
           p_agent_id: string
