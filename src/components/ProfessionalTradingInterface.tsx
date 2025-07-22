@@ -146,39 +146,37 @@ export const ProfessionalTradingInterface = ({
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card className="p-4 text-center">
           <div className="text-lg font-bold text-foreground">
-            {formatPromptAmount(agent.market_cap)}
+            ${(agent.market_cap / 1000).toFixed(2)}k
           </div>
-          <div className="text-sm text-muted-foreground">Market Cap</div>
+          <div className="text-sm text-muted-foreground">FDV</div>
         </Card>
 
         <Card className="p-4 text-center">
           <div className="text-lg font-bold text-foreground">
-            {formatPromptAmount(liquidityPool)}
+            ${((agent.prompt_raised * 30) / 1000).toFixed(2)}k
           </div>
-          <div className="text-sm text-muted-foreground">
-            {isGraduated ? 'DEX Liquidity' : 'Bonding Liquidity'}
-          </div>
+          <div className="text-sm text-muted-foreground">Liquidity</div>
         </Card>
 
         <Card className="p-4 text-center">
           <div className="text-lg font-bold text-foreground">
-            {agent.token_holders.toLocaleString()}
+            {agent.token_holders}
           </div>
           <div className="text-sm text-muted-foreground">Holders</div>
         </Card>
 
         <Card className="p-4 text-center">
           <div className="text-lg font-bold text-foreground">
-            {formatPromptAmount(agent.volume_24h)}
+            ${(agent.volume_24h / 1000).toFixed(2)}k
           </div>
-          <div className="text-sm text-muted-foreground">24h Volume</div>
+          <div className="text-sm text-muted-foreground">24h Vol</div>
         </Card>
 
         <Card className="p-4 text-center">
           <div className="text-lg font-bold text-foreground">
-            {topHolders.toFixed(1)}%
+            0%
           </div>
-          <div className="text-sm text-muted-foreground">Top 10 Hold</div>
+          <div className="text-sm text-muted-foreground">Top 10</div>
         </Card>
       </div>
     </div>
