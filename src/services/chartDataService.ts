@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { isAgentGraduated } from '@/lib/bondingCurve';
 
@@ -24,7 +25,7 @@ export class ChartDataService {
   
   static async getOHLCVData(
     agentId: string,
-    interval: ChartInterval = '1m',
+    interval: ChartInterval = '5m', // Default to 5m instead of 1m
     startTime?: Date,
     endTime?: Date
   ): Promise<OHLCVData[]> {
@@ -105,12 +106,12 @@ export class ChartDataService {
 
   static async getChartData(
     agentId: string,
-    interval: ChartInterval = '1m',
+    interval: ChartInterval = '5m', // Default fallback to 5m
     startTime?: Date,
     endTime?: Date
   ): Promise<{ data: OHLCVData[]; isGraduated: boolean }> {
     try {
-      // Get agent data to check graduation status
+      // Get agent data to check graduation status and ensure token address exists
       const { data: agent, error: agentError } = await supabase
         .from('agents')
         .select('prompt_raised, token_address, token_graduated')
@@ -120,6 +121,17 @@ export class ChartDataService {
       if (agentError) {
         console.error('Error fetching agent:', agentError);
         return { data: [], isGraduated: false };
+      }
+
+      // Generate token address if missing (for pre-graduated tokens)
+      if (!agent.token_address) {
+        const { data: addressData, error: addressError } = await supabase.rpc('generate_agent_token_address', {
+          p_agent_id: agentId
+        });
+
+        if (!addressError && addressData) {
+          agent.token_address = addressData;
+        }
       }
 
       const graduated = isAgentGraduated(agent.prompt_raised || 0) || agent.token_graduated;
@@ -154,9 +166,9 @@ export class ChartDataService {
           filter: `agent_id=eq.${agentId}`
         },
         (payload) => {
-          console.log('New buy trade:', payload);
-          // Process the new trade into OHLCV format
-          // This is a simplified version - in production you'd aggregate properly
+          console.log('New buy trade for real-time chart update:', payload);
+          // In a production environment, this would trigger a re-fetch of recent OHLCV data
+          // or calculate the new candle data from the trade information
         }
       )
       .on(
@@ -168,8 +180,8 @@ export class ChartDataService {
           filter: `agent_id=eq.${agentId}`
         },
         (payload) => {
-          console.log('New sell trade:', payload);
-          // Process the new trade into OHLCV format
+          console.log('New sell trade for real-time chart update:', payload);
+          // In a production environment, this would trigger a re-fetch of recent OHLCV data
         }
       )
       .subscribe();
