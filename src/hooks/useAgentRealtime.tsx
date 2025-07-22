@@ -64,7 +64,31 @@ export function useAgentRealtime(agentId: string, initialData?: AgentRealtimeDat
           filter: `agent_id=eq.${agentId}`
         },
         async (payload) => {
-          console.log('New trade detected, refreshing agent data');
+          console.log('New buy trade detected, refreshing agent data');
+          // Fetch fresh agent data when new trades occur
+          const { data } = await supabase
+            .from('agents')
+            .select('*')
+            .eq('id', agentId)
+            .single();
+            
+          if (data) {
+            setAgentData(data);
+            setIsGraduated(isAgentGraduated(data.prompt_raised));
+            setIsMigrating(isAgentMigrating(data.prompt_raised, data.token_address));
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'agent_token_sell_trades',
+          filter: `agent_id=eq.${agentId}`
+        },
+        async (payload) => {
+          console.log('New sell trade detected, refreshing agent data');
           // Fetch fresh agent data when new trades occur
           const { data } = await supabase
             .from('agents')

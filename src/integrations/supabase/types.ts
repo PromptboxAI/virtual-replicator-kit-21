@@ -1213,6 +1213,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      execute_bonding_curve_trade: {
+        Args: {
+          p_agent_id: string
+          p_user_id: string
+          p_prompt_amount: number
+          p_trade_type: string
+          p_token_amount?: number
+          p_expected_price?: number
+          p_slippage?: number
+        }
+        Returns: {
+          success: boolean
+          token_amount: number
+          new_price: number
+          new_prompt_raised: number
+          message: string
+        }[]
+      }
       generate_agent_token_address: {
         Args: { p_agent_id: string }
         Returns: string

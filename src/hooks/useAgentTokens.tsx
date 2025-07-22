@@ -455,98 +455,48 @@ export function useAgentToken(tokenAddress?: string, agentId?: string) {
     const isPreGraduated = !tokenAddress || tokenAddress === undefined;
     
     if (isPreGraduated) {
-      // Handle pre-graduated token via database operations
+      // Handle pre-graduated token via transactional database operation
       try {
         setBuyTxState('pending');
-        
-        // Get current agent data
-        const currentPromptRaised = agentData?.prompt_raised || 0;
-        
-        // Calculate tokens to receive using bonding curve
-        const result = calculateTokensFromPrompt(currentPromptRaised, promptAmountFloat);
-        const tokenAmount = result.tokenAmount;
-        const newPromptRaised = currentPromptRaised + promptAmountFloat;
-        const newPrice = getCurrentPrice(result.newTokensSold);
         
         // Store transaction metadata
         setBuyTxMeta({
           promptAmount,
-          expectedTokens: tokenAmount,
+          expectedTokens: 0, // Will be calculated by the function
           slippage,
         });
         
-        // Insert the trade record
-        const { error: tradeError } = await supabase
-          .from('agent_token_buy_trades')
-          .insert({
-            agent_id: agentId,
-            user_id: address,
-            prompt_amount: promptAmountFloat,
-            token_amount: tokenAmount,
-            price_per_token: newPrice,
-            bonding_curve_price: newPrice
-          });
-          
-        if (tradeError) throw tradeError;
-        
-        // Update agent's prompt raised and price
-        const { error: agentError } = await supabase
-          .from('agents')
-          .update({
-            prompt_raised: newPromptRaised,
-            current_price: newPrice,
-            market_cap: newPrice * result.newTokensSold,
-            volume_24h: promptAmountFloat // Simple volume tracking
-          })
-          .eq('id', agentId);
-          
-        if (agentError) throw agentError;
-        
-        // Get current user balance first
-        const { data: currentBalance } = await supabase
-          .from('user_token_balances')
-          .select('balance')
-          .eq('user_id', address)
-          .single();
-          
-        // Update user's PROMPT balance
-        const { error: balanceError } = await supabase
-          .from('user_token_balances')
-          .update({
-            balance: (currentBalance?.balance || 1000) - promptAmountFloat
-          })
-          .eq('user_id', address);
-          
-        if (balanceError) throw balanceError;
-        
-        // Get current holder record if exists
-        const { data: currentHolder } = await supabase
-          .from('agent_token_holders')
-          .select('token_balance, total_invested')
-          .eq('agent_id', agentId)
-          .eq('user_id', address)
-          .single();
-          
-        // Update or create token holder record
-        const { error: holderError } = await supabase
-          .from('agent_token_holders')
-          .upsert({
-            agent_id: agentId,
-            user_id: address,
-            token_balance: (currentHolder?.token_balance || 0) + tokenAmount,
-            total_invested: (currentHolder?.total_invested || 0) + promptAmountFloat,
-            average_buy_price: newPrice
-          }, {
-            onConflict: 'agent_id,user_id'
-          });
-          
-        if (holderError) throw holderError;
-        
+        // Call the edge function for transactional trade execution
+        const { data, error } = await supabase.functions.invoke('execute-trade', {
+          body: {
+            agentId: agentId,
+            userId: address,
+            promptAmount: promptAmountFloat,
+            tradeType: 'buy',
+            expectedPrice: agentData?.current_price || 0,
+            slippage: parseFloat(slippage)
+          }
+        });
+
+        if (error) {
+          throw new Error(error.message || 'Failed to execute trade');
+        }
+
+        if (!data.success) {
+          throw new Error(data.error || 'Trade execution failed');
+        }
+
         setBuyTxState('confirmed');
+        
+        // Update metadata with actual results
+        setBuyTxMeta(prev => prev ? {
+          ...prev,
+          expectedTokens: data.data[0]?.token_amount || 0
+        } : null);
         
         toast({
           title: "✅ Purchase Successful",
-          description: `Bought ${tokenAmount.toFixed(4)} ${agentData?.symbol || 'tokens'} for ${promptAmountFloat} PROMPT`,
+          description: `Bought ${data.data[0]?.token_amount?.toFixed(4) || 0} ${agentData?.symbol || 'tokens'} for ${promptAmountFloat} PROMPT`,
         });
         
         // Trigger refetch of data
@@ -556,9 +506,20 @@ export function useAgentToken(tokenAddress?: string, agentId?: string) {
       } catch (error: any) {
         setBuyTxState('error');
         console.error('Bonding curve trade error:', error);
+        
+        // Show specific error messages for better UX
+        let errorMessage = "Failed to complete trade";
+        if (error.message.includes('Insufficient PROMPT balance')) {
+          errorMessage = "Insufficient PROMPT balance. Please check your balance and try again.";
+        } else if (error.message.includes('Agent not found')) {
+          errorMessage = "Agent not found. Please refresh the page and try again.";
+        } else {
+          errorMessage = error.message || errorMessage;
+        }
+        
         toast({
           title: "Purchase Failed",
-          description: error.message || "Failed to complete trade",
+          description: errorMessage,
           variant: "destructive",
         });
         resetBuyState();
