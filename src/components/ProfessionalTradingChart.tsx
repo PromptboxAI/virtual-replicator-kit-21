@@ -1,16 +1,5 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { 
-  createChart, 
-  IChartApi, 
-  ISeriesApi, 
-  CandlestickData, 
-  HistogramData,
-  CrosshairMode,
-  LineStyle, 
-  ColorType 
-} from 'lightweight-charts';
+import React, { useEffect, useState } from 'react';
 import { ChartDataService, OHLCVData, PriceImpactData } from '@/services/chartDataService';
-import type { ChartInterval as ChartIntervalType } from '@/services/chartDataService';
 import { useTheme } from 'next-themes';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -31,11 +20,6 @@ export const ProfessionalTradingChart = ({
   tradeType = 'buy',
   onPriceUpdate 
 }: ProfessionalTradingChartProps) => {
-  const chartContainerRef = useRef<HTMLDivElement>(null);
-  const chartRef = useRef<IChartApi | null>(null);
-  const candlestickSeriesRef = useRef<any>(null);
-  const volumeSeriesRef = useRef<any>(null);
-  
   const { theme } = useTheme();
   const [interval, setInterval] = useState<ChartInterval>('5m');
   const [isGraduated, setIsGraduated] = useState(false);
@@ -45,95 +29,26 @@ export const ProfessionalTradingChart = ({
 
   const isDark = theme === 'dark';
 
-  const initializeChart = useCallback(() => {
-    if (!chartContainerRef.current || chartRef.current) return;
-
-    const chart = createChart(chartContainerRef.current, {
-      width: chartContainerRef.current.clientWidth,
-      height: 500,
-      layout: {
-        background: { 
-          type: ColorType.Solid, 
-          color: isDark ? '#0a0a0a' : '#ffffff' 
-        },
-        textColor: isDark ? '#ffffff' : '#000000',
-        fontSize: 12,
-      },
-      grid: {
-        vertLines: { 
-          color: isDark ? '#2a2a2a' : '#e5e5e5',
-          style: LineStyle.Dotted 
-        },
-        horzLines: { 
-          color: isDark ? '#2a2a2a' : '#e5e5e5',
-          style: LineStyle.Dotted 
-        },
-      },
-      rightPriceScale: {
-        borderColor: isDark ? '#2a2a2a' : '#e5e5e5',
-      },
-      timeScale: {
-        borderColor: isDark ? '#2a2a2a' : '#e5e5e5',
-        timeVisible: true,
-        secondsVisible: false,
-      },
-    });
-
-    // Create a placeholder for the chart - we'll implement proper charting once API is stable
-    const placeholder = document.createElement('div');
-    placeholder.style.cssText = `
-      height: 500px; 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      color: ${isDark ? '#ffffff' : '#000000'};
-      background: ${isDark ? '#1a1a1a' : '#f8f9fa'};
-      border-radius: 8px;
-      margin: 1rem;
-    `;
-    placeholder.innerHTML = `
-      <div style="text-align: center;">
-        <h3 style="margin: 0 0 1rem 0; font-size: 1.2rem;">Professional Trading Chart</h3>
-        <p style="margin: 0.5rem 0; opacity: 0.7;">Agent: ${agentId}</p>
-        <p style="margin: 0.5rem 0; opacity: 0.7;">Interval: ${interval}</p>
-        <p style="margin: 0.5rem 0; opacity: 0.7;">Candlestick data connected to database</p>
-        <div style="margin-top: 1rem; padding: 1rem; background: ${isDark ? '#2a2a2a' : '#e5e5e5'}; border-radius: 4px; display: inline-block;">
-          <p style="margin: 0; font-size: 0.9rem;">✅ Database OHLCV functions ready</p>
-          <p style="margin: 0; font-size: 0.9rem;">✅ Price impact simulation ready</p>
-          <p style="margin: 0; font-size: 0.9rem;">⏳ Chart rendering in progress</p>
-        </div>
-      </div>
-    `;
-    
-    if (chartContainerRef.current) {
-      chartContainerRef.current.appendChild(placeholder);
-    }
-    chartRef.current = chart;
-
-    // Handle resize
-    const handleResize = () => {
-      if (chartContainerRef.current && chart) {
-        chart.applyOptions({ 
-          width: chartContainerRef.current.clientWidth 
-        });
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [isDark]);
-
-  // Initialize chart
+  // Load chart data
   useEffect(() => {
-    initializeChart();
-    setLoading(false);
-    return () => {
-      if (chartRef.current) {
-        chartRef.current.remove();
-        chartRef.current = null;
+    const loadData = async () => {
+      try {
+        const data = await ChartDataService.getOHLCVData(agentId, interval);
+        setChartData(data);
+        
+        if (promptAmount > 0) {
+          const impact = await ChartDataService.simulatePriceImpact(agentId, promptAmount, tradeType);
+          setPriceImpact(impact);
+        }
+      } catch (error) {
+        console.error('Failed to load chart data:', error);
+      } finally {
+        setLoading(false);
       }
     };
-  }, [initializeChart]);
+    
+    loadData();
+  }, [agentId, interval, promptAmount, tradeType]);
 
   const intervals: { value: ChartInterval; label: string }[] = [
     { value: '1m', label: '1m' },
@@ -180,7 +95,20 @@ export const ProfessionalTradingChart = ({
             <div className="text-muted-foreground">Loading chart data...</div>
           </div>
         )}
-        <div ref={chartContainerRef} className="w-full h-[500px]" />
+        <div className="w-full h-[500px] flex items-center justify-center bg-muted/20 rounded-lg">
+          <div className="text-center space-y-2">
+            <h3 className="text-lg font-semibold">Candlestick Chart</h3>
+            <p className="text-sm text-muted-foreground">
+              {chartData.length > 0 ? `${chartData.length} data points loaded` : 'Loading bonding curve trade data...'}
+            </p>
+            {priceImpact && (
+              <div className="text-sm">
+                <p>Current: ${priceImpact.currentPrice}</p>
+                <p>Impact: {priceImpact.priceImpactPercent}%</p>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </Card>
   );
