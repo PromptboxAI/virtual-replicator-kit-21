@@ -94,14 +94,38 @@ export const ProfessionalTradingInterface = ({
 
       {/* Main Trading Interface */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Chart Area - 70% width on desktop */}
-        <div className="lg:col-span-2">
+        {/* Chart Area with Graduation Progress - 70% width on desktop */}
+        <div className="lg:col-span-2 space-y-6">
           <ProfessionalTradingChart
             agentId={agent.id}
             promptAmount={promptAmount}
             tradeType={tradeType}
             onPriceUpdate={handlePriceUpdate}
           />
+          
+          {/* Graduation Progress under chart */}
+          {!isGraduated && (
+            <Card className="p-6">
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-semibold text-foreground">Ascension Progress</h3>
+                  <Badge variant="secondary">
+                    {progressPercentage.toFixed(1)}% Complete
+                  </Badge>
+                </div>
+                <div className="w-full bg-muted rounded-full h-3">
+                  <div 
+                    className="bg-gradient-to-r from-primary to-primary/80 h-3 rounded-full transition-all duration-500"
+                    style={{ width: `${progressPercentage}%` }}
+                  />
+                </div>
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>{formatPromptAmount(agent.prompt_raised)} raised</span>
+                  <span>{formatPromptAmount(agent.graduation_threshold)} needed</span>
+                </div>
+              </div>
+            </Card>
+          )}
         </div>
 
         {/* Trading Panel - 30% width on desktop */}
@@ -157,30 +181,6 @@ export const ProfessionalTradingInterface = ({
           <div className="text-sm text-muted-foreground">Top 10 Hold</div>
         </Card>
       </div>
-
-      {/* Graduation Progress (only for non-graduated tokens) */}
-      {!isGraduated && (
-        <Card className="p-6">
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-foreground">Ascension Progress</h3>
-              <Badge variant="secondary">
-                {progressPercentage.toFixed(1)}% Complete
-              </Badge>
-            </div>
-            <div className="w-full bg-muted rounded-full h-3">
-              <div 
-                className="bg-gradient-to-r from-primary to-primary/80 h-3 rounded-full transition-all duration-500"
-                style={{ width: `${progressPercentage}%` }}
-              />
-            </div>
-            <div className="flex justify-between text-sm text-muted-foreground">
-              <span>{formatPromptAmount(agent.prompt_raised)} raised</span>
-              <span>{formatPromptAmount(agent.graduation_threshold)} needed</span>
-            </div>
-          </div>
-        </Card>
-      )}
     </div>
   );
 };
