@@ -430,13 +430,6 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
 
         {/* Market Info Sidebar */}
         <div className="space-y-6">
-          {/* Live Token Price Display */}
-          <LiveTokenPriceDisplay
-            agentSymbol={agent.symbol}
-            promptRaised={currentPromptRaised}
-            tradeAmount={tradeType === 'buy' ? parseFloat(promptAmount || '0') : parseFloat(tokenAmount || '0')}
-            tradeType={tradeType}
-          />
           
           {/* Graduation Progress */}
           {!isGraduated && (
