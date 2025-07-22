@@ -233,9 +233,9 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
         />
       )}
       
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="grid lg:grid-cols-4 gap-6">
         {/* Trading Panel */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-3 space-y-6">
           <TradingModeGuard tokenAddress={agent.token_address} tokenGraduated={isGraduated}>
             <Card>
               <CardHeader>
