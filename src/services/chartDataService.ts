@@ -123,15 +123,10 @@ export class ChartDataService {
         return { data: [], isGraduated: false };
       }
 
-      // Generate token address if missing (for pre-graduated tokens)
+      // For now, generate a placeholder token address if missing (for pre-graduated tokens)
       if (!agent.token_address) {
-        const { data: addressData, error: addressError } = await supabase.rpc('generate_agent_token_address', {
-          p_agent_id: agentId
-        });
-
-        if (!addressError && addressData) {
-          agent.token_address = addressData;
-        }
+        // Generate a deterministic address based on agent ID
+        agent.token_address = `0x${agentId.replace(/-/g, '').slice(0, 40)}`;
       }
 
       const graduated = isAgentGraduated(agent.prompt_raised || 0) || agent.token_graduated;

@@ -1,6 +1,5 @@
-
 import React, { useEffect, useRef, useState } from 'react';
-import { createChart, IChartApi, ISeriesApi, CandlestickData, Time } from 'lightweight-charts';
+import { createChart, ColorType, CandlestickSeries, HistogramSeries } from 'lightweight-charts';
 import { ChartDataService, OHLCVData } from '@/services/chartDataService';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -22,9 +21,9 @@ export const LightweightCandlestickChart = ({
   onPriceUpdate 
 }: LightweightCandlestickChartProps) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
-  const chartRef = useRef<IChartApi | null>(null);
-  const candlestickSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
-  const volumeSeriesRef = useRef<ISeriesApi<'Histogram'> | null>(null);
+  const chartRef = useRef<any>(null);
+  const candlestickSeriesRef = useRef<any>(null);
+  const volumeSeriesRef = useRef<any>(null);
   
   const { theme } = useTheme();
   const [interval, setInterval] = useState<ChartInterval>('5m');
@@ -47,7 +46,7 @@ export const LightweightCandlestickChart = ({
 
     const chart = createChart(chartContainerRef.current, {
       layout: {
-        background: { type: 'solid', color: theme === 'dark' ? '#0a0a0a' : '#ffffff' },
+        background: { type: ColorType.Solid, color: theme === 'dark' ? '#0a0a0a' : '#ffffff' },
         textColor: theme === 'dark' ? '#d4d4d8' : '#71717a',
       },
       grid: {
@@ -68,7 +67,7 @@ export const LightweightCandlestickChart = ({
       },
     });
 
-    const candlestickSeries = chart.addCandlestickSeries({
+    const candlestickSeries = chart.addSeries(CandlestickSeries, {
       upColor: '#22c55e',
       downColor: '#ef4444',
       borderDownColor: '#ef4444',
@@ -77,7 +76,7 @@ export const LightweightCandlestickChart = ({
       wickUpColor: '#22c55e',
     });
 
-    const volumeSeries = chart.addHistogramSeries({
+    const volumeSeries = chart.addSeries(HistogramSeries, {
       color: '#26a69a',
       priceFormat: {
         type: 'volume',
@@ -127,8 +126,8 @@ export const LightweightCandlestickChart = ({
 
         if (candlestickSeriesRef.current && volumeSeriesRef.current && data.length > 0) {
           // Convert OHLCV data to TradingView format
-          const candlestickData: CandlestickData[] = data.map(item => ({
-            time: item.time as Time,
+          const candlestickData = data.map(item => ({
+            time: item.time,
             open: item.open,
             high: item.high,
             low: item.low,
@@ -136,7 +135,7 @@ export const LightweightCandlestickChart = ({
           }));
 
           const volumeData = data.map(item => ({
-            time: item.time as Time,
+            time: item.time,
             value: item.volume,
             color: item.close >= item.open ? '#22c55e4D' : '#ef44444D', // Semi-transparent
           }));
@@ -167,8 +166,8 @@ export const LightweightCandlestickChart = ({
     const unsubscribe = ChartDataService.subscribeToRealTimeUpdates(agentId, (newData) => {
       if (candlestickSeriesRef.current && volumeSeriesRef.current) {
         // Update the latest candle or add new one
-        const candlestickPoint: CandlestickData = {
-          time: newData.time as Time,
+        const candlestickPoint = {
+          time: newData.time,
           open: newData.open,
           high: newData.high,
           low: newData.low,
@@ -176,7 +175,7 @@ export const LightweightCandlestickChart = ({
         };
 
         const volumePoint = {
-          time: newData.time as Time,
+          time: newData.time,
           value: newData.volume,
           color: newData.close >= newData.open ? '#22c55e4D' : '#ef44444D',
         };
