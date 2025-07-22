@@ -165,15 +165,20 @@ export class ChartDataService {
           table: 'agent_token_buy_trades',
           filter: `agent_id=eq.${agentId}`
         },
-        (payload) => {
+        async (payload) => {
           console.log('New buy trade for real-time chart update:', payload);
-          // Trigger immediate data refresh
-          this.getChartData(agentId).then(({ data }) => {
-            if (data.length > 0) {
-              const latestData = data[data.length - 1];
-              onUpdate(latestData);
+          // Small delay to ensure all database updates are complete
+          setTimeout(async () => {
+            try {
+              const { data } = await this.getChartData(agentId);
+              if (data.length > 0) {
+                const latestData = data[data.length - 1];
+                onUpdate(latestData);
+              }
+            } catch (error) {
+              console.error('Error updating chart data:', error);
             }
-          }).catch(console.error);
+          }, 500);
         }
       )
       .on(
@@ -184,15 +189,44 @@ export class ChartDataService {
           table: 'agent_token_sell_trades', 
           filter: `agent_id=eq.${agentId}`
         },
-        (payload) => {
+        async (payload) => {
           console.log('New sell trade for real-time chart update:', payload);
-          // Trigger immediate data refresh
-          this.getChartData(agentId).then(({ data }) => {
-            if (data.length > 0) {
-              const latestData = data[data.length - 1];
-              onUpdate(latestData);
+          // Small delay to ensure all database updates are complete
+          setTimeout(async () => {
+            try {
+              const { data } = await this.getChartData(agentId);
+              if (data.length > 0) {
+                const latestData = data[data.length - 1];
+                onUpdate(latestData);
+              }
+            } catch (error) {
+              console.error('Error updating chart data:', error);
             }
-          }).catch(console.error);
+          }, 500);
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'agents',
+          filter: `id=eq.${agentId}`
+        },
+        async (payload) => {
+          console.log('Agent updated for real-time chart update:', payload);
+          // Refresh chart when agent data changes (price, volume, etc.)
+          setTimeout(async () => {
+            try {
+              const { data } = await this.getChartData(agentId);
+              if (data.length > 0) {
+                const latestData = data[data.length - 1];
+                onUpdate(latestData);
+              }
+            } catch (error) {
+              console.error('Error updating chart data:', error);
+            }
+          }, 200);
         }
       )
       .subscribe();
