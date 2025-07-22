@@ -1,5 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { createChart, ColorType, CandlestickSeries, HistogramSeries } from 'lightweight-charts';
+import { 
+  createChart, 
+  ColorType,
+  CandlestickSeries,
+  HistogramSeries
+} from 'lightweight-charts';
 import { ChartDataService, OHLCVData } from '@/services/chartDataService';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -68,7 +73,7 @@ export const LightweightCandlestickChart = ({
     });
 
     // Use correct API for adding series
-    const candlestickSeries = chart.addSeries(CandlestickSeries, {
+    const candlestickSeriesInstance = chart.addSeries(CandlestickSeries, {
       upColor: '#22c55e',
       downColor: '#ef4444',
       borderDownColor: '#ef4444',
@@ -77,7 +82,7 @@ export const LightweightCandlestickChart = ({
       wickUpColor: '#22c55e',
     });
 
-    const volumeSeries = chart.addSeries(HistogramSeries, {
+    const volumeSeriesInstance = chart.addSeries(HistogramSeries, {
       color: '#26a69a',
       priceFormat: {
         type: 'volume',
@@ -93,8 +98,8 @@ export const LightweightCandlestickChart = ({
     });
 
     chartRef.current = chart;
-    candlestickSeriesRef.current = candlestickSeries;
-    volumeSeriesRef.current = volumeSeries;
+    candlestickSeriesRef.current = candlestickSeriesInstance;
+    volumeSeriesRef.current = volumeSeriesInstance;
 
     // Handle resize
     const handleResize = () => {
