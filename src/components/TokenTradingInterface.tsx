@@ -431,40 +431,6 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
         {/* Market Info Sidebar */}
         <div className="space-y-6">
           
-          {/* Graduation Progress */}
-          {!isGraduated && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <Target className="h-4 w-4" />
-                  Graduation Progress
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Progress</span>
-                    <span>{graduationProgress.progress.toFixed(1)}%</span>
-                  </div>
-                  <Progress value={graduationProgress.progress} className="h-2" />
-                </div>
-                <div className="text-center">
-                  <div className="text-lg font-semibold">
-                    {agent.prompt_raised.toLocaleString()} / 42,000
-                  </div>
-                  <div className="text-xs text-muted-foreground">PROMPT Raised</div>
-                </div>
-                {remainingToGraduation > 0 && (
-                  <div className="text-center p-3 bg-blue-50 rounded-lg">
-                    <div className="text-sm font-medium text-blue-900">
-                      {remainingToGraduation.toLocaleString()} PROMPT
-                    </div>
-                    <div className="text-xs text-blue-600">needed to graduate</div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
 
           {/* Bonding Curve Preview - Only for non-graduated tokens */}
           {!isGraduated && (
