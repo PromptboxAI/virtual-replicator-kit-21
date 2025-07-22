@@ -28,7 +28,7 @@ import { useAgentRealtime } from '@/hooks/useAgentRealtime';
 import { useMigrationPolling } from '@/hooks/useMigrationPolling';
 import { MigrationBanner } from './MigrationBanner';
 import { LiveTokenPriceDisplay } from './LiveTokenPriceDisplay';
-import { WalletBalanceDisplay } from './WalletBalanceDisplay';
+
 
 
 interface Agent {
@@ -433,13 +433,6 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
           
 
 
-          {/* Wallet Balances */}
-          <WalletBalanceDisplay 
-            showAgentTokenBalance={true}
-            agentTokenBalance={agentTokenBalance}
-            agentSymbol={agent.symbol}
-            showAddTestTokens={true}
-          />
 
 
         </div>
