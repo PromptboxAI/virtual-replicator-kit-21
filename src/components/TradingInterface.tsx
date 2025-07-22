@@ -68,6 +68,7 @@ export function TradingInterface({
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('buy');
   const { toast } = useToast();
+  const { mode: appMode } = useAppMode(); // ✅ Move hook to top level
   
   // Smart contract integration for tokens with deployed contracts
   const { buyAgentTokens, sellAgentTokens, isBuying, isSelling, metrics: contractMetrics } = useAgentToken(tokenAddress);
@@ -164,7 +165,6 @@ export function TradingInterface({
     try {
       if (tokenAddress && tokenGraduated) {
         // 🔐 PRODUCTION SAFETY: Check app mode before real contract trading
-        const { mode: appMode } = useAppMode();
         if (appMode === 'test') {
           toast({
             title: "🚨 Trading Blocked",
@@ -232,7 +232,6 @@ export function TradingInterface({
     try {
       if (tokenAddress && tokenGraduated) {
         // 🔐 PRODUCTION SAFETY: Check app mode before real contract trading
-        const { mode: appMode } = useAppMode();
         if (appMode === 'test') {
           toast({
             title: "🚨 Trading Blocked",
