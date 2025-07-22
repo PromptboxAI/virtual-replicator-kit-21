@@ -3,12 +3,14 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { formatDistanceToNow } from 'date-fns';
+import { Copy } from 'lucide-react';
 import { ProfessionalTradingChart } from './ProfessionalTradingChart';
 import { TokenTradingInterface } from './TokenTradingInterface';
 import { TradingModeGuard } from './TradingModeGuard';
 import { useAgentRealtime } from '@/hooks/useAgentRealtime';
 import { formatPromptAmount, formatPrice, formatTokenAmount } from '@/lib/bondingCurve';
 import { AgentInformationSections } from './AgentInformationSections';
+import { useToast } from '@/hooks/use-toast';
 
 interface Agent {
   id: string;
@@ -23,6 +25,7 @@ interface Agent {
   created_at: string;
   token_graduated: boolean;
   graduation_threshold: number;
+  token_address?: string;
 }
 
 interface ProfessionalTradingInterfaceProps {
@@ -37,6 +40,7 @@ export const ProfessionalTradingInterface = ({
   const [currentPrice, setCurrentPrice] = useState(agent.current_price);
   const [promptAmount, setPromptAmount] = useState<number>(0);
   const [tradeType, setTradeType] = useState<'buy' | 'sell'>('buy');
+  const { toast } = useToast();
 
   const { isGraduated } = useAgentRealtime(agent.id, {
     id: agent.id,
@@ -50,6 +54,20 @@ export const ProfessionalTradingInterface = ({
 
   const handlePriceUpdate = useCallback((price: number) => {
     setCurrentPrice(price);
+  }, []);
+
+  const handleCopyAddress = useCallback(() => {
+    if (agent.token_address) {
+      navigator.clipboard.writeText(agent.token_address);
+      toast({
+        title: "Address copied!",
+        duration: 2000,
+      });
+    }
+  }, [agent.token_address, toast]);
+
+  const truncateAddress = useCallback((address: string) => {
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
   }, []);
 
   const progressPercentage = Math.min((agent.prompt_raised / agent.graduation_threshold) * 100, 100);
@@ -80,6 +98,18 @@ export const ProfessionalTradingInterface = ({
                 <span>•</span>
                 <span>{agent.token_holders} holders</span>
               </div>
+              {agent.token_address && (
+                <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+                  <span>{truncateAddress(agent.token_address)}</span>
+                  <button
+                    onClick={handleCopyAddress}
+                    className="inline-flex items-center justify-center hover:text-foreground transition-colors p-1 rounded hover:bg-muted/50"
+                    aria-label="Copy token address"
+                  >
+                    <Copy className="h-3 w-3" />
+                  </button>
+                </div>
+              )}
             </div>
           </div>
           <div className="text-right">
