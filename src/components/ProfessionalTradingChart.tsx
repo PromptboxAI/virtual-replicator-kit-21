@@ -1,5 +1,16 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { createChart, IChartApi, LineStyle, ColorType } from 'lightweight-charts';
+import { 
+  createChart, 
+  IChartApi, 
+  ISeriesApi, 
+  CandlestickData, 
+  HistogramData,
+  CrosshairMode,
+  LineStyle, 
+  ColorType 
+} from 'lightweight-charts';
+import { ChartDataService, OHLCVData, PriceImpactData } from '@/services/chartDataService';
+import type { ChartInterval as ChartIntervalType } from '@/services/chartDataService';
 import { useTheme } from 'next-themes';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,10 +33,14 @@ export const ProfessionalTradingChart = ({
 }: ProfessionalTradingChartProps) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
+  const candlestickSeriesRef = useRef<any>(null);
+  const volumeSeriesRef = useRef<any>(null);
   
   const { theme } = useTheme();
   const [interval, setInterval] = useState<ChartInterval>('5m');
   const [isGraduated, setIsGraduated] = useState(false);
+  const [chartData, setChartData] = useState<OHLCVData[]>([]);
+  const [priceImpact, setPriceImpact] = useState<PriceImpactData | null>(null);
   const [loading, setLoading] = useState(true);
 
   const isDark = theme === 'dark';
@@ -64,30 +79,26 @@ export const ProfessionalTradingChart = ({
       },
     });
 
-    // Create a placeholder div for now - we'll implement full charting in next phase
-    const chartDiv = document.createElement('div');
-    chartDiv.innerHTML = `
-      <div style="height: 500px; display: flex; align-items: center; justify-content: center; color: ${isDark ? '#ffffff' : '#000000'};">
-        <div>
-          <h3>Advanced Trading Chart</h3>
-          <p>Candlestick data will appear here</p>
-          <p>Agent: ${agentId}</p>
-          <p>Interval: ${interval}</p>
-        </div>
-      </div>
-    `;
-    chartContainerRef.current.appendChild(chartDiv);
+    // Candlestick series  
+    const candlestickSeries = chart.addSeries('Candlestick', {
+      upColor: '#22c55e',
+      downColor: '#ef4444',
+      borderUpColor: '#22c55e', 
+      borderDownColor: '#ef4444',
+      wickUpColor: '#22c55e',
+      wickDownColor: '#ef4444',
+    });
 
-    // Sample data for demonstration
-    const sampleData = [
-      { time: '2024-01-01', value: 30 },
-      { time: '2024-01-02', value: 32 },
-      { time: '2024-01-03', value: 35 },
-      { time: '2024-01-04', value: 33 },
-      { time: '2024-01-05', value: 38 },
-    ];
+    // Volume series
+    const volumeSeries = chart.addSeries('Histogram', {
+      color: isDark ? '#666' : '#ccc',
+      priceFormat: { type: 'volume' },
+      priceScaleId: '',
+      scaleMargins: { top: 0.8, bottom: 0 },
+    });
 
-    // Chart is now ready
+    candlestickSeriesRef.current = candlestickSeries;
+    volumeSeriesRef.current = volumeSeries;
     chartRef.current = chart;
 
     // Handle resize

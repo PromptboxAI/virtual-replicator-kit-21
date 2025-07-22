@@ -343,6 +343,45 @@ export type Database = {
           },
         ]
       }
+      agent_token_buy_trades: {
+        Row: {
+          agent_id: string
+          block_number: number | null
+          bonding_curve_price: number
+          created_at: string
+          id: string
+          price_per_token: number
+          prompt_amount: number
+          token_amount: number
+          transaction_hash: string | null
+          user_id: string
+        }
+        Insert: {
+          agent_id: string
+          block_number?: number | null
+          bonding_curve_price: number
+          created_at?: string
+          id?: string
+          price_per_token: number
+          prompt_amount: number
+          token_amount: number
+          transaction_hash?: string | null
+          user_id: string
+        }
+        Update: {
+          agent_id?: string
+          block_number?: number | null
+          bonding_curve_price?: number
+          created_at?: string
+          id?: string
+          price_per_token?: number
+          prompt_amount?: number
+          token_amount?: number
+          transaction_hash?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       agent_token_holders: {
         Row: {
           agent_id: string
@@ -386,6 +425,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      agent_token_sell_trades: {
+        Row: {
+          agent_id: string
+          block_number: number | null
+          bonding_curve_price: number
+          created_at: string
+          id: string
+          price_per_token: number
+          prompt_amount: number
+          token_amount: number
+          transaction_hash: string | null
+          user_id: string
+        }
+        Insert: {
+          agent_id: string
+          block_number?: number | null
+          bonding_curve_price: number
+          created_at?: string
+          id?: string
+          price_per_token: number
+          prompt_amount: number
+          token_amount: number
+          transaction_hash?: string | null
+          user_id: string
+        }
+        Update: {
+          agent_id?: string
+          block_number?: number | null
+          bonding_curve_price?: number
+          created_at?: string
+          id?: string
+          price_per_token?: number
+          prompt_amount?: number
+          token_amount?: number
+          transaction_hash?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       agent_token_transactions: {
         Row: {
@@ -1135,6 +1213,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_agent_ohlcv_data: {
+        Args: {
+          p_agent_id: string
+          p_interval?: string
+          p_start_time?: string
+          p_end_time?: string
+        }
+        Returns: {
+          time_bucket: string
+          open_price: number
+          high_price: number
+          low_price: number
+          close_price: number
+          volume: number
+          trade_count: number
+        }[]
+      }
       get_current_user_id: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -1153,6 +1248,19 @@ export type Database = {
       set_user_as_admin: {
         Args: { _user_id: string }
         Returns: undefined
+      }
+      simulate_price_impact: {
+        Args: {
+          p_agent_id: string
+          p_prompt_amount: number
+          p_trade_type?: string
+        }
+        Returns: {
+          current_price: number
+          impact_price: number
+          price_impact_percent: number
+          estimated_tokens: number
+        }[]
       }
     }
     Enums: {

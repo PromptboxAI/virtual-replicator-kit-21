@@ -29,33 +29,27 @@ export class ChartDataService {
     endTime?: Date
   ): Promise<OHLCVData[]> {
     try {
-      // For now, return mock data since we need to implement the RPC function properly
-      console.log('Mock OHLCV data for agent:', agentId, 'interval:', interval);
-      
-      // Generate some sample OHLCV data
-      const mockData: OHLCVData[] = [];
-      const now = Date.now();
-      
-      for (let i = 0; i < 100; i++) {
-        const timestamp = now - (i * 60 * 1000); // 1 minute intervals
-        const basePrice = 30 + Math.sin(i * 0.1) * 5;
-        const open = basePrice + (Math.random() - 0.5) * 2;
-        const close = open + (Math.random() - 0.5) * 4;
-        const high = Math.max(open, close) + Math.random() * 2;
-        const low = Math.min(open, close) - Math.random() * 2;
-        
-        mockData.unshift({
-          time: Math.floor(timestamp / 1000),
-          open,
-          high,
-          low,
-          close,
-          volume: Math.random() * 1000,
-          tradeCount: Math.floor(Math.random() * 10)
-        });
+      const { data, error } = await supabase.rpc('get_agent_ohlcv_data', {
+        p_agent_id: agentId,
+        p_interval: interval,
+        p_start_time: startTime?.toISOString(),
+        p_end_time: endTime?.toISOString()
+      });
+
+      if (error) {
+        console.error('Error fetching OHLCV data:', error);
+        return [];
       }
-      
-      return mockData;
+
+      return (data || []).map((item: any) => ({
+        time: Math.floor(new Date(item.time_bucket).getTime() / 1000),
+        open: parseFloat(item.open_price || '0'),
+        high: parseFloat(item.high_price || '0'),
+        low: parseFloat(item.low_price || '0'),
+        close: parseFloat(item.close_price || '0'),
+        volume: parseFloat(item.volume || '0'),
+        tradeCount: parseInt(item.trade_count || '0')
+      }));
     } catch (error) {
       console.error('Error in getOHLCVData:', error);
       return [];
@@ -68,20 +62,25 @@ export class ChartDataService {
     tradeType: 'buy' | 'sell' = 'buy'
   ): Promise<PriceImpactData | null> {
     try {
-      // Mock price impact calculation for now
-      console.log('Mock price impact simulation for agent:', agentId, 'amount:', promptAmount);
-      
-      const currentPrice = 30 + Math.random() * 10;
-      const impactPercent = (promptAmount / 1000) * 2; // Simple impact calculation
-      const impactPrice = tradeType === 'buy' 
-        ? currentPrice * (1 + impactPercent / 100)
-        : currentPrice * (1 - impactPercent / 100);
-      
+      const { data, error } = await supabase.rpc('simulate_price_impact', {
+        p_agent_id: agentId,
+        p_prompt_amount: promptAmount,
+        p_trade_type: tradeType
+      });
+
+      if (error) {
+        console.error('Error simulating price impact:', error);
+        return null;
+      }
+
+      const result = data?.[0];
+      if (!result) return null;
+
       return {
-        currentPrice,
-        impactPrice,
-        priceImpactPercent: impactPercent,
-        estimatedTokens: promptAmount / currentPrice
+        currentPrice: parseFloat(String(result.current_price || '0')),
+        impactPrice: parseFloat(String(result.impact_price || '0')),
+        priceImpactPercent: parseFloat(String(result.price_impact_percent || '0')),
+        estimatedTokens: parseFloat(String(result.estimated_tokens || '0'))
       };
     } catch (error) {
       console.error('Error in simulatePriceImpact:', error);
