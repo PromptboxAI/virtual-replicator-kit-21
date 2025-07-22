@@ -785,8 +785,8 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
 
 
 
-      {/* Trading Interface */}
-      <Card>
+      {/* Trading Interface - Made wider */}
+      <Card className="max-w-none">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Trade {agent.symbol}</CardTitle>
@@ -796,7 +796,7 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
             </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <Tabs defaultValue="buy" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="buy">Buy</TabsTrigger>
