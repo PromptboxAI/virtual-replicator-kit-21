@@ -14,6 +14,7 @@ import { useTokenBalance } from "@/hooks/useTokenBalance";
 import { useAuth } from "@/hooks/useAuth";
 import { TradingModeGuard } from './TradingModeGuard';
 import { TradeFeeDisplay } from './TradeFeeDisplay';
+import { TradingDebugPanel } from './TradingDebugPanel';
 import { 
   getCurrentPrice, 
   calculateBuyCost, 
@@ -155,6 +156,17 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
     ((priceAfterTrade - currentPrice) / currentPrice * 100) : 0;
 
   const handleTrade = async () => {
+    console.log('🎯 TokenTradingInterface: Calling buyAgentTokens');
+    console.log('🔍 Trade parameters:', {
+      tradeType,
+      promptAmount,
+      tokenAmount,
+      agent: agent.name,
+      agentId: agent.id,
+      userId: user?.id,
+      balance: promptBalance
+    });
+
     if (!authenticated) {
       toast({
         title: "Authentication Required",
@@ -176,12 +188,20 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
     setLoading(true);
     try {
       if (tradeType === "buy") {
+        console.log('🚀 Calling buyAgentTokens with:', {
+          promptAmount,
+          slippage: "2",
+          agent: agent.name
+        });
+        
         await buyAgentTokens(promptAmount, "2", agent);
         
         // Calculate fee information for display
         const feeAmount = parseFloat(promptAmount) * feeConfig.feePercent;
         const creatorFee = feeAmount * feeConfig.creatorSplit;
         const platformFee = feeAmount * feeConfig.platformSplit;
+        
+        console.log('📊 Buy trade completed successfully');
         
         toast({
           title: "Purchase Successful",
@@ -197,7 +217,9 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
           ),
         });
       } else {
+        console.log('🚀 Calling sellAgentTokens with:', { tokenAmount });
         await sellAgentTokens(tokenAmount);
+        console.log('📊 Sell trade completed successfully');
         toast({
           title: "Sale Successful",
           description: `Successfully sold ${tokenAmount} ${agent.symbol} tokens!`,
@@ -208,7 +230,16 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
       setTokenAmount("");
       onTradeComplete?.();
     } catch (error) {
-      console.error("Trade error:", error);
+      console.error("🚨 Trade error:", error);
+      console.error("🚨 Trade error details:", {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        tradeType,
+        promptAmount,
+        tokenAmount,
+        agentId: agent.id
+      });
+      
       toast({
         title: "Trade Failed",
         description: error instanceof Error ? error.message : "An error occurred during the trade.",
@@ -383,6 +414,9 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
           </Card>
         </TradingModeGuard>
       </div>
+
+      {/* Debug Panel - Add this at the bottom */}
+      <TradingDebugPanel agentId={agent.id} />
     </div>
   );
 };
