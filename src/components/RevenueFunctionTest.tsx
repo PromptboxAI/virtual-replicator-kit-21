@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { useAgentToken } from '@/hooks/useAgentTokens';
+import { useAgentTokens } from '@/hooks/useAgentTokens';
 import { RevenueAuditDashboard } from '@/components/RevenueAuditDashboard';
 import { toast } from '@/hooks/use-toast';
 
@@ -13,7 +13,7 @@ export const RevenueFunctionTest: React.FC = () => {
   const agentId = '17c298e6-9d68-46d5-b973-4fadba3666b5';
   
   // Test useAgentTokens hook
-  const { feeConfig, calculateTransactionFees, prepareTransactionAmounts } = useAgentToken(undefined, agentId);
+  const { feeConfig, calculateFees } = useAgentTokens();
 
   const addResult = (message: string, success: boolean = true) => {
     const timestamp = new Date().toLocaleTimeString();
@@ -76,19 +76,14 @@ export const RevenueFunctionTest: React.FC = () => {
       // Test fee configuration
       addResult(`Fee config loaded: ${JSON.stringify(feeConfig)}`);
 
-      // Test calculateTransactionFees
+      // Test calculateFees
       const testAmount = 1000;
-      const fees = calculateTransactionFees(testAmount);
-      addResult(`Fee calculation for $${testAmount}: Fee=${fees.feeAmount}, Creator=${fees.creatorAmount}, Platform=${fees.platformAmount}`);
-
-      // Test prepareTransactionAmounts
-      const buyAmounts = prepareTransactionAmounts(testAmount, true);
-      const sellAmounts = prepareTransactionAmounts(testAmount, false);
-      addResult(`Transaction prep: Buy net=${buyAmounts.netTradeAmount}, Sell net=${sellAmounts.netReceiveAmount}`);
+      const fees = calculateFees(testAmount);
+      addResult(`Fee calculation for $${testAmount}: Fee=${fees.totalFees}, Creator=${fees.creatorFee}, Platform=${fees.platformFee}`);
 
       // Validation
       const expectedFee = testAmount * feeConfig.feePercent;
-      const isValid = Math.abs(fees.feeAmount - expectedFee) < 0.01;
+      const isValid = Math.abs(fees.totalFees - expectedFee) < 0.01;
       addResult(`Fee calculation validation: ${isValid ? 'PASS' : 'FAIL'}`);
 
     } catch (error: any) {

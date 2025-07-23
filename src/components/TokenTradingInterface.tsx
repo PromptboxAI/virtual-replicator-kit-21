@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { TrendingUp, TrendingDown, Wallet, Activity, Target, DollarSign } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useAgentToken } from "@/hooks/useAgentTokens";
+import { useAgentTokens } from "@/hooks/useAgentTokens";
 import { useTokenBalance } from "@/hooks/useTokenBalance";
 import { useAuth } from "@/hooks/useAuth";
 import { TradingModeGuard } from './TradingModeGuard';
@@ -65,7 +65,7 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
   const { toast } = useToast();
   const { user, authenticated } = useAuth();
   const { balance: promptBalance, loading: balanceLoading } = useTokenBalance(user?.id);
-  const { buyAgentTokens, sellAgentTokens } = useAgentToken(agent.token_address);
+  const { buyAgentTokens, sellAgentTokens } = useAgentTokens(agent.token_address);
   
   // Mock agent token balance - in real implementation, this would come from a hook
   const agentTokenBalance = 0; // TODO: Implement useAgentTokenBalance hook

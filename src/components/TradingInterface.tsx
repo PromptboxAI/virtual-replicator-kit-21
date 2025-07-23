@@ -13,7 +13,7 @@ import { AgentDashboard } from './AgentDashboard';
 import { LiveTokenPriceDisplay } from './LiveTokenPriceDisplay';
 import { WalletBalanceDisplay } from './WalletBalanceDisplay';
 import { BondingCurvePreview } from './BondingCurvePreview';
-import { useAgentToken } from '@/hooks/useAgentTokens';
+import { useAgentTokens } from '@/hooks/useAgentTokens';
 import { calculateBuyCost, calculateSellReturn, formatPrice, formatPromptAmount, getCurrentPrice, calculateTokensFromPrompt } from '@/lib/bondingCurve';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -71,7 +71,7 @@ export function TradingInterface({
   const { mode: appMode } = useAppMode(); // ✅ Move hook to top level
   
   // Smart contract integration for tokens with deployed contracts
-  const { buyAgentTokens, sellAgentTokens, isBuying, isSelling, metrics: contractMetrics } = useAgentToken(tokenAddress);
+  const { buyAgentTokens, sellAgentTokens, loading: isTrading } = useAgentTokens(tokenAddress);
 
   useEffect(() => {
     // Fetch real-time data from Moralis for graduated tokens, use agent data for others
@@ -176,7 +176,7 @@ export function TradingInterface({
         }
         
         // Use smart contract for graduated tokens
-        await buyAgentTokens(buyAmount);
+        await buyAgentTokens(buyAmount, '2', { id: agentId, name: agentName, symbol: agentSymbol });
       } else {
         // Use bonding curve calculation for non-graduated tokens
         const promptAmount = parseFloat(buyAmount);

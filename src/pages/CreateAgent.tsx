@@ -23,7 +23,7 @@ import { useAppMode } from "@/hooks/useAppMode";
 import { useUserRole } from "@/hooks/useUserRole";
 import { usePrivyWallet } from "@/hooks/usePrivyWallet";
 import { FrameworkSDKService, FRAMEWORK_CONFIGS } from "@/lib/frameworkSDK";
-import { useAgentTokenFactory } from "@/hooks/useAgentTokens";
+// import { useAgentTokens } from "@/hooks/useAgentTokens";
 import { useAccount } from 'wagmi';
 import { getCurrentPrice } from "@/lib/bondingCurve";
 
@@ -116,7 +116,7 @@ export default function CreateAgent() {
   const { isTestMode: appIsTestMode } = useAppMode();
   const { isAdmin } = useUserRole();
   const { isConnected, promptBalance } = usePrivyWallet();
-  const { createAgentToken } = useAgentTokenFactory();
+  // Note: Agent token creation is handled directly in the database for now
   
   // Check if contracts are deployed (from localStorage)
   const promptTokenAddress = typeof window !== 'undefined' ? localStorage.getItem('promptTokenAddress') : null;

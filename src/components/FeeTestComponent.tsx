@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useAgentToken } from '@/hooks/useAgentTokens';
+import { useAgentTokens } from '@/hooks/useAgentTokens';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
@@ -14,47 +14,36 @@ export const FeeTestComponent: React.FC<FeeTestComponentProps> = ({
 }) => {
   const { 
     feeConfig, 
-    calculateTransactionFees, 
-    prepareTransactionAmounts 
-  } = useAgentToken(tokenAddress, agentId);
+    calculateFees 
+  } = useAgentTokens(tokenAddress);
 
   // Test the fee calculation functions
   useEffect(() => {
     console.log('🧪 Testing Fee Functions:');
     console.log('Fee Config:', feeConfig);
 
-    // Test calculateTransactionFees with $10,000
+    // Test calculateFees with $10,000
     const testAmount = 10000;
-    const fees = calculateTransactionFees(testAmount);
+    const fees = calculateFees(testAmount);
     console.log(`Fee calculation for $${testAmount}:`, fees);
 
-    // Test prepareTransactionAmounts for buy
-    const buyAmounts = prepareTransactionAmounts(testAmount, true);
-    console.log('Buy transaction preparation:', buyAmounts);
-
-    // Test prepareTransactionAmounts for sell
-    const sellAmounts = prepareTransactionAmounts(testAmount, false);
-    console.log('Sell transaction preparation:', sellAmounts);
-
     // Verify fee breakdown matches expected values
-    const expectedFeeAmount = testAmount * feeConfig.feePercent;
-    const expectedCreatorAmount = expectedFeeAmount * feeConfig.creatorSplit;
-    const expectedPlatformAmount = expectedFeeAmount * feeConfig.platformSplit;
-    const expectedNetAmount = testAmount - expectedFeeAmount;
+    const expectedTotalFees = testAmount * feeConfig.feePercent;
+    const expectedCreatorFee = expectedTotalFees * feeConfig.creatorSplit;
+    const expectedPlatformFee = expectedTotalFees * feeConfig.platformSplit;
+    const expectedNetAmount = testAmount - expectedTotalFees;
 
     console.log('✅ Verification:');
-    console.log('Fee amount matches:', fees.feeAmount === expectedFeeAmount);
-    console.log('Creator amount matches:', fees.creatorAmount === expectedCreatorAmount);
-    console.log('Platform amount matches:', fees.platformAmount === expectedPlatformAmount);
+    console.log('Fee amount matches:', fees.totalFees === expectedTotalFees);
+    console.log('Creator amount matches:', fees.creatorFee === expectedCreatorFee);
+    console.log('Platform amount matches:', fees.platformFee === expectedPlatformFee);
     console.log('Net amount matches:', fees.netAmount === expectedNetAmount);
     console.log('Split percentages add up to 100%:', 
       Math.abs((feeConfig.creatorSplit + feeConfig.platformSplit) - 1) < 0.001);
-  }, [feeConfig, calculateTransactionFees, prepareTransactionAmounts]);
+  }, [feeConfig, calculateFees]);
 
   const testAmount = 10000;
-  const fees = calculateTransactionFees(testAmount);
-  const buyAmounts = prepareTransactionAmounts(testAmount, true);
-  const sellAmounts = prepareTransactionAmounts(testAmount, false);
+  const fees = calculateFees(testAmount);
 
   return (
     <Card className="w-full max-w-2xl mx-auto">
@@ -90,7 +79,7 @@ export const FeeTestComponent: React.FC<FeeTestComponentProps> = ({
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <span className="text-muted-foreground">Fee Amount:</span>
-              <div className="font-mono text-red-600">${fees.feeAmount.toFixed(2)}</div>
+              <div className="font-mono text-red-600">${fees.totalFees.toFixed(2)}</div>
             </div>
             <div>
               <span className="text-muted-foreground">Net Amount:</span>
@@ -98,57 +87,34 @@ export const FeeTestComponent: React.FC<FeeTestComponentProps> = ({
             </div>
             <div>
               <span className="text-muted-foreground">Creator Gets:</span>
-              <div className="font-mono text-blue-600">${fees.creatorAmount.toFixed(2)}</div>
+              <div className="font-mono text-blue-600">${fees.creatorFee.toFixed(2)}</div>
             </div>
             <div>
               <span className="text-muted-foreground">Platform Gets:</span>
-              <div className="font-mono text-purple-600">${fees.platformAmount.toFixed(2)}</div>
+              <div className="font-mono text-purple-600">${fees.platformFee.toFixed(2)}</div>
             </div>
           </div>
         </div>
 
-        {/* Buy Transaction Preparation */}
+        {/* Fee Breakdown Display */}
         <div className="space-y-2">
-          <h3 className="font-semibold">prepareTransactionAmounts (Buy)</h3>
+          <h3 className="font-semibold">Fee Breakdown</h3>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <span className="text-muted-foreground">Total Amount:</span>
-              <div className="font-mono">${buyAmounts.totalAmount.toFixed(2)}</div>
+              <span className="text-muted-foreground">Total Fees:</span>
+              <div className="font-mono text-red-600">${fees.totalFees.toFixed(2)}</div>
             </div>
             <div>
-              <span className="text-muted-foreground">Net Trade Amount:</span>
-              <div className="font-mono">${buyAmounts.netTradeAmount.toFixed(2)}</div>
+              <span className="text-muted-foreground">Creator Share:</span>
+              <div className="font-mono text-blue-600">${fees.creatorFee.toFixed(2)}</div>
             </div>
             <div>
-              <span className="text-muted-foreground">Display Amount:</span>
-              <div className="font-mono">${buyAmounts.displayAmount.toFixed(2)}</div>
+              <span className="text-muted-foreground">Platform Share:</span>
+              <div className="font-mono text-purple-600">${fees.platformFee.toFixed(2)}</div>
             </div>
             <div>
-              <span className="text-muted-foreground">Fee Amount:</span>
-              <div className="font-mono text-red-600">${buyAmounts.fees.feeAmount.toFixed(2)}</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Sell Transaction Preparation */}
-        <div className="space-y-2">
-          <h3 className="font-semibold">prepareTransactionAmounts (Sell)</h3>
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <span className="text-muted-foreground">Total Amount:</span>
-              <div className="font-mono">${sellAmounts.totalAmount.toFixed(2)}</div>
-            </div>
-            <div>
-              <span className="text-muted-foreground">Net Receive Amount:</span>
-              <div className="font-mono">${sellAmounts.netReceiveAmount.toFixed(2)}</div>
-            </div>
-            <div>
-              <span className="text-muted-foreground">Display Amount:</span>
-              <div className="font-mono">${sellAmounts.displayAmount.toFixed(2)}</div>
-            </div>
-            <div>
-              <span className="text-muted-foreground">Fee Amount:</span>
-              <div className="font-mono text-red-600">${sellAmounts.fees.feeAmount.toFixed(2)}</div>
+              <span className="text-muted-foreground">Net Amount:</span>
+              <div className="font-mono text-green-600">${fees.netAmount.toFixed(2)}</div>
             </div>
           </div>
         </div>
@@ -160,7 +126,7 @@ export const FeeTestComponent: React.FC<FeeTestComponentProps> = ({
             <div className="flex justify-between">
               <span>Fee calculations working:</span>
               <Badge variant="default" className="text-xs">
-                ✅ {fees.feeAmount === testAmount * feeConfig.feePercent ? 'PASS' : 'FAIL'}
+                ✅ {fees.totalFees === testAmount * feeConfig.feePercent ? 'PASS' : 'FAIL'}
               </Badge>
             </div>
             <div className="flex justify-between">
@@ -170,9 +136,9 @@ export const FeeTestComponent: React.FC<FeeTestComponentProps> = ({
               </Badge>
             </div>
             <div className="flex justify-between">
-              <span>Transaction prep working:</span>
+              <span>Fee validation working:</span>
               <Badge variant="default" className="text-xs">
-                ✅ {buyAmounts.totalAmount === testAmount && sellAmounts.totalAmount === testAmount ? 'PASS' : 'FAIL'}
+                ✅ {fees.netAmount + fees.totalFees === testAmount ? 'PASS' : 'FAIL'}
               </Badge>
             </div>
           </div>
