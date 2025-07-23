@@ -262,11 +262,6 @@ export const LightweightCandlestickChart = ({
                 Simulating {promptAmount} PROMPT
               </Badge>
             )}
-            {chartData.length > 0 && (
-              <Badge variant="outline" className="text-xs">
-                {chartData.length} candles
-              </Badge>
-            )}
           </div>
           <div className="flex gap-1">
             {intervals.map((int) => (
