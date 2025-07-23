@@ -70,11 +70,16 @@ export const TradingDebugPanel = ({ agentId }: DebugPanelProps) => {
     }
   };
 
-  const copyWalletAddress = () => {
+  const copyWalletAddress = async () => {
     const walletAddress = user?.wallet?.address || user?.id;
     if (walletAddress) {
-      navigator.clipboard.writeText(walletAddress);
-      toast({ title: "Wallet address copied!", duration: 2000 });
+      try {
+        await navigator.clipboard.writeText(walletAddress);
+        toast({ title: "Wallet address copied!", duration: 2000 });
+      } catch (error) {
+        console.error('Copy failed:', error);
+        toast({ title: "Failed to copy", variant: "destructive" });
+      }
     }
   };
 
