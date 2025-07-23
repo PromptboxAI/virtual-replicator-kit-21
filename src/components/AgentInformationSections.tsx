@@ -70,6 +70,41 @@ export const AgentInformationSections = ({ agent }: AgentInformationSectionsProp
 
   useEffect(() => {
     loadAgentData();
+    
+    // Set up real-time subscription for trades
+    const channel = supabase
+      .channel('agent-trades-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'agent_token_buy_trades',
+          filter: `agent_id=eq.${agent.id}`
+        },
+        () => {
+          // Reload trades when buy trades change
+          loadAgentData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'agent_token_sell_trades',
+          filter: `agent_id=eq.${agent.id}`
+        },
+        () => {
+          // Reload trades when sell trades change
+          loadAgentData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [agent.id]);
 
   const loadAgentData = async () => {
