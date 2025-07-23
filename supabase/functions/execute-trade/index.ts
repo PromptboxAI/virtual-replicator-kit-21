@@ -108,7 +108,20 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { agentId, userId, promptAmount, tradeType, tokenAmount, expectedPrice, slippage }: TradeRequest = await req.json()
+    // Parse request body
+    const requestBody = await req.json()
+    console.log('📥 Raw request body:', requestBody)
+
+    // Extract parameters with proper handling for undefined values
+    const {
+      agentId,
+      userId,
+      promptAmount,
+      tradeType,
+      tokenAmount,
+      expectedPrice,
+      slippage
+    }: TradeRequest = requestBody
 
     console.log('🔄 Processing trade:', { agentId, userId, promptAmount, tradeType, slippage })
 
