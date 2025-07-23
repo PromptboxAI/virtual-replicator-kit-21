@@ -166,41 +166,44 @@ export const TradingDebugPanel = ({ agentId }: DebugPanelProps) => {
       </CardHeader>
       
       <CardContent className="space-y-4">
-        {/* User Info */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <h4 className="font-semibold text-yellow-800">👤 User Info</h4>
-            <div className="text-sm space-y-1">
-              <div className="flex items-center gap-2">
-                <span>Wallet:</span>
-                <code className="bg-yellow-100 px-2 py-1 rounded text-xs">
-                  {(user?.wallet?.address || user?.id)?.slice(0, 20)}...
-                </code>
-                <Button variant="ghost" size="sm" onClick={copyWalletAddress}>
-                  <Copy className="h-3 w-3" />
-                </Button>
-              </div>
-              <div>Balance: {balanceLoading ? '...' : `${balance?.toFixed(2) || 0} PROMPT`}</div>
-              <div>Authenticated: {authenticated ? '✅' : '❌'}</div>
+        {/* User Info - Separated on own line */}
+        <div className="space-y-2">
+          <h4 className="font-semibold text-yellow-800">👤 User Info</h4>
+          <div className="text-sm space-y-1">
+            <div className="flex items-center gap-2">
+              <span>Wallet:</span>
+              <code className="bg-yellow-100 px-2 py-1 rounded text-xs">
+                {(user?.wallet?.address || user?.id)?.slice(0, 20)}...
+              </code>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={copyWalletAddress}
+                className="h-6 w-6 p-0"
+              >
+                <Copy className="h-3 w-3" />
+              </Button>
             </div>
+            <div>Balance: {balanceLoading ? '...' : `${balance?.toFixed(2) || 0} PROMPT`}</div>
+            <div>Authenticated: {authenticated ? '✅' : '❌'}</div>
           </div>
+        </div>
 
-          {/* Agent Info */}
-          <div className="space-y-2">
-            <h4 className="font-semibold text-yellow-800">🤖 Agent Info</h4>
-            {agentData ? (
-              <div className="text-sm space-y-1">
-                <div>Name: {agentData.name}</div>
-                <div>Symbol: {agentData.symbol}</div>
-                <div>PROMPT Raised: {agentData.prompt_raised}</div>
-                <div>Price: ${agentData.current_price}</div>
-                <div>Active: {agentData.is_active ? '✅' : '❌'}</div>
-                <div>Test Mode: {agentData.test_mode ? '✅' : '❌'}</div>
-              </div>
-            ) : (
-              <div className="text-sm text-gray-500">Loading agent data...</div>
-            )}
-          </div>
+        {/* Agent Info - Separated on own line */}
+        <div className="space-y-2">
+          <h4 className="font-semibold text-yellow-800">🤖 Agent Info</h4>
+          {agentData ? (
+            <div className="text-sm space-y-1">
+              <div>Name: {agentData.name}</div>
+              <div>Symbol: {agentData.symbol}</div>
+              <div>PROMPT Raised: {agentData.prompt_raised}</div>
+              <div>Price: ${agentData.current_price}</div>
+              <div>Active: {agentData.is_active ? '✅' : '❌'}</div>
+              <div>Test Mode: {agentData.test_mode ? '✅' : '❌'}</div>
+            </div>
+          ) : (
+            <div className="text-sm text-gray-500">Loading agent data...</div>
+          )}
         </div>
 
         {/* System Status */}
