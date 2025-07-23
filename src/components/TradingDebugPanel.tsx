@@ -71,8 +71,9 @@ export const TradingDebugPanel = ({ agentId }: DebugPanelProps) => {
   };
 
   const copyWalletAddress = () => {
-    if (user?.id) {
-      navigator.clipboard.writeText(user.id);
+    const walletAddress = user?.wallet?.address || user?.id;
+    if (walletAddress) {
+      navigator.clipboard.writeText(walletAddress);
       toast({ title: "Wallet address copied!", duration: 2000 });
     }
   };
@@ -168,7 +169,7 @@ export const TradingDebugPanel = ({ agentId }: DebugPanelProps) => {
               <div className="flex items-center gap-2">
                 <span>Wallet:</span>
                 <code className="bg-yellow-100 px-2 py-1 rounded text-xs">
-                  {user?.id?.slice(0, 20)}...
+                  {(user?.wallet?.address || user?.id)?.slice(0, 20)}...
                 </code>
                 <Button variant="ghost" size="sm" onClick={copyWalletAddress}>
                   <Copy className="h-3 w-3" />
