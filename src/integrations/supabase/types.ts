@@ -1223,13 +1223,7 @@ export type Database = {
           p_expected_price?: number
           p_slippage?: number
         }
-        Returns: {
-          success: boolean
-          token_amount: number
-          new_price: number
-          new_prompt_raised: number
-          message: string
-        }[]
+        Returns: Json
       }
       generate_agent_token_address: {
         Args: { p_agent_id: string }
