@@ -112,7 +112,7 @@ serve(async (req) => {
     const requestBody = await req.json()
     console.log('📥 Raw request body:', requestBody)
 
-    // Extract parameters with proper handling for undefined values
+    // Extract parameters from the body property (frontend sends nested parameters)
     const {
       agentId,
       userId,
@@ -121,7 +121,7 @@ serve(async (req) => {
       tokenAmount,
       expectedPrice,
       slippage
-    }: TradeRequest = requestBody
+    }: TradeRequest = requestBody.body || requestBody
 
     console.log('🔄 Processing trade:', { agentId, userId, promptAmount, tradeType, slippage })
 
