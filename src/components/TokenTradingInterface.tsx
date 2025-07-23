@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAgentTokens } from "@/hooks/useAgentTokens";
 import { useTokenBalance } from "@/hooks/useTokenBalance";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 import { TradingModeGuard } from './TradingModeGuard';
 import { TradeFeeDisplay } from './TradeFeeDisplay';
 import { TradingDebugPanel } from './TradingDebugPanel';
@@ -62,10 +63,11 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
   const [slippage, setSlippage] = useState("0.5");
   const [loading, setLoading] = useState(false);
 
-  const { toast } = useToast();
   const { user, authenticated } = useAuth();
+  const { isAdmin } = useUserRole();
   const { balance: promptBalance, loading: balanceLoading } = useTokenBalance(user?.id);
   const { buyAgentTokens, sellAgentTokens } = useAgentTokens(agent.token_address);
+  const { toast } = useToast();
   
   // Mock agent token balance - in real implementation, this would come from a hook
   const agentTokenBalance = 0; // TODO: Implement useAgentTokenBalance hook
@@ -415,8 +417,8 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
         </TradingModeGuard>
       </div>
 
-      {/* Debug Panel - Add this at the bottom */}
-      <TradingDebugPanel agentId={agent.id} />
+      {/* Debug Panel - Only visible to admins */}
+      {isAdmin && <TradingDebugPanel agentId={agent.id} />}
     </div>
   );
 };
