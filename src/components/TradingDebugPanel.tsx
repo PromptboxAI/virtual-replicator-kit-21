@@ -31,6 +31,7 @@ export const TradingDebugPanel = ({ agentId }: DebugPanelProps) => {
   const { toast } = useToast();
   
   const [agentData, setAgentData] = useState<AgentDebugData | null>(null);
+  const [dynamicPrice, setDynamicPrice] = useState<number | null>(null);
   const [edgeFunctionStatus, setEdgeFunctionStatus] = useState<'checking' | 'available' | 'error'>('checking');
   const [lastTradeAttempt, setLastTradeAttempt] = useState<any>(null);
   const [autoRefresh, setAutoRefresh] = useState(true);
@@ -45,8 +46,27 @@ export const TradingDebugPanel = ({ agentId }: DebugPanelProps) => {
       
       if (error) throw error;
       setAgentData(data);
+      
+      // Also fetch the dynamic price using the new bonding curve function
+      if (data) {
+        await fetchDynamicPrice(data.prompt_raised);
+      }
     } catch (error) {
       console.error('Debug: Failed to fetch agent data:', error);
+    }
+  };
+
+  const fetchDynamicPrice = async (promptRaised: number) => {
+    try {
+      const { data, error } = await supabase.rpc('get_current_bonding_curve_price', { 
+        tokens_sold: Math.max(0, promptRaised * 0.1) 
+      });
+      
+      if (error) throw error;
+      setDynamicPrice(data);
+    } catch (error) {
+      console.error('Debug: Failed to fetch dynamic price:', error);
+      setDynamicPrice(null);
     }
   };
 
@@ -197,7 +217,19 @@ export const TradingDebugPanel = ({ agentId }: DebugPanelProps) => {
               <div>Name: {agentData.name}</div>
               <div>Symbol: {agentData.symbol}</div>
               <div>PROMPT Raised: {agentData.prompt_raised}</div>
-              <div>Price: ${agentData.current_price}</div>
+              
+              {/* Price Comparison - Static vs Dynamic */}
+              <div className="bg-red-100 p-2 rounded text-xs space-y-1">
+                <div className="font-semibold text-red-800">🚨 PRICE MISMATCH DETECTED:</div>
+                <div>Static Price (DB): ${agentData.current_price.toFixed(6)} ❌</div>
+                <div>Dynamic Price (AMM): ${dynamicPrice?.toFixed(6) || '...'} ✅</div>
+                {dynamicPrice && (
+                  <div className="text-red-600">
+                    Difference: {(((agentData.current_price - dynamicPrice) / dynamicPrice) * 100).toFixed(1)}%
+                  </div>
+                )}
+              </div>
+              
               <div>Active: {agentData.is_active ? '✅' : '❌'}</div>
               <div>Test Mode: {agentData.test_mode ? '✅' : '❌'}</div>
             </div>
