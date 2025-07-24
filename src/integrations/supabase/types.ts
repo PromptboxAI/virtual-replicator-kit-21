@@ -1213,6 +1213,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_prompt_from_tokens: {
+        Args: { current_tokens_sold: number; token_amount: number }
+        Returns: {
+          prompt_amount: number
+          new_tokens_sold: number
+          new_price: number
+          average_price: number
+        }[]
+      }
+      calculate_tokens_from_prompt: {
+        Args: { current_tokens_sold: number; prompt_amount: number }
+        Returns: {
+          token_amount: number
+          new_tokens_sold: number
+          new_price: number
+          average_price: number
+        }[]
+      }
       execute_bonding_curve_trade: {
         Args: {
           p_agent_id: string
@@ -1244,6 +1262,31 @@ export type Database = {
           close_price: number
           volume: number
           trade_count: number
+        }[]
+      }
+      get_bonding_curve_config: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          initial_prompt_reserve: number
+          initial_token_reserve: number
+          total_supply: number
+          graduation_threshold: number
+          trading_fee_percent: number
+        }[]
+      }
+      get_bonding_curve_invariant: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      get_current_bonding_curve_price: {
+        Args: { tokens_sold: number }
+        Returns: number
+      }
+      get_current_reserves: {
+        Args: { tokens_sold: number }
+        Returns: {
+          prompt_reserve: number
+          token_reserve: number
         }[]
       }
       get_current_user_id: {

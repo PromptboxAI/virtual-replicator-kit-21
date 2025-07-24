@@ -9,92 +9,14 @@ const corsHeaders = {
 interface TradeRequest {
   agentId: string;
   userId: string;
-  promptAmount: number;
+  promptAmount?: number;
   tradeType: 'buy' | 'sell';
   tokenAmount?: number;
-  expectedPrice: number;
-  slippage: number;
+  expectedPrice?: number;
+  slippage?: number;
 }
 
-interface BondingCurveResult {
-  tokenAmount: number;
-  newTokensSold: number;
-  newPromptRaised: number;
-  newPrice: number;
-}
-
-// Bonding curve calculation functions (replicated from frontend)
-function calculateTokensFromPrompt(currentPromptRaised: number, promptAmount: number): BondingCurveResult {
-  const GRADUATION_THRESHOLD = 42000;
-  const BONDING_CURVE_K = 0.001;
-  const BASE_PRICE = 30;
-  
-  // Calculate how many tokens can be bought with the prompt amount
-  // Using the formula: price = BASE_PRICE + k * currentSupply
-  let remainingPrompt = promptAmount;
-  let totalTokens = 0;
-  let currentSupply = currentPromptRaised;
-  
-  // We'll calculate in small increments to handle the price curve accurately
-  const increment = 10; // Calculate in 10 PROMPT increments for precision
-  
-  while (remainingPrompt > 0) {
-    const currentPrice = BASE_PRICE + BONDING_CURVE_K * currentSupply;
-    const promptForIncrement = Math.min(remainingPrompt, increment);
-    const tokensForIncrement = promptForIncrement / currentPrice;
-    
-    totalTokens += tokensForIncrement;
-    currentSupply += promptForIncrement;
-    remainingPrompt -= promptForIncrement;
-    
-    // Check if we've hit graduation threshold
-    if (currentSupply >= GRADUATION_THRESHOLD) {
-      break;
-    }
-  }
-  
-  const finalPrice = BASE_PRICE + BONDING_CURVE_K * currentSupply;
-  
-  return {
-    tokenAmount: totalTokens,
-    newTokensSold: currentSupply, // This represents total prompt raised
-    newPromptRaised: currentSupply,
-    newPrice: finalPrice
-  };
-}
-
-function calculateSellReturn(currentPromptRaised: number, tokenAmount: number): BondingCurveResult {
-  const BONDING_CURVE_K = 0.001;
-  const BASE_PRICE = 30;
-  
-  // For selling, we reverse the calculation
-  let remainingTokens = tokenAmount;
-  let totalPrompt = 0;
-  let currentSupply = currentPromptRaised;
-  
-  const increment = tokenAmount / 100; // Calculate in small increments
-  
-  while (remainingTokens > 0) {
-    const tokensForIncrement = Math.min(remainingTokens, increment);
-    const currentPrice = BASE_PRICE + BONDING_CURVE_K * (currentSupply - tokensForIncrement);
-    const promptForIncrement = tokensForIncrement * currentPrice;
-    
-    totalPrompt += promptForIncrement;
-    currentSupply -= tokensForIncrement;
-    remainingTokens -= tokensForIncrement;
-    
-    if (currentSupply <= 0) break;
-  }
-  
-  const finalPrice = BASE_PRICE + BONDING_CURVE_K * currentSupply;
-  
-  return {
-    tokenAmount: totalPrompt, // For sells, this returns prompt amount
-    newTokensSold: currentSupply,
-    newPromptRaised: currentSupply,
-    newPrice: finalPrice
-  };
-}
+// Remove old bonding curve functions - now handled by database
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -119,17 +41,58 @@ serve(async (req) => {
       promptAmount,
       tradeType,
       tokenAmount,
-      expectedPrice,
-      slippage
+      expectedPrice = 30.0,
+      slippage = 0.5
     }: TradeRequest = requestBody.body || requestBody
 
-    console.log('🔄 Processing trade:', { agentId, userId, promptAmount, tradeType, slippage })
+    console.log('🔄 Processing trade:', { agentId, userId, promptAmount, tradeType, tokenAmount, slippage })
 
-    // Start a database transaction
+    // Validate required parameters
+    if (!agentId || !userId || !tradeType) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Missing required parameters: agentId, userId, and tradeType are required' 
+        }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+
+    // Validate trade type specific parameters
+    if (tradeType === 'buy' && (!promptAmount || promptAmount <= 0)) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'For buy trades, promptAmount must be greater than 0' 
+        }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+
+    if (tradeType === 'sell' && (!tokenAmount || tokenAmount <= 0)) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'For sell trades, tokenAmount must be greater than 0' 
+        }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+
+    // Execute the trade using the updated database function
     const { data: transactionResult, error: transactionError } = await supabase.rpc('execute_bonding_curve_trade', {
       p_agent_id: agentId,
       p_user_id: userId,
-      p_prompt_amount: promptAmount,
+      p_prompt_amount: promptAmount || 0,
       p_trade_type: tradeType,
       p_token_amount: tokenAmount || 0,
       p_expected_price: expectedPrice,
