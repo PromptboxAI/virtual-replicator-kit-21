@@ -56,6 +56,13 @@ export type Database = {
             foreignKeyName: "agent_activities_agent_id_fkey"
             columns: ["agent_id"]
             isOneToOne: false
+            referencedRelation: "agent_prices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_activities_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
             referencedRelation: "agents"
             referencedColumns: ["id"]
           },
@@ -87,6 +94,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "agent_configurations_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_prices"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "agent_configurations_agent_id_fkey"
             columns: ["agent_id"]
@@ -129,6 +143,13 @@ export type Database = {
             foreignKeyName: "agent_interactions_agent_id_fkey"
             columns: ["agent_id"]
             isOneToOne: false
+            referencedRelation: "agent_prices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_interactions_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
             referencedRelation: "agents"
             referencedColumns: ["id"]
           },
@@ -160,6 +181,13 @@ export type Database = {
           message?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "agent_logs_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_prices"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "agent_logs_agent_id_fkey"
             columns: ["agent_id"]
@@ -247,6 +275,13 @@ export type Database = {
             foreignKeyName: "agent_price_history_agent_id_fkey"
             columns: ["agent_id"]
             isOneToOne: false
+            referencedRelation: "agent_prices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_price_history_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
             referencedRelation: "agents"
             referencedColumns: ["id"]
           },
@@ -287,6 +322,13 @@ export type Database = {
           volume_24h?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "agent_price_snapshots_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_prices"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "agent_price_snapshots_agent_id_fkey"
             columns: ["agent_id"]
@@ -334,6 +376,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "agent_runtime_status_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: true
+            referencedRelation: "agent_prices"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "agent_runtime_status_agent_id_fkey"
             columns: ["agent_id"]
@@ -417,6 +466,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "agent_token_holders_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_prices"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "agent_token_holders_agent_id_fkey"
             columns: ["agent_id"]
@@ -509,6 +565,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "agent_token_transactions_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_prices"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "agent_token_transactions_agent_id_fkey"
             columns: ["agent_id"]
@@ -674,6 +737,13 @@ export type Database = {
             foreignKeyName: "deployed_contracts_agent_id_fkey"
             columns: ["agent_id"]
             isOneToOne: false
+            referencedRelation: "agent_prices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deployed_contracts_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
             referencedRelation: "agents"
             referencedColumns: ["id"]
           },
@@ -708,6 +778,13 @@ export type Database = {
           transaction_hash?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "platform_revenue_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_prices"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "platform_revenue_agent_id_fkey"
             columns: ["agent_id"]
@@ -828,6 +905,13 @@ export type Database = {
             foreignKeyName: "revenue_config_agent_id_fkey"
             columns: ["agent_id"]
             isOneToOne: true
+            referencedRelation: "agent_prices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "revenue_config_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: true
             referencedRelation: "agents"
             referencedColumns: ["id"]
           },
@@ -889,6 +973,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "revenue_distributions_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_prices"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "revenue_distributions_agent_id_fkey"
             columns: ["agent_id"]
@@ -997,6 +1088,13 @@ export type Database = {
             foreignKeyName: "revenue_failures_agent_id_fkey"
             columns: ["agent_id"]
             isOneToOne: false
+            referencedRelation: "agent_prices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "revenue_failures_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
             referencedRelation: "agents"
             referencedColumns: ["id"]
           },
@@ -1053,6 +1151,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "transactions_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_prices"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "transactions_agent_id_fkey"
             columns: ["agent_id"]
@@ -1134,6 +1239,13 @@ export type Database = {
             foreignKeyName: "user_agent_holdings_agent_id_fkey"
             columns: ["agent_id"]
             isOneToOne: false
+            referencedRelation: "agent_prices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_agent_holdings_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
             referencedRelation: "agents"
             referencedColumns: ["id"]
           },
@@ -1210,7 +1322,51 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      agent_prices: {
+        Row: {
+          dynamic_price: number | null
+          id: string | null
+          is_active: boolean | null
+          market_cap: number | null
+          name: string | null
+          prompt_raised: number | null
+          static_price: number | null
+          symbol: string | null
+          test_mode: boolean | null
+          token_graduated: boolean | null
+          token_holders: number | null
+          volume_24h: number | null
+        }
+        Insert: {
+          dynamic_price?: never
+          id?: string | null
+          is_active?: boolean | null
+          market_cap?: number | null
+          name?: string | null
+          prompt_raised?: number | null
+          static_price?: number | null
+          symbol?: string | null
+          test_mode?: boolean | null
+          token_graduated?: boolean | null
+          token_holders?: number | null
+          volume_24h?: number | null
+        }
+        Update: {
+          dynamic_price?: never
+          id?: string | null
+          is_active?: boolean | null
+          market_cap?: number | null
+          name?: string | null
+          prompt_raised?: number | null
+          static_price?: number | null
+          symbol?: string | null
+          test_mode?: boolean | null
+          token_graduated?: boolean | null
+          token_holders?: number | null
+          volume_24h?: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       calculate_prompt_from_tokens: {
@@ -1229,6 +1385,16 @@ export type Database = {
           new_tokens_sold: number
           new_price: number
           average_price: number
+        }[]
+      }
+      check_price_consistency: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          agent_id: string
+          agent_name: string
+          static_price: number
+          dynamic_price: number
+          difference_percent: number
         }[]
       }
       execute_bonding_curve_trade: {
