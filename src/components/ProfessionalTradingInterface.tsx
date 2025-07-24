@@ -37,12 +37,11 @@ export const ProfessionalTradingInterface = ({
   agent, 
   onTradeComplete 
 }: ProfessionalTradingInterfaceProps) => {
-  const [currentPrice, setCurrentPrice] = useState(agent.current_price);
   const [promptAmount, setPromptAmount] = useState<number>(0);
   const [tradeType, setTradeType] = useState<'buy' | 'sell'>('buy');
   const { toast } = useToast();
 
-  const { isGraduated } = useAgentRealtime(agent.id, {
+  const { isGraduated, agentData } = useAgentRealtime(agent.id, {
     id: agent.id,
     prompt_raised: agent.prompt_raised,
     current_price: agent.current_price,
@@ -52,8 +51,12 @@ export const ProfessionalTradingInterface = ({
     token_address: null
   });
 
+  // Use real-time price if available, otherwise fall back to agent prop
+  const currentPrice = agentData?.current_price ?? agent.current_price;
+
   const handlePriceUpdate = useCallback((price: number) => {
-    setCurrentPrice(price);
+    // Price updates are now handled via real-time data
+    console.log('Price update received:', price);
   }, []);
 
   const handleCopyAddress = useCallback(() => {
