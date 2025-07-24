@@ -73,8 +73,14 @@ export const TradingDebugPanel = ({ agentId }: DebugPanelProps) => {
   const testEdgeFunction = async () => {
     setEdgeFunctionStatus('checking');
     try {
+      // Test with proper parameters (minimal valid request)
       const { data, error } = await supabase.functions.invoke('execute-trade', {
-        body: { test: true }
+        body: { 
+          agentId: agentId || 'test-agent',
+          userId: user?.id || 'test-user',
+          tradeType: 'buy',
+          promptAmount: 1
+        }
       });
       
       if (error) {
