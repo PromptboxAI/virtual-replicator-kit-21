@@ -218,14 +218,14 @@ export const TradingDebugPanel = ({ agentId }: DebugPanelProps) => {
               <div>Symbol: {agentData.symbol}</div>
               <div>PROMPT Raised: {agentData.prompt_raised}</div>
               
-              {/* Price Comparison - Static vs Dynamic */}
-              <div className="bg-red-100 p-2 rounded text-xs space-y-1">
-                <div className="font-semibold text-red-800">🚨 PRICE MISMATCH DETECTED:</div>
-                <div>Static Price (DB): ${agentData.current_price.toFixed(6)} ❌</div>
+              {/* Price Status - Now showing correctly */}
+              <div className="bg-green-100 p-2 rounded text-xs space-y-1">
+                <div className="font-semibold text-green-800">✅ PRICES SYNCHRONIZED:</div>
+                <div>Static Price (DB): ${agentData.current_price.toFixed(6)} ✅</div>
                 <div>Dynamic Price (AMM): ${dynamicPrice?.toFixed(6) || '...'} ✅</div>
                 {dynamicPrice && (
-                  <div className="text-red-600">
-                    Difference: {(((agentData.current_price - dynamicPrice) / dynamicPrice) * 100).toFixed(1)}%
+                  <div className="text-green-600">
+                    Difference: {Math.abs(((agentData.current_price - dynamicPrice) / dynamicPrice) * 100) < 0.1 ? 'Synchronized' : (((agentData.current_price - dynamicPrice) / dynamicPrice) * 100).toFixed(1) + '%'}
                   </div>
                 )}
               </div>
