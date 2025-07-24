@@ -350,6 +350,9 @@ export const AgentInformationSections = ({ agent }: AgentInformationSectionsProp
             <Activity className="h-5 w-5" />
             Recent Trades
           </CardTitle>
+          <p className="text-sm text-muted-foreground mt-1">
+            Historical trade data - prices shown are from when trades occurred
+          </p>
         </CardHeader>
         <CardContent>
           {trades.length > 0 ? (
