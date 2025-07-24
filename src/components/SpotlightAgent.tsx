@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TrendingUp, TrendingDown, Activity, BarChart3 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { isAgentGraduated } from '@/lib/bondingCurve';
+import { isAgentGraduated, formatPrice, getCurrentPrice } from '@/lib/bondingCurve';
 import { useAgentRealtime } from '@/hooks/useAgentRealtime';
 
 interface SpotlightAgentProps {
@@ -96,7 +96,7 @@ export function SpotlightAgent({ agent }: SpotlightAgentProps) {
           </div>
           
           <div className="text-right">
-            <div className="text-2xl font-bold text-foreground">${formatPrice(agent.current_price)}</div>
+            <div className="text-2xl font-bold text-foreground">${formatPrice(getCurrentPrice(Math.max(0, agent.prompt_raised * 0.1)))}</div>
             {agent.price_change_24h !== undefined && (
               <div className={`flex items-center space-x-1 ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
                 {isPositive ? (

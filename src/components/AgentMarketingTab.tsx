@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CalendarDays, Users, Activity, Code, Zap, Camera, BarChart3, ExternalLink } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { isAgentGraduated } from '@/lib/bondingCurve';
+import { isAgentGraduated, formatPrice, getCurrentPrice } from '@/lib/bondingCurve';
 import { useAgentRealtime } from '@/hooks/useAgentRealtime';
 
 interface AgentMarketingTabProps {
@@ -189,7 +189,7 @@ export function AgentMarketingTab({ agent }: AgentMarketingTabProps) {
           <CardContent className="space-y-3">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Current Price:</span>
-              <span className="font-bold text-lg">${formatPrice(agent.current_price)}</span>
+              <span className="font-bold text-lg">${formatPrice(getCurrentPrice(Math.max(0, agent.prompt_raised * 0.1)))}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Market Cap:</span>
