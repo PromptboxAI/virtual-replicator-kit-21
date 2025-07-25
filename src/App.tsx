@@ -116,8 +116,18 @@ const App = () => (
               <Route path="/agents" element={<AllAgents />} />
               <Route path="/agent/:agentId" element={<UnifiedAgentPage />} />
               <Route path="/admin" element={<Admin />} />
-              <Route path="/test-lab" element={<AdminProtectedRoute><TestLab /></AdminProtectedRoute>} />
-              <Route path="/graduation-test" element={<AdminProtectedRoute><GraduationTest /></AdminProtectedRoute>} />
+              <Route path="/test-lab" element={
+                <div>
+                  <h1>Test Lab Route Reached</h1>
+                  <AdminProtectedRoute><TestLab /></AdminProtectedRoute>
+                </div>
+              } />
+              <Route path="/graduation-test" element={
+                <div>
+                  <h1>Graduation Test Route Reached</h1>
+                  <AdminProtectedRoute><GraduationTest /></AdminProtectedRoute>
+                </div>
+              } />
               <Route path="/token-agents" element={<TokenAgents />} />
               <Route path="/fee-test/:agentId" element={<AdminProtectedRoute><FeeTest /></AdminProtectedRoute>} />
               {/* Legacy redirect for old trade routes */}
