@@ -82,13 +82,20 @@ async function getPromptTokenAddress(): Promise<string> {
   return contracts[0].contract_address;
 }
 
+interface DeploymentResult {
+  contractAddress: string;
+  transactionHash: string;
+  blockNumber: number;
+  gasUsed: bigint;
+}
+
 async function deployAgentTokenV2(
   name: string,
   symbol: string,
   agentId: string,
   promptTokenAddress: string,
   creatorAddress: string
-): Promise<string> {
+): Promise<DeploymentResult> {
   const deployerPrivateKey = Deno.env.get('DEPLOYER_PRIVATE_KEY');
   if (!deployerPrivateKey) {
     throw new Error('DEPLOYER_PRIVATE_KEY not configured in Supabase secrets');
@@ -152,7 +159,12 @@ async function deployAgentTokenV2(
       console.warn('Could not verify contract version:', error);
     }
 
-    return receipt.contractAddress;
+    return {
+      contractAddress: receipt.contractAddress,
+      transactionHash: hash,
+      blockNumber: Number(receipt.blockNumber),
+      gasUsed: receipt.gasUsed || BigInt(0)
+    };
   } catch (deployError) {
     console.error('Contract deployment failed:', deployError);
     throw new Error(`Contract deployment failed: ${deployError.message}`);
@@ -239,8 +251,8 @@ Deno.serve(async (req) => {
       creatorAddress: finalCreatorAddress
     });
 
-    // Deploy the V2 contract
-    const contractAddress = await deployAgentTokenV2(
+    // Deploy the V2 contract and get deployment details
+    const deploymentResult = await deployAgentTokenV2(
       name,
       symbol,
       agentId,
@@ -249,13 +261,16 @@ Deno.serve(async (req) => {
     );
 
     // Record the deployment
-    await recordDeployment(agentId, contractAddress, 'deployment_hash', name, symbol, 'v2');
+    await recordDeployment(agentId, deploymentResult.contractAddress, deploymentResult.transactionHash, name, symbol, 'v2');
 
     console.log('V2 Agent Token deployment completed successfully');
 
     return new Response(JSON.stringify({
       success: true,
-      contractAddress,
+      contractAddress: deploymentResult.contractAddress,
+      transactionHash: deploymentResult.transactionHash,
+      blockNumber: deploymentResult.blockNumber,
+      gasUsed: deploymentResult.gasUsed,
       agentId,
       version: 'v2',
       promptTokenAddress,
@@ -268,7 +283,7 @@ Deno.serve(async (req) => {
       name,
       symbol,
       network: 'base_sepolia',
-      explorerUrl: `https://sepolia.basescan.org/address/${contractAddress}`
+      explorerUrl: `https://sepolia.basescan.org/address/${deploymentResult.contractAddress}`
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
