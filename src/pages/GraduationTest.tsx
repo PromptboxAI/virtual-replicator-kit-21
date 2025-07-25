@@ -43,7 +43,7 @@ const GraduationTest = () => {
     setLoading({ ...loading, check: true });
     try {
       const result = await callSupabaseFunction('test-graduation-trigger', {
-        agentId: '17c298e6-9d68-46d5-b973-4fadba3666b5',
+        agentId: '30d130d1-7da2-4174-a577-bbb5a57f9125',
         forceGraduation: false
       });
       
@@ -104,10 +104,10 @@ const GraduationTest = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Test 2: Check Graduation Requirements (Aelred)</CardTitle>
+            <CardTitle>Test 2: Check Graduation Requirements (CryptoOracle Vision)</CardTitle>
             <CardDescription>
-              Agent ID: 17c298e6-9d68-46d5-b973-4fadba3666b5<br/>
-              Current PROMPT: 2,008 (should fail graduation check)
+              Agent ID: 30d130d1-7da2-4174-a577-bbb5a57f9125<br/>
+              Current PROMPT: 42,000 (should pass graduation check)
             </CardDescription>
           </CardHeader>
           <CardContent>
