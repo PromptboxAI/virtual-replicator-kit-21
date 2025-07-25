@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 const GraduationTest = () => {
   const [forceResult, setForceResult] = useState<any>(null);
   const [checkResult, setCheckResult] = useState<any>(null);
+  const [v2TestResult, setV2TestResult] = useState<any>(null);
   const [loading, setLoading] = useState<{ [key: string]: boolean }>({});
 
   const callSupabaseFunction = async (functionName: string, body: any) => {
@@ -54,6 +55,21 @@ const GraduationTest = () => {
       toast.error('Graduation check test failed');
     } finally {
       setLoading({ ...loading, check: false });
+    }
+  };
+
+  const testV2Deployment = async () => {
+    setLoading({ ...loading, v2: true });
+    try {
+      const result = await callSupabaseFunction('test-v2-deployment', {});
+      
+      setV2TestResult(result);
+      toast.success('V2 deployment test completed');
+    } catch (error: any) {
+      setV2TestResult({ error: error.message });
+      toast.error('V2 deployment test failed');
+    } finally {
+      setLoading({ ...loading, v2: false });
     }
   };
 
@@ -124,7 +140,26 @@ const GraduationTest = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Test 3: Query Graduation Events</CardTitle>
+            <CardTitle>Test 3: V2 Deployment System</CardTitle>
+            <CardDescription>
+              Test the V2 contract deployment infrastructure (private key, viem, network)
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button 
+              onClick={testV2Deployment}
+              disabled={loading.v2}
+              className="w-full"
+            >
+              {loading.v2 ? 'Testing...' : 'Test V2 Deployment'}
+            </Button>
+            <ResultDisplay result={v2TestResult} title="V2 Deployment Test" />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Test 4: Query Graduation Events</CardTitle>
             <CardDescription>
               Check the database for graduation events and transaction logs
             </CardDescription>
