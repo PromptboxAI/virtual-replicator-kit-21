@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { WagmiProvider } from 'wagmi';
 import { config } from './lib/wagmi';
-import { PrivyProvider } from '@privy-io/react-auth';
+import { PrivyProvider, usePrivy } from '@privy-io/react-auth';
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import About from "./pages/About";
@@ -30,11 +30,13 @@ const queryClient = new QueryClient();
 
 const AdminProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAdmin, isLoading } = useUserRole();
+  const { ready } = usePrivy();
   
-  console.log('AdminProtectedRoute - isLoading:', isLoading, 'isAdmin:', isAdmin);
+  console.log('AdminProtectedRoute - ready:', ready, 'isLoading:', isLoading, 'isAdmin:', isAdmin);
   console.log('AdminProtectedRoute - Route accessed:', window.location.pathname);
   
-  if (isLoading) {
+  // Wait for both Privy to be ready AND user role to be loaded
+  if (!ready || isLoading) {
     console.log('AdminProtectedRoute - showing loading...');
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
