@@ -12,6 +12,7 @@ import { RevenueAuditDashboard } from "@/components/RevenueAuditDashboard";
 import { RevenueFunctionTest } from "@/components/RevenueFunctionTest";
 import { Header } from "@/components/Header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Shield, Settings, Database, Wallet, BarChart3, Activity } from "lucide-react";
 
 const Admin = () => {
@@ -70,6 +71,31 @@ const Admin = () => {
           </CardHeader>
           <CardContent>
             <AppModeToggle />
+          </CardContent>
+        </Card>
+
+        {/* Quick Navigation */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Quick Navigation</CardTitle>
+            <CardDescription>
+              Navigate to admin tools and test pages
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <Button 
+              onClick={() => navigate('/graduation-test')} 
+              className="w-full"
+            >
+              Go to Graduation Test
+            </Button>
+            <Button 
+              onClick={() => navigate('/test-lab')} 
+              variant="outline" 
+              className="w-full"
+            >
+              Go to Test Lab
+            </Button>
           </CardContent>
         </Card>
 
