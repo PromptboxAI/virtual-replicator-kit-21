@@ -32,6 +32,7 @@ const AdminProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAdmin, isLoading } = useUserRole();
   
   console.log('AdminProtectedRoute - isLoading:', isLoading, 'isAdmin:', isAdmin);
+  console.log('AdminProtectedRoute - Route accessed:', window.location.pathname);
   
   if (isLoading) {
     console.log('AdminProtectedRoute - showing loading...');
