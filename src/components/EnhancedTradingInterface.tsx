@@ -37,6 +37,7 @@ import { cn, formatDecimalPlaces } from '@/lib/utils';
 import { LiveTokenPriceDisplay } from './LiveTokenPriceDisplay';
 import { BondingCurvePreview } from './BondingCurvePreview';
 import { WalletStatus } from './WalletStatus';
+import { GraduationStatusDisplay } from './GraduationStatusDisplay';
 
 interface Agent {
   id: string;
@@ -776,6 +777,14 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
           </CardContent>
         </Card>
       </div>
+
+      {/* Graduation Status Display */}
+      <GraduationStatusDisplay
+        agentId={agent.id}
+        currentPromptRaised={promptRaised}
+        isGraduated={isGraduated}
+        tokenAddress={agent.token_address}
+      />
 
       {/* Wallet Status */}
       <WalletStatus />

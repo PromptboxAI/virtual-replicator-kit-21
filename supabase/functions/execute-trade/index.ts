@@ -116,11 +116,35 @@ serve(async (req) => {
 
     console.log('✅ Trade executed successfully:', transactionResult);
 
+    // 🎓 AUTOMATIC GRADUATION TRIGGER
+    if (transactionResult.graduated && transactionResult.graduation_event_id) {
+      console.log('🚀 Agent graduated! Triggering automatic V2 contract deployment...');
+      
+      // Trigger graduation process asynchronously (don't wait for completion)
+      try {
+        supabase.functions.invoke('trigger-agent-graduation', {
+          body: {
+            graduationEventId: transactionResult.graduation_event_id,
+            agentId: agentId
+          }
+        }).then(result => {
+          if (result.error) {
+            console.error('❌ Graduation trigger failed:', result.error);
+          } else {
+            console.log('✅ Graduation trigger initiated successfully');
+          }
+        });
+      } catch (graduationError) {
+        console.error('❌ Failed to trigger graduation:', graduationError);
+        // Don't fail the trade because of graduation trigger failure
+      }
+    }
+
     return new Response(
       JSON.stringify({ 
         success: true, 
         data: transactionResult,
-        message: `${tradeType} trade completed successfully`
+        message: `${tradeType} trade completed successfully${transactionResult.graduated ? ' - AGENT GRADUATED! 🎓' : ''}`
       }),
       { 
         status: 200, 
