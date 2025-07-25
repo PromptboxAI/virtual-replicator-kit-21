@@ -31,14 +31,19 @@ const queryClient = new QueryClient();
 const AdminProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAdmin, isLoading } = useUserRole();
   
+  console.log('AdminProtectedRoute - isLoading:', isLoading, 'isAdmin:', isAdmin);
+  
   if (isLoading) {
+    console.log('AdminProtectedRoute - showing loading...');
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
   
   if (!isAdmin) {
+    console.log('AdminProtectedRoute - redirecting to home because not admin');
     return <Navigate to="/" replace />;
   }
   
+  console.log('AdminProtectedRoute - allowing access');
   return <>{children}</>;
 };
 
