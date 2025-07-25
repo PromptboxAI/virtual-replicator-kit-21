@@ -110,6 +110,69 @@ export type Database = {
           },
         ]
       }
+      agent_graduation_events: {
+        Row: {
+          agent_id: string
+          created_at: string
+          deployment_tx_hash: string | null
+          error_message: string | null
+          graduation_status: string
+          graduation_timestamp: string
+          id: string
+          liquidity_pool_address: string | null
+          liquidity_tx_hash: string | null
+          metadata: Json | null
+          prompt_raised_at_graduation: number
+          updated_at: string
+          v2_contract_address: string | null
+        }
+        Insert: {
+          agent_id: string
+          created_at?: string
+          deployment_tx_hash?: string | null
+          error_message?: string | null
+          graduation_status?: string
+          graduation_timestamp?: string
+          id?: string
+          liquidity_pool_address?: string | null
+          liquidity_tx_hash?: string | null
+          metadata?: Json | null
+          prompt_raised_at_graduation: number
+          updated_at?: string
+          v2_contract_address?: string | null
+        }
+        Update: {
+          agent_id?: string
+          created_at?: string
+          deployment_tx_hash?: string | null
+          error_message?: string | null
+          graduation_status?: string
+          graduation_timestamp?: string
+          id?: string
+          liquidity_pool_address?: string | null
+          liquidity_tx_hash?: string | null
+          metadata?: Json | null
+          prompt_raised_at_graduation?: number
+          updated_at?: string
+          v2_contract_address?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_graduation_events_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_prices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_graduation_events_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agent_interactions: {
         Row: {
           agent_id: string
@@ -595,6 +658,7 @@ export type Database = {
           current_price: number
           description: string | null
           framework: string | null
+          graduation_event_id: string | null
           graduation_threshold: number | null
           id: string
           is_active: boolean | null
@@ -630,6 +694,7 @@ export type Database = {
           current_price?: number
           description?: string | null
           framework?: string | null
+          graduation_event_id?: string | null
           graduation_threshold?: number | null
           id?: string
           is_active?: boolean | null
@@ -665,6 +730,7 @@ export type Database = {
           current_price?: number
           description?: string | null
           framework?: string | null
+          graduation_event_id?: string | null
           graduation_threshold?: number | null
           id?: string
           is_active?: boolean | null
@@ -687,7 +753,15 @@ export type Database = {
           volume_24h?: number | null
           website_url?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "agents_graduation_event_id_fkey"
+            columns: ["graduation_event_id"]
+            isOneToOne: false
+            referencedRelation: "agent_graduation_events"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       deployed_contracts: {
         Row: {
@@ -745,6 +819,53 @@ export type Database = {
             columns: ["agent_id"]
             isOneToOne: false
             referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      graduation_transaction_logs: {
+        Row: {
+          block_number: number | null
+          created_at: string
+          error_details: string | null
+          gas_used: number | null
+          graduation_event_id: string
+          id: string
+          status: string
+          transaction_hash: string | null
+          transaction_type: string
+          updated_at: string
+        }
+        Insert: {
+          block_number?: number | null
+          created_at?: string
+          error_details?: string | null
+          gas_used?: number | null
+          graduation_event_id: string
+          id?: string
+          status?: string
+          transaction_hash?: string | null
+          transaction_type: string
+          updated_at?: string
+        }
+        Update: {
+          block_number?: number | null
+          created_at?: string
+          error_details?: string | null
+          gas_used?: number | null
+          graduation_event_id?: string
+          id?: string
+          status?: string
+          transaction_hash?: string | null
+          transaction_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "graduation_transaction_logs_graduation_event_id_fkey"
+            columns: ["graduation_event_id"]
+            isOneToOne: false
+            referencedRelation: "agent_graduation_events"
             referencedColumns: ["id"]
           },
         ]
