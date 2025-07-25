@@ -21,6 +21,7 @@ import AllAgents from "./pages/AllAgents";
 import NotFound from "./pages/NotFound";
 import TokenAgents from "./pages/TokenAgents";
 import TestLab from "./pages/TestLab";
+import GraduationTest from "./pages/GraduationTest";
 import { FeeTest } from "./pages/FeeTest";
 import { LegacyTradeRedirect } from "./components/LegacyRedirect";
 import { useUserRole } from "./hooks/useUserRole";
@@ -110,6 +111,7 @@ const App = () => (
               <Route path="/agent/:agentId" element={<UnifiedAgentPage />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/test-lab" element={<AdminProtectedRoute><TestLab /></AdminProtectedRoute>} />
+              <Route path="/graduation-test" element={<AdminProtectedRoute><GraduationTest /></AdminProtectedRoute>} />
               <Route path="/token-agents" element={<TokenAgents />} />
               <Route path="/fee-test/:agentId" element={<AdminProtectedRoute><FeeTest /></AdminProtectedRoute>} />
               {/* Legacy redirect for old trade routes */}
