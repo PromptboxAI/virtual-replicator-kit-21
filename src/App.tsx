@@ -118,6 +118,7 @@ const App = () => (
               <Route path="/agents" element={<AllAgents />} />
               <Route path="/agent/:agentId" element={<UnifiedAgentPage />} />
               <Route path="/admin" element={<Admin />} />
+              <Route path="/test-simple" element={<div><h1>Simple Test Route Working!</h1></div>} />
               <Route path="/test-lab" element={
                 <div>
                   <h1>Test Lab Route Reached</h1>
