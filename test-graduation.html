@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Graduation System</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .result { margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 4px; }
+        .error { background: #f8d7da; color: #721c24; }
+        .success { background: #d4edda; color: #155724; }
+    </style>
+</head>
+<body>
+    <h1>Graduation System Test</h1>
+    
+    <div class="test-section">
+        <h2>Test 1: Force Graduation (CryptoOracle Vision)</h2>
+        <p>Agent ID: 30d130d1-7da2-4174-a577-bbb5a57f9125</p>
+        <p>Current PROMPT: 7,003 (needs 42,000 to graduate)</p>
+        <button onclick="testForceGraduation()">Force Graduation</button>
+        <div id="forceResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: Check Graduation Requirements (Aelred)</h2>
+        <p>Agent ID: 17c298e6-9d68-46d5-b973-4fadba3666b5</p>
+        <p>Current PROMPT: 2,008 (should fail graduation check)</p>
+        <button onclick="testGraduationCheck()">Check Requirements</button>
+        <div id="checkResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: Query Graduation Events</h2>
+        <button onclick="queryGraduationEvents()">Check Events</button>
+        <div id="eventsResult" class="result"></div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://cjzazuuwapsliacmjxfg.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNqemF6dXV3YXBzbGlhY21qeGZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIwMDk1ODgsImV4cCI6MjA2NzU4NTU4OH0.RuRyIGlY0362B3yLcMZEGuCyhAYVIK9K7mcW7BiXpAc';
+
+        async function callSupabaseFunction(functionName, body) {
+            const response = await fetch(`${SUPABASE_URL}/functions/v1/${functionName}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(body)
+            });
+            return await response.json();
+        }
+
+        async function testForceGraduation() {
+            const resultDiv = document.getElementById('forceResult');
+            resultDiv.innerHTML = 'Testing force graduation...';
+            
+            try {
+                const result = await callSupabaseFunction('test-graduation-trigger', {
+                    agentId: '30d130d1-7da2-4174-a577-bbb5a57f9125',
+                    forceGraduation: true
+                });
+                
+                resultDiv.innerHTML = `<pre>${JSON.stringify(result, null, 2)}</pre>`;
+                resultDiv.className = result.success ? 'result success' : 'result error';
+            } catch (error) {
+                resultDiv.innerHTML = `Error: ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        async function testGraduationCheck() {
+            const resultDiv = document.getElementById('checkResult');
+            resultDiv.innerHTML = 'Checking graduation requirements...';
+            
+            try {
+                const result = await callSupabaseFunction('test-graduation-trigger', {
+                    agentId: '17c298e6-9d68-46d5-b973-4fadba3666b5',
+                    forceGraduation: false
+                });
+                
+                resultDiv.innerHTML = `<pre>${JSON.stringify(result, null, 2)}</pre>`;
+                resultDiv.className = result.success ? 'result success' : 'result error';
+            } catch (error) {
+                resultDiv.innerHTML = `Error: ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        async function queryGraduationEvents() {
+            const resultDiv = document.getElementById('eventsResult');
+            resultDiv.innerHTML = 'Querying graduation events...';
+            
+            try {
+                // This would need to be implemented as a simple query function
+                // For now, just show that we're checking
+                resultDiv.innerHTML = 'Check the database directly for graduation_events and graduation_transaction_logs tables';
+                resultDiv.className = 'result';
+            } catch (error) {
+                resultDiv.innerHTML = `Error: ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+    </script>
+</body>
+</html>
