@@ -133,7 +133,13 @@ const App = () => (
               {/* Legacy redirect for old trade routes */}
               <Route path="/trade/:agentId" element={<LegacyTradeRedirect />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
+              <Route path="*" element={
+                <div>
+                  <h1>404 - Route not found</h1>
+                  <p>Current path: {window.location.pathname}</p>
+                  <NotFound />
+                </div>
+              } />
             </Routes>
           </BrowserRouter>
         </TooltipProvider>
