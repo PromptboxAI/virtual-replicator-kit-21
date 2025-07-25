@@ -128,7 +128,8 @@ const App = () => (
               <Route path="/graduation-test" element={
                 <div>
                   <h1>Graduation Test Route Reached</h1>
-                  <AdminProtectedRoute><GraduationTest /></AdminProtectedRoute>
+                  <p>Testing without admin protection...</p>
+                  <GraduationTest />
                 </div>
               } />
               <Route path="/token-agents" element={<TokenAgents />} />
