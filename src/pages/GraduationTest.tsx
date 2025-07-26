@@ -75,7 +75,12 @@ const GraduationTest = () => {
   const testV2Deployment = async () => {
     setLoading({ ...loading, v2: true });
     try {
-      const result = await callSupabaseFunction('test-v2-deployment', {});
+      const result = await callSupabaseFunction('deploy-agent-token-v2', {
+        name: 'TestAgent',
+        symbol: 'TEST',
+        agentId: '30d130d1-7da2-4174-a577-bbb5a57f9125',
+        creatorAddress: '0x23d03610584B0f0988A6F9C281a37094D5611388'
+      });
       
       setV2TestResult(result);
       toast.success('V2 deployment test completed');
