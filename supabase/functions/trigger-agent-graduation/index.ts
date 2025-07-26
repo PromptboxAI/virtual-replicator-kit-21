@@ -212,7 +212,52 @@ serve(async (req) => {
       })
       .eq('id', agentId)
 
-    console.log('🎓 Graduation trigger completed successfully')
+    // Now create the liquidity pool to complete graduation
+    console.log('💧 Creating liquidity pool for graduated agent...')
+    
+    const { data: liquidityResult, error: liquidityError } = await supabase.functions.invoke('create-liquidity-pool', {
+      body: {
+        graduationEventId,
+        contractAddress: deploymentResult.contractAddress,
+        promptAmount: graduationEvent.prompt_raised_at_graduation.toString(),
+        tokenAmount: "1000000000" // Total supply - tokens sold
+      }
+    })
+
+    if (liquidityError) {
+      console.error('❌ Liquidity pool creation failed:', liquidityError)
+      
+      // Update graduation status to indicate LP creation failed
+      await supabase
+        .from('agent_graduation_events')
+        .update({ 
+          graduation_status: 'liquidity_failed',
+          error_message: liquidityError.message || 'Liquidity pool creation failed',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', graduationEventId)
+
+      // Still return success for contract deployment, but note LP failure
+      return new Response(
+        JSON.stringify({ 
+          success: true,
+          warning: 'Contract deployed but liquidity pool creation failed',
+          data: {
+            graduationEventId,
+            contractAddress: deploymentResult.contractAddress,
+            transactionHash: deploymentResult.transactionHash,
+            status: 'contract_deployed'
+          },
+          liquidityError: liquidityError.message
+        }),
+        { 
+          status: 200, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+
+    console.log('🎓 Full graduation completed successfully - contract deployed and LP created')
 
     return new Response(
       JSON.stringify({ 
@@ -221,9 +266,11 @@ serve(async (req) => {
           graduationEventId,
           contractAddress: deploymentResult.contractAddress,
           transactionHash: deploymentResult.transactionHash,
-          status: 'contract_deployed'
+          liquidityPoolAddress: liquidityResult.data?.liquidityPoolAddress,
+          liquidityTxHash: liquidityResult.data?.transactionHash,
+          status: 'completed'
         },
-        message: 'Agent graduated and V2 contract deployed successfully'
+        message: 'Agent graduated, V2 contract deployed, and liquidity pool created successfully'
       }),
       { 
         status: 200, 

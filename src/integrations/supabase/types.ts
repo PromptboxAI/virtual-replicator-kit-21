@@ -1518,6 +1518,14 @@ export type Database = {
           difference_percent: number
         }[]
       }
+      complete_agent_graduation: {
+        Args: {
+          p_graduation_event_id: string
+          p_liquidity_pool_address: string
+          p_liquidity_tx_hash: string
+        }
+        Returns: Json
+      }
       execute_bonding_curve_trade: {
         Args: {
           p_agent_id: string
