@@ -76,7 +76,15 @@ Deno.serve(async (req) => {
       throw new Error('DEPLOYER_PRIVATE_KEY not found');
     }
 
-    const account = privateKeyToAccount(deployerPrivateKey as `0x${string}`);
+    // Ensure private key has 0x prefix
+    const formattedPrivateKey = deployerPrivateKey.startsWith('0x') 
+      ? deployerPrivateKey 
+      : `0x${deployerPrivateKey}`;
+    
+    console.log('Private key format check - starts with 0x:', formattedPrivateKey.startsWith('0x'));
+    console.log('Private key length:', formattedPrivateKey.length);
+
+    const account = privateKeyToAccount(formattedPrivateKey as `0x${string}`);
     
     const publicClient = createPublicClient({
       chain: baseSepolia,
@@ -101,9 +109,14 @@ Deno.serve(async (req) => {
       throw new Error('Deployer wallet has no ETH for gas fees');
     }
 
+    // Get current gas price
+    const gasPrice = await publicClient.getGasPrice();
+    console.log('Current gas price:', gasPrice.toString(), 'wei');
+
     const hash = await walletClient.deployContract({
       abi: ERC20_ABI,
-      bytecode: ERC20_BYTECODE as `0x${string}`
+      bytecode: ERC20_BYTECODE as `0x${string}`,
+      gas: 3000000n, // Set explicit gas limit
     });
 
     console.log('ERC20 Transaction hash:', hash);
