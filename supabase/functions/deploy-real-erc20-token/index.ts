@@ -116,7 +116,7 @@ Deno.serve(async (req) => {
     const hash = await walletClient.deployContract({
       abi: ERC20_ABI,
       bytecode: ERC20_BYTECODE as `0x${string}`,
-      gas: 3000000n, // Set explicit gas limit
+      value: 0n, // Explicitly set value to 0
     });
 
     console.log('ERC20 Transaction hash:', hash);
