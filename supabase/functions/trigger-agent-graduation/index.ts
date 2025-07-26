@@ -33,12 +33,12 @@ serve(async (req) => {
       force = false
     }: GraduationTriggerRequest = requestBody
 
-    // Validate required parameters
-    if (!graduationEventId || !agentId) {
+    // Validate required parameters - agentId is always required
+    if (!agentId) {
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: 'Missing required parameters: graduationEventId and agentId are required' 
+          error: 'Missing required parameter: agentId is required' 
         }),
         { 
           status: 400, 
@@ -47,39 +47,104 @@ serve(async (req) => {
       )
     }
 
-    // Get graduation event details
-    const { data: graduationEvent, error: eventError } = await supabase
-      .from('agent_graduation_events')
-      .select('*')
-      .eq('id', graduationEventId)
-      .single()
+    let graduationEvent;
 
-    if (eventError || !graduationEvent) {
-      console.error('❌ Graduation event not found:', eventError)
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'Graduation event not found' 
-        }),
-        { 
-          status: 404, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      )
-    }
+    if (graduationEventId) {
+      // Get existing graduation event
+      const { data: existingEvent, error: eventError } = await supabase
+        .from('agent_graduation_events')
+        .select('*')
+        .eq('id', graduationEventId)
+        .single()
 
-    // Check if already processed (unless forced)
-    if (!force && graduationEvent.graduation_status !== 'initiated') {
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: `Graduation already processed with status: ${graduationEvent.graduation_status}` 
-        }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      )
+      if (eventError || !existingEvent) {
+        console.error('❌ Graduation event not found:', eventError)
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: 'Graduation event not found' 
+          }),
+          { 
+            status: 404, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        )
+      }
+
+      graduationEvent = existingEvent;
+
+      // Check if already processed (unless forced)
+      if (!force && graduationEvent.graduation_status !== 'initiated') {
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: `Graduation already processed with status: ${graduationEvent.graduation_status}` 
+          }),
+          { 
+            status: 400, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        )
+      }
+    } else {
+      // No graduation event ID provided - need to create one or find existing
+      const { data: agent } = await supabase
+        .from('agents')
+        .select('*')
+        .eq('id', agentId)
+        .single()
+
+      if (!agent) {
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: 'Agent not found' 
+          }),
+          { 
+            status: 404, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        )
+      }
+
+      // Create new graduation event
+      const { data: newEvent, error: createError } = await supabase
+        .from('agent_graduation_events')
+        .insert({
+          agent_id: agentId,
+          prompt_raised_at_graduation: agent.prompt_raised || 42000,
+          graduation_status: 'initiated',
+          metadata: {
+            forced: force,
+            test_graduation: true,
+            original_prompt_raised: agent.prompt_raised
+          }
+        })
+        .select()
+        .single()
+
+      if (createError || !newEvent) {
+        console.error('❌ Failed to create graduation event:', createError)
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: 'Failed to create graduation event' 
+          }),
+          { 
+            status: 500, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        )
+      }
+
+      graduationEvent = newEvent;
+      graduationEventId = newEvent.id;
+
+      // Update agent with graduation event ID
+      await supabase
+        .from('agents')
+        .update({ graduation_event_id: graduationEventId })
+        .eq('id', agentId)
     }
 
     // Get agent details
