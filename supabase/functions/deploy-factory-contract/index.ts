@@ -93,24 +93,14 @@ Deno.serve(async (req) => {
     const checksummedPromptToken = getAddress(promptTokenAddress)
     const checksummedTreasury = getAddress(treasuryAddress)
 
-    console.log('🧮 Estimating gas for factory deployment...');
-    
-    // Estimate gas first
-    const gasEstimate = await publicClient.estimateContractDeployment({
-      abi: FACTORY_ABI,
-      bytecode: FACTORY_BYTECODE as `0x${string}`,
-      args: [checksummedPromptToken, checksummedTreasury],
-      account: account.address,
-    });
-    console.log('⛽ Gas estimate:', gasEstimate.toString());
-
-    // Deploy the contract
     console.log('🔄 Deploying AgentTokenFactory contract...');
+    
+    // Deploy the contract with a reasonable gas limit
     const hash = await walletClient.deployContract({
       abi: FACTORY_ABI,
       bytecode: FACTORY_BYTECODE as `0x${string}`,
       args: [checksummedPromptToken, checksummedTreasury],
-      gas: gasEstimate + (gasEstimate / 10n) // Add 10% buffer
+      gas: 5000000n // Fixed gas limit for factory deployment
     })
 
     console.log('📝 Deploy transaction hash:', hash)

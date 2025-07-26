@@ -126,25 +126,16 @@ Deno.serve(async (req) => {
       throw new Error('❌ Deployer wallet has no ETH for gas fees');
     }
 
-    // Get current gas price
+    // Get current gas price for logging
     const gasPrice = await publicClient.getGasPrice();
     console.log('⛽ Current gas price:', gasPrice.toString(), 'wei');
 
-    // Estimate gas first
-    console.log('📊 Estimating gas...');
-    const gasEstimate = await publicClient.estimateContractDeployment({
-      abi: PROMPT_TEST_TOKEN_ABI,
-      bytecode: PROMPT_TEST_TOKEN_BYTECODE as `0x${string}`,
-      account: account.address,
-    });
-    console.log('🧮 Gas estimate:', gasEstimate.toString());
-
-    // Deploy the contract
+    // Deploy the contract with a reasonable gas limit
     console.log('🔄 Deploying contract...');
     const hash = await walletClient.deployContract({
       abi: PROMPT_TEST_TOKEN_ABI,
       bytecode: PROMPT_TEST_TOKEN_BYTECODE as `0x${string}`,
-      gas: gasEstimate + (gasEstimate / 10n), // Add 10% buffer
+      gas: 3000000n, // Fixed gas limit instead of estimation
     });
 
     console.log('📝 Transaction hash:', hash);
