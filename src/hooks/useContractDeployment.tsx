@@ -11,20 +11,15 @@ export const useContractDeployment = () => {
   const { user } = useAuth();
   const address = user?.wallet?.address;
 
-  const deployPromptTestToken = async () => {
+  const deployPromptTestToken = async (skipStateManagement = false) => {
     try {
-      setIsDeploying(true);
+      if (!skipStateManagement) setIsDeploying(true);
       toast.info('Deploying real ERC20 PROMPTTEST token...');
 
       const { data, error } = await supabase.functions.invoke('deploy-real-erc20-token');
 
-      if (error) {
-        throw error;
-      }
-
-      if (!data.success) {
-        throw new Error(data.error || 'Failed to deploy PROMPTTEST token');
-      }
+      if (error) throw error;
+      if (!data.success) throw new Error(data.error || 'Failed to deploy PROMPTTEST token');
 
       setPromptTokenAddress(data.contractAddress);
       
@@ -42,36 +37,27 @@ export const useContractDeployment = () => {
         });
 
       toast.success(`Real PROMPTTEST token deployed at: ${data.contractAddress}`);
-      
       return data.contractAddress;
     } catch (error) {
       console.error('Error deploying PROMPTTEST token:', error);
       toast.error('Failed to deploy PROMPTTEST token');
       throw error;
     } finally {
-      setIsDeploying(false);
+      if (!skipStateManagement) setIsDeploying(false);
     }
   };
 
-  const deployFactory = async (promptTokenAddr: string, treasuryAddr: string) => {
+  const deployFactory = async (promptTokenAddr: string, treasuryAddr: string, skipStateManagement = false) => {
     try {
-      setIsDeploying(true);
+      if (!skipStateManagement) setIsDeploying(true);
       toast.info('Deploying AgentTokenFactory...');
 
       const { data, error } = await supabase.functions.invoke('deploy-factory-contract', {
-        body: {
-          promptTokenAddress: promptTokenAddr,
-          treasuryAddress: treasuryAddr
-        }
+        body: { promptTokenAddress: promptTokenAddr, treasuryAddress: treasuryAddr }
       });
 
-      if (error) {
-        throw error;
-      }
-
-      if (!data.success) {
-        throw new Error(data.error || 'Failed to deploy factory contract');
-      }
+      if (error) throw error;
+      if (!data.success) throw new Error(data.error || 'Failed to deploy factory contract');
 
       setFactoryAddress(data.contractAddress);
       
@@ -89,14 +75,13 @@ export const useContractDeployment = () => {
         });
 
       toast.success(`Factory deployed at: ${data.contractAddress}`);
-      
       return data.contractAddress;
     } catch (error) {
       console.error('Error deploying factory contract:', error);
       toast.error('Failed to deploy factory contract');
       throw error;
     } finally {
-      setIsDeploying(false);
+      if (!skipStateManagement) setIsDeploying(false);
     }
   };
 
@@ -113,21 +98,18 @@ export const useContractDeployment = () => {
       // Step 1: Deploy the real ERC20 PROMPTTEST token
       console.log('📋 Step 1: Deploying PROMPTTEST token...');
       toast.info('Step 1: Deploying PROMPTTEST token...');
-      const promptAddr = await deployPromptTestToken();
+      const promptAddr = await deployPromptTestToken(true); // Skip state management
       console.log('✅ PROMPTTEST token deployed at:', promptAddr);
       
-      // Wait a moment for transaction to settle
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Wait for transaction settlement
+      await new Promise(resolve => setTimeout(resolve, 3000));
       
       // Step 2: Deploy factory with the new PROMPTTEST token address
       console.log('📋 Step 2: Deploying AgentTokenFactory...');
       toast.info('Step 2: Deploying AgentTokenFactory...');
       
-      // Use the user's wallet address as treasury if available, otherwise use deployer address
       const treasuryAddr = address || "0x23d03610584B0f0988A6F9C281a37094D5611388";
-      console.log('🏦 Using treasury address:', treasuryAddr);
-      
-      const factoryAddr = await deployFactory(promptAddr, treasuryAddr);
+      const factoryAddr = await deployFactory(promptAddr, treasuryAddr, true); // Skip state management
       console.log('✅ AgentTokenFactory deployed at:', factoryAddr);
       
       toast.success('🎉 All foundation contracts deployed successfully!');
