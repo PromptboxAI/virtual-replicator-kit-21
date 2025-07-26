@@ -75,20 +75,51 @@ const GraduationTest = () => {
   const cleanupTestAgent = async () => {
     setLoading({ ...loading, cleanup: true });
     try {
-      // Reset the test agent's token_address to NULL
-      const { error } = await supabase
+      // First, reset the test agent's state completely
+      const { error: agentError } = await supabase
         .from('agents')
         .update({ 
           token_address: null,
           token_graduated: false,
-          graduation_event_id: null
+          graduation_event_id: null,
+          prompt_raised: 7003 // Reset to original test value
         })
         .eq('id', '30d130d1-7da2-4174-a577-bbb5a57f9125');
       
-      if (error) throw error;
+      if (agentError) throw agentError;
+
+      // Clean up any existing graduation events for this agent
+      const { error: graduationError } = await supabase
+        .from('agent_graduation_events')
+        .delete()
+        .eq('agent_id', '30d130d1-7da2-4174-a577-bbb5a57f9125');
       
-      toast.success('Test agent cleaned up successfully');
+      if (graduationError) {
+        console.warn('Could not clean graduation events:', graduationError);
+      }
+
+      // Clean up any graduation transaction logs for this agent's events
+      const { data: graduationEvents } = await supabase
+        .from('agent_graduation_events')
+        .select('id')
+        .eq('agent_id', '30d130d1-7da2-4174-a577-bbb5a57f9125');
+
+      if (graduationEvents && graduationEvents.length > 0) {
+        const eventIds = graduationEvents.map(e => e.id);
+        const { error: logsError } = await supabase
+          .from('graduation_transaction_logs') 
+          .delete()
+          .in('graduation_event_id', eventIds);
+        
+        if (logsError) {
+          console.warn('Could not clean graduation logs:', logsError);
+        }
+      }
+      
+      console.log('✅ Test agent state completely reset');
+      toast.success('Test agent cleaned up successfully - ready for fresh testing');
     } catch (error: any) {
+      console.error('Cleanup failed:', error);
       toast.error(`Cleanup failed: ${error.message}`);
     } finally {
       setLoading({ ...loading, cleanup: false });
