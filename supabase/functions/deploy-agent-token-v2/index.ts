@@ -130,21 +130,46 @@ async function createAgentTokenViaFactory(
     
     console.log('Factory transaction confirmed, block:', receipt.blockNumber);
 
-    // Get the created token address from the event logs
-    // The factory emits AgentTokenCreated event with the new token address
+    // Get the created token address from the factory's getAllTokens function
+    // This is more reliable than parsing event logs
     let tokenAddress: string | null = null;
     
-    for (const log of receipt.logs) {
-      try {
-        // Try to decode the log as AgentTokenCreated event
-        if (log.topics.length >= 3) {
-          // Second topic should be the indexed tokenAddress
-          tokenAddress = `0x${log.topics[2]?.slice(26)}`;  // Remove 0x and padding
-          break;
+    try {
+      // Get all tokens from factory before the transaction
+      const tokensBefore = await publicClient.readContract({
+        address: factoryAddress as `0x${string}`,
+        abi: AGENT_TOKEN_FACTORY_ABI,
+        functionName: 'getAllTokens'
+      }) as `0x${string}`[];
+      
+      // Get all tokens from factory after the transaction
+      const tokensAfter = await publicClient.readContract({
+        address: factoryAddress as `0x${string}`,
+        abi: AGENT_TOKEN_FACTORY_ABI,
+        functionName: 'getAllTokens'
+      }) as `0x${string}`[];
+      
+      // Find the new token (should be the last one in the array)
+      if (tokensAfter.length > tokensBefore.length) {
+        tokenAddress = tokensAfter[tokensAfter.length - 1];
+      }
+    } catch (contractError) {
+      console.error('Failed to get token address from factory contract:', contractError);
+      
+      // Fallback: try to parse event logs
+      for (const log of receipt.logs) {
+        try {
+          if (log.topics.length >= 3) {
+            // Second topic should be the indexed tokenAddress
+            const extractedAddress = `0x${log.topics[2]?.slice(26)}`;
+            if (extractedAddress && extractedAddress !== '0x0000000000000000000000000000000000000000') {
+              tokenAddress = extractedAddress;
+              break;
+            }
+          }
+        } catch (e) {
+          continue;
         }
-      } catch (e) {
-        // Continue to next log if this one can't be decoded
-        continue;
       }
     }
 
