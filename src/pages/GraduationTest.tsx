@@ -99,6 +99,33 @@ const GraduationTest = () => {
     }
   };
 
+  const verifyContracts = async () => {
+    setLoading({ ...loading, verify: true });
+    try {
+      // Check contracts in database
+      const contracts = await getDeployedContracts();
+      setDeployedContracts(contracts);
+      
+      if (contracts.length === 0) {
+        toast.error('No contracts found in database');
+        return;
+      }
+      
+      toast.success(`Found ${contracts.length} deployed contracts in database`);
+      
+      // Check on blockchain - for each contract
+      for (const contract of contracts) {
+        const explorerUrl = `https://sepolia.basescan.org/address/${contract.contract_address}`;
+        console.log(`🔍 Verify ${contract.name} at: ${explorerUrl}`);
+      }
+      
+    } catch (error: any) {
+      toast.error(`Verification failed: ${error.message}`);
+    } finally {
+      setLoading({ ...loading, verify: false });
+    }
+  };
+
   const ResultDisplay = ({ result, title }: { result: any; title: string }) => {
     if (!result) return null;
 
@@ -165,23 +192,45 @@ const GraduationTest = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <Button 
-                onClick={deployFoundationContracts}
-                disabled={isDeploying || loading.deploy}
-                className="w-full"
-              >
-                {isDeploying || loading.deploy ? 'Deploying...' : 'Deploy Foundation Contracts'}
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={deployFoundationContracts}
+                  disabled={isDeploying || loading.deploy}
+                  className="flex-1"
+                >
+                  {isDeploying || loading.deploy ? 'Deploying...' : 'Deploy Foundation Contracts'}
+                </Button>
+                
+                <Button 
+                  onClick={verifyContracts}
+                  disabled={loading.verify}
+                  variant="outline"
+                >
+                  {loading.verify ? 'Verifying...' : '🔍 Verify'}
+                </Button>
+              </div>
               
               {deployedContracts.length > 0 && (
                 <div className="mt-4">
                   <h4 className="font-medium mb-2">Deployed Contracts:</h4>
                   <div className="space-y-2">
                     {deployedContracts.map((contract, index) => (
-                      <div key={index} className="p-2 bg-muted rounded text-sm">
-                        <div className="font-medium">{contract.name} ({contract.symbol})</div>
-                        <div className="text-muted-foreground font-mono">{contract.contract_address}</div>
-                        <div className="text-xs text-muted-foreground">{contract.contract_type}</div>
+                      <div key={index} className="p-3 bg-muted rounded-lg">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <div className="font-medium">{contract.name} ({contract.symbol})</div>
+                            <div className="text-muted-foreground font-mono text-xs break-all">{contract.contract_address}</div>
+                            <div className="text-xs text-muted-foreground capitalize">{contract.contract_type}</div>
+                          </div>
+                          <a 
+                            href={`https://sepolia.basescan.org/address/${contract.contract_address}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-500 hover:text-blue-600 text-sm whitespace-nowrap ml-2"
+                          >
+                            🔗 BaseScan
+                          </a>
+                        </div>
                       </div>
                     ))}
                   </div>
