@@ -116,7 +116,7 @@ Deno.serve(async (req) => {
     const hash = await walletClient.deployContract({
       abi: ERC20_ABI,
       bytecode: ERC20_BYTECODE as `0x${string}`,
-      value: 0n, // Explicitly set value to 0
+      args: [], // No constructor arguments needed - the contract hardcodes name and symbol
     });
 
     console.log('ERC20 Transaction hash:', hash);
