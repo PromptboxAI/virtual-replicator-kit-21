@@ -196,8 +196,18 @@ async function createAgentTokenViaFactory(
     }
 
     if (!tokenAddress) {
-      console.error('Failed to determine token address using all methods');
-      throw new Error('Could not determine token address from factory transaction');
+      // Enhanced error message with debugging info
+      const errorDetails = {
+        factoryAddress,
+        transactionHash: hash,
+        blockNumber: receipt.blockNumber.toString(),
+        logsCount: receipt.logs.length,
+        gasUsed: receipt.gasUsed.toString(),
+        status: receipt.status
+      };
+      
+      console.error('❌ Could not determine token address. Debug info:', errorDetails);
+      throw new Error(`Could not determine the deployed token address. Transaction was successful but token address extraction failed. Debug: ${JSON.stringify(errorDetails)}`);
     }
 
     console.log('Agent Token created at:', tokenAddress);
@@ -208,9 +218,21 @@ async function createAgentTokenViaFactory(
       blockNumber: Number(receipt.blockNumber),
       gasUsed: receipt.gasUsed || BigInt(0)
     };
-  } catch (deployError) {
-    console.error('Factory token creation failed:', deployError);
-    throw new Error(`Factory token creation failed: ${deployError.message}`);
+  } catch (deployError: any) {
+    console.error('❌ Error in createAgentTokenViaFactory:', deployError);
+    
+    // Enhanced error logging
+    if (deployError.cause) {
+      console.error('Error cause:', deployError.cause);
+    }
+    if (deployError.details) {
+      console.error('Error details:', deployError.details);
+    }
+    if (deployError.shortMessage) {
+      console.error('Short message:', deployError.shortMessage);
+    }
+    
+    throw new Error(`Factory deployment failed: ${deployError.message || 'Unknown error'}`);
   }
 }
 

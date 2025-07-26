@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useContractDeployment } from '@/hooks/useContractDeployment';
+import { FactoryContractTest } from '@/components/FactoryContractTest';
+import { DatabaseCleanupTool } from '@/components/DatabaseCleanupTool';
 
 const GraduationTest = () => {
   const [forceResult, setForceResult] = useState<any>(null);
@@ -341,49 +343,52 @@ const GraduationTest = () => {
           </CardContent>
         </Card>
 
+        {/* Step 4: Factory Contract Direct Test */}
         <Card>
           <CardHeader>
-            <CardTitle>Step 4: V2 Deployment System</CardTitle>
-            <CardDescription>
-              Test the V2 contract deployment infrastructure (private key, viem, network)<br/>
-              <span className="text-blue-600">Current agent has placeholder token: 0x30d130d17da24174a577bbb5a57f912500000000</span>
-            </CardDescription>
+            <CardTitle>Step 4: Factory Contract Direct Test</CardTitle>
+            <CardDescription>Test the factory contract directly via wallet</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex gap-2">
-                <Button 
-                  onClick={cleanupTestAgent}
-                  disabled={loading.cleanup}
-                  variant="outline"
-                  className="flex-1"
-                >
-                  {loading.cleanup ? 'Cleaning...' : '🧹 Cleanup Test Agent'}
-                </Button>
-                
-                <Button 
-                  onClick={testV2Deployment}
-                  disabled={loading.v2}
-                  className="flex-1"
-                >
-                  {loading.v2 ? 'Testing...' : 'Test V2 Deployment'}
-                </Button>
-              </div>
-              
-              <div className="text-sm text-muted-foreground p-3 bg-blue-50 rounded-lg">
-                <strong>How to test:</strong><br/>
-                1. Click "Cleanup Test Agent" to reset the agent's token_address to NULL<br/>
-                2. Click "Test V2 Deployment" to deploy a real ERC20 token via the factory<br/>
-                3. The function should return the actual contract address, not a placeholder
-              </div>
-            </div>
-            <ResultDisplay result={v2TestResult} title="V2 Deployment Test" />
+            <FactoryContractTest />
+          </CardContent>
+        </Card>
+
+        {/* Step 5: Database Cleanup Tool */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Step 5: Database Cleanup</CardTitle>
+            <CardDescription>Complete database cleanup for fresh testing</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <DatabaseCleanupTool />
+          </CardContent>
+        </Card>
+
+        {/* Step 6: V2 Deployment Test */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Step 6: Test V2 Deployment</CardTitle>
+            <CardDescription>Test the new V2 contract deployment system</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Button
+              onClick={testV2Deployment}
+              disabled={loading.v2Test}
+              variant="outline"
+            >
+              {loading.v2Test ? 'Testing V2 Deployment...' : 'Test V2 Deployment'}
+            </Button>
+
+            {v2TestResult && (
+              <ResultDisplay title="V2 Deployment Test Result" result={v2TestResult} />
+            )}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Step 5: Query Graduation Events</CardTitle>
+            <CardTitle>Step 7: Query Graduation Events</CardTitle>
             <CardDescription>
               Check the database for graduation events and transaction logs
             </CardDescription>
