@@ -102,29 +102,47 @@ export const useContractDeployment = () => {
 
   const deployAll = async () => {
     try {
+      setIsDeploying(true);
+      
+      console.log('🚀 Starting foundation contract deployment sequence...');
+      
       if (!user) {
         throw new Error('Please sign in to deploy contracts');
       }
 
-      // Deploy the real ERC20 PROMPTTEST token
+      // Step 1: Deploy the real ERC20 PROMPTTEST token
+      console.log('📋 Step 1: Deploying PROMPTTEST token...');
+      toast.info('Step 1: Deploying PROMPTTEST token...');
       const promptAddr = await deployPromptTestToken();
+      console.log('✅ PROMPTTEST token deployed at:', promptAddr);
       
-      // Use the user's wallet address as treasury if available, otherwise use default address
+      // Wait a moment for transaction to settle
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Step 2: Deploy factory with the new PROMPTTEST token address
+      console.log('📋 Step 2: Deploying AgentTokenFactory...');
+      toast.info('Step 2: Deploying AgentTokenFactory...');
+      
+      // Use the user's wallet address as treasury if available, otherwise use deployer address
       const treasuryAddr = address || "0x23d03610584B0f0988A6F9C281a37094D5611388";
+      console.log('🏦 Using treasury address:', treasuryAddr);
       
-      // Deploy factory with the new PROMPTTEST token address
       const factoryAddr = await deployFactory(promptAddr, treasuryAddr);
+      console.log('✅ AgentTokenFactory deployed at:', factoryAddr);
       
-      toast.success('All contracts deployed successfully!');
+      toast.success('🎉 All foundation contracts deployed successfully!');
+      console.log('🎉 Foundation deployment complete!');
       
       return {
         promptTokenAddress: promptAddr,
         factoryAddress: factoryAddr
       };
     } catch (error) {
-      console.error('Error deploying contracts:', error);
-      toast.error('Failed to deploy contracts');
+      console.error('❌ Error deploying foundation contracts:', error);
+      toast.error(`Failed to deploy contracts: ${error.message}`);
       throw error;
+    } finally {
+      setIsDeploying(false);
     }
   };
 

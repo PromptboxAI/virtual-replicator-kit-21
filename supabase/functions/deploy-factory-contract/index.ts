@@ -47,49 +47,81 @@ Deno.serve(async (req) => {
   try {
     const { promptTokenAddress, treasuryAddress } = await req.json()
 
+    console.log('🚀 Starting AgentTokenFactory deployment...')
+    console.log('📍 Prompt token address:', promptTokenAddress)
+    console.log('🏦 Treasury address:', treasuryAddress)
+
     // Get private key from environment
     const privateKey = Deno.env.get('DEPLOYER_PRIVATE_KEY')
     if (!privateKey) {
       throw new Error('DEPLOYER_PRIVATE_KEY not configured')
     }
 
+    // Ensure private key has 0x prefix
+    const formattedPrivateKey = privateKey.startsWith('0x') 
+      ? privateKey 
+      : `0x${privateKey}`;
+
     // Create account and clients
-    const account = privateKeyToAccount(privateKey as `0x${string}`)
-    const chain = baseSepolia // Use testnet for now
+    const account = privateKeyToAccount(formattedPrivateKey as `0x${string}`)
+    const chain = baseSepolia
     
     const publicClient = createPublicClient({
       chain,
-      transport: http('https://sepolia.base.org')
+      transport: http()
     })
 
     const walletClient = createWalletClient({
       account,
       chain,
-      transport: http('https://sepolia.base.org')
+      transport: http()
     })
 
-    console.log('Deploying AgentTokenFactory contract...')
-    console.log('Deployer address:', account.address)
-    console.log('Prompt token address:', promptTokenAddress)
-    console.log('Treasury address:', treasuryAddress)
+    console.log('💼 Deployer address:', account.address)
+
+    // Check wallet balance
+    const balance = await publicClient.getBalance({
+      address: account.address
+    });
+    console.log('💰 Deployer balance:', balance.toString(), 'wei');
+    
+    if (balance === 0n) {
+      throw new Error('❌ Deployer wallet has no ETH for gas fees');
+    }
 
     // Ensure addresses are properly checksummed
     const checksummedPromptToken = getAddress(promptTokenAddress)
     const checksummedTreasury = getAddress(treasuryAddress)
 
+    console.log('🧮 Estimating gas for factory deployment...');
+    
+    // Estimate gas first
+    const gasEstimate = await publicClient.estimateContractDeployment({
+      abi: FACTORY_ABI,
+      bytecode: FACTORY_BYTECODE as `0x${string}`,
+      args: [checksummedPromptToken, checksummedTreasury],
+      account: account.address,
+    });
+    console.log('⛽ Gas estimate:', gasEstimate.toString());
+
     // Deploy the contract
+    console.log('🔄 Deploying AgentTokenFactory contract...');
     const hash = await walletClient.deployContract({
       abi: FACTORY_ABI,
-      bytecode: FACTORY_BYTECODE,
+      bytecode: FACTORY_BYTECODE as `0x${string}`,
       args: [checksummedPromptToken, checksummedTreasury],
-      gas: 3000000n
+      gas: gasEstimate + (gasEstimate / 10n) // Add 10% buffer
     })
 
-    console.log('Deploy transaction hash:', hash)
+    console.log('📝 Deploy transaction hash:', hash)
 
     // Wait for transaction receipt
-    const receipt = await publicClient.waitForTransactionReceipt({ hash })
-    console.log('Contract deployed at address:', receipt.contractAddress)
+    console.log('⏳ Waiting for transaction confirmation...');
+    const receipt = await publicClient.waitForTransactionReceipt({ 
+      hash,
+      timeout: 60000 // 60 second timeout
+    })
+    console.log('✅ AgentTokenFactory deployed at:', receipt.contractAddress)
 
     if (!receipt.contractAddress) {
       throw new Error('Contract deployment failed - no address returned')
