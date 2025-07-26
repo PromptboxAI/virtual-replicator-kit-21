@@ -126,6 +126,36 @@ const GraduationTest = () => {
       <div className="grid gap-6 max-w-4xl mx-auto">
         <Card>
           <CardHeader>
+            <CardTitle>Step 0: Test Deployer Key</CardTitle>
+            <CardDescription>
+              Verify that the DEPLOYER_PRIVATE_KEY is working correctly
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button 
+              onClick={async () => {
+                setLoading({ ...loading, keyTest: true });
+                try {
+                  const result = await callSupabaseFunction('test-deployer-key', {});
+                  console.log('Key test result:', result);
+                  toast.success('Deployer key test completed - check logs');
+                } catch (error: any) {
+                  console.error('Key test failed:', error);
+                  toast.error(`Key test failed: ${error.message}`);
+                } finally {
+                  setLoading({ ...loading, keyTest: false });
+                }
+              }}
+              disabled={loading.keyTest}
+              className="w-full"
+            >
+              {loading.keyTest ? 'Testing...' : 'Test Deployer Key'}
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
             <CardTitle>Step 1: Deploy Foundation Contracts</CardTitle>
             <CardDescription>
               Deploy PROMPT token and AgentTokenFactory to Base Sepolia testnet
