@@ -38,9 +38,10 @@ const GraduationTest = () => {
   const testForceGraduation = async () => {
     setLoading({ ...loading, force: true });
     try {
-      const result = await callSupabaseFunction('test-graduation-trigger', {
+      const result = await callSupabaseFunction('trigger-agent-graduation', {
+        graduationEventId: null, // Will be created by the function
         agentId: '30d130d1-7da2-4174-a577-bbb5a57f9125',
-        forceGraduation: true
+        force: true
       });
       
       setForceResult(result);
