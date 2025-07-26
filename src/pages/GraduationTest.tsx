@@ -72,14 +72,37 @@ const GraduationTest = () => {
     }
   };
 
+  const cleanupTestAgent = async () => {
+    setLoading({ ...loading, cleanup: true });
+    try {
+      // Reset the test agent's token_address to NULL
+      const { error } = await supabase
+        .from('agents')
+        .update({ 
+          token_address: null,
+          token_graduated: false,
+          graduation_event_id: null
+        })
+        .eq('id', '30d130d1-7da2-4174-a577-bbb5a57f9125');
+      
+      if (error) throw error;
+      
+      toast.success('Test agent cleaned up successfully');
+    } catch (error: any) {
+      toast.error(`Cleanup failed: ${error.message}`);
+    } finally {
+      setLoading({ ...loading, cleanup: false });
+    }
+  };
+
   const testV2Deployment = async () => {
     setLoading({ ...loading, v2: true });
     try {
       const result = await callSupabaseFunction('deploy-agent-token-v2', {
-        name: 'TestAgent',
-        symbol: 'TEST',
+        name: 'CryptoOracle Vision',
+        symbol: 'ORACLE',
         agentId: '30d130d1-7da2-4174-a577-bbb5a57f9125',
-        creatorAddress: '0x23d03610584B0f0988A6F9C281a37094D5611388'
+        creatorAddress: '0x742d35Cc6636C0532925a3b8ba4e0e8A4b9f6d4e'
       });
       
       setV2TestResult(result);
@@ -291,17 +314,38 @@ const GraduationTest = () => {
           <CardHeader>
             <CardTitle>Step 4: V2 Deployment System</CardTitle>
             <CardDescription>
-              Test the V2 contract deployment infrastructure (private key, viem, network)
+              Test the V2 contract deployment infrastructure (private key, viem, network)<br/>
+              <span className="text-blue-600">Current agent has placeholder token: 0x30d130d17da24174a577bbb5a57f912500000000</span>
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button 
-              onClick={testV2Deployment}
-              disabled={loading.v2}
-              className="w-full"
-            >
-              {loading.v2 ? 'Testing...' : 'Test V2 Deployment'}
-            </Button>
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                <Button 
+                  onClick={cleanupTestAgent}
+                  disabled={loading.cleanup}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  {loading.cleanup ? 'Cleaning...' : '🧹 Cleanup Test Agent'}
+                </Button>
+                
+                <Button 
+                  onClick={testV2Deployment}
+                  disabled={loading.v2}
+                  className="flex-1"
+                >
+                  {loading.v2 ? 'Testing...' : 'Test V2 Deployment'}
+                </Button>
+              </div>
+              
+              <div className="text-sm text-muted-foreground p-3 bg-blue-50 rounded-lg">
+                <strong>How to test:</strong><br/>
+                1. Click "Cleanup Test Agent" to reset the agent's token_address to NULL<br/>
+                2. Click "Test V2 Deployment" to deploy a real ERC20 token via the factory<br/>
+                3. The function should return the actual contract address, not a placeholder
+              </div>
+            </div>
             <ResultDisplay result={v2TestResult} title="V2 Deployment Test" />
           </CardContent>
         </Card>

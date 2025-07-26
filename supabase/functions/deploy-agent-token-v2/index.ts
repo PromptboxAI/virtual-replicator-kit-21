@@ -276,6 +276,26 @@ Deno.serve(async (req) => {
       throw new Error('Missing required parameters: name, symbol, agentId');
     }
 
+    // Check if agent already has a real token address (not a placeholder)
+    const { data: existingAgent, error: agentError } = await supabase
+      .from('agents')
+      .select('token_address, name, symbol')
+      .eq('id', agentId)
+      .single();
+
+    if (agentError) {
+      console.error('Failed to fetch agent:', agentError);
+      throw new Error('Agent not found');
+    }
+
+    // Check if agent already has a real token address (not a UUID-based placeholder)
+    if (existingAgent.token_address && !existingAgent.token_address.startsWith('0x' + agentId.replace(/-/g, ''))) {
+      console.log('Agent already has real token address:', existingAgent.token_address);
+      throw new Error(`Agent already has a deployed token: ${existingAgent.token_address}`);
+    }
+
+    console.log('Agent current token_address:', existingAgent.token_address, '(placeholder will be replaced)');
+
     // Get the factory address - this is required
     const factoryAddress = await getFactoryAddress();
     
