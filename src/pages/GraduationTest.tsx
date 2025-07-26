@@ -129,6 +129,8 @@ const GraduationTest = () => {
             <CardTitle>Step 1: Deploy Foundation Contracts</CardTitle>
             <CardDescription>
               Deploy PROMPT token and AgentTokenFactory to Base Sepolia testnet
+              <br />
+              <span className="text-yellow-600">⚠️ Requires DEPLOYER_PRIVATE_KEY secret to be configured</span>
             </CardDescription>
           </CardHeader>
           <CardContent>
