@@ -28,7 +28,7 @@ serve(async (req) => {
     console.log('🎓 Graduation trigger request:', requestBody)
 
     const {
-      graduationEventId,
+      graduationEventId: requestedGraduationEventId,
       agentId,
       force = false
     }: GraduationTriggerRequest = requestBody
@@ -48,6 +48,7 @@ serve(async (req) => {
     }
 
     let graduationEvent;
+    let graduationEventId = requestedGraduationEventId;
 
     if (graduationEventId) {
       // Get existing graduation event
