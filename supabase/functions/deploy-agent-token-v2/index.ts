@@ -130,50 +130,73 @@ async function createAgentTokenViaFactory(
     
     console.log('Factory transaction confirmed, block:', receipt.blockNumber);
 
-    // Get the created token address from the factory's getAllTokens function
-    // This is more reliable than parsing event logs
+    // Get the created token address using multiple methods
     let tokenAddress: string | null = null;
     
+    console.log('Attempting to get token address from factory...');
+    
     try {
-      // Get all tokens from factory before the transaction
-      const tokensBefore = await publicClient.readContract({
-        address: factoryAddress as `0x${string}`,
-        abi: AGENT_TOKEN_FACTORY_ABI,
-        functionName: 'getAllTokens'
-      }) as `0x${string}`[];
-      
-      // Get all tokens from factory after the transaction
+      // Method 1: Get all tokens from factory after the transaction
+      console.log('Method 1: Reading getAllTokens from factory...');
       const tokensAfter = await publicClient.readContract({
         address: factoryAddress as `0x${string}`,
         abi: AGENT_TOKEN_FACTORY_ABI,
         functionName: 'getAllTokens'
       }) as `0x${string}`[];
       
-      // Find the new token (should be the last one in the array)
-      if (tokensAfter.length > tokensBefore.length) {
+      console.log('Tokens from factory:', tokensAfter);
+      
+      // Take the last token (most recently created)
+      if (tokensAfter && tokensAfter.length > 0) {
         tokenAddress = tokensAfter[tokensAfter.length - 1];
+        console.log('Found token address from getAllTokens:', tokenAddress);
       }
     } catch (contractError) {
-      console.error('Failed to get token address from factory contract:', contractError);
+      console.error('Method 1 failed - getAllTokens error:', contractError);
+    }
+    
+    // Method 2: Parse event logs if Method 1 failed
+    if (!tokenAddress) {
+      console.log('Method 2: Parsing transaction logs...');
+      console.log('Receipt logs count:', receipt.logs.length);
       
-      // Fallback: try to parse event logs
-      for (const log of receipt.logs) {
+      for (let i = 0; i < receipt.logs.length; i++) {
+        const log = receipt.logs[i];
+        console.log(`Log ${i}:`, {
+          address: log.address,
+          topics: log.topics,
+          data: log.data
+        });
+        
         try {
-          if (log.topics.length >= 3) {
-            // Second topic should be the indexed tokenAddress
-            const extractedAddress = `0x${log.topics[2]?.slice(26)}`;
-            if (extractedAddress && extractedAddress !== '0x0000000000000000000000000000000000000000') {
-              tokenAddress = extractedAddress;
-              break;
+          // Check if this log is from our factory
+          if (log.address.toLowerCase() === factoryAddress.toLowerCase()) {
+            console.log('Found factory log, checking topics...');
+            if (log.topics.length >= 3) {
+              // Try different ways to extract the address
+              const topic2 = log.topics[2];
+              if (topic2) {
+                // Remove padding from address (addresses are 20 bytes = 40 hex chars)
+                const extractedAddress = `0x${topic2.slice(-40)}`;
+                console.log('Extracted address from topic2:', extractedAddress);
+                
+                if (extractedAddress && extractedAddress !== '0x0000000000000000000000000000000000000000') {
+                  tokenAddress = extractedAddress;
+                  console.log('Successfully extracted token address:', tokenAddress);
+                  break;
+                }
+              }
             }
           }
         } catch (e) {
+          console.error(`Error parsing log ${i}:`, e);
           continue;
         }
       }
     }
 
     if (!tokenAddress) {
+      console.error('Failed to determine token address using all methods');
       throw new Error('Could not determine token address from factory transaction');
     }
 
