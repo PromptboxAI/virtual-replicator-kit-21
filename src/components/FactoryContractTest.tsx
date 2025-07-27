@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { usePublicClient, useWalletClient } from 'wagmi';
 import { baseSepolia } from 'wagmi/chains';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { parseAbiItem, decodeEventLog, getAddress } from 'viem';
-
-const FACTORY_ADDRESS = '0x7d51d683dcea95572d2f08f51493b839bf251ee3';
+import { supabase } from '@/integrations/supabase/client';
 
 // Factory ABI with event
 const FACTORY_ABI = [
@@ -40,10 +39,50 @@ export function FactoryContractTest() {
   const { data: walletClient } = useWalletClient({ chainId: baseSepolia.id });
   const [testResults, setTestResults] = useState<any>({});
   const [loading, setLoading] = useState(false);
+  const [factoryAddress, setFactoryAddress] = useState<string>('');
+
+  // Fetch the latest deployed factory contract from database
+  useEffect(() => {
+    const fetchLatestFactory = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('deployed_contracts')
+          .select('contract_address')
+          .eq('contract_type', 'factory')
+          .eq('network', 'base_sepolia')
+          .eq('is_active', true)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (error) {
+          console.error('Error fetching factory contract:', error);
+          // Fallback to hardcoded address
+          setFactoryAddress('0x7d51d683dcea95572d2f08f51493b839bf251ee3');
+          return;
+        }
+
+        if (data?.contract_address) {
+          setFactoryAddress(data.contract_address);
+          console.log('Using factory contract:', data.contract_address);
+        }
+      } catch (error) {
+        console.error('Error in fetchLatestFactory:', error);
+        setFactoryAddress('0x7d51d683dcea95572d2f08f51493b839bf251ee3');
+      }
+    };
+
+    fetchLatestFactory();
+  }, []);
 
   const testFactory = async () => {
     if (!publicClient || !walletClient) {
       toast.error('Please connect your wallet');
+      return;
+    }
+
+    if (!factoryAddress) {
+      toast.error('Factory address not loaded yet');
       return;
     }
 
@@ -54,7 +93,7 @@ export function FactoryContractTest() {
       // Step 1: Check if factory has bytecode
       console.log('🔍 Checking factory bytecode...');
       const bytecode = await publicClient.getBytecode({
-        address: FACTORY_ADDRESS
+        address: factoryAddress as `0x${string}`
       });
 
       results.hasBytecode = bytecode && bytecode !== '0x';
@@ -67,7 +106,7 @@ export function FactoryContractTest() {
       // Step 2: Get current tokens before deployment
       console.log('📋 Getting existing tokens...');
       const tokensBefore = await publicClient.readContract({
-        address: FACTORY_ADDRESS,
+        address: factoryAddress as `0x${string}`,
         abi: FACTORY_ABI,
         functionName: 'getAllTokens'
       });
@@ -81,7 +120,7 @@ export function FactoryContractTest() {
 
       console.log('🚀 Creating test token...');
       const hash = await walletClient.writeContract({
-        address: FACTORY_ADDRESS,
+        address: factoryAddress as `0x${string}`,
         abi: FACTORY_ABI,
         functionName: 'createAgentToken',
         args: [testName, testSymbol, testAgentId],
@@ -115,7 +154,7 @@ export function FactoryContractTest() {
       // Method 1: Try to decode AgentTokenCreated event
       for (const log of receipt.logs) {
         try {
-          if (log.address.toLowerCase() === FACTORY_ADDRESS.toLowerCase()) {
+          if (log.address.toLowerCase() === factoryAddress.toLowerCase()) {
             // Try to decode as AgentTokenCreated event
             const decoded = decodeEventLog({
               abi: [AGENT_TOKEN_CREATED_EVENT],
@@ -159,7 +198,7 @@ export function FactoryContractTest() {
       // Method 3: Check getAllTokens after deployment
       console.log('📋 Getting tokens after deployment...');
       const tokensAfter = await publicClient.readContract({
-        address: FACTORY_ADDRESS,
+        address: factoryAddress as `0x${string}`,
         abi: FACTORY_ABI,
         functionName: 'getAllTokens'
       });
@@ -205,7 +244,7 @@ export function FactoryContractTest() {
       <CardHeader>
         <CardTitle>Factory Contract Direct Test</CardTitle>
         <CardDescription>
-          Test the AgentTokenFactory at {FACTORY_ADDRESS}
+          Test the AgentTokenFactory at {factoryAddress || 'Loading...'}
         </CardDescription>
       </CardHeader>
       <CardContent>
