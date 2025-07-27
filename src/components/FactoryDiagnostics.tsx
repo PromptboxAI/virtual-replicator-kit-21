@@ -98,6 +98,7 @@ export const FactoryDiagnostics = () => {
       createdAt: contract.created_at,
       transactionHash: contract.transaction_hash,
       hasCode: false,
+      canSimulate: false,
       errors: []
     };
 
