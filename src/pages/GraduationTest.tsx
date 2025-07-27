@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { useContractDeployment } from '@/hooks/useContractDeployment';
 import { FactoryContractTest } from '@/components/FactoryContractTest';
 import { DatabaseCleanupTool } from '@/components/DatabaseCleanupTool';
+import { FactoryDeploymentDebug } from '@/components/FactoryDeploymentDebug';
 
 const GraduationTest = () => {
   const [forceResult, setForceResult] = useState<any>(null);
@@ -351,6 +352,17 @@ const GraduationTest = () => {
           </CardHeader>
           <CardContent>
             <FactoryContractTest />
+          </CardContent>
+        </Card>
+
+        {/* Step 4.5: Factory Deployment Debug */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Step 4.5: Factory Deployment Debug</CardTitle>
+            <CardDescription>Debug the factory deployment with detailed error logging</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <FactoryDeploymentDebug />
           </CardContent>
         </Card>
 
