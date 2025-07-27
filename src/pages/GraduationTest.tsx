@@ -7,6 +7,7 @@ import { useContractDeployment } from '@/hooks/useContractDeployment';
 import { FactoryContractTest } from '@/components/FactoryContractTest';
 import { DatabaseCleanupTool } from '@/components/DatabaseCleanupTool';
 import { FactoryDeploymentDebug } from '@/components/FactoryDeploymentDebug';
+import { FactoryDiagnostics } from '@/components/FactoryDiagnostics';
 
 const GraduationTest = () => {
   const [forceResult, setForceResult] = useState<any>(null);
@@ -363,6 +364,19 @@ const GraduationTest = () => {
           </CardHeader>
           <CardContent>
             <FactoryDeploymentDebug />
+          </CardContent>
+        </Card>
+
+        {/* Step 4.6: Factory Diagnostics */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Step 4.6: Factory Diagnostics</CardTitle>
+            <CardDescription>
+              Comprehensive analysis of all factory contracts
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <FactoryDiagnostics />
           </CardContent>
         </Card>
 
