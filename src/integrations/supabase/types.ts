@@ -775,6 +775,7 @@ export type Database = {
           name: string | null
           network: string
           symbol: string | null
+          transaction_hash: string | null
           updated_at: string
           version: string
         }
@@ -789,6 +790,7 @@ export type Database = {
           name?: string | null
           network?: string
           symbol?: string | null
+          transaction_hash?: string | null
           updated_at?: string
           version?: string
         }
@@ -803,6 +805,7 @@ export type Database = {
           name?: string | null
           network?: string
           symbol?: string | null
+          transaction_hash?: string | null
           updated_at?: string
           version?: string
         }

@@ -33,6 +33,7 @@ export const useContractDeployment = () => {
           version: 'v1',
           name: 'PROMPTTEST',
           symbol: 'PROMPT',
+          transaction_hash: data.transactionHash,
           is_active: true
         });
 
@@ -71,6 +72,7 @@ export const useContractDeployment = () => {
           version: 'v2',
           name: 'AgentTokenFactory',
           symbol: 'FACTORY',
+          transaction_hash: data.transactionHash,
           is_active: true
         });
 

@@ -329,11 +329,23 @@ export function FactoryContractTest() {
   const verifyDeployment = async () => {
     setLoading(true);
     try {
-      // Get the latest factory deployment transaction hash from transaction logs or use a placeholder
-      // Since we don't store transaction hashes in deployed_contracts, we'll use the current factory address
-      // to verify its deployment status
+      // Get the latest factory deployment transaction hash from database
+      const { data: latestFactory } = await supabase
+        .from('deployed_contracts')
+        .select('transaction_hash, contract_address')
+        .eq('contract_type', 'factory')
+        .eq('network', 'base_sepolia')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (!latestFactory?.transaction_hash) {
+        throw new Error('No transaction hash found for latest factory deployment');
+      }
+
       const { data, error } = await supabase.functions.invoke('verify-deployment-transaction', {
-        body: { transactionHash: '0x2a8f8080f4fa1fa26d5fd11c2b1e54484232c58b029de3bb802a878d3b6cef17' } // Latest successful deployment
+        body: { transactionHash: latestFactory.transaction_hash }
       });
 
       if (error) throw error;
