@@ -58,7 +58,7 @@ export const useContractDeployment = () => {
       if (!skipStateManagement) setIsDeploying(true);
       toast.info('Deploying AgentTokenFactory...');
 
-      const { data, error } = await supabase.functions.invoke('deploy-factory-contract', {
+      const { data, error } = await supabase.functions.invoke('deploy-factory-contract-fixed', {
         body: { promptTokenAddress: promptTokenAddr, treasuryAddress: treasuryAddr }
       });
 
