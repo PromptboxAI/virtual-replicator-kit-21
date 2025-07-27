@@ -111,11 +111,20 @@ Deno.serve(async (req) => {
       hash,
       timeout: 60000 // 60 second timeout
     })
-    console.log('✅ AgentTokenFactory deployed at:', receipt.contractAddress)
-
+    
+    console.log('📄 Transaction receipt status:', receipt.status);
+    console.log('📄 Transaction receipt gas used:', receipt.gasUsed.toString());
+    
+    // CRITICAL: Check if transaction was successful
+    if (receipt.status === 'reverted') {
+      throw new Error(`Contract deployment failed - transaction reverted. Gas used: ${receipt.gasUsed.toString()}`);
+    }
+    
     if (!receipt.contractAddress) {
       throw new Error('Contract deployment failed - no address returned')
     }
+    
+    console.log('✅ AgentTokenFactory deployed successfully at:', receipt.contractAddress);
 
     return new Response(
       JSON.stringify({
