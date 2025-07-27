@@ -21,9 +21,14 @@ export const useContractDeployment = () => {
       if (error) throw error;
       if (!data.success) throw new Error(data.error || 'Failed to deploy PROMPTTEST token');
 
+      // Verify contract actually exists on-chain before storing
+      if (!data.contractAddress || data.contractAddress === '0x0000000000000000000000000000000000000000') {
+        throw new Error('Invalid contract address returned from deployment');
+      }
+
       setPromptTokenAddress(data.contractAddress);
       
-      // Store in database for future reference
+      // Store in database ONLY after successful verification
       await supabase
         .from('deployed_contracts')
         .insert({
@@ -60,9 +65,14 @@ export const useContractDeployment = () => {
       if (error) throw error;
       if (!data.success) throw new Error(data.error || 'Failed to deploy factory contract');
 
+      // Verify contract actually exists on-chain before storing
+      if (!data.contractAddress || data.contractAddress === '0x0000000000000000000000000000000000000000') {
+        throw new Error('Invalid factory contract address returned from deployment');
+      }
+
       setFactoryAddress(data.contractAddress);
       
-      // Store in database
+      // Store in database ONLY after successful verification
       await supabase
         .from('deployed_contracts')
         .insert({
