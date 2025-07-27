@@ -346,6 +346,37 @@ export function FactoryContractTest() {
     }
   };
 
+  const verifyDeployment = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('verify-deployment-transaction', {
+        body: { transactionHash: '0x34a4ff77423169d346db35bb2332b0f3382df9bedbb07b8cbd38345eec160fd6' }
+      });
+
+      if (error) throw error;
+
+      console.log('🔍 Deployment verification result:', data);
+      
+      if (data.success) {
+        if (data.database.updated) {
+          setFactoryAddress(data.contract.address);
+          toast.success(`Contract found at ${data.contract.address}! Database updated.`);
+        } else {
+          toast.success(`Contract verified at ${data.contract.address}`);
+        }
+        setTestResults(data);
+      } else {
+        toast.error(`Verification failed: ${data.error}`);
+        setTestResults(data);
+      }
+    } catch (error: any) {
+      console.error('Verification error:', error);
+      toast.error(`Verification failed: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -355,13 +386,22 @@ export function FactoryContractTest() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Button
-          onClick={testFactory}
-          disabled={loading}
-          className="mb-4"
-        >
-          {loading ? 'Testing...' : 'Run Factory Test'}
-        </Button>
+        <div className="space-x-2 mb-4">
+          <Button
+            onClick={verifyDeployment}
+            disabled={loading}
+            variant="outline"
+          >
+            {loading ? 'Verifying...' : 'Verify Deployment'}
+          </Button>
+          
+          <Button
+            onClick={testFactory}
+            disabled={loading}
+          >
+            {loading ? 'Testing...' : 'Run Factory Test'}
+          </Button>
+        </div>
 
         {Object.keys(testResults).length > 0 && (
           <div className="space-y-4">
