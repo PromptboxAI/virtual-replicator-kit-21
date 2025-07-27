@@ -21,7 +21,7 @@ export function DatabaseCleanupTool() {
     try {
       console.log('🧹 Starting complete cleanup for agent:', agentId);
 
-      // Step 1: Clear agent references first
+      // Step 1: Clear agent references first (set below graduation threshold)
       const { error: agentError } = await supabase
         .from('agents')
         .update({ 
@@ -29,7 +29,7 @@ export function DatabaseCleanupTool() {
           token_address: null,
           token_graduated: false,
           status: 'PENDING',
-          prompt_raised: 7003
+          prompt_raised: 1000  // Well below 42000 graduation threshold
         })
         .eq('id', agentId);
       
@@ -67,7 +67,7 @@ export function DatabaseCleanupTool() {
         console.warn('Could not clean graduation events:', eventsError);
       }
 
-      // Step 5: Mark deployed contracts as inactive
+      // Step 5: Mark deployed contracts as inactive (including foundation contracts)
       const { error: contractsError } = await supabase
         .from('deployed_contracts')
         .update({ is_active: false })
@@ -75,6 +75,16 @@ export function DatabaseCleanupTool() {
       
       if (contractsError) {
         console.warn('Could not update deployed contracts:', contractsError);
+      }
+
+      // Step 5b: Also cleanup foundation contracts (not tied to specific agents)
+      const { error: foundationError } = await supabase
+        .from('deployed_contracts')
+        .update({ is_active: false })
+        .in('contract_type', ['prompt_token', 'factory']);
+      
+      if (foundationError) {
+        console.warn('Could not cleanup foundation contracts:', foundationError);
       }
 
       // Step 6: Clean revenue events (optional)
@@ -102,13 +112,19 @@ export function DatabaseCleanupTool() {
       const { data: activeContracts } = await supabase
         .from('deployed_contracts')
         .select('count')
-        .eq('agent_id', agentId)
+        .eq('is_active', true);
+
+      const { data: foundationContracts } = await supabase
+        .from('deployed_contracts')
+        .select('count')
+        .in('contract_type', ['prompt_token', 'factory'])
         .eq('is_active', true);
 
       const cleanupResults = {
         agentState: finalAgent,
         graduationEventsRemaining: remainingEvents?.length || 0,
         activeContractsRemaining: activeContracts?.length || 0,
+        foundationContractsRemaining: foundationContracts?.length || 0,
         eventIdsProcessed: eventIds.length,
         timestamp: new Date().toISOString()
       };
@@ -179,7 +195,8 @@ export function DatabaseCleanupTool() {
                   • Agent state reset<br/>
                   • {results.eventIdsProcessed} graduation events processed<br/>
                   • {results.graduationEventsRemaining} graduation events remaining<br/>
-                  • {results.activeContractsRemaining} active contracts remaining
+                  • {results.activeContractsRemaining} active contracts remaining<br/>
+                  • {results.foundationContractsRemaining} foundation contracts remaining
                 </p>
               </div>
             )}
