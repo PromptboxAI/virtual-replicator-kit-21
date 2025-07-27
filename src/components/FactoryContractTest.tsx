@@ -40,15 +40,23 @@ export function FactoryContractTest() {
   const [testResults, setTestResults] = useState<any>({});
   const [loading, setLoading] = useState(false);
   const [factoryAddress, setFactoryAddress] = useState<string>('');
+  const [addressLoading, setAddressLoading] = useState(true);
+  const [expectedAddress, setExpectedAddress] = useState<string>('');
 
   // Fetch the latest deployed factory contract from database
   useEffect(() => {
     const fetchLatestFactory = async () => {
+      setAddressLoading(true);
       try {
         console.log('🔍 Fetching latest factory contract from database...');
+        
+        // Clear any cached state first
+        setFactoryAddress('');
+        setExpectedAddress('');
+        
         const { data, error } = await supabase
           .from('deployed_contracts')
-          .select('contract_address, created_at')
+          .select('contract_address, created_at, transaction_hash')
           .eq('contract_type', 'factory')
           .eq('network', 'base_sepolia')
           .eq('is_active', true)
@@ -56,28 +64,75 @@ export function FactoryContractTest() {
           .limit(1)
           .single();
 
-        console.log('Database query result:', { data, error });
+        console.log('🔍 Database query result:', { data, error });
 
         if (error) {
-          console.error('Error fetching factory contract:', error);
-          // Use the latest known address
-          setFactoryAddress('0x0fe57068756dbf86ad8c19fbf711a8fcd4f08585');
+          console.error('❌ Error fetching factory contract:', error);
+          toast.error('Could not fetch factory contract from database');
+          setAddressLoading(false);
           return;
         }
 
         if (data?.contract_address) {
-          setFactoryAddress(data.contract_address);
-          console.log('✅ Using factory contract:', data.contract_address);
+          const address = data.contract_address;
+          setFactoryAddress(address);
+          setExpectedAddress(address);
+          console.log('✅ Expected factory contract:', address);
           console.log('✅ Contract deployed at:', data.created_at);
+          console.log('✅ Transaction hash:', data.transaction_hash);
+          
+          // Validate this is the latest deployment
+          if (address === '0x09cbe197c98070eba3707be52f552f3a50aae749') {
+            console.log('✅ Address matches latest known deployment');
+          } else {
+            console.warn('⚠️ Address does not match expected latest deployment');
+            console.warn('- Expected: 0x09cbe197c98070eba3707be52f552f3a50aae749');
+            console.warn('- Got:', address);
+          }
+        } else {
+          console.error('❌ No factory contract found in database');
+          toast.error('No active factory contract found');
         }
       } catch (error) {
-        console.error('Error in fetchLatestFactory:', error);
-        setFactoryAddress('0x0fe57068756dbf86ad8c19fbf711a8fcd4f08585');
+        console.error('❌ Error in fetchLatestFactory:', error);
+        toast.error('Failed to load factory contract');
+      } finally {
+        setAddressLoading(false);
       }
     };
 
     fetchLatestFactory();
   }, []);
+
+  // Refresh factory address function
+  const refreshFactoryAddress = async () => {
+    setAddressLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('deployed_contracts')
+        .select('contract_address, created_at, transaction_hash')
+        .eq('contract_type', 'factory')
+        .eq('network', 'base_sepolia')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error) throw error;
+
+      if (data?.contract_address) {
+        setFactoryAddress(data.contract_address);
+        setExpectedAddress(data.contract_address);
+        toast.success(`Factory address refreshed: ${data.contract_address}`);
+        console.log('🔄 Factory address refreshed:', data.contract_address);
+      }
+    } catch (error) {
+      console.error('❌ Error refreshing factory address:', error);
+      toast.error('Failed to refresh factory address');
+    } finally {
+      setAddressLoading(false);
+    }
+  };
 
   const testFactory = async () => {
     if (!publicClient || !walletClient) {
@@ -85,8 +140,19 @@ export function FactoryContractTest() {
       return;
     }
 
+    if (addressLoading) {
+      toast.error('Factory address is still loading, please wait...');
+      return;
+    }
+
     if (!factoryAddress) {
-      toast.error('Factory address not loaded yet');
+      toast.error('Factory address not loaded. Try refreshing the address first.');
+      return;
+    }
+
+    // Validate the address matches expected latest deployment
+    if (expectedAddress && factoryAddress !== expectedAddress) {
+      toast.error(`Address mismatch! Expected: ${expectedAddress}, Using: ${factoryAddress}`);
       return;
     }
 
@@ -96,6 +162,8 @@ export function FactoryContractTest() {
     try {
       console.log('🏭 FACTORY TEST DEBUG:');
       console.log('- Factory address being tested:', factoryAddress);
+      console.log('- Expected address:', expectedAddress);
+      console.log('- Address matches expected:', factoryAddress === expectedAddress);
       console.log('- Public client:', !!publicClient);
       console.log('- Wallet client:', !!walletClient);
       console.log('- Chain ID:', publicClient?.chain?.id);
@@ -377,14 +445,30 @@ export function FactoryContractTest() {
       <CardHeader>
         <CardTitle>Factory Contract Direct Test</CardTitle>
         <CardDescription>
-          Test the AgentTokenFactory at {factoryAddress || 'Loading...'}
+          Test the AgentTokenFactory at {
+            addressLoading ? 'Loading address...' : 
+            factoryAddress || 'No address loaded'
+          }
+          {expectedAddress && factoryAddress !== expectedAddress && (
+            <div className="text-red-600 text-sm mt-1">
+              ⚠️ Address mismatch! Expected: {expectedAddress}
+            </div>
+          )}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-x-2 mb-4">
           <Button
+            onClick={refreshFactoryAddress}
+            disabled={loading || addressLoading}
+            variant="outline"
+          >
+            {addressLoading ? 'Loading...' : 'Refresh Address'}
+          </Button>
+          
+          <Button
             onClick={verifyDeployment}
-            disabled={loading}
+            disabled={loading || addressLoading}
             variant="outline"
           >
             {loading ? 'Verifying...' : 'Verify Deployment'}
@@ -392,11 +476,22 @@ export function FactoryContractTest() {
           
           <Button
             onClick={testFactory}
-            disabled={loading}
+            disabled={loading || addressLoading || !factoryAddress}
           >
             {loading ? 'Testing...' : 'Run Factory Test'}
           </Button>
         </div>
+
+        {factoryAddress && (
+          <div className="mb-4 p-3 bg-blue-50 rounded-lg">
+            <p className="text-sm text-blue-800">
+              <strong>Factory Address:</strong> {factoryAddress}
+            </p>
+            {expectedAddress && factoryAddress === expectedAddress && (
+              <p className="text-sm text-green-600">✅ Address verified as latest deployment</p>
+            )}
+          </div>
+        )}
 
         {Object.keys(testResults).length > 0 && (
           <div className="space-y-4">
