@@ -82,7 +82,20 @@ Deno.serve(async (req) => {
 
     console.log('Deployment transaction hash:', hash);
     const receipt = await publicClient.waitForTransactionReceipt({ hash });
-    console.log('Contract deployed at:', receipt.contractAddress);
+    
+    console.log('📄 Transaction receipt status:', receipt.status);
+    console.log('📄 Transaction receipt gas used:', receipt.gasUsed.toString());
+    
+    // CRITICAL: Check if transaction was successful
+    if (receipt.status === 'reverted') {
+      throw new Error(`PROMPT token deployment failed - transaction reverted. Gas used: ${receipt.gasUsed.toString()}`);
+    }
+    
+    if (!receipt.contractAddress) {
+      throw new Error('PROMPT token deployment failed - no address returned');
+    }
+    
+    console.log('✅ PROMPT token deployed successfully at:', receipt.contractAddress);
 
     return new Response(
       JSON.stringify({ 
