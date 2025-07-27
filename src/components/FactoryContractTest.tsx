@@ -99,28 +99,71 @@ export function FactoryContractTest() {
       console.log('- Public client:', !!publicClient);
       console.log('- Wallet client:', !!walletClient);
       console.log('- Chain ID:', publicClient?.chain?.id);
+      console.log('- Chain name:', publicClient?.chain?.name);
+      console.log('- RPC URL:', publicClient?.transport?.url);
       
       // Step 1: Check if factory has bytecode
       console.log('🔍 Checking factory bytecode...');
       console.log('- Calling getBytecode for address:', factoryAddress);
       
-      const bytecode = await publicClient.getBytecode({
-        address: factoryAddress as `0x${string}`
-      });
+      // Try multiple approaches to verify the contract
+      let bytecode;
+      try {
+        bytecode = await publicClient.getBytecode({
+          address: factoryAddress as `0x${string}`
+        });
+      } catch (bytecodeError) {
+        console.error('❌ getBytecode failed:', bytecodeError);
+        results.bytecodeError = bytecodeError.message;
+      }
 
       console.log('- Raw bytecode result:', bytecode);
       console.log('- Bytecode type:', typeof bytecode);
       console.log('- Bytecode length:', bytecode?.length);
       
+      // Also try to get transaction count (nonce) as another way to verify the address exists
+      let transactionCount;
+      try {
+        transactionCount = await publicClient.getTransactionCount({
+          address: factoryAddress as `0x${string}`
+        });
+        console.log('- Transaction count (nonce):', transactionCount);
+      } catch (nonceError) {
+        console.error('❌ getTransactionCount failed:', nonceError);
+      }
+
+      // Try to call a view function to see if the contract responds
+      let contractCallResult;
+      try {
+        contractCallResult = await publicClient.readContract({
+          address: factoryAddress as `0x${string}`,
+          abi: FACTORY_ABI,
+          functionName: 'getAllTokens'
+        });
+        console.log('- Contract call result:', contractCallResult);
+      } catch (contractError) {
+        console.error('❌ Contract call failed:', contractError);
+        results.contractCallError = contractError.message;
+      }
+      
       results.hasBytecode = bytecode && bytecode !== '0x';
       results.rawBytecode = bytecode;
+      results.transactionCount = transactionCount;
+      results.contractCallResult = contractCallResult;
       console.log('Factory has bytecode:', results.hasBytecode);
 
-      if (!results.hasBytecode) {
+      if (!results.hasBytecode && !contractCallResult) {
         console.log('❌ Factory contract verification failed');
-        console.log('- Expected: non-empty bytecode');
-        console.log('- Received:', bytecode);
-        throw new Error(`Factory contract not found at address ${factoryAddress}`);
+        console.log('- Expected: non-empty bytecode or successful contract call');
+        console.log('- Received bytecode:', bytecode);
+        console.log('- Contract call result:', contractCallResult);
+        throw new Error(`Factory contract not found at address ${factoryAddress}. Bytecode: ${bytecode}, Contract call: ${!!contractCallResult}`);
+      }
+
+      // If contract call worked but bytecode didn't, continue anyway
+      if (contractCallResult && !results.hasBytecode) {
+        console.log('⚠️ Bytecode check failed but contract call succeeded - continuing...');
+        results.hasBytecode = true; // Override since contract is responding
       }
 
       // Step 2: Get current tokens before deployment
