@@ -45,9 +45,10 @@ export function FactoryContractTest() {
   useEffect(() => {
     const fetchLatestFactory = async () => {
       try {
+        console.log('🔍 Fetching latest factory contract from database...');
         const { data, error } = await supabase
           .from('deployed_contracts')
-          .select('contract_address')
+          .select('contract_address, created_at')
           .eq('contract_type', 'factory')
           .eq('network', 'base_sepolia')
           .eq('is_active', true)
@@ -55,20 +56,23 @@ export function FactoryContractTest() {
           .limit(1)
           .single();
 
+        console.log('Database query result:', { data, error });
+
         if (error) {
           console.error('Error fetching factory contract:', error);
-          // Fallback to hardcoded address
-          setFactoryAddress('0x7d51d683dcea95572d2f08f51493b839bf251ee3');
+          // Use the latest known address
+          setFactoryAddress('0x0fe57068756dbf86ad8c19fbf711a8fcd4f08585');
           return;
         }
 
         if (data?.contract_address) {
           setFactoryAddress(data.contract_address);
-          console.log('Using factory contract:', data.contract_address);
+          console.log('✅ Using factory contract:', data.contract_address);
+          console.log('✅ Contract deployed at:', data.created_at);
         }
       } catch (error) {
         console.error('Error in fetchLatestFactory:', error);
-        setFactoryAddress('0x7d51d683dcea95572d2f08f51493b839bf251ee3');
+        setFactoryAddress('0x0fe57068756dbf86ad8c19fbf711a8fcd4f08585');
       }
     };
 
