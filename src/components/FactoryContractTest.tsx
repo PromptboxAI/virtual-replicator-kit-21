@@ -90,17 +90,33 @@ export function FactoryContractTest() {
     const results: any = {};
 
     try {
+      console.log('🏭 FACTORY TEST DEBUG:');
+      console.log('- Factory address being tested:', factoryAddress);
+      console.log('- Public client:', !!publicClient);
+      console.log('- Wallet client:', !!walletClient);
+      console.log('- Chain ID:', publicClient?.chain?.id);
+      
       // Step 1: Check if factory has bytecode
       console.log('🔍 Checking factory bytecode...');
+      console.log('- Calling getBytecode for address:', factoryAddress);
+      
       const bytecode = await publicClient.getBytecode({
         address: factoryAddress as `0x${string}`
       });
 
+      console.log('- Raw bytecode result:', bytecode);
+      console.log('- Bytecode type:', typeof bytecode);
+      console.log('- Bytecode length:', bytecode?.length);
+      
       results.hasBytecode = bytecode && bytecode !== '0x';
+      results.rawBytecode = bytecode;
       console.log('Factory has bytecode:', results.hasBytecode);
 
       if (!results.hasBytecode) {
-        throw new Error('Factory contract not found at address');
+        console.log('❌ Factory contract verification failed');
+        console.log('- Expected: non-empty bytecode');
+        console.log('- Received:', bytecode);
+        throw new Error(`Factory contract not found at address ${factoryAddress}`);
       }
 
       // Step 2: Get current tokens before deployment
