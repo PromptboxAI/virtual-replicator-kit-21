@@ -56,6 +56,11 @@ Deno.serve(async (req) => {
       throw new Error('No contract address found in transaction receipt');
     }
 
+    // Check if transaction was successful
+    if (receipt.status !== 'success') {
+      throw new Error(`Transaction failed with status: ${receipt.status}`);
+    }
+
     // Verify the contract exists at the deployed address
     const bytecode = await publicClient.getBytecode({
       address: receipt.contractAddress
