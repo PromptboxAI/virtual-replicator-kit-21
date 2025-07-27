@@ -145,18 +145,32 @@ export const useContractDeployment = () => {
     try {
       const { data: contracts, error } = await supabase
         .from('deployed_contracts')
-        .select('contract_address, contract_type, name, symbol')
+        .select('contract_address, contract_type, name, symbol, transaction_hash')
         .eq('network', 'base_sepolia')
         .eq('is_active', true)
+        .neq('transaction_hash', null) // Only get contracts with confirmed transactions
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      const promptToken = contracts?.find(c => c.contract_type === 'prompt_token');
-      const factory = contracts?.find(c => c.contract_type === 'factory');
+      // Get the most recent PROMPT token that actually has a transaction hash (confirmed deployment)
+      const promptToken = contracts?.find(c => 
+        c.contract_type === 'prompt_token' && 
+        c.transaction_hash
+      );
+      const factory = contracts?.find(c => 
+        c.contract_type === 'factory' && 
+        c.transaction_hash
+      );
 
-      if (promptToken) setPromptTokenAddress(promptToken.contract_address);
-      if (factory) setFactoryAddress(factory.contract_address);
+      if (promptToken) {
+        console.log('📍 Using PROMPT token from database:', promptToken.contract_address);
+        setPromptTokenAddress(promptToken.contract_address);
+      }
+      if (factory) {
+        console.log('📍 Using Factory from database:', factory.contract_address);
+        setFactoryAddress(factory.contract_address);
+      }
 
       return contracts || [];
     } catch (error) {
