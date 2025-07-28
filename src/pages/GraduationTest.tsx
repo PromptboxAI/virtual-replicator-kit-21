@@ -244,24 +244,31 @@ const GraduationTest = () => {
             </Button>
             <Button
               onClick={async () => {
+                console.log('🔍 Test Basic Setup button clicked');
                 try {
-                  console.log('Testing basic deployment...');
+                  console.log('📞 Invoking test-basic-deploy function...');
                   const { data, error } = await supabase.functions.invoke('test-basic-deploy');
+                  console.log('📨 Response received:', { data, error });
+                  
                   if (error) {
-                    console.error('Test error:', error);
+                    console.error('❌ Test error:', error);
                     toast.error(`Test failed: ${error.message}`);
                   } else {
-                    console.log('Test success:', data);
-                    if (data.success) {
+                    console.log('✅ Test success:', data);
+                    if (data && data.success) {
                       toast.success(`Ready! Wallet: ${data.account}, Balance: ${data.balance}`);
-                    } else {
+                    } else if (data) {
                       toast.error(`Failed: ${data.error}`);
+                    } else {
+                      toast.error('No response data received');
                     }
                     // Show logs
-                    console.log('Detailed logs:', data.logs);
+                    if (data && data.logs) {
+                      console.log('📋 Detailed logs:', data.logs);
+                    }
                   }
                 } catch (e: any) {
-                  console.error('Exception:', e);
+                  console.error('💥 Exception caught:', e);
                   toast.error(`Exception: ${e.message}`);
                 }
               }}
