@@ -4,14 +4,19 @@ const corsHeaders = {
 }
 
 Deno.serve(async (req) => {
+  console.log('🚀 test-basic-deploy function called');
+  
   if (req.method === 'OPTIONS') {
+    console.log('📋 Handling OPTIONS request');
     return new Response(null, { headers: corsHeaders });
   }
 
+  console.log('📊 Starting test execution...');
   const logs = [];
 
   try {
     logs.push('Starting test...');
+    console.log('✅ Test started successfully');
 
     // Test 1: Check environment
     const privateKey = Deno.env.get('DEPLOYER_PRIVATE_KEY');
