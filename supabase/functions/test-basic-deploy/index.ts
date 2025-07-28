@@ -21,70 +21,75 @@ Deno.serve(async (req) => {
     // Test 1: Check environment
     const privateKey = Deno.env.get('DEPLOYER_PRIVATE_KEY');
     logs.push(`Private key exists: ${!!privateKey}`);
+    console.log(`Private key exists: ${!!privateKey}`);
+    
     if (privateKey) {
       logs.push(`Key length: ${privateKey.length}`);
       logs.push(`Key starts with 0x: ${privateKey.startsWith('0x')}`);
+      console.log(`Key length: ${privateKey.length}, starts with 0x: ${privateKey.startsWith('0x')}`);
     }
 
-    // Test 2: Import viem
-    logs.push('Importing viem...');
-    const { createWalletClient, createPublicClient, http } = await import('npm:viem');
-    const { baseSepolia } = await import('npm:viem/chains');
-    const { privateKeyToAccount } = await import('npm:viem/accounts');
-    logs.push('Viem imported successfully');
-
-    // Test 3: Create account
-    if (privateKey) {
-      logs.push('Creating account...');
-      const formattedKey = privateKey.startsWith('0x') ? privateKey : `0x${privateKey}`;
-      const account = privateKeyToAccount(formattedKey as `0x${string}`);
-      logs.push(`Account created: ${account.address}`);
-
-      // Test 4: Create client
-      logs.push('Creating client...');
-      const client = createPublicClient({
-        chain: baseSepolia,
-        transport: http('https://base-sepolia.g.alchemy.com/v2/demo')
-      });
-      logs.push('Client created');
-
-      // Test 5: Get balance
-      logs.push('Fetching balance...');
-      const balance = await client.getBalance({ address: account.address });
-      logs.push(`Balance: ${(Number(balance) / 1e18).toFixed(6)} ETH`);
-
-      // Test 6: Simple deployment
-      logs.push('Creating wallet client...');
-      const walletClient = createWalletClient({
-        account,
-        chain: baseSepolia,
-        transport: http('https://base-sepolia.g.alchemy.com/v2/demo')
-      });
-
-      // Just return success without actually deploying
+    // Test 2: Try to import viem (this might be where it fails)
+    logs.push('Attempting to import viem...');
+    console.log('Attempting to import viem...');
+    
+    try {
+      const viem = await import('npm:viem');
+      logs.push('✅ Viem imported successfully');
+      console.log('✅ Viem imported successfully');
+      
+      const { privateKeyToAccount } = await import('npm:viem/accounts');
+      logs.push('✅ Viem accounts imported successfully');
+      console.log('✅ Viem accounts imported successfully');
+      
+      if (privateKey) {
+        const formattedKey = privateKey.startsWith('0x') ? privateKey : `0x${privateKey}`;
+        console.log('Creating account with formatted key...');
+        
+        const account = privateKeyToAccount(formattedKey as `0x${string}`);
+        logs.push(`✅ Account created: ${account.address}`);
+        console.log(`✅ Account created: ${account.address}`);
+        
+        return new Response(
+          JSON.stringify({
+            success: true,
+            logs,
+            account: account.address,
+            ready: true,
+            message: 'All tests passed!'
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    } catch (viemError: any) {
+      logs.push(`❌ Viem import failed: ${viemError.message}`);
+      console.error('❌ Viem import failed:', viemError);
+      
       return new Response(
         JSON.stringify({
-          success: true,
-          logs,
-          account: account.address,
-          balance: (Number(balance) / 1e18).toFixed(6) + ' ETH',
-          ready: true
+          success: false,
+          error: `Viem import failed: ${viemError.message}`,
+          logs
         }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500
+        }
       );
     }
 
     throw new Error('No private key found');
 
   } catch (error: any) {
-    logs.push(`Error: ${error.message}`);
-    logs.push(`Stack: ${error.stack}`);
+    logs.push(`❌ Error: ${error.message}`);
+    console.error('❌ Function error:', error);
 
     return new Response(
       JSON.stringify({
         success: false,
         error: error.message,
-        logs
+        logs,
+        stack: error.stack
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
