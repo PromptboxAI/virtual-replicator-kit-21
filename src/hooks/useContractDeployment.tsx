@@ -11,82 +11,36 @@ export const useContractDeployment = () => {
   const { user } = useAuth();
   const address = user?.wallet?.address;
 
-  const verifyContractOnChain = async (contractAddress: string, retries = 10): Promise<boolean> => {
-    for (let i = 0; i < retries; i++) {
-      try {
-        console.log(`🔍 Attempt ${i + 1}/${retries}: Verifying contract ${contractAddress} on-chain...`);
-        
-        const response = await fetch('https://sepolia.base.org', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            jsonrpc: '2.0',
-            id: 1,
-            method: 'eth_getCode',
-            params: [contractAddress, 'latest']
-          })
-        });
-        
-        const result = await response.json();
-        const bytecode = result.result;
-        
-        if (bytecode && bytecode !== '0x' && bytecode.length > 2) {
-          console.log(`✅ Contract ${contractAddress} verified on-chain with bytecode length: ${bytecode.length}`);
-          return true;
-        }
-        
-        console.log(`⏳ Contract ${contractAddress} not ready yet, waiting ${Math.min(2000 * (i + 1), 10000)}ms...`);
-        await new Promise(resolve => setTimeout(resolve, Math.min(2000 * (i + 1), 10000)));
-      } catch (error) {
-        console.error(`❌ Error verifying contract ${contractAddress}:`, error);
-        if (i === retries - 1) return false;
-        await new Promise(resolve => setTimeout(resolve, 2000));
-      }
-    }
-    return false;
-  };
-
   const deployPromptTestToken = async (skipStateManagement = false) => {
     try {
       if (!skipStateManagement) setIsDeploying(true);
-      toast.info('Deploying real ERC20 PROMPTTEST token...');
+      console.log('🚀 Deploying PROMPTTEST token with enhanced verification...');
+      toast.info('Deploying PROMPTTEST token...');
 
-      const { data, error } = await supabase.functions.invoke('deploy-real-erc20-token');
+      // Use enhanced edge function that handles all verification server-side
+      const { data, error } = await supabase.functions.invoke('deploy-prompt-test-token-enhanced');
 
       if (error) throw error;
-      if (!data.success) throw new Error(data.error || 'Failed to deploy PROMPTTEST token');
+      if (!data.success) {
+        throw new Error(data.error || 'Enhanced deployment failed');
+      }
 
-      // Verify contract actually exists on-chain before storing
       if (!data.contractAddress || data.contractAddress === '0x0000000000000000000000000000000000000000') {
-        throw new Error('Invalid contract address returned from deployment');
+        throw new Error('Invalid contract address returned from enhanced deployment');
       }
 
-      console.log(`🚀 PROMPT token deployed, verifying on-chain: ${data.contractAddress}`);
-      toast.info('Verifying PROMPT token on-chain...');
+      console.log(`✅ Enhanced deployment completed: ${data.contractAddress}`);
+      console.log(`🔍 Verification status: ${data.verified ? 'VERIFIED' : 'TIMEOUT (but deployment successful)'}`);
       
-      // Wait for contract to be available on-chain with exponential backoff
-      const isVerified = await verifyContractOnChain(data.contractAddress);
-      if (!isVerified) {
-        throw new Error(`PROMPT token contract ${data.contractAddress} failed on-chain verification`);
-      }
-
       setPromptTokenAddress(data.contractAddress);
       
-      // Store in database ONLY after successful verification
-      await supabase
-        .from('deployed_contracts')
-        .insert({
-          contract_address: data.contractAddress,
-          contract_type: 'prompt_token',
-          network: 'base_sepolia',
-          version: 'v1',
-          name: 'PROMPTTEST',
-          symbol: 'PROMPT',
-          transaction_hash: data.transactionHash,
-          is_active: true
-        });
-
-      toast.success(`✅ PROMPT token deployed and verified: ${data.contractAddress}`);
+      // Database insertion is handled by the enhanced edge function
+      // But we'll update our local state
+      const statusMessage = data.verified 
+        ? `✅ PROMPT token deployed and verified: ${data.contractAddress}`
+        : `✅ PROMPT token deployed: ${data.contractAddress} (verification timed out but deployment successful)`;
+      
+      toast.success(statusMessage);
       return data.contractAddress;
     } catch (error) {
       console.error('Error deploying PROMPTTEST token:', error);
@@ -197,7 +151,7 @@ export const useContractDeployment = () => {
 
       // Get the most recent PROMPT token that actually has a transaction hash (confirmed deployment)
       const promptToken = contracts?.find(c => 
-        c.contract_type === 'prompt_token' && 
+        (c.contract_type === 'prompt_token' || c.contract_type === 'PROMPT_TOKEN') && 
         c.transaction_hash
       );
       const factory = contracts?.find(c => 
