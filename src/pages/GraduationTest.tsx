@@ -304,6 +304,108 @@ const GraduationTest = () => {
           </CardContent>
         </Card>
 
+        {/* Manual Deployment */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Manual Deployment</CardTitle>
+            <CardDescription>
+              Deploy contracts individually to debug deployment issues
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Button
+              onClick={async () => {
+                try {
+                  console.log('🪙 Deploying PROMPT Token (Simple)...');
+                  toast.loading('Deploying PROMPT Token...');
+                  
+                  const { data, error } = await supabase.functions.invoke('deploy-prompt-token-simple');
+                  console.log('📨 PROMPT Token deployment response:', { data, error });
+                  
+                  if (error) {
+                    console.error('❌ PROMPT Token deployment error:', error);
+                    toast.error(`PROMPT Token deployment failed: ${error.message}`);
+                  } else if (data?.success) {
+                    console.log('✅ PROMPT Token deployed successfully:', data);
+                    toast.success(`PROMPT Token deployed at: ${data.contractAddress}`);
+                    setTimeout(() => window.location.reload(), 2000);
+                  } else {
+                    toast.error(`PROMPT Token deployment failed: ${data?.error || 'Unknown error'}`);
+                  }
+                } catch (e: any) {
+                  console.error('💥 PROMPT Token deployment exception:', e);
+                  toast.error(`PROMPT Token deployment exception: ${e.message}`);
+                }
+              }}
+              className="w-full"
+            >
+              Deploy PROMPT Token (Simple)
+            </Button>
+            
+            <Button
+              onClick={async () => {
+                try {
+                  console.log('🏭 Deploying Factory (After PROMPT)...');
+                  toast.loading('Finding latest PROMPT token...');
+                  
+                  // Query for latest active PROMPT token
+                  const { data: contracts, error: queryError } = await supabase
+                    .from('deployed_contracts')
+                    .select('*')
+                    .eq('contract_type', 'PROMPT')
+                    .eq('network', 'base_sepolia')
+                    .eq('is_active', true)
+                    .order('created_at', { ascending: false })
+                    .limit(1);
+                  
+                  if (queryError) {
+                    console.error('❌ Failed to query PROMPT token:', queryError);
+                    toast.error(`Failed to find PROMPT token: ${queryError.message}`);
+                    return;
+                  }
+                  
+                  if (!contracts || contracts.length === 0) {
+                    toast.error('No active PROMPT token found. Deploy PROMPT token first.');
+                    return;
+                  }
+                  
+                  const promptTokenAddress = contracts[0].contract_address;
+                  console.log('🎯 Found PROMPT token:', promptTokenAddress);
+                  
+                  toast.loading('Deploying Factory contract...');
+                  
+                  const { data, error } = await supabase.functions.invoke('deploy-factory-contract-fixed', {
+                    body: {
+                      promptTokenAddress,
+                      treasuryAddress: '0x23d03610584B0f0988A6F9C281a37094D5611388' // Use deployer as treasury for testing
+                    }
+                  });
+                  
+                  console.log('📨 Factory deployment response:', { data, error });
+                  
+                  if (error) {
+                    console.error('❌ Factory deployment error:', error);
+                    toast.error(`Factory deployment failed: ${error.message}`);
+                  } else if (data?.success) {
+                    console.log('✅ Factory deployed successfully:', data);
+                    toast.success(`Factory deployed at: ${data.contractAddress}`);
+                    setTimeout(() => window.location.reload(), 2000);
+                  } else {
+                    toast.error(`Factory deployment failed: ${data?.error || 'Unknown error'}`);
+                  }
+                } catch (e: any) {
+                  console.error('💥 Factory deployment exception:', e);
+                  toast.error(`Factory deployment exception: ${e.message}`);
+                }
+              }}
+              variant="secondary"
+              className="w-full"
+            >
+              Deploy Factory (After PROMPT)
+            </Button>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle>Step 1: Deploy Foundation Contracts</CardTitle>
