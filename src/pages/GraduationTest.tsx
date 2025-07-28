@@ -242,6 +242,34 @@ const GraduationTest = () => {
             >
               {loading.keyTest ? 'Testing...' : 'Test Deployer Key'}
             </Button>
+            <Button
+              onClick={async () => {
+                try {
+                  console.log('Testing basic deployment...');
+                  const { data, error } = await supabase.functions.invoke('test-basic-deploy');
+                  if (error) {
+                    console.error('Test error:', error);
+                    toast.error(`Test failed: ${error.message}`);
+                  } else {
+                    console.log('Test success:', data);
+                    if (data.success) {
+                      toast.success(`Ready! Wallet: ${data.account}, Balance: ${data.balance}`);
+                    } else {
+                      toast.error(`Failed: ${data.error}`);
+                    }
+                    // Show logs
+                    console.log('Detailed logs:', data.logs);
+                  }
+                } catch (e: any) {
+                  console.error('Exception:', e);
+                  toast.error(`Exception: ${e.message}`);
+                }
+              }}
+              variant="outline"
+              className="w-full mt-2"
+            >
+              Test Basic Setup
+            </Button>
           </CardContent>
         </Card>
 
