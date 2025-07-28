@@ -277,6 +277,30 @@ const GraduationTest = () => {
             >
               Test Basic Setup
             </Button>
+            <Button
+              onClick={async () => {
+                try {
+                  console.log('🧪 Testing simple function...');
+                  const { data, error } = await supabase.functions.invoke('simple-test');
+                  console.log('📨 Simple test response:', { data, error });
+                  
+                  if (error) {
+                    console.error('❌ Simple test error:', error);
+                    toast.error(`Simple test failed: ${error.message}`);
+                  } else {
+                    console.log('✅ Simple test success:', data);
+                    toast.success(`Simple test passed! ${data.message}`);
+                  }
+                } catch (e: any) {
+                  console.error('💥 Simple test exception:', e);
+                  toast.error(`Simple test exception: ${e.message}`);
+                }
+              }}
+              variant="secondary"
+              className="w-full mt-2"
+            >
+              Test Simple Function
+            </Button>
           </CardContent>
         </Card>
 
