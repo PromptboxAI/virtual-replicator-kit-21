@@ -2,6 +2,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { createPublicClient, createWalletClient, http, parseEther } from 'https://esm.sh/viem@2.31.7';
 import { privateKeyToAccount } from 'https://esm.sh/viem@2.31.7/accounts';
 import { baseSepolia } from 'https://esm.sh/viem@2.31.7/chains';
+import { verifyDeployment } from '../_shared/verifyDeployment.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -181,13 +182,10 @@ Deno.serve(async (req) => {
 
     console.log('🎉 Factory deployed successfully at:', contractAddress);
 
-    // Step 6: Verify deployed contract
-    console.log('🔍 Verifying deployed contract...');
-    
-    const deployedCode = await publicClient.getCode({ address: contractAddress });
-    if (!deployedCode || deployedCode === '0x') {
-      throw new Error('Deployed contract has no bytecode');
-    }
+    // 🔒 MANDATORY VERIFICATION: Ensure contract exists on-chain before proceeding
+    console.log('🔍 Verifying factory contract deployment before database operations...');
+    const verification = await verifyDeployment(contractAddress, publicClient, 'factory');
+    console.log('✅ Contract verification passed:', verification);
 
     // Test contract functions
     try {

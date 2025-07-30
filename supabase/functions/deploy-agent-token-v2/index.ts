@@ -3,6 +3,7 @@ import { createWalletClient, createPublicClient, http, parseEther, defineChain }
 import { privateKeyToAccount } from 'npm:viem/accounts'
 import { baseSepolia } from 'npm:viem/chains'
 import { createClient } from 'npm:@supabase/supabase-js'
+import { verifyDeployment } from '../_shared/verifyDeployment.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -212,6 +213,11 @@ async function createAgentTokenViaFactory(
 
     console.log('Agent Token created at:', tokenAddress);
 
+    // 🔒 MANDATORY VERIFICATION: Ensure contract exists on-chain before proceeding
+    console.log('🔍 Verifying contract deployment before database operations...');
+    const verification = await verifyDeployment(tokenAddress as `0x${string}`, publicClient, 'agent_token');
+    console.log('✅ Contract verification passed:', verification);
+
     return {
       contractAddress: tokenAddress,
       transactionHash: hash,
@@ -341,7 +347,8 @@ Deno.serve(async (req) => {
       finalCreatorAddress
     );
 
-    // Record the deployment
+    // 🔒 VERIFICATION COMPLETE: Contract verified during deployment
+    // Now safe to record in database
     await recordDeployment(agentId, deploymentResult.contractAddress, deploymentResult.transactionHash, name, symbol, 'v2');
 
     console.log('V2 Agent Token deployment completed successfully');
