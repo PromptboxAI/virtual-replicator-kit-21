@@ -1,6 +1,7 @@
 import { createPublicClient, createWalletClient, http } from 'npm:viem'
 import { baseSepolia } from 'npm:viem/chains'
 import { privateKeyToAccount } from 'npm:viem/accounts'
+import { verifyDeployment } from '../_shared/verifyDeployment.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -73,6 +74,12 @@ Deno.serve(async (req) => {
 
     const receipt = await publicClient.waitForTransactionReceipt({ hash });
     console.log('Contract deployed at:', receipt.contractAddress);
+
+    // ✅ CRITICAL: Verify contract deployment before returning success
+    if (!receipt.contractAddress) {
+      throw new Error('Contract deployment failed - no address returned');
+    }
+    await verifyDeployment(receipt.contractAddress, publicClient, 'SIMPLE_CONTRACT');
 
     return new Response(
       JSON.stringify({ 

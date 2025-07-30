@@ -1,6 +1,9 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.3';
+import { createPublicClient, http } from 'https://esm.sh/viem@2.31.7';
+import { baseSepolia } from 'https://esm.sh/viem@2.31.7/chains';
+import { verifyDeployment } from '../_shared/verifyDeployment.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -376,7 +379,15 @@ serve(async (req) => {
 
     console.log(`🎉 PROMPT token deployed successfully at: ${contractAddress}`);
 
-    // Verify the contract on-chain
+    // ✅ CRITICAL: Verify contract deployment with universal verification
+    const publicClient = createPublicClient({
+      chain: baseSepolia,
+      transport: http()
+    });
+    
+    await verifyDeployment(contractAddress as `0x${string}`, publicClient, 'PROMPT_TOKEN');
+
+    // Additional enhanced verification
     const isVerified = await verifyContractOnChain(contractAddress);
     
     if (isVerified) {

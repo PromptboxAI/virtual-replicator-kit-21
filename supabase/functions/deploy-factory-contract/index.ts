@@ -1,6 +1,7 @@
 import { createPublicClient, createWalletClient, http, parseEther, getAddress } from 'npm:viem'
 import { base, baseSepolia } from 'npm:viem/chains'
 import { privateKeyToAccount } from 'npm:viem/accounts'
+import { verifyDeployment } from '../_shared/verifyDeployment.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -125,6 +126,9 @@ Deno.serve(async (req) => {
     }
     
     console.log('✅ AgentTokenFactory deployed successfully at:', receipt.contractAddress);
+
+    // ✅ CRITICAL: Verify contract deployment before returning success
+    await verifyDeployment(receipt.contractAddress, publicClient, 'AgentTokenFactory');
 
     return new Response(
       JSON.stringify({
