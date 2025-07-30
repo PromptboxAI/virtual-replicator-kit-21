@@ -173,6 +173,54 @@ export type Database = {
           },
         ]
       }
+      agent_graduation_events_backup: {
+        Row: {
+          agent_id: string | null
+          created_at: string | null
+          deployment_tx_hash: string | null
+          error_message: string | null
+          graduation_status: string | null
+          graduation_timestamp: string | null
+          id: string | null
+          liquidity_pool_address: string | null
+          liquidity_tx_hash: string | null
+          metadata: Json | null
+          prompt_raised_at_graduation: number | null
+          updated_at: string | null
+          v2_contract_address: string | null
+        }
+        Insert: {
+          agent_id?: string | null
+          created_at?: string | null
+          deployment_tx_hash?: string | null
+          error_message?: string | null
+          graduation_status?: string | null
+          graduation_timestamp?: string | null
+          id?: string | null
+          liquidity_pool_address?: string | null
+          liquidity_tx_hash?: string | null
+          metadata?: Json | null
+          prompt_raised_at_graduation?: number | null
+          updated_at?: string | null
+          v2_contract_address?: string | null
+        }
+        Update: {
+          agent_id?: string | null
+          created_at?: string | null
+          deployment_tx_hash?: string | null
+          error_message?: string | null
+          graduation_status?: string | null
+          graduation_timestamp?: string | null
+          id?: string | null
+          liquidity_pool_address?: string | null
+          liquidity_tx_hash?: string | null
+          metadata?: Json | null
+          prompt_raised_at_graduation?: number | null
+          updated_at?: string | null
+          v2_contract_address?: string | null
+        }
+        Relationships: []
+      }
       agent_interactions: {
         Row: {
           agent_id: string
@@ -545,6 +593,42 @@ export type Database = {
           },
         ]
       }
+      agent_token_holders_backup: {
+        Row: {
+          agent_id: string | null
+          average_buy_price: number | null
+          created_at: string | null
+          id: string | null
+          realized_profit_loss: number | null
+          token_balance: number | null
+          total_invested: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          agent_id?: string | null
+          average_buy_price?: number | null
+          created_at?: string | null
+          id?: string | null
+          realized_profit_loss?: number | null
+          token_balance?: number | null
+          total_invested?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          agent_id?: string | null
+          average_buy_price?: number | null
+          created_at?: string | null
+          id?: string | null
+          realized_profit_loss?: number | null
+          token_balance?: number | null
+          total_invested?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       agent_token_sell_trades: {
         Row: {
           agent_id: string
@@ -763,6 +847,117 @@ export type Database = {
           },
         ]
       }
+      agents_backup: {
+        Row: {
+          avatar_url: string | null
+          bonding_curve_supply: number | null
+          category: string | null
+          circulating_supply: number | null
+          created_at: string | null
+          creation_cost: number | null
+          creator_ens_name: string | null
+          creator_id: string | null
+          creator_wallet_address: string | null
+          current_price: number | null
+          description: string | null
+          framework: string | null
+          graduation_event_id: string | null
+          graduation_threshold: number | null
+          id: string | null
+          is_active: boolean | null
+          market_cap: number | null
+          name: string | null
+          price_change_24h: number | null
+          prompt_raised: number | null
+          status: string | null
+          symbol: string | null
+          test_mode: boolean | null
+          token_address: string | null
+          token_graduated: boolean | null
+          token_holders: number | null
+          total_supply: number | null
+          twitter_api_configured: boolean | null
+          twitter_api_encrypted_credentials: string | null
+          twitter_url: string | null
+          twitter_username: string | null
+          updated_at: string | null
+          volume_24h: number | null
+          website_url: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bonding_curve_supply?: number | null
+          category?: string | null
+          circulating_supply?: number | null
+          created_at?: string | null
+          creation_cost?: number | null
+          creator_ens_name?: string | null
+          creator_id?: string | null
+          creator_wallet_address?: string | null
+          current_price?: number | null
+          description?: string | null
+          framework?: string | null
+          graduation_event_id?: string | null
+          graduation_threshold?: number | null
+          id?: string | null
+          is_active?: boolean | null
+          market_cap?: number | null
+          name?: string | null
+          price_change_24h?: number | null
+          prompt_raised?: number | null
+          status?: string | null
+          symbol?: string | null
+          test_mode?: boolean | null
+          token_address?: string | null
+          token_graduated?: boolean | null
+          token_holders?: number | null
+          total_supply?: number | null
+          twitter_api_configured?: boolean | null
+          twitter_api_encrypted_credentials?: string | null
+          twitter_url?: string | null
+          twitter_username?: string | null
+          updated_at?: string | null
+          volume_24h?: number | null
+          website_url?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bonding_curve_supply?: number | null
+          category?: string | null
+          circulating_supply?: number | null
+          created_at?: string | null
+          creation_cost?: number | null
+          creator_ens_name?: string | null
+          creator_id?: string | null
+          creator_wallet_address?: string | null
+          current_price?: number | null
+          description?: string | null
+          framework?: string | null
+          graduation_event_id?: string | null
+          graduation_threshold?: number | null
+          id?: string | null
+          is_active?: boolean | null
+          market_cap?: number | null
+          name?: string | null
+          price_change_24h?: number | null
+          prompt_raised?: number | null
+          status?: string | null
+          symbol?: string | null
+          test_mode?: boolean | null
+          token_address?: string | null
+          token_graduated?: boolean | null
+          token_holders?: number | null
+          total_supply?: number | null
+          twitter_api_configured?: boolean | null
+          twitter_api_encrypted_credentials?: string | null
+          twitter_url?: string | null
+          twitter_username?: string | null
+          updated_at?: string | null
+          volume_24h?: number | null
+          website_url?: string | null
+        }
+        Relationships: []
+      }
       deployed_contracts: {
         Row: {
           agent_id: string | null
@@ -825,6 +1020,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      deployed_contracts_backup: {
+        Row: {
+          agent_id: string | null
+          contract_address: string | null
+          contract_type: string | null
+          created_at: string | null
+          deployment_timestamp: string | null
+          id: string | null
+          is_active: boolean | null
+          name: string | null
+          network: string | null
+          symbol: string | null
+          transaction_hash: string | null
+          updated_at: string | null
+          version: string | null
+        }
+        Insert: {
+          agent_id?: string | null
+          contract_address?: string | null
+          contract_type?: string | null
+          created_at?: string | null
+          deployment_timestamp?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          name?: string | null
+          network?: string | null
+          symbol?: string | null
+          transaction_hash?: string | null
+          updated_at?: string | null
+          version?: string | null
+        }
+        Update: {
+          agent_id?: string | null
+          contract_address?: string | null
+          contract_type?: string | null
+          created_at?: string | null
+          deployment_timestamp?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          name?: string | null
+          network?: string | null
+          symbol?: string | null
+          transaction_hash?: string | null
+          updated_at?: string | null
+          version?: string | null
+        }
+        Relationships: []
       }
       graduation_transaction_logs: {
         Row: {
