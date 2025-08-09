@@ -25,9 +25,13 @@ export function Header() {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center space-x-8">
-            <div className="text-2xl font-bold text-foreground">
-              PROMPTBOX
-            </div>
+            <Link to="/" className="flex items-center">
+              <img 
+                src="/lovable-uploads/d0bf757c-4ea5-4d12-a3bb-824496645ce2.png" 
+                alt="PROMPTBOX" 
+                className="h-8 w-auto"
+              />
+            </Link>
             
             {/* Navigation */}
             <nav className="hidden md:flex items-center space-x-8">

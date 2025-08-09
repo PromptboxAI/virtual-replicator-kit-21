@@ -5,9 +5,11 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <div className="mb-4">
-              <div className="text-2xl font-bold text-foreground">
-                PROMPTBOX
-              </div>
+              <img 
+                src="/lovable-uploads/d0bf757c-4ea5-4d12-a3bb-824496645ce2.png" 
+                alt="PROMPTBOX" 
+                className="h-8 w-auto mb-2"
+              />
             </div>
             <p className="text-sm font-normal tracking-normal" style={{ color: '#000000' }}>
               Building the future of autonomous AI agent commerce and collaboration.
