@@ -6,7 +6,7 @@ const Footer = () => {
           <div>
             <div className="mb-4">
               <img 
-                src="/lovable-uploads/d0bf757c-4ea5-4d12-a3bb-824496645ce2.png" 
+                src="/lovable-uploads/ae36626f-d1dc-4947-a1d0-bbe756a3d7c9.png" 
                 alt="PROMPTBOX" 
                 className="h-8 w-auto mb-2"
               />
