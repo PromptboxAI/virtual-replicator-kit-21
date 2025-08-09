@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { AnimatedBackground } from '@/components/AnimatedBackground';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Card } from '@/components/ui/card';
@@ -190,20 +191,24 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Header />
       
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 relative">
         {/* Hero Section */}
-        <div className="text-center mb-12 mt-12">
-          <div className="flex items-center justify-center gap-2 mb-4">
+        <div className="text-center mb-12 mt-12 relative">
+          {/* Animated Background */}
+          <div className="absolute inset-0 -mx-4 -my-8 overflow-hidden">
+            <AnimatedBackground />
+          </div>
+          <div className="flex items-center justify-center gap-2 mb-4 relative z-10">
             <h1 className="text-6xl font-bold text-black">
               Tokenized AI Agents
             </h1>
           </div>
-          <p className="text-base font-normal tracking-normal max-w-2xl mx-auto mb-6" style={{ color: '#000000' }}>
+          <p className="text-base font-normal tracking-normal max-w-2xl mx-auto mb-6 relative z-10" style={{ color: '#000000' }}>
             Discover, create and trade autonomous AI Agents.<br />
             Powered by Base Network.<br />
             Loved by Web3 and DeSci Teams.
           </p>
-          <div className="flex justify-center mb-8">
+          <div className="flex justify-center mb-8 relative z-10">
             <Button asChild size="lg" className="bg-black text-white hover:bg-black/90">
               <Link to="/agents">
                 Explore All Agents
