@@ -27,9 +27,9 @@ export function Header() {
           <div className="flex items-center space-x-8">
             <Link to="/" className="flex items-center">
               <img 
-                src="/lovable-uploads/ae36626f-d1dc-4947-a1d0-bbe756a3d7c9.png" 
+                src="/lovable-uploads/2e7ad5f9-215d-4361-bcc3-b84d6328849c.png" 
                 alt="PROMPTBOX" 
-                className="h-12 w-auto"
+                className="h-18 w-auto"
               />
             </Link>
             
