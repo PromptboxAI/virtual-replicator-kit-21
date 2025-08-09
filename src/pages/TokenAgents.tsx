@@ -60,8 +60,10 @@ const TokenAgents = () => {
                 <Zap className="mr-2 h-4 w-4" />
                 Launch Your Token
               </Button>
-              <Button variant="outline" size="lg">
-                Try Demo
+              <Button variant="outline" size="lg" asChild>
+                <Link to="/learn">
+                  Watch Demo
+                </Link>
               </Button>
             </div>
 
