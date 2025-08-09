@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -55,7 +55,8 @@ export function NewAgentCreator() {
     setCurrentStep(stepId);
   };
 
-  const createAgentV2 = async () => {
+  // 🔒 DEBOUNCED DEPLOYMENT FUNCTION to prevent double-clicks
+  const createAgentV2 = useCallback(async () => {
     if (!address) {
       toast({
         title: "Wallet Not Connected",
@@ -204,7 +205,7 @@ export function NewAgentCreator() {
     } finally {
       setIsCreating(false);
     }
-  };
+  }, [address, agentData, currentStep, navigate, toast]); // Dependencies for useCallback
 
   const agentCategories = [
     "DeFi", "Gaming", "Social", "Trading", "Content", "Analytics", "NFTs", "Education"

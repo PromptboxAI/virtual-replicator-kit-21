@@ -1856,6 +1856,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      pg_try_advisory_xact_lock: {
+        Args: { key: number }
+        Returns: boolean
+      }
       set_admin_by_email: {
         Args: { _email: string }
         Returns: undefined
