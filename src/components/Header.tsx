@@ -29,7 +29,7 @@ export function Header() {
               <img 
                 src="/lovable-uploads/ae36626f-d1dc-4947-a1d0-bbe756a3d7c9.png" 
                 alt="PROMPTBOX" 
-                className="h-8 w-auto"
+                className="h-12 w-auto"
               />
             </Link>
             

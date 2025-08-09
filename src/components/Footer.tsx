@@ -8,7 +8,7 @@ const Footer = () => {
               <img 
                 src="/lovable-uploads/ae36626f-d1dc-4947-a1d0-bbe756a3d7c9.png" 
                 alt="PROMPTBOX" 
-                className="h-8 w-auto mb-2"
+                className="h-12 w-auto mb-2"
               />
             </div>
             <p className="text-sm font-normal tracking-normal" style={{ color: '#000000' }}>
