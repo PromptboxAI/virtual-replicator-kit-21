@@ -731,8 +731,10 @@ export type Database = {
       agents: {
         Row: {
           avatar_url: string | null
+          block_number: number | null
           bonding_curve_supply: number | null
           category: string | null
+          chain_id: number | null
           circulating_supply: number | null
           created_at: string
           creation_cost: number | null
@@ -770,8 +772,10 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          block_number?: number | null
           bonding_curve_supply?: number | null
           category?: string | null
+          chain_id?: number | null
           circulating_supply?: number | null
           created_at?: string
           creation_cost?: number | null
@@ -809,8 +813,10 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          block_number?: number | null
           bonding_curve_supply?: number | null
           category?: string | null
+          chain_id?: number | null
           circulating_supply?: number | null
           created_at?: string
           creation_cost?: number | null

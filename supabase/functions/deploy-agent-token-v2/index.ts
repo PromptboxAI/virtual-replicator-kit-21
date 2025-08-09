@@ -160,10 +160,11 @@ async function createAgentTokenViaFactory(
 
     console.log('Factory createAgentToken transaction hash:', hash);
 
-    // Wait for transaction confirmation
+    // 🛡️ CHAIN/REORG SAFETY: Wait for 2 confirmations before proceeding
     const receipt = await publicClient.waitForTransactionReceipt({ 
       hash,
-      timeout: 60000 // 60 second timeout
+      confirmations: 2,
+      timeout: 120000 // 2 minute timeout for confirmations
     });
     
     console.log('Factory transaction confirmed, block:', receipt.blockNumber);
@@ -317,10 +318,11 @@ async function deployDirectERC20(
 
     console.log('Direct deployment transaction hash:', hash);
 
-    // Wait for transaction confirmation
+    // 🛡️ CHAIN/REORG SAFETY: Wait for 2 confirmations before proceeding
     const receipt = await publicClient.waitForTransactionReceipt({ 
       hash,
-      timeout: 60000 // 60 second timeout
+      confirmations: 2,
+      timeout: 120000 // 2 minute timeout for confirmations
     });
     
     console.log('Direct deployment confirmed, block:', receipt.blockNumber);
@@ -355,7 +357,8 @@ async function recordDeployment(
   name: string,
   symbol: string,
   deploymentMethod: 'factory' | 'direct',
-  version: string = 'v2'
+  version: string = 'v2',
+  blockNumber?: number
 ): Promise<void> {
   try {
     // Update agent record with new token address and deployment tracking
@@ -366,6 +369,8 @@ async function recordDeployment(
         deployment_method: deploymentMethod,
         deployment_tx_hash: transactionHash,
         deployment_verified: true,
+        chain_id: 84532, // Base Sepolia
+        block_number: blockNumber,
         updated_at: new Date().toISOString(),
         status: 'ACTIVE'
       })
@@ -414,16 +419,57 @@ Deno.serve(async (req) => {
       throw new Error('Missing required parameters: name, symbol, agentId');
     }
 
-    // Check if agent already has a real token address (not a placeholder)
+    // 🔒 IDEMPOTENCY & RACE PROTECTION
+    // Take advisory lock to prevent concurrent deployments
+    const lockKey = parseInt(agentId.replace(/-/g, '').substring(0, 8), 16);
+    const { data: lockResult, error: lockError } = await supabase.rpc('pg_try_advisory_xact_lock', { 
+      key: lockKey 
+    });
+    
+    if (lockError) {
+      console.error('Advisory lock error:', lockError);
+      throw new Error('Could not acquire deployment lock');
+    }
+    
+    if (!lockResult) {
+      console.log('🔒 Deployment already in progress for agent:', agentId);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Deployment already in progress for this agent' 
+        }),
+        { 
+          status: 409,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    // Check if agent already has verified deployment
     const { data: existingAgent, error: agentError } = await supabase
       .from('agents')
-      .select('token_address, name, symbol')
+      .select('token_address, deployment_verified, deployment_method, name, symbol')
       .eq('id', agentId)
       .single();
 
     if (agentError) {
       console.error('Failed to fetch agent:', agentError);
       throw new Error('Agent not found');
+    }
+
+    // IDEMPOTENCY: Check if agent already has verified deployment
+    if (existingAgent?.deployment_verified && existingAgent?.token_address) {
+      console.log('✅ Agent already has verified deployment:', existingAgent.token_address);
+      return new Response(
+        JSON.stringify({
+          success: true,
+          contractAddress: existingAgent.token_address,
+          deploymentMethod: existingAgent.deployment_method || 'unknown',
+          message: 'Agent token already deployed and verified',
+          alreadyDeployed: true
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     // Check if agent already has a real token address (not a UUID-based placeholder)
@@ -488,7 +534,8 @@ Deno.serve(async (req) => {
       name, 
       symbol, 
       deploymentResult.deploymentMethod,
-      'v2'
+      'v2',
+      deploymentResult.blockNumber
     );
 
     console.log('V2 Agent Token deployment completed successfully');
