@@ -740,6 +740,9 @@ export type Database = {
           creator_id: string | null
           creator_wallet_address: string | null
           current_price: number
+          deployment_method: string | null
+          deployment_tx_hash: string | null
+          deployment_verified: boolean | null
           description: string | null
           framework: string | null
           graduation_event_id: string | null
@@ -776,6 +779,9 @@ export type Database = {
           creator_id?: string | null
           creator_wallet_address?: string | null
           current_price?: number
+          deployment_method?: string | null
+          deployment_tx_hash?: string | null
+          deployment_verified?: boolean | null
           description?: string | null
           framework?: string | null
           graduation_event_id?: string | null
@@ -812,6 +818,9 @@ export type Database = {
           creator_id?: string | null
           creator_wallet_address?: string | null
           current_price?: number
+          deployment_method?: string | null
+          deployment_tx_hash?: string | null
+          deployment_verified?: boolean | null
           description?: string | null
           framework?: string | null
           graduation_event_id?: string | null
