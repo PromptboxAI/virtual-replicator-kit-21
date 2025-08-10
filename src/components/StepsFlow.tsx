@@ -173,21 +173,17 @@ export function StepsFlow({ className }: StepsFlowProps) {
                     />
                   </div>
 
-                  {/* Desktop - Line connecting handle to handle */}
-                  <div className="hidden md:block absolute inset-0 flex items-center justify-center pointer-events-none">
+                  {/* Desktop - Line connecting handle dots directly */}
+                  <div className="hidden md:block absolute inset-0 pointer-events-none" style={{ width: '100%', height: '32px' }}>
                     <svg
-                      width="48"
-                      height="24"
-                      viewBox="0 0 48 24"
-                      className="absolute"
-                      style={{ 
-                        left: '50%',
-                        top: '50%',
-                        transform: 'translate(-50%, -50%)'
-                      }}
+                      width="100%"
+                      height="32"
+                      viewBox="0 0 100 32"
+                      className="absolute top-1/2 -translate-y-1/2"
+                      preserveAspectRatio="none"
                     >
                       <path
-                        d="M 2 12 Q 24 6, 46 12"
+                        d="M 0 16 Q 50 8, 100 16"
                         stroke={connectorColors[index === 0 ? 'token-agent' : 'agent-value']}
                         strokeWidth="1.5"
                         fill="none"
