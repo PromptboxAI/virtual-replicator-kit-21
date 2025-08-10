@@ -98,12 +98,11 @@ export function StepsFlow({ className }: StepsFlowProps) {
     return (
       <div className="flex-shrink-0 relative" key={`connector-${index}`}>
         {/* Mobile - Short straight line */}
-        <div className="md:hidden flex items-center justify-center h-8">
-          <div className="w-0.5 h-full bg-border"></div>
+        <div className="md:hidden flex items-center justify-center h-6">
           <div 
             className={cn(
-              "absolute w-1 h-4 bg-primary/40 transition-opacity duration-600",
-              shouldHighlight && !prefersReducedMotion ? "opacity-100" : "opacity-30"
+              "w-0.5 h-full transition-all duration-600",
+              shouldHighlight && !prefersReducedMotion ? "bg-primary/60" : "bg-border"
             )}
           ></div>
         </div>
@@ -111,26 +110,14 @@ export function StepsFlow({ className }: StepsFlowProps) {
         {/* Desktop - Curved SVG connector */}
         <div className="hidden md:block">
           <svg
-            width="80"
+            width="60"
             height="40"
-            viewBox="0 0 80 40"
+            viewBox="0 0 60 40"
             className="overflow-visible"
           >
-            {/* Handle circle at start */}
-            <circle
-              cx="8"
-              cy="20"
-              r="3"
-              className={cn(
-                "transition-all duration-300",
-                steps[index].color.handle,
-                shouldHighlight && !prefersReducedMotion ? "opacity-100 scale-110" : "opacity-60"
-              )}
-            />
-            
             {/* Curved connector path */}
             <path
-              d="M 12 20 Q 40 10, 68 20"
+              d="M 0 20 Q 30 10, 60 20"
               stroke="currentColor"
               strokeWidth="2"
               fill="none"
@@ -145,18 +132,6 @@ export function StepsFlow({ className }: StepsFlowProps) {
                   ? "drawLine 1.5s ease-in-out forwards" 
                   : "none",
               }}
-            />
-            
-            {/* Handle circle at end */}
-            <circle
-              cx="72"
-              cy="20"
-              r="2"
-              className={cn(
-                "transition-all duration-300",
-                steps[index + 1].color.handle,
-                shouldHighlight && !prefersReducedMotion ? "opacity-100" : "opacity-40"
-              )}
             />
           </svg>
         </div>
@@ -215,7 +190,7 @@ export function StepsFlow({ className }: StepsFlowProps) {
                 {/* Card */}
                 <div
                   className={cn(
-                    "relative p-4 rounded-xl border backdrop-blur-sm",
+                    "relative p-3 rounded-xl border backdrop-blur-sm",
                     "transition-all duration-300 ease-out",
                     "hover:shadow-lg hover:-translate-y-1",
                     step.color.bg,
@@ -225,21 +200,44 @@ export function StepsFlow({ className }: StepsFlowProps) {
                       : "shadow-sm"
                   )}
                 >
-                  {/* Icon circle */}
-                  <div className="flex items-center gap-3">
+                  {/* Handle dots */}
+                  {index < steps.length - 1 && (
+                    <div 
+                      className={cn(
+                        "absolute -right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 border-background",
+                        "transition-all duration-300 z-10",
+                        step.color.handle.replace('fill-', 'bg-'),
+                        shouldGlow && !prefersReducedMotion ? "scale-110 shadow-sm" : ""
+                      )}
+                    />
+                  )}
+                  
+                  {index > 0 && (
+                    <div 
+                      className={cn(
+                        "absolute -left-1.5 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full border border-background",
+                        "transition-all duration-300 z-10",
+                        step.color.handle.replace('fill-', 'bg-'),
+                        (activeStep === index || hoveredStep === index) && !prefersReducedMotion ? "scale-110" : ""
+                      )}
+                    />
+                  )}
+
+                  {/* Content */}
+                  <div className="flex items-center gap-2">
                     <div
                       className={cn(
-                        "w-8 h-8 rounded-full flex items-center justify-center",
+                        "w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0",
                         "transition-all duration-300",
                         step.color.bg.replace('/80', ''),
                         shouldGlow 
-                          ? "ring-2 ring-primary/30 shadow-md" 
+                          ? "ring-1 ring-primary/30" 
                           : ""
                       )}
                     >
                       <StepIcon 
                         className={cn(
-                          "w-4 h-4 transition-colors duration-300",
+                          "w-3.5 h-3.5 transition-colors duration-300",
                           step.color.text
                         )} 
                       />
@@ -248,7 +246,7 @@ export function StepsFlow({ className }: StepsFlowProps) {
                     {/* Label */}
                     <span
                       className={cn(
-                        "text-sm font-medium whitespace-nowrap transition-colors duration-300",
+                        "text-xs font-medium whitespace-nowrap transition-colors duration-300",
                         step.color.text
                       )}
                     >
