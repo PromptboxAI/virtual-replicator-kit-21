@@ -95,10 +95,17 @@ export function StepsFlow({ className }: StepsFlowProps) {
   return (
     <div className={cn("w-full mt-4 md:mt-6", className)}>
       <style>{`
-        @keyframes drawConnector {
-          to {
+        @keyframes flowingDots {
+          0% {
+            stroke-dashoffset: 30;
+          }
+          100% {
             stroke-dashoffset: 0;
           }
+        }
+        
+        .animated-connector {
+          animation: flowingDots 2s linear infinite;
         }
       `}</style>
       
@@ -165,7 +172,10 @@ export function StepsFlow({ className }: StepsFlowProps) {
                   {/* Mobile - Vertical line */}
                   <div className="md:hidden w-full flex justify-center py-2">
                     <div 
-                      className="w-0.5 h-6 transition-opacity duration-300"
+                      className={cn(
+                        "w-0.5 h-6 transition-opacity duration-300",
+                        !prefersReducedMotion && "animated-connector"
+                      )}
                       style={{ 
                         backgroundColor: connectorColors[index === 0 ? 'token-agent' : 'agent-value'],
                         opacity: !prefersReducedMotion && isActive ? 0.9 : 0.6 
@@ -189,18 +199,12 @@ export function StepsFlow({ className }: StepsFlowProps) {
                         fill="none"
                         strokeLinecap="round"
                         strokeLinejoin="round"
+                        strokeDasharray="10 5"
                         className={cn(
                           "transition-opacity duration-300",
+                          !prefersReducedMotion && "animated-connector",
                           !prefersReducedMotion && isActive ? "opacity-90" : "opacity-60"
                         )}
-                        pathLength="100"
-                        strokeDasharray={!prefersReducedMotion ? "100" : "none"}
-                        strokeDashoffset={!prefersReducedMotion ? "100" : "0"}
-                        style={{
-                          animation: !prefersReducedMotion 
-                            ? `drawConnector 8s ease-in-out infinite ${index * 2.5}s` 
-                            : "none",
-                        }}
                       />
                     </svg>
                   </div>
