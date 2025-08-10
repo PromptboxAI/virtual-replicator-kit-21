@@ -173,16 +173,21 @@ export function StepsFlow({ className }: StepsFlowProps) {
                     />
                   </div>
 
-                  {/* Desktop - Curved line connecting handles */}
-                  <div className="hidden md:block relative z-0">
+                  {/* Desktop - Line connecting handle to handle */}
+                  <div className="hidden md:block absolute inset-0 flex items-center justify-center pointer-events-none">
                     <svg
-                      width="32"
-                      height="32"
-                      viewBox="0 0 32 32"
-                      className="overflow-visible"
+                      width="48"
+                      height="24"
+                      viewBox="0 0 48 24"
+                      className="absolute"
+                      style={{ 
+                        left: '50%',
+                        top: '50%',
+                        transform: 'translate(-50%, -50%)'
+                      }}
                     >
                       <path
-                        d="M 0 16 Q 16 8, 32 16"
+                        d="M 2 12 Q 24 6, 46 12"
                         stroke={connectorColors[index === 0 ? 'token-agent' : 'agent-value']}
                         strokeWidth="1.5"
                         fill="none"
@@ -192,8 +197,8 @@ export function StepsFlow({ className }: StepsFlowProps) {
                           "transition-opacity duration-300",
                           !prefersReducedMotion && isActive ? "opacity-90" : "opacity-60"
                         )}
-                        strokeDasharray={!prefersReducedMotion ? "20" : "none"}
-                        strokeDashoffset={!prefersReducedMotion ? "20" : "0"}
+                        strokeDasharray={!prefersReducedMotion ? "30" : "none"}
+                        strokeDashoffset={!prefersReducedMotion ? "30" : "0"}
                         style={{
                           animation: !prefersReducedMotion && isActive 
                             ? "drawConnector 2s ease-in-out forwards" 
