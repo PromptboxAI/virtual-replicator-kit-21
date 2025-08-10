@@ -162,7 +162,7 @@ export function StepsFlow({ className }: StepsFlowProps) {
         }
       `}</style>
       
-      <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-0">
+      <div className="flex flex-col md:flex-row items-center md:justify-start gap-4 md:gap-0">
         {steps.map((step, index) => {
           const StepIcon = step.icon;
           const isActive = activeStep === index;
@@ -190,7 +190,7 @@ export function StepsFlow({ className }: StepsFlowProps) {
                 {/* Card */}
                 <div
                   className={cn(
-                    "relative p-3 rounded-xl border backdrop-blur-sm",
+                    "relative p-3 rounded-xl border backdrop-blur-sm w-28 h-12",
                     "transition-all duration-300 ease-out",
                     "hover:shadow-lg hover:-translate-y-1",
                     step.color.bg,
@@ -200,34 +200,33 @@ export function StepsFlow({ className }: StepsFlowProps) {
                       : "shadow-sm"
                   )}
                 >
-                  {/* Handle dots */}
-                  {index < steps.length - 1 && (
-                    <div 
-                      className={cn(
-                        "absolute -right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 border-background",
-                        "transition-all duration-300 z-10",
-                        step.color.handle.replace('fill-', 'bg-'),
-                        shouldGlow && !prefersReducedMotion ? "scale-110 shadow-sm" : ""
-                      )}
-                    />
-                  )}
+                  {/* Left handle dot - visible on all boxes */}
+                  <div 
+                    className={cn(
+                      "absolute -left-1.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 border-background",
+                      "transition-all duration-300 z-10",
+                      step.color.handle.replace('fill-', 'bg-'),
+                      index === 0 ? "opacity-50" : "opacity-100",
+                      (activeStep === index || hoveredStep === index) && !prefersReducedMotion ? "scale-110" : ""
+                    )}
+                  />
                   
-                  {index > 0 && (
-                    <div 
-                      className={cn(
-                        "absolute -left-1.5 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full border border-background",
-                        "transition-all duration-300 z-10",
-                        step.color.handle.replace('fill-', 'bg-'),
-                        (activeStep === index || hoveredStep === index) && !prefersReducedMotion ? "scale-110" : ""
-                      )}
-                    />
-                  )}
+                  {/* Right handle dot - visible on all boxes */}
+                  <div 
+                    className={cn(
+                      "absolute -right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 border-background",
+                      "transition-all duration-300 z-10",
+                      step.color.handle.replace('fill-', 'bg-'),
+                      index === steps.length - 1 ? "opacity-50" : "opacity-100",
+                      shouldGlow && !prefersReducedMotion ? "scale-110 shadow-sm" : ""
+                    )}
+                  />
 
                   {/* Content */}
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-center gap-2 h-full">
                     <div
                       className={cn(
-                        "w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0",
+                        "w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0",
                         "transition-all duration-300",
                         step.color.bg.replace('/80', ''),
                         shouldGlow 
@@ -237,7 +236,7 @@ export function StepsFlow({ className }: StepsFlowProps) {
                     >
                       <StepIcon 
                         className={cn(
-                          "w-3.5 h-3.5 transition-colors duration-300",
+                          "w-3 h-3 transition-colors duration-300",
                           step.color.text
                         )} 
                       />
