@@ -94,61 +94,117 @@ export function StepsFlow({ className }: StepsFlowProps) {
 
   return (
     <div className={cn("w-full mt-4 md:mt-6", className)}>
+      <style>{`
+        @keyframes drawConnector {
+          to {
+            stroke-dashoffset: 0;
+          }
+        }
+      `}</style>
+      
       <div className="flex md:flex-row flex-col justify-center items-center gap-4 sm:gap-6 md:gap-8">
         {steps.map((step, index) => {
           const StepIcon = step.icon;
+          const isActive = activeConnector === index;
           
           return (
-            <div
-              key={step.id}
-              className={cn(
-                "relative z-10 inline-flex items-center gap-2 px-3 py-1.5 rounded-2xl border shadow-sm",
-                "transition-all duration-300 ease-out",
-                step.color.bg,
-                step.color.bgDark,
-                step.color.border,
-                isLoaded 
-                  ? "translate-y-0 opacity-100" 
-                  : "translate-y-2 opacity-0"
-              )}
-              style={{
-                transitionDelay: isLoaded ? `${index * 150}ms` : "0ms",
-              }}
-            >
-              {/* Icon */}
-              <StepIcon 
+            <React.Fragment key={step.id}>
+              <div
                 className={cn(
-                  "w-4 h-4 flex-shrink-0",
-                  step.color.text
-                )} 
-              />
-              
-              {/* Label */}
-              <span
-                className={cn(
-                  "font-medium text-sm sm:text-base whitespace-nowrap",
-                  step.color.text
+                  "relative z-10 inline-flex items-center gap-2 px-3 py-1.5 rounded-2xl border shadow-sm",
+                  "transition-all duration-300 ease-out",
+                  step.color.bg,
+                  step.color.bgDark,
+                  step.color.border,
+                  isLoaded 
+                    ? "translate-y-0 opacity-100" 
+                    : "translate-y-2 opacity-0"
                 )}
+                style={{
+                  transitionDelay: isLoaded ? `${index * 150}ms` : "0ms",
+                }}
               >
-                {step.label}
-              </span>
+                {/* Icon */}
+                <StepIcon 
+                  className={cn(
+                    "w-4 h-4 flex-shrink-0",
+                    step.color.text
+                  )} 
+                />
+                
+                {/* Label */}
+                <span
+                  className={cn(
+                    "font-medium text-sm sm:text-base whitespace-nowrap",
+                    step.color.text
+                  )}
+                >
+                  {step.label}
+                </span>
 
-              {/* Micro handles - right side for Token and Agent */}
-              {index < steps.length - 1 && (
-                <div 
-                  className="absolute -right-0.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full"
-                  style={{ backgroundColor: connectorColors[index === 0 ? 'token-agent' : 'agent-value'] }}
-                />
-              )}
+                {/* Micro handles - right side for Token and Agent */}
+                {index < steps.length - 1 && (
+                  <div 
+                    className="absolute -right-0.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full"
+                    style={{ backgroundColor: connectorColors[index === 0 ? 'token-agent' : 'agent-value'] }}
+                  />
+                )}
+                
+                {/* Micro handles - left side for Agent and Value */}
+                {index > 0 && (
+                  <div 
+                    className="absolute -left-0.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full"
+                    style={{ backgroundColor: connectorColors[index === 1 ? 'token-agent' : 'agent-value'] }}
+                  />
+                )}
+              </div>
               
-              {/* Micro handles - left side for Agent and Value */}
-              {index > 0 && (
-                <div 
-                  className="absolute -left-0.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full"
-                  style={{ backgroundColor: connectorColors[index === 1 ? 'token-agent' : 'agent-value'] }}
-                />
+              {/* Connector line between boxes */}
+              {index < steps.length - 1 && (
+                <div className="relative flex-shrink-0" key={`connector-${index}`}>
+                  {/* Mobile - Vertical line */}
+                  <div className="md:hidden w-full flex justify-center py-2">
+                    <div 
+                      className="w-0.5 h-6 transition-opacity duration-300"
+                      style={{ 
+                        backgroundColor: connectorColors[index === 0 ? 'token-agent' : 'agent-value'],
+                        opacity: !prefersReducedMotion && isActive ? 0.9 : 0.6 
+                      }}
+                    />
+                  </div>
+
+                  {/* Desktop - Curved line connecting handles */}
+                  <div className="hidden md:block relative z-0">
+                    <svg
+                      width="32"
+                      height="32"
+                      viewBox="0 0 32 32"
+                      className="overflow-visible"
+                    >
+                      <path
+                        d="M 0 16 Q 16 8, 32 16"
+                        stroke={connectorColors[index === 0 ? 'token-agent' : 'agent-value']}
+                        strokeWidth="1.5"
+                        fill="none"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className={cn(
+                          "transition-opacity duration-300",
+                          !prefersReducedMotion && isActive ? "opacity-90" : "opacity-60"
+                        )}
+                        strokeDasharray={!prefersReducedMotion ? "20" : "none"}
+                        strokeDashoffset={!prefersReducedMotion ? "20" : "0"}
+                        style={{
+                          animation: !prefersReducedMotion && isActive 
+                            ? "drawConnector 2s ease-in-out forwards" 
+                            : "none",
+                        }}
+                      />
+                    </svg>
+                  </div>
+                </div>
               )}
-            </div>
+            </React.Fragment>
           );
         })}
       </div>
