@@ -197,11 +197,12 @@ export function StepsFlow({ className }: StepsFlowProps) {
                           "transition-opacity duration-300",
                           !prefersReducedMotion && isActive ? "opacity-90" : "opacity-60"
                         )}
-                        strokeDasharray={!prefersReducedMotion ? "30" : "none"}
-                        strokeDashoffset={!prefersReducedMotion ? "30" : "0"}
+                        pathLength="100"
+                        strokeDasharray={!prefersReducedMotion ? "100" : "none"}
+                        strokeDashoffset={!prefersReducedMotion ? "100" : "0"}
                         style={{
-                          animation: !prefersReducedMotion && isActive 
-                            ? "drawConnector 2s ease-in-out forwards" 
+                          animation: !prefersReducedMotion 
+                            ? `drawConnector 8s ease-in-out infinite ${index * 2.5}s` 
                             : "none",
                         }}
                       />
