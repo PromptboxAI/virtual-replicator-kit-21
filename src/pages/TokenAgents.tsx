@@ -6,6 +6,7 @@ import { ArrowRight, Bot, Coins, TrendingUp, Users, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { StepsFlow } from "@/components/StepsFlow";
 
 const TokenAgents = () => {
   return (
@@ -17,29 +18,8 @@ const TokenAgents = () => {
       <section className="container mx-auto px-4 py-20">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-8">
-            {/* Workflow Visual */}
-            <div className="flex items-center gap-4 mb-8">
-              <Card className="p-4 border-blue-200 bg-blue-50/50">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                  <span className="text-xs font-medium text-blue-700">Token</span>
-                </div>
-              </Card>
-              <ArrowRight className="h-4 w-4 text-muted-foreground" />
-              <Card className="p-4 border-yellow-200 bg-yellow-50/50">
-                <div className="flex items-center gap-2">
-                  <Bot className="h-4 w-4 text-yellow-700" />
-                  <span className="text-xs font-medium text-yellow-700">Agent</span>
-                </div>
-              </Card>
-              <ArrowRight className="h-4 w-4 text-muted-foreground" />
-              <Card className="p-4 border-green-200 bg-green-50/50">
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-green-700" />
-                  <span className="text-xs font-medium text-green-700">Value</span>
-                </div>
-              </Card>
-            </div>
+            {/* Animated Workflow Steps */}
+            <StepsFlow />
 
             <div className="space-y-4">
               <h1 className="text-5xl font-bold text-foreground leading-tight">
