@@ -49,7 +49,7 @@ function IndexAgentCard({ agent }: { agent: Agent }) {
   
   return (
     <Card 
-      className="p-4 bg-card/80 backdrop-blur-sm border-border hover:border-primary/50 transition-all duration-500 hover:shadow-glow-primary/20 group cursor-pointer animate-slide-in-up hover:animate-glow-pulse hover:scale-[1.02] transform-gpu"
+      className="p-4 bg-card/80 backdrop-blur-sm border-border hover:border-primary/50 transition-all duration-300 hover:shadow-glow-primary/20 group cursor-pointer"
       onClick={handleCardClick}
     >
       <div className="flex items-start justify-between mb-3">
@@ -58,10 +58,10 @@ function IndexAgentCard({ agent }: { agent: Agent }) {
             <img
               src={agent.avatar_url}
               alt={agent.name}
-              className="w-12 h-12 rounded-full border-2 border-primary/30 group-hover:border-primary/60 transition-all duration-300 object-cover group-hover:scale-110 animate-bounce-gentle"
+              className="w-12 h-12 rounded-full border-2 border-primary/30 group-hover:border-primary/60 transition-colors object-cover"
             />
           ) : (
-            <div className="w-12 h-12 rounded-full border-2 border-primary/30 group-hover:border-primary/60 transition-all duration-300 bg-primary/10 flex items-center justify-center group-hover:scale-110 animate-bounce-gentle">
+            <div className="w-12 h-12 rounded-full border-2 border-primary/30 group-hover:border-primary/60 transition-colors bg-primary/10 flex items-center justify-center">
               <span className="text-sm font-bold text-primary">
                 {agent.symbol?.substring(0, 2) || agent.name.substring(0, 2)}
               </span>
@@ -110,22 +110,19 @@ function IndexAgentCard({ agent }: { agent: Agent }) {
           </div>
         </div>
         
-        {/* Bonding Curve Progress with AI Hook Animation */}
-        <div className="h-2 bg-muted/20 rounded relative overflow-hidden group-hover:h-3 transition-all duration-300">
+        {/* Bonding Curve Progress */}
+        <div className="h-2 bg-muted/20 rounded relative overflow-hidden">
           {isAgentGraduated(agent.prompt_raised || 0) ? (
-            // Graduated agents show full progress bar in green with glow
-            <div className="h-full bg-gradient-to-r from-success to-success/80 transition-all w-full animate-glow-pulse" />
+            // Graduated agents show full progress bar in green
+            <div className="h-full bg-green-600 transition-all w-full" />
           ) : (
-            // Non-graduated agents show bonding curve progress with flowing animation
+            // Non-graduated agents show bonding curve progress
             <div 
-              className="h-full bg-gradient-to-r from-primary/60 to-primary transition-all relative"
+              className="h-full bg-gradient-to-r from-primary/60 to-primary transition-all"
               style={{ 
                 width: `${Math.min(((agent.prompt_raised || 0) / 42000) * 100, 100)}%` 
               }}
-            >
-              {/* Flowing shimmer effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-hook-flow" />
-            </div>
+            />
           )}
         </div>
       </div>
@@ -327,16 +324,10 @@ const Index = () => {
             </Button>
           </div>
 
-          {/* Agent Grid with Staggered Animations */}
+          {/* Agent Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {getFilteredAgents().map((agent, index) => (
-              <div 
-                key={agent.id} 
-                className="animate-slide-in-up"
-                style={{ animationDelay: `${index * 150}ms` }}
-              >
-                <IndexAgentCard agent={agent} />
-              </div>
+            {getFilteredAgents().map((agent) => (
+              <IndexAgentCard key={agent.id} agent={agent} />
             ))}
           </div>
 
