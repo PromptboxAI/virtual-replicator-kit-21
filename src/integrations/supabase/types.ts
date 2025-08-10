@@ -1997,8 +1997,30 @@ export type Database = {
         }
         Relationships: []
       }
+      deployment_monitoring: {
+        Row: {
+          avg_execution_time_ms: number | null
+          failed_executions: number | null
+          function_name: string | null
+          hour: string | null
+          max_execution_time_ms: number | null
+          min_execution_time_ms: number | null
+          success_rate_percent: number | null
+          successful_executions: number | null
+          total_executions: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      calculate_deployment_cost_usd: {
+        Args: {
+          gas_used_param: number
+          gas_price_param: number
+          eth_price_usd_param?: number
+        }
+        Returns: number
+      }
       calculate_prompt_from_tokens: {
         Args: { current_tokens_sold: number; token_amount: number }
         Returns: {
@@ -2128,6 +2150,10 @@ export type Database = {
           price_impact_percent: number
           estimated_tokens: number
         }[]
+      }
+      verify_pending_deployments: {
+        Args: Record<PropertyKey, never>
+        Returns: number
       }
     }
     Enums: {
