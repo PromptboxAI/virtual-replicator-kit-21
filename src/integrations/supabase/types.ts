@@ -68,6 +68,57 @@ export type Database = {
           },
         ]
       }
+      agent_chart_init: {
+        Row: {
+          agent_id: string
+          created_at: string
+          id: string
+          initial_price: number | null
+          initial_supply: number | null
+          initialization_data: Json | null
+          initialized: boolean
+          token_address: string
+          updated_at: string
+        }
+        Insert: {
+          agent_id: string
+          created_at?: string
+          id?: string
+          initial_price?: number | null
+          initial_supply?: number | null
+          initialization_data?: Json | null
+          initialized?: boolean
+          token_address: string
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string
+          created_at?: string
+          id?: string
+          initial_price?: number | null
+          initial_supply?: number | null
+          initialization_data?: Json | null
+          initialized?: boolean
+          token_address?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_chart_init_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_prices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_chart_init_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agent_configurations: {
         Row: {
           agent_id: string
@@ -442,6 +493,51 @@ export type Database = {
           },
           {
             foreignKeyName: "agent_price_snapshots_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_realtime_updates: {
+        Row: {
+          agent_id: string
+          created_at: string
+          event_data: Json
+          event_type: string
+          id: string
+          processed: boolean
+          processed_at: string | null
+        }
+        Insert: {
+          agent_id: string
+          created_at?: string
+          event_data?: Json
+          event_type: string
+          id?: string
+          processed?: boolean
+          processed_at?: string | null
+        }
+        Update: {
+          agent_id?: string
+          created_at?: string
+          event_data?: Json
+          event_type?: string
+          id?: string
+          processed?: boolean
+          processed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_realtime_updates_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_prices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_realtime_updates_agent_id_fkey"
             columns: ["agent_id"]
             isOneToOne: false
             referencedRelation: "agents"
@@ -1036,6 +1132,111 @@ export type Database = {
           },
         ]
       }
+      deployed_contracts_audit: {
+        Row: {
+          agent_id: string | null
+          block_number: number
+          block_timestamp: string
+          bytecode_hash: string | null
+          bytecode_length: number | null
+          chain_id: number
+          created_at: string
+          deployer_address: string
+          deployment_cost_usd: number | null
+          deployment_cost_wei: number | null
+          deployment_method: string
+          deployment_tx_hash: string
+          effective_gas_price: number | null
+          factory_address: string | null
+          factory_parse_method: string | null
+          factory_version: string | null
+          gas_used: number | null
+          id: string
+          runtime_bytecode_hash: string | null
+          token_address: string
+          token_address_checksum: string
+          token_name: string | null
+          token_symbol: string | null
+          updated_at: string
+          verification_method: string | null
+          verification_status: string | null
+          verified_at: string | null
+        }
+        Insert: {
+          agent_id?: string | null
+          block_number: number
+          block_timestamp: string
+          bytecode_hash?: string | null
+          bytecode_length?: number | null
+          chain_id?: number
+          created_at?: string
+          deployer_address: string
+          deployment_cost_usd?: number | null
+          deployment_cost_wei?: number | null
+          deployment_method: string
+          deployment_tx_hash: string
+          effective_gas_price?: number | null
+          factory_address?: string | null
+          factory_parse_method?: string | null
+          factory_version?: string | null
+          gas_used?: number | null
+          id?: string
+          runtime_bytecode_hash?: string | null
+          token_address: string
+          token_address_checksum: string
+          token_name?: string | null
+          token_symbol?: string | null
+          updated_at?: string
+          verification_method?: string | null
+          verification_status?: string | null
+          verified_at?: string | null
+        }
+        Update: {
+          agent_id?: string | null
+          block_number?: number
+          block_timestamp?: string
+          bytecode_hash?: string | null
+          bytecode_length?: number | null
+          chain_id?: number
+          created_at?: string
+          deployer_address?: string
+          deployment_cost_usd?: number | null
+          deployment_cost_wei?: number | null
+          deployment_method?: string
+          deployment_tx_hash?: string
+          effective_gas_price?: number | null
+          factory_address?: string | null
+          factory_parse_method?: string | null
+          factory_version?: string | null
+          gas_used?: number | null
+          id?: string
+          runtime_bytecode_hash?: string | null
+          token_address?: string
+          token_address_checksum?: string
+          token_name?: string | null
+          token_symbol?: string | null
+          updated_at?: string
+          verification_method?: string | null
+          verification_status?: string | null
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deployed_contracts_audit_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_prices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deployed_contracts_audit_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       deployed_contracts_backup: {
         Row: {
           agent_id: string | null
@@ -1083,6 +1284,53 @@ export type Database = {
           version?: string | null
         }
         Relationships: []
+      }
+      deployment_metrics: {
+        Row: {
+          deployment_id: string | null
+          error_message: string | null
+          execution_time_ms: number
+          function_name: string
+          gas_used: number | null
+          id: string
+          method_used: string | null
+          recorded_at: string
+          rpc_used: string | null
+          success: boolean
+        }
+        Insert: {
+          deployment_id?: string | null
+          error_message?: string | null
+          execution_time_ms: number
+          function_name: string
+          gas_used?: number | null
+          id?: string
+          method_used?: string | null
+          recorded_at?: string
+          rpc_used?: string | null
+          success: boolean
+        }
+        Update: {
+          deployment_id?: string | null
+          error_message?: string | null
+          execution_time_ms?: number
+          function_name?: string
+          gas_used?: number | null
+          id?: string
+          method_used?: string | null
+          recorded_at?: string
+          rpc_used?: string | null
+          success?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deployment_metrics_deployment_id_fkey"
+            columns: ["deployment_id"]
+            isOneToOne: false
+            referencedRelation: "deployed_contracts_audit"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       graduation_transaction_logs: {
         Row: {
