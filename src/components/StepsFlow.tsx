@@ -168,9 +168,9 @@ export function StepsFlow({ className }: StepsFlowProps) {
               
               {/* Connector line between boxes */}
               {index < steps.length - 1 && (
-                <div className="relative flex-shrink-0" key={`connector-${index}`}>
+                <div className="relative" style={{ width: '48px', height: '32px' }}>
                   {/* Mobile - Vertical line */}
-                  <div className="md:hidden w-full flex justify-center py-2">
+                  <div className="md:hidden w-full flex justify-center">
                     <div 
                       className={cn(
                         "w-0.5 h-6 transition-opacity duration-300",
@@ -178,32 +178,30 @@ export function StepsFlow({ className }: StepsFlowProps) {
                       )}
                       style={{ 
                         backgroundColor: connectorColors[index === 0 ? 'token-agent' : 'agent-value'],
-                        opacity: !prefersReducedMotion && isActive ? 0.9 : 0.6 
+                        opacity: 0.8
                       }}
                     />
                   </div>
 
-                  {/* Desktop - Line connecting handle dots directly */}
-                  <div className="hidden md:block absolute inset-0 pointer-events-none" style={{ width: '100%', height: '32px' }}>
+                  {/* Desktop - Visible connecting line */}
+                  <div className="hidden md:block w-full h-full">
                     <svg
-                      width="100%"
+                      width="48"
                       height="32"
-                      viewBox="0 0 100 32"
-                      className="absolute top-1/2 -translate-y-1/2"
-                      preserveAspectRatio="none"
+                      viewBox="0 0 48 32"
+                      className="w-full h-full"
                     >
                       <path
-                        d="M 0 16 Q 50 8, 100 16"
+                        d="M 0 16 Q 24 8, 48 16"
                         stroke={connectorColors[index === 0 ? 'token-agent' : 'agent-value']}
-                        strokeWidth="1.5"
+                        strokeWidth="2"
                         fill="none"
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        strokeDasharray="10 5"
+                        strokeDasharray="8 4"
+                        opacity="0.8"
                         className={cn(
-                          "transition-opacity duration-300",
-                          !prefersReducedMotion && "animated-connector",
-                          !prefersReducedMotion && isActive ? "opacity-90" : "opacity-60"
+                          !prefersReducedMotion && "animated-connector"
                         )}
                       />
                     </svg>
