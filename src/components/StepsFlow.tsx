@@ -8,9 +8,9 @@ interface Step {
   icon: React.ComponentType<{ className?: string }>;
   color: {
     bg: string;
+    bgDark: string;
     border: string;
     text: string;
-    handle: string;
   };
 }
 
@@ -20,10 +20,10 @@ const steps: Step[] = [
     label: 'Create Token',
     icon: Coins,
     color: {
-      bg: 'bg-blue-50/80',
-      border: 'border-blue-200',
-      text: 'text-blue-700',
-      handle: 'fill-blue-500',
+      bg: 'bg-blue-50',
+      bgDark: 'dark:bg-blue-950/30',
+      border: 'border-blue-200/50',
+      text: 'text-slate-900 dark:text-slate-100',
     },
   },
   {
@@ -31,10 +31,10 @@ const steps: Step[] = [
     label: 'Build Agent',
     icon: Bot,
     color: {
-      bg: 'bg-purple-50/80',
-      border: 'border-purple-200',
-      text: 'text-purple-700',
-      handle: 'fill-purple-500',
+      bg: 'bg-violet-50',
+      bgDark: 'dark:bg-violet-950/30',
+      border: 'border-violet-200/50',
+      text: 'text-slate-900 dark:text-slate-100',
     },
   },
   {
@@ -42,21 +42,25 @@ const steps: Step[] = [
     label: 'Generate Value',
     icon: TrendingUp,
     color: {
-      bg: 'bg-green-50/80',
-      border: 'border-green-200',
-      text: 'text-green-700',
-      handle: 'fill-green-500',
+      bg: 'bg-green-50',
+      bgDark: 'dark:bg-green-950/30',
+      border: 'border-green-200/50',
+      text: 'text-slate-900 dark:text-slate-100',
     },
   },
 ];
+
+const connectorColors = {
+  'token-agent': '#3b82f6', // blue
+  'agent-value': '#22c55e', // green
+};
 
 interface StepsFlowProps {
   className?: string;
 }
 
 export function StepsFlow({ className }: StepsFlowProps) {
-  const [activeStep, setActiveStep] = useState(0);
-  const [hoveredStep, setHoveredStep] = useState<number | null>(null);
+  const [activeConnector, setActiveConnector] = useState(0);
   const [isLoaded, setIsLoaded] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
@@ -80,9 +84,9 @@ export function StepsFlow({ className }: StepsFlowProps) {
   useEffect(() => {
     if (prefersReducedMotion) return;
     
-    // Auto highlight cycle
+    // Cycle between connectors every 2.5s
     const interval = setInterval(() => {
-      setActiveStep((prev) => (prev + 1) % steps.length);
+      setActiveConnector((prev) => (prev + 1) % 2);
     }, 2500);
     
     return () => clearInterval(interval);
@@ -91,47 +95,86 @@ export function StepsFlow({ className }: StepsFlowProps) {
   const renderConnector = (index: number) => {
     if (index === steps.length - 1) return null;
     
-    const isActive = activeStep === index || hoveredStep === index;
-    const nextIsActive = activeStep === index + 1 || hoveredStep === index + 1;
-    const shouldHighlight = isActive || nextIsActive;
+    const connectorKey = index === 0 ? 'token-agent' : 'agent-value';
+    const color = connectorColors[connectorKey as keyof typeof connectorColors];
+    const isActive = activeConnector === index;
 
     return (
-      <div className="flex-shrink-0 relative" key={`connector-${index}`}>
-        {/* Mobile - Short straight line */}
-        <div className="md:hidden flex items-center justify-center h-6">
-          <div 
-            className={cn(
-              "w-0.5 h-full transition-all duration-600",
-              shouldHighlight && !prefersReducedMotion ? "bg-primary/60" : "bg-border"
+      <div className="relative flex-shrink-0" key={`connector-${index}`}>
+        {/* Mobile - Vertical line */}
+        <div className="md:hidden w-full flex justify-center py-2">
+          <div className="relative">
+            <div 
+              className="w-0.5 h-6 bg-border/60"
+              style={{ backgroundColor: `${color}40` }}
+            />
+            {!prefersReducedMotion && (
+              <div 
+                className="absolute top-0 left-0 w-0.5 h-6 transition-opacity duration-300"
+                style={{ 
+                  backgroundColor: color,
+                  opacity: isActive ? 0.9 : 0.6 
+                }}
+              />
             )}
-          ></div>
+          </div>
         </div>
 
         {/* Desktop - Curved SVG connector */}
-        <div className="hidden md:block">
+        <div className="hidden md:block relative z-0">
           <svg
-            width="60"
-            height="40"
-            viewBox="0 0 60 40"
+            width="64"
+            height="32"
+            viewBox="0 0 64 32"
             className="overflow-visible"
           >
+            {/* Handle at start */}
+            <circle
+              cx="6"
+              cy="16"
+              r="3"
+              stroke={color}
+              fill={color}
+              strokeWidth="1"
+              className={cn(
+                "transition-opacity duration-300",
+                !prefersReducedMotion && isActive ? "opacity-90" : "opacity-60"
+              )}
+            />
+            
             {/* Curved connector path */}
             <path
-              d="M 0 20 Q 30 10, 60 20"
-              stroke="currentColor"
-              strokeWidth="2"
+              d="M 12 16 Q 32 8, 52 16"
+              stroke={color}
+              strokeWidth="1.5"
               fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
               className={cn(
-                "text-border transition-all duration-600",
-                shouldHighlight && !prefersReducedMotion ? "text-primary opacity-80" : "opacity-40"
+                "transition-opacity duration-300",
+                !prefersReducedMotion && isActive ? "opacity-90" : "opacity-60"
               )}
-              strokeDasharray={!prefersReducedMotion ? "60" : "none"}
-              strokeDashoffset={!prefersReducedMotion ? "60" : "0"}
+              strokeDasharray={!prefersReducedMotion ? "40" : "none"}
+              strokeDashoffset={!prefersReducedMotion ? "40" : "0"}
               style={{
-                animation: !prefersReducedMotion && shouldHighlight 
-                  ? "drawLine 1.5s ease-in-out forwards" 
+                animation: !prefersReducedMotion && isActive 
+                  ? "drawConnector 2s ease-in-out forwards" 
                   : "none",
               }}
+            />
+            
+            {/* Handle at end */}
+            <circle
+              cx="58"
+              cy="16"
+              r="3"
+              stroke={color}
+              fill={color}
+              strokeWidth="1"
+              className={cn(
+                "transition-opacity duration-300",
+                !prefersReducedMotion && isActive ? "opacity-90" : "opacity-60"
+              )}
             />
           </svg>
         </div>
@@ -140,119 +183,68 @@ export function StepsFlow({ className }: StepsFlowProps) {
   };
 
   return (
-    <div className={cn("w-full mb-8", className)}>
+    <div className={cn("w-full mt-4 md:mt-6", className)}>
       <style>{`
-        @keyframes drawLine {
+        @keyframes drawConnector {
           to {
             stroke-dashoffset: 0;
           }
         }
-        
-        @keyframes breathe {
-          0%, 100% {
-            transform: scale(1);
-          }
-          50% {
-            transform: scale(0.995);
-          }
-        }
-        
-        .breathing {
-          animation: breathe 6s ease-in-out infinite;
-        }
       `}</style>
       
-      <div className="flex flex-col md:flex-row items-center md:justify-start gap-4 md:gap-0">
+      <div className="flex md:flex-row flex-col justify-center items-center gap-4 sm:gap-6 md:gap-8">
         {steps.map((step, index) => {
           const StepIcon = step.icon;
-          const isActive = activeStep === index;
-          const isHovered = hoveredStep === index;
-          const shouldGlow = isActive || isHovered;
           
           return (
             <React.Fragment key={step.id}>
               <div
                 className={cn(
-                  "relative group cursor-pointer",
-                  "transform transition-all duration-300 ease-out",
-                  "will-change-transform",
+                  "relative z-10 inline-flex items-center gap-2 px-3 py-1.5 rounded-2xl border shadow-sm",
+                  "transition-all duration-300 ease-out",
+                  step.color.bg,
+                  step.color.bgDark,
+                  step.color.border,
                   isLoaded 
-                    ? `translate-y-0 opacity-100` 
-                    : "translate-y-4 opacity-0",
-                  !prefersReducedMotion && !isHovered && "breathing"
+                    ? "translate-y-0 opacity-100" 
+                    : "translate-y-2 opacity-0"
                 )}
                 style={{
-                  transitionDelay: isLoaded ? `${index * 120}ms` : "0ms",
+                  transitionDelay: isLoaded ? `${index * 150}ms` : "0ms",
                 }}
-                onMouseEnter={() => setHoveredStep(index)}
-                onMouseLeave={() => setHoveredStep(null)}
               >
-                {/* Card */}
-                <div
+                {/* Icon */}
+                <StepIcon 
                   className={cn(
-                    "relative p-3 rounded-xl border backdrop-blur-sm w-28 h-12",
-                    "transition-all duration-300 ease-out",
-                    "hover:shadow-lg hover:-translate-y-1",
-                    step.color.bg,
-                    step.color.border,
-                    shouldGlow && !prefersReducedMotion
-                      ? "shadow-glow ring-2 ring-primary/20"
-                      : "shadow-sm"
+                    "w-4 h-4 flex-shrink-0",
+                    step.color.text
+                  )} 
+                />
+                
+                {/* Label */}
+                <span
+                  className={cn(
+                    "font-medium text-sm sm:text-base whitespace-nowrap",
+                    step.color.text
                   )}
                 >
-                  {/* Left handle dot - visible on all boxes */}
-                  <div 
-                    className={cn(
-                      "absolute -left-1.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 border-background",
-                      "transition-all duration-300 z-10",
-                      step.color.handle.replace('fill-', 'bg-'),
-                      index === 0 ? "opacity-50" : "opacity-100",
-                      (activeStep === index || hoveredStep === index) && !prefersReducedMotion ? "scale-110" : ""
-                    )}
-                  />
-                  
-                  {/* Right handle dot - visible on all boxes */}
-                  <div 
-                    className={cn(
-                      "absolute -right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 border-background",
-                      "transition-all duration-300 z-10",
-                      step.color.handle.replace('fill-', 'bg-'),
-                      index === steps.length - 1 ? "opacity-50" : "opacity-100",
-                      shouldGlow && !prefersReducedMotion ? "scale-110 shadow-sm" : ""
-                    )}
-                  />
+                  {step.label}
+                </span>
 
-                  {/* Content */}
-                  <div className="flex items-center justify-center gap-2 h-full">
-                    <div
-                      className={cn(
-                        "w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0",
-                        "transition-all duration-300",
-                        step.color.bg.replace('/80', ''),
-                        shouldGlow 
-                          ? "ring-1 ring-primary/30" 
-                          : ""
-                      )}
-                    >
-                      <StepIcon 
-                        className={cn(
-                          "w-3 h-3 transition-colors duration-300",
-                          step.color.text
-                        )} 
-                      />
-                    </div>
-                    
-                    {/* Label */}
-                    <span
-                      className={cn(
-                        "text-xs font-medium whitespace-nowrap transition-colors duration-300",
-                        step.color.text
-                      )}
-                    >
-                      {step.label}
-                    </span>
-                  </div>
-                </div>
+                {/* Micro handles */}
+                {index < steps.length - 1 && (
+                  <div 
+                    className="absolute -right-0.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full hidden md:block"
+                    style={{ backgroundColor: connectorColors[index === 0 ? 'token-agent' : 'agent-value'] }}
+                  />
+                )}
+                
+                {index > 0 && (
+                  <div 
+                    className="absolute -left-0.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full hidden md:block"
+                    style={{ backgroundColor: connectorColors[index === 1 ? 'token-agent' : 'agent-value'] }}
+                  />
+                )}
               </div>
               
               {renderConnector(index)}
