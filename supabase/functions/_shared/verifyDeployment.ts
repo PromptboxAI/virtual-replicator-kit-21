@@ -28,37 +28,62 @@ export async function verifyDeployment(
   
   console.log(`🔍 Verifying ${contractType} deployment at: ${address}`);
   
-  try {
-    // Get bytecode from the contract address
-    const bytecode = await publicClient.getBytecode({ address });
-    
-    const hasBytecode = !!(bytecode && bytecode !== '0x');
-    const bytecodeLength = bytecode?.length || 0;
-    
-    const result: VerificationResult = {
-      address,
-      hasBytecode,
-      bytecodeLength,
-      verified: hasBytecode
-    };
-    
-    if (!hasBytecode) {
-      console.error(`❌ DEPLOYMENT VERIFICATION FAILED: No bytecode found at ${address}`);
-      throw new Error(`❌ DEPLOYMENT VERIFICATION FAILED: No bytecode at ${address}. Contract was not deployed successfully.`);
+  // Add retry mechanism with delays to handle timing issues
+  const maxRetries = 5;
+  const retryDelays = [1000, 2000, 3000, 5000, 8000]; // Exponential backoff
+  
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      // Wait before each attempt (except the first)
+      if (attempt > 0) {
+        console.log(`⏳ Waiting ${retryDelays[attempt - 1]}ms before retry ${attempt}...`);
+        await new Promise(resolve => setTimeout(resolve, retryDelays[attempt - 1]));
+      }
+      
+      // Get bytecode from the contract address
+      const bytecode = await publicClient.getBytecode({ address });
+      
+      const hasBytecode = !!(bytecode && bytecode !== '0x');
+      const bytecodeLength = bytecode?.length || 0;
+      
+      const result: VerificationResult = {
+        address,
+        hasBytecode,
+        bytecodeLength,
+        verified: hasBytecode
+      };
+      
+      if (!hasBytecode) {
+        if (attempt < maxRetries - 1) {
+          console.log(`⚠️ No bytecode found at ${address} on attempt ${attempt + 1}, retrying...`);
+          continue; // Try again
+        } else {
+          console.error(`❌ DEPLOYMENT VERIFICATION FAILED: No bytecode found at ${address} after ${maxRetries} attempts`);
+          throw new Error(`❌ DEPLOYMENT VERIFICATION FAILED: No bytecode at ${address} after ${maxRetries} verification attempts. Contract may not have deployed successfully.`);
+        }
+      }
+      
+      console.log(`✅ Contract verified at ${address} on attempt ${attempt + 1}:`, {
+        type: contractType,
+        bytecodeLength,
+        hasBytecode
+      });
+      
+      return result;
+      
+    } catch (error: any) {
+      if (attempt < maxRetries - 1) {
+        console.log(`⚠️ Verification attempt ${attempt + 1} failed for ${address}: ${error.message}, retrying...`);
+        continue;
+      } else {
+        console.error(`❌ Final verification error for ${address} after ${maxRetries} attempts:`, error.message);
+        throw new Error(`Contract verification failed at ${address} after ${maxRetries} attempts: ${error.message}`);
+      }
     }
-    
-    console.log(`✅ Contract verified at ${address}:`, {
-      type: contractType,
-      bytecodeLength,
-      hasBytecode
-    });
-    
-    return result;
-    
-  } catch (error: any) {
-    console.error(`❌ Verification error for ${address}:`, error.message);
-    throw new Error(`Contract verification failed at ${address}: ${error.message}`);
   }
+  
+  // This should never be reached, but TypeScript requires it
+  throw new Error(`Unexpected error in verification for ${address}`);
 }
 
 /**
