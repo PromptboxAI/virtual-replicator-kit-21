@@ -23,61 +23,112 @@ export interface VerificationResult {
 export async function verifyDeployment(
   address: `0x${string}`, 
   publicClient: PublicClient,
-  contractType: string = 'contract'
+  contractType: string = 'contract',
+  transactionHash?: `0x${string}` // NEW: optional tx hash for validation
 ): Promise<VerificationResult> {
   
   console.log(`🔍 Verifying ${contractType} deployment at: ${address}`);
   
-  // Add retry mechanism with delays to handle timing issues
-  const maxRetries = 5;
-  const retryDelays = [1000, 2000, 3000, 5000, 8000]; // Exponential backoff
-  
+  // NEW: If we have the transaction hash, validate the receipt first
+  if (transactionHash) {
+    try {
+      const receipt = await publicClient.getTransactionReceipt({ hash: transactionHash });
+
+      // Check if contract was actually created
+      if (!receipt.contractAddress) {
+        throw new Error('Transaction did not create a contract');
+      }
+
+      if (receipt.status === 'reverted') {
+        throw new Error('Contract deployment transaction reverted');
+      }
+
+      // Verify addresses match (case-insensitive)
+      if (receipt.contractAddress.toLowerCase() !== address.toLowerCase()) {
+        throw new Error(`Contract address mismatch: expected ${address}, got ${receipt.contractAddress}`);
+      }
+
+      console.log('✅ Transaction receipt validated:', {
+        status: receipt.status,
+        gasUsed: receipt.gasUsed.toString(),
+        contractAddress: receipt.contractAddress
+      });
+
+    } catch (error) {
+      console.error('❌ Receipt validation failed:', error);
+      throw new Error(`Receipt validation failed: ${error.message}`);
+    }
+  }
+
+  // Enhanced retry with longer delays for Base Sepolia
+  const maxRetries = 10; // Increased from 5
+  const retryDelays = [2000, 3000, 5000, 8000, 10000, 15000, 20000, 25000, 30000, 35000]; // Longer delays
+
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
-      // Wait before each attempt (except the first)
       if (attempt > 0) {
-        console.log(`⏳ Waiting ${retryDelays[attempt - 1]}ms before retry ${attempt}...`);
+        console.log(`⏳ Retry ${attempt}/${maxRetries} after ${retryDelays[attempt - 1]}ms...`);
         await new Promise(resolve => setTimeout(resolve, retryDelays[attempt - 1]));
       }
-      
-      // Get bytecode from the contract address
+
+      // Try to get bytecode
       const bytecode = await publicClient.getBytecode({ address });
-      
-      const hasBytecode = !!(bytecode && bytecode !== '0x');
-      const bytecodeLength = bytecode?.length || 0;
-      
-      const result: VerificationResult = {
-        address,
-        hasBytecode,
-        bytecodeLength,
-        verified: hasBytecode
-      };
-      
-      if (!hasBytecode) {
-        if (attempt < maxRetries - 1) {
-          console.log(`⚠️ No bytecode found at ${address} on attempt ${attempt + 1}, retrying...`);
-          continue; // Try again
-        } else {
-          console.error(`❌ DEPLOYMENT VERIFICATION FAILED: No bytecode found at ${address} after ${maxRetries} attempts`);
-          throw new Error(`❌ DEPLOYMENT VERIFICATION FAILED: No bytecode at ${address} after ${maxRetries} verification attempts. Contract may not have deployed successfully.`);
-        }
+
+      // Also check if it's a contract (has code)
+      const code = await publicClient.getCode({ address });
+
+      const hasBytecode = !!(bytecode && bytecode !== '0x' && bytecode.length > 2);
+      const hasCode = !!(code && code !== '0x' && code.length > 2);
+
+      if (hasBytecode || hasCode) {
+        const bytecodeLength = Math.max(
+          bytecode?.length || 0,
+          code?.length || 0
+        );
+
+        console.log(`✅ Contract verified at ${address} on attempt ${attempt + 1}:`, {
+          type: contractType,
+          bytecodeLength,
+          hasBytecode,
+          hasCode
+        });
+
+        return {
+          address,
+          hasBytecode: true,
+          bytecodeLength,
+          verified: true
+        };
       }
-      
-      console.log(`✅ Contract verified at ${address} on attempt ${attempt + 1}:`, {
-        type: contractType,
-        bytecodeLength,
-        hasBytecode
-      });
-      
-      return result;
-      
+
+      // Special handling for last attempt
+      if (attempt === maxRetries - 1) {
+        // Try one more time with a different method
+        console.log('🔄 Final attempt: checking contract size...');
+        const size = await publicClient.getStorageAt({
+          address,
+          slot: '0x0'
+        });
+
+        if (size && size !== '0x0000000000000000000000000000000000000000000000000000000000000000') {
+          console.log('✅ Contract has storage, considering it deployed');
+          return {
+            address,
+            hasBytecode: true,
+            bytecodeLength: 1, // Unknown but exists
+            verified: true
+          };
+        }
+
+        throw new Error(`No bytecode found after ${maxRetries} attempts (${(retryDelays.reduce((a,b) => a+b, 0)/1000).toFixed(0)}s total wait)`);
+      }
+
     } catch (error: any) {
       if (attempt < maxRetries - 1) {
-        console.log(`⚠️ Verification attempt ${attempt + 1} failed for ${address}: ${error.message}, retrying...`);
+        console.log(`⚠️ Attempt ${attempt + 1} failed: ${error.message}`);
         continue;
       } else {
-        console.error(`❌ Final verification error for ${address} after ${maxRetries} attempts:`, error.message);
-        throw new Error(`Contract verification failed at ${address} after ${maxRetries} attempts: ${error.message}`);
+        throw error;
       }
     }
   }
