@@ -8,6 +8,7 @@ import { verifyDeployment } from '../_shared/verifyDeployment.ts'
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
 // Direct ERC-20 deployment bytecode and ABI for fallback
