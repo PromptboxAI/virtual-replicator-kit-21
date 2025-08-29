@@ -56,9 +56,11 @@ const TokenAgents = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" className="bg-gradient-primary hover:opacity-90">
-                <Zap className="mr-2 h-4 w-4" />
-                Launch Your Token
+              <Button size="lg" className="bg-gradient-primary hover:opacity-90" asChild>
+                <Link to="/create">
+                  <Zap className="mr-2 h-4 w-4" />
+                  Launch Your Token
+                </Link>
               </Button>
               <Button variant="outline" size="lg" asChild>
                 <Link to="/learn">
