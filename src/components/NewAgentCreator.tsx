@@ -265,14 +265,14 @@ export function NewAgentCreator() {
                       value={agentData.symbol}
                       onChange={(e) => setAgentData({ 
                         ...agentData, 
-                        symbol: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6)
+                        symbol: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 11)
                       })}
                       placeholder="AGENT"
                       disabled={isCreating}
-                      maxLength={6}
+                      maxLength={11}
                     />
                     <p className="text-xs text-muted-foreground mt-1">
-                      2-6 characters, letters and numbers only
+                      2-11 characters, letters and numbers only
                     </p>
                   </div>
                 </div>
