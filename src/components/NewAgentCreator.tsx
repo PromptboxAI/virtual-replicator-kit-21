@@ -110,7 +110,7 @@ export function NewAgentCreator() {
           creator_id: address,
           framework: 'G.A.M.E.',
           test_mode: false, // Real contract mode
-          status: 'DEPLOYING'
+          status: 'ACTIVATING'
         })
         .select()
         .single();
