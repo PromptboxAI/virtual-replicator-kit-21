@@ -1,13 +1,59 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { V2ContractTester } from '@/components/V2ContractTester';
 import { AgentMigrationManager } from '@/components/AgentMigrationManager';
 import { NewAgentCreator } from '@/components/NewAgentCreator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { TestTube, ArrowUpDown, Sparkles, Zap } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { TestTube, ArrowUpDown, Sparkles, Zap, Settings, Loader2 } from 'lucide-react';
 
 export default function TestLab() {
+  const { toast } = useToast();
+  const [isTestingEnv, setIsTestingEnv] = useState(false);
+  const [envTestResult, setEnvTestResult] = useState<any>(null);
+
+  const testDeploymentEnvironment = async () => {
+    setIsTestingEnv(true);
+    setEnvTestResult(null);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('test-deployment-env');
+      
+      if (error) {
+        throw error;
+      }
+
+      setEnvTestResult(data);
+      
+      if (data.success) {
+        toast({
+          title: "Environment Test Passed",
+          description: "Deployment environment is properly configured",
+        });
+      } else {
+        toast({
+          title: "Environment Test Failed",
+          description: data.results?.error || "Unknown error",
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
+      console.error('Environment test error:', error);
+      setEnvTestResult({ success: false, error: error.message });
+      toast({
+        title: "Environment Test Failed", 
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsTestingEnv(false);
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
       <div className="text-center space-y-4">
@@ -58,6 +104,69 @@ export default function TestLab() {
         </TabsContent>
 
         <TabsContent value="test" className="space-y-6">
+          {/* Environment Test Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="w-5 h-5 text-blue-600" />
+                Deployment Environment Test
+              </CardTitle>
+              <CardDescription>
+                Check if the deployment environment is properly configured
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Button 
+                onClick={testDeploymentEnvironment}
+                disabled={isTestingEnv}
+                variant="outline"
+              >
+                {isTestingEnv ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    Testing Environment...
+                  </>
+                ) : (
+                  <>
+                    <Settings className="w-4 h-4 mr-2" />
+                    Test Deployment Environment
+                  </>
+                )}
+              </Button>
+
+              {envTestResult && (
+                <Alert className={envTestResult.success ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"}>
+                  <AlertDescription>
+                    <div className="space-y-2">
+                      <div className="font-medium">
+                        {envTestResult.success ? "✅ Environment Test Passed" : "❌ Environment Test Failed"}
+                      </div>
+                      {envTestResult.results && (
+                        <div className="text-sm space-y-1">
+                          <div>Deployer Private Key: {envTestResult.results.deployerPrivateKey}</div>
+                          <div>Supabase URL: {envTestResult.results.supabaseUrl}</div>
+                          <div>Supabase Key: {envTestResult.results.supabaseKey}</div>
+                          {envTestResult.results.accountAddress && (
+                            <div>Account: {envTestResult.results.accountAddress}</div>
+                          )}
+                          {envTestResult.results.blockNumber && (
+                            <div>Block Number: {envTestResult.results.blockNumber}</div>
+                          )}
+                          {envTestResult.results.balance && (
+                            <div>Balance: {envTestResult.results.balance} wei</div>
+                          )}
+                          {envTestResult.results.error && (
+                            <div className="text-red-600">Error: {envTestResult.results.error}</div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </AlertDescription>
+                </Alert>
+              )}
+            </CardContent>
+          </Card>
+
           <V2ContractTester />
         </TabsContent>
 
