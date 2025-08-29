@@ -11,7 +11,7 @@ export function WalletStatus() {
     address,
     walletType,
     isConnected,
-    isEmbeddedWallet,
+    hasExternalWallet,
     balance,
     promptBalance,
     isLoading,
@@ -39,15 +39,18 @@ export function WalletStatus() {
     }
   };
 
-  if (!isConnected) {
+  if (!hasExternalWallet) {
     return (
       <Card>
         <CardContent className="pt-6">
           <div className="flex items-center justify-center p-8">
             <div className="text-center space-y-4">
-              <Wallet className="h-12 w-12 text-muted-foreground mx-auto" />
+              <Wallet className="h-12 w-12 text-orange-500 mx-auto" />
               <p className="text-muted-foreground">
-                No wallet connected. Sign in to get started.
+                External wallet required for token operations.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Please connect MetaMask or another external wallet to continue.
               </p>
             </div>
           </div>
@@ -59,13 +62,13 @@ export function WalletStatus() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Wallet className="h-5 w-5" />
-          Wallet Status
-          <Badge variant={isEmbeddedWallet ? "default" : "secondary"}>
-            {isEmbeddedWallet ? "Embedded" : "Connected"}
-          </Badge>
-        </CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Wallet className="h-5 w-5" />
+            Wallet Status
+            <Badge variant="default">
+              External Wallet
+            </Badge>
+          </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Wallet Address */}
@@ -89,13 +92,11 @@ export function WalletStatus() {
           <label className="text-sm font-medium">Wallet Type</label>
           <div className="flex items-center gap-2">
             <Badge variant="outline">
-              {isEmbeddedWallet ? "Privy Embedded" : walletProvider}
+              {walletProvider}
             </Badge>
-            {isEmbeddedWallet && (
-              <span className="text-xs text-muted-foreground">
-                Auto-generated on signup
-              </span>
-            )}
+            <span className="text-xs text-muted-foreground">
+              External wallet connected
+            </span>
           </div>
         </div>
 
@@ -135,24 +136,13 @@ export function WalletStatus() {
         {/* Wallet Features */}
         <div className="p-3 bg-muted/50 rounded-lg">
           <h4 className="text-sm font-medium mb-2">
-            {isEmbeddedWallet ? "✨ Embedded Wallet Features" : "🔗 Connected Wallet"}
+            🔗 External Wallet Connected
           </h4>
           <ul className="text-xs text-muted-foreground space-y-1">
-            {isEmbeddedWallet ? (
-              <>
-                <li>• Auto-generated on email signup</li>
-                <li>• No manual setup required</li>
-                <li>• Seamless token operations</li>
-                <li>• Secured by Privy</li>
-              </>
-            ) : (
-              <>
-                <li>• External wallet connected</li>
-                <li>• Full user control</li>
-                <li>• Hardware wallet support</li>
-                <li>• MetaMask compatible</li>
-              </>
-            )}
+            <li>• Full user control and security</li>
+            <li>• Direct blockchain interactions</li>
+            <li>• Hardware wallet support</li>
+            <li>• Compatible with all DeFi protocols</li>
           </ul>
         </div>
       </CardContent>

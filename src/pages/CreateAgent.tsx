@@ -23,6 +23,8 @@ import { useAppMode } from "@/hooks/useAppMode";
 import { useUserRole } from "@/hooks/useUserRole";
 import { usePrivyWallet } from "@/hooks/usePrivyWallet";
 import { FrameworkSDKService, FRAMEWORK_CONFIGS } from "@/lib/frameworkSDK";
+import { WalletConnectionGuard } from "@/components/WalletConnectionGuard";
+import { OnboardingGuide } from "@/components/OnboardingGuide";
 // import { useAgentTokens } from "@/hooks/useAgentTokens";
 import { useAccount } from 'wagmi';
 import { getCurrentPrice } from "@/lib/bondingCurve";
@@ -426,19 +428,20 @@ export default function CreateAgent() {
   }
 
   // Show login required state
-  if (!user) {
-    console.log('No user found, showing login');
+  // Show onboarding guide if user not properly set up
+  if (!user || !isConnected) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
         <div className="container mx-auto px-4 py-8">
-          <div className="max-w-2xl mx-auto text-center">
-            <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h1 className="text-2xl font-bold mb-4">Wallet Connection Required</h1>
-            <p className="text-muted-foreground mb-6">
-              You need to connect your wallet to create an AI Agent. Click below to get started.
-            </p>
-            <Button onClick={signIn}>Connect Wallet</Button>
+          <div className="max-w-2xl mx-auto space-y-6">
+            <div className="text-center">
+              <h1 className="text-3xl font-bold mb-4">Create AI Agent</h1>
+              <p className="text-muted-foreground mb-8">
+                Get started by setting up your account and connecting your wallet.
+              </p>
+            </div>
+            <OnboardingGuide />
           </div>
         </div>
         <Footer />
@@ -462,8 +465,11 @@ export default function CreateAgent() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
-      <div className="container mx-auto px-4 py-8">
+      <WalletConnectionGuard 
+        title="External Wallet Required for Agent Creation"
+        description="Creating an AI agent requires an external wallet to handle token transactions and payments."
+      >
+        <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-8">
@@ -1465,9 +1471,9 @@ export default function CreateAgent() {
               </div>
             )}
           </div>
+          </div>
         </div>
-      </div>
-
+      </WalletConnectionGuard>
       <Footer />
     </div>
   );

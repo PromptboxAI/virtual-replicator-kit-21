@@ -21,14 +21,14 @@ export function usePrivyWallet() {
   const address = user?.wallet?.address;
   const walletType = user?.wallet?.walletClientType;
   
-  // For email users, only use embedded wallet. For wallet users, use connected wallet
-  const effectiveAddress = isWalletAuth ? 
-    (walletType !== 'privy' ? address : null) : // Wallet auth users need external wallet
-    (walletType === 'privy' ? address : null);  // Email auth users use embedded wallet
+  // Only use external wallets - no embedded wallets allowed
+  const effectiveAddress = user?.wallet?.address && user?.wallet?.walletClientType !== 'privy' 
+    ? user.wallet.address 
+    : null;
 
   // Simulate fetching ETH balance
   const fetchBalance = useCallback(async () => {
-    if (!address || !ready) return;
+    if (!effectiveAddress || !ready) return;
 
     try {
       setIsLoading(true);
@@ -40,41 +40,36 @@ export function usePrivyWallet() {
     } finally {
       setIsLoading(false);
     }
-  }, [address, ready]);
+  }, [effectiveAddress, ready]);
 
   // Fetch $PROMPT token balance (test mode vs production mode)
   const fetchPromptBalance = useCallback(async () => {
-    if (!address || !ready) return;
+    if (!effectiveAddress || !ready) return;
 
     try {
       setIsLoading(true);
       
-      console.log('fetchPromptBalance - Admin mode debug:', {
-        canChangeMode,
-        isTestMode,
-        shouldUseTestMode,
-        walletType,
-        address
-      });
-      
-      if (shouldUseTestMode) {
-        // TEST MODE: Simulated balances for admin testing
-        await new Promise(resolve => setTimeout(resolve, 800));
+        console.log('fetchPromptBalance - Admin mode debug:', {
+          canChangeMode,
+          isTestMode,
+          shouldUseTestMode,
+          walletType,
+          address: effectiveAddress
+        });
         
-        if (walletType === 'privy') {
-          setPromptBalance('1000'); // Embedded wallet gets starter balance
+        if (shouldUseTestMode) {
+          // TEST MODE: Simulated balances for admin testing
+          await new Promise(resolve => setTimeout(resolve, 800));
+          setPromptBalance('2500'); // External wallet balance
         } else {
-          setPromptBalance('2500'); // Connected wallet might have more
-        }
-      } else {
-        // PRODUCTION MODE: Query actual $PROMPT token balance from blockchain
-        try {
-          console.log('Querying real PROMPTTEST token balance for:', address);
-          
-          // Query the actual $PROMPT token contract balance
-          const { data, error } = await supabase.functions.invoke('query-token-balance', {
-            body: { address }
-          });
+          // PRODUCTION MODE: Query actual $PROMPT token balance from blockchain
+          try {
+            console.log('Querying real PROMPTTEST token balance for:', effectiveAddress);
+            
+            // Query the actual $PROMPT token contract balance
+            const { data, error } = await supabase.functions.invoke('query-token-balance', {
+              body: { address: effectiveAddress }
+            });
           
           if (error) {
             console.error('Error querying token balance:', error);
@@ -98,14 +93,14 @@ export function usePrivyWallet() {
     } finally {
       setIsLoading(false);
     }
-  }, [address, ready, walletType, shouldUseTestMode]);
+  }, [effectiveAddress, ready, walletType, shouldUseTestMode]);
 
-  // Send $PROMPT tokens (simulated)
+  // Send $PROMPT tokens (requires external wallet)
   const sendPromptTokens = useCallback(async (to: string, amount: string) => {
-    if (!address || !authenticated) {
+    if (!effectiveAddress || !authenticated) {
       toast({
-        title: "Wallet Not Connected",
-        description: "Please connect your wallet to send tokens.",
+        title: "External Wallet Required",
+        description: "Please connect an external wallet (MetaMask, Coinbase, etc.) to send tokens.",
         variant: "destructive"
       });
       return false;
@@ -154,7 +149,7 @@ export function usePrivyWallet() {
         // Call the real token transfer function
         const { data, error } = await supabase.functions.invoke('transfer-tokens', {
           body: {
-            fromAddress: address,
+            fromAddress: effectiveAddress,
             toAddress: to,
             amount: amount
           }
@@ -185,14 +180,14 @@ export function usePrivyWallet() {
     } finally {
       setIsLoading(false);
     }
-  }, [address, authenticated, promptBalance, toast, shouldUseTestMode]);
+  }, [effectiveAddress, authenticated, promptBalance, toast, shouldUseTestMode]);
 
-  // Pay for agent creation
+  // Pay for agent creation (requires external wallet)
   const payForAgentCreation = useCallback(async (cost: string, treasuryAddress: string, agentId?: string) => {
-    if (!authenticated || !address) {
+    if (!authenticated || !effectiveAddress) {
       toast({
-        title: "Authentication Required",
-        description: "Please sign in to create an agent.",
+        title: "External Wallet Required",
+        description: "Please connect an external wallet to create an agent.",
         variant: "destructive"
       });
       return false;
@@ -225,26 +220,27 @@ export function usePrivyWallet() {
     }
 
     return success;
-  }, [authenticated, address, promptBalance, sendPromptTokens, toast]);
+  }, [authenticated, effectiveAddress, promptBalance, sendPromptTokens, toast]);
 
   // Refresh all balances
   const refreshBalances = useCallback(async () => {
     await Promise.all([fetchBalance(), fetchPromptBalance()]);
   }, [fetchBalance, fetchPromptBalance]);
 
-  // Auto-fetch balances when wallet connects
+  // Auto-fetch balances when external wallet connects
   useEffect(() => {
-    if (authenticated && address && ready) {
+    if (authenticated && effectiveAddress && ready) {
       refreshBalances();
     }
-  }, [authenticated, address, ready, refreshBalances]);
+  }, [authenticated, effectiveAddress, ready, refreshBalances]);
 
   return {
     // Wallet info
-    address,
+    address: effectiveAddress,
     walletType,
-    isConnected: authenticated && !!address,
-    isEmbeddedWallet: walletType === 'privy',
+    isConnected: authenticated && !!effectiveAddress,
+    isEmbeddedWallet: false, // We don't allow embedded wallets
+    hasExternalWallet: !!effectiveAddress,
     
     // Balances
     balance,

@@ -62,7 +62,7 @@ const App = () => (
         logo: 'https://avatars.githubusercontent.com/u/108554348?s=280&v=4',
         showWalletLoginFirst: false,
       },
-      loginMethods: ['email', 'wallet'],
+      loginMethods: ['email'],
       supportedChains: [
         {
           id: 1,
@@ -96,7 +96,7 @@ const App = () => (
         },
       ],
       embeddedWallets: {
-        createOnLogin: 'users-without-wallets',
+        createOnLogin: 'off',
         requireUserPasswordOnCreate: false,
       },
     }}

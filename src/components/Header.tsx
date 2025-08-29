@@ -85,25 +85,29 @@ export function Header() {
                     <DropdownMenuItem disabled>
                       <div className="flex flex-col space-y-1">
                         <span className="text-sm font-medium">
-                          {user.email?.address || 'Connected'}
+                          {user.email?.address || 'Signed In'}
                         </span>
-                        {user.wallet?.address && (
+                        {user.wallet?.address && user.wallet?.walletClientType !== 'privy' ? (
                           <span className="text-xs text-muted-foreground font-mono">
                             {user.wallet.address.slice(0, 6)}...{user.wallet.address.slice(-4)}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-orange-600">
+                            External wallet required
                           </span>
                         )}
                       </div>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    {!user.wallet ? (
+                    {!user.wallet || user.wallet.walletClientType === 'privy' ? (
                       <DropdownMenuItem onClick={linkWallet} className="cursor-pointer">
                         <Wallet className="mr-2 h-4 w-4" />
-                        Connect Wallet
+                        Connect External Wallet
                       </DropdownMenuItem>
                     ) : (
                       <DropdownMenuItem onClick={() => user.wallet && unlinkWallet(user.wallet.address)} className="cursor-pointer text-orange-600">
                         <Wallet className="mr-2 h-4 w-4" />
-                        Disconnect Wallet
+                        Disconnect External Wallet
                       </DropdownMenuItem>
                     )}
                     <DropdownMenuSeparator />
@@ -126,7 +130,7 @@ export function Header() {
               </div>
             ) : (
               <Button onClick={signIn} variant="outline">
-                Connect Wallet
+                Sign In
               </Button>
             )}
             
