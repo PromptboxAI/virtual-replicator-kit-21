@@ -480,49 +480,42 @@ Deno.serve(async (req) => {
 
     console.log('Agent current token_address:', existingAgent.token_address, '(placeholder will be replaced)');
 
-    // Get the factory address - this is required
-    const factoryAddress = await getFactoryAddress();
+    // Try to get the factory address; if unavailable, fall back to direct ERC-20
+    let factoryAddress: string | null = null;
+    try {
+      factoryAddress = await getFactoryAddress();
+    } catch (e: any) {
+      console.warn('No AgentTokenFactory found; proceeding with direct ERC-20 fallback.', e?.message || e);
+    }
     
     // Use a default creator address if not provided
     const finalCreatorAddress = creatorAddress || '0x23d03610584B0f0988A6F9C281a37094D5611388';
 
-    console.log('Creating Agent Token via Factory with parameters:', {
-      name,
-      symbol,
-      agentId,
-      factoryAddress,
-      creatorAddress: finalCreatorAddress
-    });
-
-    // 🚀 DUAL DEPLOYMENT STRATEGY: Factory first, then direct fallback
+    // 🚀 DUAL DEPLOYMENT STRATEGY: Factory first when available, else direct fallback
     let deploymentResult: DeploymentResult;
-    
-    try {
-      // Primary: Try factory deployment
-      console.log('🏭 Attempting factory deployment...');
-      deploymentResult = await createAgentTokenViaFactory(
-        name,
-        symbol,
-        agentId,
-        factoryAddress,
-        finalCreatorAddress
-      );
-      console.log('✅ Factory deployment successful!');
-    } catch (factoryError) {
-      console.log('⚠️  Factory deployment failed, trying direct deployment fallback...');
-      console.error('Factory error:', factoryError.message);
-      
+
+    if (factoryAddress) {
       try {
-        // Fallback: Direct ERC-20 deployment
+        console.log('🏭 Attempting factory deployment...', { name, symbol, agentId, factoryAddress, creatorAddress: finalCreatorAddress });
+        deploymentResult = await createAgentTokenViaFactory(
+          name,
+          symbol,
+          agentId,
+          factoryAddress,
+          finalCreatorAddress
+        );
+        console.log('✅ Factory deployment successful!');
+      } catch (factoryError: any) {
+        console.log('⚠️  Factory deployment failed, trying direct deployment fallback...');
+        console.error('Factory error:', factoryError.message);
         console.log('🔄 Attempting direct ERC-20 deployment...');
         deploymentResult = await deployDirectERC20(name, symbol, agentId);
         console.log('✅ Direct deployment successful!');
-      } catch (directError) {
-        console.error('❌ Both deployment methods failed!');
-        console.error('Factory error:', factoryError.message);
-        console.error('Direct error:', directError.message);
-        throw new Error(`Both deployment methods failed. Factory: ${factoryError.message}. Direct: ${directError.message}`);
       }
+    } else {
+      console.log('🔄 Factory not available; using direct ERC-20 deployment...');
+      deploymentResult = await deployDirectERC20(name, symbol, agentId);
+      console.log('✅ Direct deployment successful!');
     }
 
     // 🔒 VERIFICATION COMPLETE: Contract verified during deployment
