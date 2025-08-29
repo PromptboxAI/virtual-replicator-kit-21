@@ -25,6 +25,8 @@ import GraduationTest from "./pages/GraduationTest";
 import { FeeTest } from "./pages/FeeTest";
 import { LegacyTradeRedirect } from "./components/LegacyRedirect";
 import { useUserRole } from "./hooks/useUserRole";
+import { Header } from "./components/Header";
+import { ContractDeploymentTest } from "./components/ContractDeploymentTest";
 
 const queryClient = new QueryClient();
 
@@ -119,6 +121,15 @@ const App = () => (
               <Route path="/agent/:agentId" element={<UnifiedAgentPage />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/test-simple" element={<div><h1>Simple Test Route Working!</h1></div>} />
+              <Route path="/contract-test" element={
+                <div className="min-h-screen bg-background">
+                  <Header />
+                  <div className="container mx-auto px-4 py-8">
+                    <h1 className="text-2xl font-bold mb-6">Contract Deployment Test</h1>
+                    <ContractDeploymentTest />
+                  </div>
+                </div>
+              } />
               <Route path="/test-lab" element={
                 <div>
                   <h1>Test Lab Route Reached</h1>
