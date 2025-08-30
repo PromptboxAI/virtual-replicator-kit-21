@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { TrendingUp, TrendingDown, Activity, Users, DollarSign, BarChart3 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { isAgentGraduated, formatPrice, getCurrentPrice, tokensSoldFromPromptRaised } from '@/lib/bondingCurve';
+import { isAgentGraduatedV3, formatPriceV3, getCurrentPriceV3, tokensSoldFromPromptRaisedV3 } from '@/lib/bondingCurveV3';
 import { useAgentRealtime } from '@/hooks/useAgentRealtime';
 
 interface AgentCardProps {
@@ -83,7 +83,7 @@ export function TradingAgentCard({ agent }: AgentCardProps) {
           
           <div className="text-right">
             <div className="text-lg font-semibold">
-              ${formatPrice(getCurrentPrice(tokensSoldFromPromptRaised(agent.prompt_raised || 0)))}
+              ${formatPriceV3(getCurrentPriceV3(tokensSoldFromPromptRaisedV3(agent.prompt_raised || 0)))}
             </div>
             {agent.price_change_24h !== undefined && (
               <div className={`flex items-center gap-1 text-sm ${

@@ -8,13 +8,13 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, ReferenceLine, Dot } from 'recharts';
 import { TrendingUp, Calculator, Target, Zap, HelpCircle, AlertTriangle } from 'lucide-react';
 import { 
-  getCurrentPrice, 
-  calculateTokensFromPrompt, 
-  calculateBuyCost,
-  calculateGraduationProgress,
-  BONDING_CURVE_CONFIG,
-  tokensSoldFromPromptRaised
-} from '@/lib/bondingCurve';
+  getCurrentPriceV3, 
+  calculateTokensFromPromptV3, 
+  calculateBuyCostV3,
+  calculateGraduationProgressV3,
+  BONDING_CURVE_V3_CONFIG,
+  tokensSoldFromPromptRaisedV3
+} from '@/lib/bondingCurveV3';
 import { cn } from '@/lib/utils';
 import { useTokenBalance } from '@/hooks/useTokenBalance';
 import { useAuth } from '@/hooks/useAuth';
@@ -47,7 +47,7 @@ function BondingCurveErrorFallback({ error }: { error: Error }) {
 export function BondingCurvePreview({ 
   agentSymbol, 
   promptRaised, 
-  graduationThreshold = BONDING_CURVE_CONFIG.GRADUATION_PROMPT_AMOUNT,
+  graduationThreshold = BONDING_CURVE_V3_CONFIG.GRADUATION_PROMPT_AMOUNT,
   className,
   tradeAmount = 0
 }: BondingCurvePreviewProps) {
@@ -91,18 +91,18 @@ function BondingCurvePreviewContent({
 }) {
   
   // Calculate current state
-  const currentTokensSold = tokensSoldFromPromptRaised(promptRaised);
-  const currentPrice = getCurrentPrice(currentTokensSold);
-  const graduationProgress = calculateGraduationProgress(promptRaised);
+  const currentTokensSold = tokensSoldFromPromptRaisedV3(promptRaised);
+  const currentPrice = getCurrentPriceV3(currentTokensSold);
+  const graduationProgress = calculateGraduationProgressV3(promptRaised);
   
   // Calculate preview with simulation amount
   const previewAmount = parseFloat(simulationAmount || '0');
-  const previewResult = previewAmount > 0 ? calculateTokensFromPrompt(currentTokensSold, previewAmount) : null;
-  const previewPrice = previewResult ? getCurrentPrice(previewResult.newTokensSold) : currentPrice;
+  const previewResult = previewAmount > 0 ? calculateTokensFromPromptV3(currentTokensSold, previewAmount) : null;
+  const previewPrice = previewResult ? getCurrentPriceV3(previewResult.newTokensSold) : currentPrice;
   
   // Calculate with actual trade amount if provided
-  const tradeResult = tradeAmount > 0 ? calculateTokensFromPrompt(currentTokensSold, tradeAmount) : null;
-  const tradePrice = tradeResult ? getCurrentPrice(tradeResult.newTokensSold) : currentPrice;
+  const tradeResult = tradeAmount > 0 ? calculateTokensFromPromptV3(currentTokensSold, tradeAmount) : null;
+  const tradePrice = tradeResult ? getCurrentPriceV3(tradeResult.newTokensSold) : currentPrice;
   
   // Generate curve data points for chart
   const curveData = useMemo(() => {
@@ -111,8 +111,8 @@ function BondingCurvePreviewContent({
     const step = 50; // Every 50 PROMPT
     
     for (let prompt = Math.max(0, promptRaised - 500); prompt <= maxPrompt; prompt += step) {
-      const tokensSold = tokensSoldFromPromptRaised(prompt);
-      const price = getCurrentPrice(tokensSold);
+      const tokensSold = tokensSoldFromPromptRaisedV3(prompt);
+      const price = getCurrentPriceV3(tokensSold);
       points.push({
         prompt,
         price: price * 1000000, // Scale for better visualization

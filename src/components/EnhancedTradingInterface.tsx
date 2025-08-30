@@ -25,15 +25,15 @@ import {
   AlertTriangle 
 } from 'lucide-react';
 import {
-  calculateTokensFromPrompt,
-  calculateSellReturn,
-  getCurrentPrice,
-  calculateGraduationProgress,
-  BONDING_CURVE_CONFIG,
-  isAgentGraduated,
-  isAgentMigrating,
-  tokensSoldFromPromptRaised
-} from '@/lib/bondingCurve';
+  calculateTokensFromPromptV3,
+  calculateSellReturnV3,
+  getCurrentPriceV3,
+  calculateGraduationProgressV3,
+  BONDING_CURVE_V3_CONFIG,
+  isAgentGraduatedV3,
+  isAgentMigratingV3,
+  tokensSoldFromPromptRaisedV3
+} from '@/lib/bondingCurveV3';
 import { cn, formatDecimalPlaces } from '@/lib/utils';
 import { LiveTokenPriceDisplay } from './LiveTokenPriceDisplay';
 import { BondingCurvePreview } from './BondingCurvePreview';
@@ -127,12 +127,12 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
   const currentPrice = agent?.current_price || 0;
   const marketCap = agent?.market_cap || 0;
   const volume24h = agent?.volume_24h || 0;
-  const graduationThreshold = agent?.graduation_threshold || BONDING_CURVE_CONFIG.GRADUATION_PROMPT_AMOUNT;
+  const graduationThreshold = agent?.graduation_threshold || BONDING_CURVE_V3_CONFIG.GRADUATION_PROMPT_AMOUNT;
 
   // BONDING CURVE CALCULATIONS (safe with defaults)
-  const bondingCurve = calculateGraduationProgress(promptRaised);
-  const isGraduated = isAgentGraduated(promptRaised);
-  const isMigrating = isAgentMigrating(promptRaised, agent?.token_address);
+  const bondingCurve = calculateGraduationProgressV3(promptRaised);
+  const isGraduated = isAgentGraduatedV3(promptRaised);
+  const isMigrating = isAgentMigratingV3(promptRaised, agent?.token_address);
 
   console.log('[EnhancedTradingInterface] Bonding curve calculated:', {
     agentName: agent?.name,
@@ -162,12 +162,12 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
   useEffect(() => {
     if (buyAmount && parseFloat(buyAmount) > 0) {
       const promptAmount = parseFloat(buyAmount);
-      const currentTokensSold = tokensSoldFromPromptRaised(promptRaised);
-      const result = calculateTokensFromPrompt(currentTokensSold, promptAmount);
+      const currentTokensSold = tokensSoldFromPromptRaisedV3(promptRaised);
+      const result = calculateTokensFromPromptV3(currentTokensSold, promptAmount);
       setCalculatedTokens(formatDecimalPlaces(result.tokenAmount));
       
-      const currentPriceCalc = getCurrentPrice(currentTokensSold);
-      const newPrice = getCurrentPrice(result.newTokensSold);
+      const currentPriceCalc = getCurrentPriceV3(currentTokensSold);
+      const newPrice = getCurrentPriceV3(result.newTokensSold);
       const impact = ((newPrice - currentPriceCalc) / currentPriceCalc) * 100;
       setPriceImpact(impact);
     } else {
@@ -179,8 +179,8 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
   useEffect(() => {
     if (sellAmount && parseFloat(sellAmount) > 0) {
       const tokenAmount = parseFloat(sellAmount);
-      const currentTokensSold = tokensSoldFromPromptRaised(promptRaised);
-      const result = calculateSellReturn(currentTokensSold, tokenAmount);
+      const currentTokensSold = tokensSoldFromPromptRaisedV3(promptRaised);
+      const result = calculateSellReturnV3(currentTokensSold, tokenAmount);
       setCalculatedPrompt(formatDecimalPlaces(result.return));
     } else {
       setCalculatedPrompt('');
@@ -249,9 +249,9 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
     }
 
     // Check slippage protection
-    const result = calculateTokensFromPrompt(promptRaised, promptAmount);
+    const result = calculateTokensFromPromptV3(tokensSoldFromPromptRaisedV3(promptRaised), promptAmount);
     const slippageNumber = parseFloat(slippage);
-    if (Math.abs(result.tokenAmount * getCurrentPrice(promptRaised) - promptAmount) / promptAmount > slippageNumber / 100) {
+    if (Math.abs(result.tokenAmount * getCurrentPriceV3(tokensSoldFromPromptRaisedV3(promptRaised)) - promptAmount) / promptAmount > slippageNumber / 100) {
       toast({
         title: "Price Impact Too High",
         description: `Price impact exceeds ${slippageNumber}% slippage tolerance`,
@@ -270,7 +270,7 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
       if (isTestMode) {
         // TEST MODE: Mock logic for admin testing
         const newPromptRaised = promptRaised + promptAmount;
-        const newPrice = getCurrentPrice(result.newTokensSold);
+        const newPrice = getCurrentPriceV3(result.newTokensSold);
         const mockHash = `0x${Math.random().toString(16).substr(2, 64)}`;
         
         setTransaction(prev => ({ 
@@ -294,7 +294,7 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
             user_id: user?.id || 'anonymous',
             token_amount: result.tokenAmount,
             prompt_amount: promptAmount,
-            price_per_token: getCurrentPrice(promptRaised + promptAmount),
+            price_per_token: getCurrentPriceV3(tokensSoldFromPromptRaisedV3(promptRaised + promptAmount)),
             bonding_curve_price: newPrice,
             transaction_hash: mockHash
           });
@@ -494,8 +494,8 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
     }
 
     const tokenAmount = parseFloat(sellAmount);
-    const currentTokensSold = tokensSoldFromPromptRaised(promptRaised);
-    const result = calculateSellReturn(currentTokensSold, tokenAmount);
+    const currentTokensSold = tokensSoldFromPromptRaisedV3(promptRaised);
+    const result = calculateSellReturnV3(currentTokensSold, tokenAmount);
 
     const slippageNumber = parseFloat(slippage);
     if (Math.abs(result.priceImpact) > slippageNumber) {
@@ -517,7 +517,7 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
       if (isTestMode) {
         // TEST MODE: Mock logic
         const newPromptRaised = Math.max(0, promptRaised - result.return);
-        const newPrice = getCurrentPrice(result.newTokensSold);
+        const newPrice = getCurrentPriceV3(result.newTokensSold);
         const mockHash = `0x${Math.random().toString(16).substr(2, 64)}`;
         
         setTransaction(prev => ({ 

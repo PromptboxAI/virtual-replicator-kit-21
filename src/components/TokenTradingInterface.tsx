@@ -17,16 +17,16 @@ import { TradingModeGuard } from './TradingModeGuard';
 import { TradeFeeDisplay } from './TradeFeeDisplay';
 import { TradingDebugPanel } from './TradingDebugPanel';
 import { 
-  getCurrentPrice, 
-  calculateBuyCost, 
-  calculateSellReturn, 
-  calculateTokensFromPrompt,
-  calculateMarketCap,
-  BONDING_CURVE_CONFIG,
-  isAgentGraduated,
-  calculateGraduationProgress,
-  tokensSoldFromPromptRaised
-} from "@/lib/bondingCurve";
+  getCurrentPriceV3, 
+  calculateBuyCostV3, 
+  calculateSellReturnV3, 
+  calculateTokensFromPromptV3,
+  calculateMarketStatsV3,
+  BONDING_CURVE_V3_CONFIG,
+  isAgentGraduatedV3,
+  calculateGraduationProgressV3,
+  tokensSoldFromPromptRaisedV3
+} from "@/lib/bondingCurveV3";
 import { useAgentRealtime } from '@/hooks/useAgentRealtime';
 import { useMigrationPolling } from '@/hooks/useMigrationPolling';
 import { MigrationBanner } from './MigrationBanner';
@@ -102,7 +102,7 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
   
   // Use real-time data if available, fallback to props
   const currentPromptRaised = agentData?.prompt_raised ?? agent.prompt_raised;
-  const graduationProgress = calculateGraduationProgress(currentPromptRaised);
+  const graduationProgress = calculateGraduationProgressV3(currentPromptRaised);
   const remainingToGraduation = graduationProgress.remaining;
 
   // Real-time price calculation
@@ -113,8 +113,8 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
       if (amount > 0) {
         try {
           // Use tokens sold derived from PROMPT raised to calculate
-          const tokensSold = tokensSoldFromPromptRaised(agent.prompt_raised);
-          const result = calculateTokensFromPrompt(tokensSold, amount);
+          const tokensSold = tokensSoldFromPromptRaisedV3(agent.prompt_raised);
+          const result = calculateTokensFromPromptV3(tokensSold, amount);
           setTokenAmount(result.tokenAmount.toFixed(6));
         } catch (error) {
           console.error("Price calculation error:", error);
@@ -134,8 +134,8 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
       if (amount > 0) {
         try {
           // Use sell return calculation with tokensSold derived from PROMPT raised
-          const tokensSold = tokensSoldFromPromptRaised(agent.prompt_raised);
-          const result = calculateSellReturn(tokensSold, amount);
+          const tokensSold = tokensSoldFromPromptRaisedV3(agent.prompt_raised);
+          const result = calculateSellReturnV3(tokensSold, amount);
           setPromptAmount(result.return.toFixed(6));
         } catch (error) {
           console.error("Price calculation error:", error);
@@ -149,11 +149,11 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
   }, [tokenAmount, agent.prompt_raised, tradeType]);
 
 // Derive tokens sold from PROMPT raised for price calculation
-  const tokensSold = tokensSoldFromPromptRaised(agent.prompt_raised);
-  const currentPrice = getCurrentPrice(tokensSold);
+  const tokensSold = tokensSoldFromPromptRaisedV3(agent.prompt_raised);
+  const currentPrice = getCurrentPriceV3(tokensSold);
   const priceAfterTrade = promptAmount && parseFloat(promptAmount) > 0
-    ? getCurrentPrice(
-        calculateTokensFromPrompt(tokensSold, parseFloat(promptAmount || "0")).newTokensSold
+    ? getCurrentPriceV3(
+        calculateTokensFromPromptV3(tokensSold, parseFloat(promptAmount || "0")).newTokensSold
       )
     : currentPrice;
 
