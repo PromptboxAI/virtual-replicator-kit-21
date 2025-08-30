@@ -84,14 +84,25 @@ export function NewAgentCreator() {
       setDeploymentProgress(10);
       
       // Validate symbol is unique
-      const { data: existingAgent } = await supabase
+      const { data: existingSymbol } = await supabase
         .from('agents')
         .select('id')
         .eq('symbol', agentData.symbol.toUpperCase())
-        .single();
+        .maybeSingle();
 
-      if (existingAgent) {
+      if (existingSymbol) {
         throw new Error(`Symbol ${agentData.symbol} is already taken`);
+      }
+
+      // Validate name is unique
+      const { data: existingName } = await supabase
+        .from('agents')
+        .select('id')
+        .eq('name', agentData.name)
+        .maybeSingle();
+
+      if (existingName) {
+        throw new Error(`Name "${agentData.name}" is already taken`);
       }
 
       updateStepStatus('validate', 'completed');
