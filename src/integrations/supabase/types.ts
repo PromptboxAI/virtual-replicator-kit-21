@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -594,6 +594,54 @@ export type Database = {
             foreignKeyName: "agent_runtime_status_agent_id_fkey"
             columns: ["agent_id"]
             isOneToOne: true
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_safety_settings: {
+        Row: {
+          agent_id: string | null
+          created_at: string
+          id: string
+          max_daily_trade_prompt: number
+          max_single_trade_prompt: number
+          max_user_daily_prompt: number
+          trade_paused: boolean
+          updated_at: string
+        }
+        Insert: {
+          agent_id?: string | null
+          created_at?: string
+          id?: string
+          max_daily_trade_prompt?: number
+          max_single_trade_prompt?: number
+          max_user_daily_prompt?: number
+          trade_paused?: boolean
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string | null
+          created_at?: string
+          id?: string
+          max_daily_trade_prompt?: number
+          max_single_trade_prompt?: number
+          max_user_daily_prompt?: number
+          trade_paused?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_safety_settings_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_prices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_safety_settings_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
             referencedRelation: "agents"
             referencedColumns: ["id"]
           },
@@ -1379,6 +1427,36 @@ export type Database = {
           },
         ]
       }
+      migration_audit: {
+        Row: {
+          agent_id: string
+          created_at: string
+          id: string
+          migration_phase: string
+          new_data: Json
+          old_data: Json
+          validation_results: Json | null
+        }
+        Insert: {
+          agent_id: string
+          created_at?: string
+          id?: string
+          migration_phase: string
+          new_data: Json
+          old_data: Json
+          validation_results?: Json | null
+        }
+        Update: {
+          agent_id?: string
+          created_at?: string
+          id?: string
+          migration_phase?: string
+          new_data?: Json
+          old_data?: Json
+          validation_results?: Json | null
+        }
+        Relationships: []
+      }
       platform_revenue: {
         Row: {
           agent_id: string | null
@@ -1737,6 +1815,39 @@ export type Database = {
           },
         ]
       }
+      trade_rejections_log: {
+        Row: {
+          agent_id: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          rejection_reason: string
+          trade_amount: number
+          trade_type: string
+          user_id: string
+        }
+        Insert: {
+          agent_id: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          rejection_reason: string
+          trade_amount: number
+          trade_type: string
+          user_id: string
+        }
+        Update: {
+          agent_id?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          rejection_reason?: string
+          trade_amount?: number
+          trade_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       transactions: {
         Row: {
           agent_id: string
@@ -2015,28 +2126,28 @@ export type Database = {
     Functions: {
       calculate_deployment_cost_usd: {
         Args: {
-          gas_used_param: number
-          gas_price_param: number
           eth_price_usd_param?: number
+          gas_price_param: number
+          gas_used_param: number
         }
         Returns: number
       }
       calculate_prompt_from_tokens: {
         Args: { current_tokens_sold: number; token_amount: number }
         Returns: {
-          prompt_amount: number
-          new_tokens_sold: number
-          new_price: number
           average_price: number
+          new_price: number
+          new_tokens_sold: number
+          prompt_amount: number
         }[]
       }
       calculate_tokens_from_prompt: {
         Args: { current_tokens_sold: number; prompt_amount: number }
         Returns: {
-          token_amount: number
-          new_tokens_sold: number
-          new_price: number
           average_price: number
+          new_price: number
+          new_tokens_sold: number
+          token_amount: number
         }[]
       }
       check_price_consistency: {
@@ -2044,9 +2155,9 @@ export type Database = {
         Returns: {
           agent_id: string
           agent_name: string
-          static_price: number
-          dynamic_price: number
           difference_percent: number
+          dynamic_price: number
+          static_price: number
         }[]
       }
       complete_agent_graduation: {
@@ -2060,12 +2171,12 @@ export type Database = {
       execute_bonding_curve_trade: {
         Args: {
           p_agent_id: string
-          p_user_id: string
-          p_prompt_amount: number
-          p_trade_type: string
-          p_token_amount?: number
           p_expected_price?: number
+          p_prompt_amount: number
           p_slippage?: number
+          p_token_amount?: number
+          p_trade_type: string
+          p_user_id: string
         }
         Returns: Json
       }
@@ -2076,27 +2187,55 @@ export type Database = {
       get_agent_ohlcv_data: {
         Args: {
           p_agent_id: string
+          p_end_time?: string
           p_interval?: string
           p_start_time?: string
-          p_end_time?: string
         }
         Returns: {
-          time_bucket: string
-          open_price: number
+          close_price: number
           high_price: number
           low_price: number
-          close_price: number
-          volume: number
+          open_price: number
+          time_bucket: string
           trade_count: number
+          volume: number
+        }[]
+      }
+      get_agent_safety_settings: {
+        Args: { p_agent_id: string }
+        Returns: {
+          max_daily_trade_prompt: number
+          max_single_trade_prompt: number
+          max_user_daily_prompt: number
+          trade_paused: boolean
         }[]
       }
       get_bonding_curve_config: {
         Args: Record<PropertyKey, never>
         Returns: {
+          graduation_threshold: number
           initial_prompt_reserve: number
           initial_token_reserve: number
           total_supply: number
+          trading_fee_percent: number
+        }[]
+      }
+      get_bonding_curve_config_v3: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          curve_supply: number
           graduation_threshold: number
+          initial_prompt_reserve: number
+          initial_token_reserve: number
+          lp_lock_duration_days: number
+          lp_prompt_allocation_percent: number
+          lp_supply: number
+          max_daily_trade_default: number
+          max_single_trade_default: number
+          max_user_daily_default: number
+          p0: number
+          p1: number
+          total_supply: number
           trading_fee_percent: number
         }[]
       }
@@ -2121,8 +2260,8 @@ export type Database = {
       }
       has_role: {
         Args: {
-          _user_id: string
           _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
         }
         Returns: boolean
       }
@@ -2146,9 +2285,21 @@ export type Database = {
         }
         Returns: {
           current_price: number
+          estimated_tokens: number
           impact_price: number
           price_impact_percent: number
-          estimated_tokens: number
+        }[]
+      }
+      validate_trade_safety: {
+        Args: {
+          p_agent_id: string
+          p_prompt_amount: number
+          p_trade_type: string
+          p_user_id: string
+        }
+        Returns: {
+          is_valid: boolean
+          rejection_reason: string
         }[]
       }
       verify_pending_deployments: {
