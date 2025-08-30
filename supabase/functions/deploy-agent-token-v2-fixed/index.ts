@@ -107,11 +107,28 @@ async function deploySimpleERC20(
     // Deploy the contract
     console.log('Deploying contract with bytecode length:', SIMPLE_ERC20_BYTECODE.length);
     
+    // Get sane EIP-1559 fees from network (avoid ultra-low defaults)
+    const fees = await publicClient.estimateFeesPerGas().catch(async () => {
+      const gp = await publicClient.getGasPrice();
+      return { maxFeePerGas: gp * 2n, maxPriorityFeePerGas: 1_000_000_000n } as any; // 1 gwei tip fallback
+    });
+
+    console.log('Using fees for deploy:', {
+      maxFeePerGas: (fees as any).maxFeePerGas?.toString(),
+      maxPriorityFeePerGas: (fees as any).maxPriorityFeePerGas?.toString(),
+    });
+
+    // Pre-set a conservative gas limit to skip flaky estimateGas on some RPCs
+    const gasLimit = 3_500_000n;
+
     const hash = await walletClient.deployContract({
       abi: SIMPLE_ERC20_ABI,
       bytecode: SIMPLE_ERC20_BYTECODE as `0x${string}`,
       args: [name, symbol],
-      account
+      account,
+      gas: gasLimit,
+      maxFeePerGas: (fees as any).maxFeePerGas,
+      maxPriorityFeePerGas: (fees as any).maxPriorityFeePerGas,
     });
 
     console.log('✅ Simple ERC20 deployment transaction hash:', hash);
