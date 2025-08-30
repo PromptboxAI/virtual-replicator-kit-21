@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowUpDown, TrendingUp, TrendingDown, AlertTriangle } from 'lucide-react';
-import { getCurrentPrice, calculateTokensFromPrompt, calculateSellReturn } from '@/lib/bondingCurve';
+import { getCurrentPrice, calculateTokensFromPrompt, calculateSellReturn, tokensSoldFromPromptRaised } from '@/lib/bondingCurve';
 import { cn } from '@/lib/utils';
 
 interface LiveTokenPriceDisplayProps {
@@ -24,7 +24,7 @@ export function LiveTokenPriceDisplay({
   const [showInverse, setShowInverse] = useState(false);
   
   // Calculate current price
-  const tokensSold = promptRaised * 1000; // Convert PROMPT to estimated tokens sold
+  const tokensSold = tokensSoldFromPromptRaised(promptRaised);
   const currentPrice = getCurrentPrice(tokensSold);
   
   // Calculate price impact if trade amount is provided

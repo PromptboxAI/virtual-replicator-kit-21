@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { TrendingUp, Target } from "lucide-react";
-import { getCurrentPrice, BONDING_CURVE_CONFIG } from "@/lib/bondingCurve";
+import { getCurrentPrice, BONDING_CURVE_CONFIG, tokensSoldFromPromptRaised } from "@/lib/bondingCurve";
 
 interface BondingCurveChartProps {
   currentTokensSold: number;
@@ -111,7 +111,7 @@ export const BondingCurveChart = ({
               
               {/* Graduation threshold line */}
               <ReferenceLine 
-                x={graduationThreshold * 1000} 
+                x={tokensSoldFromPromptRaised(graduationThreshold)} 
                 stroke="hsl(var(--primary))" 
                 strokeDasharray="5 5"
                 label={{ value: "Graduation", position: "top" }}

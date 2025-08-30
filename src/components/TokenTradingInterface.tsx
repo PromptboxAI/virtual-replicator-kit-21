@@ -24,7 +24,8 @@ import {
   calculateMarketCap,
   BONDING_CURVE_CONFIG,
   isAgentGraduated,
-  calculateGraduationProgress
+  calculateGraduationProgress,
+  tokensSoldFromPromptRaised
 } from "@/lib/bondingCurve";
 import { useAgentRealtime } from '@/hooks/useAgentRealtime';
 import { useMigrationPolling } from '@/hooks/useMigrationPolling';
@@ -111,8 +112,8 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
       const amount = parseFloat(promptAmount);
       if (amount > 0) {
         try {
-          // Use tokens sold to calculate, convert from PROMPT raised to tokens sold estimation
-          const tokensSold = agent.prompt_raised * 1000; // Rough conversion for demo
+          // Use tokens sold derived from PROMPT raised to calculate
+          const tokensSold = tokensSoldFromPromptRaised(agent.prompt_raised);
           const result = calculateTokensFromPrompt(tokensSold, amount);
           setTokenAmount(result.tokenAmount.toFixed(6));
         } catch (error) {
@@ -132,8 +133,8 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
       const amount = parseFloat(tokenAmount);
       if (amount > 0) {
         try {
-          // Use sell return calculation instead of non-existent function
-          const tokensSold = agent.prompt_raised * 1000; // Rough conversion for demo
+          // Use sell return calculation with tokensSold derived from PROMPT raised
+          const tokensSold = tokensSoldFromPromptRaised(agent.prompt_raised);
           const result = calculateSellReturn(tokensSold, amount);
           setPromptAmount(result.return.toFixed(6));
         } catch (error) {
@@ -147,15 +148,18 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
     }
   }, [tokenAmount, agent.prompt_raised, tradeType]);
 
-  // Convert PROMPT raised to tokens sold estimation for price calculation
-  const tokensSold = agent.prompt_raised * 1000; // Rough conversion for demo
+// Derive tokens sold from PROMPT raised for price calculation
+  const tokensSold = tokensSoldFromPromptRaised(agent.prompt_raised);
   const currentPrice = getCurrentPrice(tokensSold);
-  const priceAfterTrade = promptAmount ? 
-    getCurrentPrice(tokensSold + parseFloat(promptAmount || "0") * 1000) : 
-    currentPrice;
+  const priceAfterTrade = promptAmount && parseFloat(promptAmount) > 0
+    ? getCurrentPrice(
+        calculateTokensFromPrompt(tokensSold, parseFloat(promptAmount || "0")).newTokensSold
+      )
+    : currentPrice;
 
-  const priceImpact = promptAmount ? 
-    ((priceAfterTrade - currentPrice) / currentPrice * 100) : 0;
+  const priceImpact = promptAmount 
+    ? ((priceAfterTrade - currentPrice) / currentPrice * 100) 
+    : 0;
 
   const handleTrade = async () => {
     console.log('🎯 TokenTradingInterface: Calling buyAgentTokens');

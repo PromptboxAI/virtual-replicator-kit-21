@@ -9,9 +9,9 @@ export const BONDING_CURVE_CONFIG = {
   AGENT_CREATION_COST: 100, // 100 PROMPT to create agent (like 100 $VIRTUAL)
   
   // Constant Product AMM model (x * y = k) - keeping proven math
-  VIRTUAL_PROMPT_RESERVE: 30, // Virtual PROMPT reserve for smooth pricing
-  VIRTUAL_TOKEN_RESERVE: 1073000000, // Virtual token reserve
-  TOTAL_SUPPLY: 1000000000, // 1B tokens total supply (matching virtuals.io)
+  VIRTUAL_PROMPT_RESERVE: 30000, // Matches DB get_bonding_curve_config initial_prompt_reserve
+  VIRTUAL_TOKEN_RESERVE: 1000000, // Matches DB initial_token_reserve
+  TOTAL_SUPPLY: 1000000000, // 1B tokens total supply
   
   // Graduation threshold (matching virtuals.io exactly)
   GRADUATION_PROMPT_AMOUNT: 42000, // 42k PROMPT to graduate (like virtuals.io)
@@ -24,6 +24,45 @@ export const BONDING_CURVE_CONFIG = {
   // Liquidity lock (matching virtuals.io)
   LIQUIDITY_LOCK_YEARS: 10, // 10 year liquidity lock
 } as const;
+
+// Mapping between promptRaised and tokensSold to match DB math
+export const TOKENS_SOLD_PER_PROMPT = 0.1;
+
+export function tokensSoldFromPromptRaised(promptRaised: number): number {
+  return promptRaised * TOKENS_SOLD_PER_PROMPT;
+}
+
+export function promptRaisedFromTokensSold(tokensSold: number): number {
+  return tokensSold / TOKENS_SOLD_PER_PROMPT;
+}
+
+export function getPriceFromPromptRaised(promptRaised: number): number {
+  return getCurrentPrice(tokensSoldFromPromptRaised(promptRaised));
+}
+
+export function simulateBuyImpact(currentPromptRaised: number, promptAmount: number): {
+  newPrice: number;
+  newTokensSold: number;
+} {
+  const currentTokensSold = tokensSoldFromPromptRaised(currentPromptRaised);
+  const res = calculateTokensFromPrompt(currentTokensSold, promptAmount);
+  return {
+    newPrice: getCurrentPrice(res.newTokensSold),
+    newTokensSold: res.newTokensSold,
+  };
+}
+
+export function simulateSellImpact(currentPromptRaised: number, tokenAmount: number): {
+  newPrice: number;
+  newTokensSold: number;
+} {
+  const currentTokensSold = tokensSoldFromPromptRaised(currentPromptRaised);
+  const res = calculateSellReturn(currentTokensSold, tokenAmount);
+  return {
+    newPrice: getCurrentPrice(res.newTokensSold),
+    newTokensSold: res.newTokensSold,
+  };
+}
 
 /**
  * Calculate the invariant k = x * y for the bonding curve
