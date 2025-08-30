@@ -1,107 +1,115 @@
 /**
- * Bonding Curve Mathematical Functions
- * Based on pump.fun's constant product AMM model (x * y = k)
+ * Linear Bonding Curve Mathematical Functions
+ * Based on virtuals.io linear pricing model
  */
 
-// Constants for bonding curve parameters (based on virtuals.io model)
+// Linear bonding curve constants
 export const BONDING_CURVE_CONFIG = {
   // Agent creation cost
-  AGENT_CREATION_COST: 100, // 100 PROMPT to create agent (like 100 $VIRTUAL)
+  AGENT_CREATION_COST: 100, // 100 PROMPT to create agent
   
-  // Constant Product AMM model (x * y = k) - keeping proven math
-  VIRTUAL_PROMPT_RESERVE: 30000, // Matches DB get_bonding_curve_config initial_prompt_reserve
-  VIRTUAL_TOKEN_RESERVE: 1000000, // Matches DB initial_token_reserve
-  TOTAL_SUPPLY: 1000000000, // 1B tokens total supply
+  // Linear curve model - 800M/200M split
+  CURVE_SUPPLY: 800_000_000, // 800M tokens available on bonding curve
+  LP_RESERVE: 200_000_000,   // 200M tokens reserved for LP creation
+  TOTAL_SUPPLY: 1_000_000_000, // 1B tokens total supply
   
-  // Graduation threshold (matching virtuals.io exactly)
-  GRADUATION_PROMPT_AMOUNT: 42000, // 42k PROMPT to graduate (like virtuals.io)
+  // Linear pricing parameters
+  P0: 0.000001, // Starting price (PROMPT per token)
+  P1: 0.000104, // Ending price at graduation (PROMPT per token)
+  
+  // Graduation threshold
+  GRADUATION_PROMPT_AMOUNT: 42000, // 42k PROMPT to graduate
   
   // Trading fees (virtuals.io: 1% total split 70%/30%)
   TRADING_FEE_PERCENTAGE: 0.01, // 1% total trading fee
   AGENT_REVENUE_PERCENTAGE: 0.007, // 70% of 1% = 0.7% goes to agent
   PLATFORM_REVENUE_PERCENTAGE: 0.003, // 30% of 1% = 0.3% goes to platform
   
-  // Liquidity lock (matching virtuals.io)
+  // Liquidity lock
   LIQUIDITY_LOCK_YEARS: 10, // 10 year liquidity lock
 } as const;
 
-// Mapping between promptRaised and tokensSold to match DB math
-export const TOKENS_SOLD_PER_PROMPT = 0.1;
+// Derived constants
+const PRICE_SLOPE = (BONDING_CURVE_CONFIG.P1 - BONDING_CURVE_CONFIG.P0) / BONDING_CURVE_CONFIG.CURVE_SUPPLY;
 
+/**
+ * Calculate linear price based on tokens sold
+ * P(S) = P0 + slope * S
+ */
+export function getCurrentPrice(tokensSold: number): number {
+  const { P0 } = BONDING_CURVE_CONFIG;
+  return P0 + PRICE_SLOPE * tokensSold;
+}
+
+/**
+ * Calculate tokens sold from prompt raised using inverse integral
+ * Solving: ∫[0 to S] (P0 + slope*s) ds = promptRaised
+ * Result: P0*S + slope*S²/2 = promptRaised
+ * Quadratic: (slope/2)*S² + P0*S - promptRaised = 0
+ */
 export function tokensSoldFromPromptRaised(promptRaised: number): number {
-  return promptRaised * TOKENS_SOLD_PER_PROMPT;
+  const { P0 } = BONDING_CURVE_CONFIG;
+  const a = PRICE_SLOPE / 2;
+  const b = P0;
+  const c = -promptRaised;
+  
+  // Quadratic formula: S = (-b + √(b² - 4ac)) / 2a
+  const discriminant = b * b - 4 * a * c;
+  if (discriminant < 0) return 0;
+  
+  const tokensSold = (-b + Math.sqrt(discriminant)) / (2 * a);
+  return Math.max(0, Math.min(tokensSold, BONDING_CURVE_CONFIG.CURVE_SUPPLY));
 }
 
+/**
+ * Calculate prompt raised from tokens sold using integral
+ * ∫[0 to S] (P0 + slope*s) ds = P0*S + slope*S²/2
+ */
 export function promptRaisedFromTokensSold(tokensSold: number): number {
-  return tokensSold / TOKENS_SOLD_PER_PROMPT;
+  const { P0 } = BONDING_CURVE_CONFIG;
+  const clampedSupply = Math.max(0, Math.min(tokensSold, BONDING_CURVE_CONFIG.CURVE_SUPPLY));
+  return P0 * clampedSupply + PRICE_SLOPE * clampedSupply * clampedSupply / 2;
 }
 
+/**
+ * Get price directly from prompt raised
+ */
 export function getPriceFromPromptRaised(promptRaised: number): number {
   return getCurrentPrice(tokensSoldFromPromptRaised(promptRaised));
 }
 
+/**
+ * Simulate buy impact
+ */
 export function simulateBuyImpact(currentPromptRaised: number, promptAmount: number): {
   newPrice: number;
   newTokensSold: number;
 } {
-  const currentTokensSold = tokensSoldFromPromptRaised(currentPromptRaised);
-  const res = calculateTokensFromPrompt(currentTokensSold, promptAmount);
-  return {
-    newPrice: getCurrentPrice(res.newTokensSold),
-    newTokensSold: res.newTokensSold,
-  };
+  const newPromptRaised = currentPromptRaised + promptAmount;
+  const newTokensSold = tokensSoldFromPromptRaised(newPromptRaised);
+  const newPrice = getCurrentPrice(newTokensSold);
+  
+  return { newPrice, newTokensSold };
 }
 
+/**
+ * Simulate sell impact
+ */
 export function simulateSellImpact(currentPromptRaised: number, tokenAmount: number): {
   newPrice: number;
   newTokensSold: number;
 } {
   const currentTokensSold = tokensSoldFromPromptRaised(currentPromptRaised);
-  const res = calculateSellReturn(currentTokensSold, tokenAmount);
-  return {
-    newPrice: getCurrentPrice(res.newTokensSold),
-    newTokensSold: res.newTokensSold,
-  };
-}
-
-/**
- * Calculate the invariant k = x * y for the bonding curve
- */
-export function getInvariant(): number {
-  const { VIRTUAL_PROMPT_RESERVE, VIRTUAL_TOKEN_RESERVE } = BONDING_CURVE_CONFIG;
-  return VIRTUAL_PROMPT_RESERVE * VIRTUAL_TOKEN_RESERVE;
-}
-
-/**
- * Calculate current PROMPT and token reserves based on tokens sold
- */
-export function getCurrentReserves(tokensSold: number): {
-  promptReserve: number;
-  tokenReserve: number;
-} {
-  const { VIRTUAL_PROMPT_RESERVE, VIRTUAL_TOKEN_RESERVE } = BONDING_CURVE_CONFIG;
-  const k = getInvariant();
+  const newTokensSold = Math.max(0, currentTokensSold - tokenAmount);
+  const newPromptRaised = promptRaisedFromTokensSold(newTokensSold);
+  const newPrice = getCurrentPrice(newTokensSold);
   
-  // As tokens are sold, token reserve decreases
-  const tokenReserve = VIRTUAL_TOKEN_RESERVE - tokensSold;
-  // PROMPT reserve increases to maintain k constant
-  const promptReserve = k / tokenReserve;
-  
-  return { promptReserve, tokenReserve };
-}
-
-/**
- * Calculate the current price of a token based on current reserves
- * Price = PROMPT reserve / Token reserve
- */
-export function getCurrentPrice(tokensSold: number): number {
-  const { promptReserve, tokenReserve } = getCurrentReserves(tokensSold);
-  return promptReserve / tokenReserve;
+  return { newPrice, newTokensSold };
 }
 
 /**
  * Calculate the cost to buy a specific amount of tokens
- * Uses constant product formula: k = x * y
+ * Uses linear integral: ∫[S1 to S2] (P0 + slope*s) ds
  */
 export function calculateBuyCost(currentTokensSold: number, tokenAmount: number): {
   cost: number;
@@ -109,18 +117,24 @@ export function calculateBuyCost(currentTokensSold: number, tokenAmount: number)
   newTokensSold: number;
   priceImpact: number;
 } {
-  const k = getInvariant();
-  const { promptReserve: currentPromptReserve, tokenReserve: currentTokenReserve } = getCurrentReserves(currentTokensSold);
+  const { P0, CURVE_SUPPLY } = BONDING_CURVE_CONFIG;
   
-  // After buying tokens, token reserve decreases
-  const newTokenReserve = currentTokenReserve - tokenAmount;
-  // New PROMPT reserve to maintain k constant
-  const newPromptReserve = k / newTokenReserve;
+  // Ensure we don't exceed curve supply
+  const maxPurchasable = CURVE_SUPPLY - currentTokensSold;
+  const actualTokenAmount = Math.min(tokenAmount, maxPurchasable);
   
-  // Cost is the difference in PROMPT reserves
-  const cost = newPromptReserve - currentPromptReserve;
-  const averagePrice = cost / tokenAmount;
-  const newTokensSold = currentTokensSold + tokenAmount;
+  if (actualTokenAmount <= 0) {
+    return { cost: 0, averagePrice: 0, newTokensSold: currentTokensSold, priceImpact: 0 };
+  }
+  
+  const newTokensSold = currentTokensSold + actualTokenAmount;
+  
+  // Calculate cost using integral: ∫[S1 to S2] (P0 + slope*s) ds
+  // = P0*(S2-S1) + slope*(S2²-S1²)/2
+  const cost = P0 * actualTokenAmount + 
+    PRICE_SLOPE * (newTokensSold * newTokensSold - currentTokensSold * currentTokensSold) / 2;
+  
+  const averagePrice = cost / actualTokenAmount;
   
   // Price impact calculation
   const currentPrice = getCurrentPrice(currentTokensSold);
@@ -144,18 +158,23 @@ export function calculateSellReturn(currentTokensSold: number, tokenAmount: numb
   newTokensSold: number;
   priceImpact: number;
 } {
-  const k = getInvariant();
-  const { promptReserve: currentPromptReserve, tokenReserve: currentTokenReserve } = getCurrentReserves(currentTokensSold);
+  const { P0 } = BONDING_CURVE_CONFIG;
   
-  // After selling tokens, token reserve increases
-  const newTokenReserve = currentTokenReserve + tokenAmount;
-  // New PROMPT reserve to maintain k constant
-  const newPromptReserve = k / newTokenReserve;
+  // Ensure we don't sell more than available
+  const actualTokenAmount = Math.min(tokenAmount, currentTokensSold);
   
-  // Return is the difference in PROMPT reserves
-  const returnAmount = currentPromptReserve - newPromptReserve;
-  const averagePrice = returnAmount / tokenAmount;
-  const newTokensSold = Math.max(0, currentTokensSold - tokenAmount);
+  if (actualTokenAmount <= 0) {
+    return { return: 0, averagePrice: 0, newTokensSold: currentTokensSold, priceImpact: 0 };
+  }
+  
+  const newTokensSold = currentTokensSold - actualTokenAmount;
+  
+  // Calculate return using integral: ∫[S2 to S1] (P0 + slope*s) ds
+  // = P0*(S1-S2) + slope*(S1²-S2²)/2
+  const returnAmount = P0 * actualTokenAmount + 
+    PRICE_SLOPE * (currentTokensSold * currentTokensSold - newTokensSold * newTokensSold) / 2;
+  
+  const averagePrice = returnAmount / actualTokenAmount;
   
   // Price impact calculation
   const currentPrice = getCurrentPrice(currentTokensSold);
@@ -171,7 +190,48 @@ export function calculateSellReturn(currentTokensSold: number, tokenAmount: numb
 }
 
 /**
- * Calculate fees for a transaction (virtuals.io: 1% split 70%/30%)
+ * Calculate the amount of tokens that can be bought with a specific PROMPT amount
+ */
+export function calculateTokensFromPrompt(currentTokensSold: number, promptAmount: number): {
+  tokenAmount: number;
+  remainingPrompt: number;
+  newTokensSold: number;
+} {
+  const { P0, CURVE_SUPPLY } = BONDING_CURVE_CONFIG;
+  const maxPurchasable = CURVE_SUPPLY - currentTokensSold;
+  
+  if (maxPurchasable <= 0 || promptAmount <= 0) {
+    return { tokenAmount: 0, remainingPrompt: promptAmount, newTokensSold: currentTokensSold };
+  }
+  
+  // Solve quadratic equation to find how many tokens can be bought
+  // (slope/2)*S² + P0*S - promptAmount = 0
+  // where S is the token amount to buy
+  const a = PRICE_SLOPE / 2;
+  const b = P0 + PRICE_SLOPE * currentTokensSold;
+  const c = -promptAmount;
+  
+  const discriminant = b * b - 4 * a * c;
+  if (discriminant < 0) {
+    return { tokenAmount: 0, remainingPrompt: promptAmount, newTokensSold: currentTokensSold };
+  }
+  
+  const tokenAmount = Math.floor((-b + Math.sqrt(discriminant)) / (2 * a));
+  const clampedTokenAmount = Math.min(tokenAmount, maxPurchasable);
+  
+  // Calculate actual cost for the clamped amount
+  const actualCost = calculateBuyCost(currentTokensSold, clampedTokenAmount).cost;
+  const remainingPrompt = Math.max(0, promptAmount - actualCost);
+  
+  return {
+    tokenAmount: clampedTokenAmount,
+    remainingPrompt,
+    newTokensSold: currentTokensSold + clampedTokenAmount
+  };
+}
+
+/**
+ * Calculate fees for a transaction
  */
 export function calculateFees(amount: number, transactionType: 'buy' | 'sell'): {
   totalFees: number;
@@ -207,7 +267,7 @@ export function calculateMarketCap(tokensSold: number): number {
 }
 
 /**
- * Calculate how much PROMPT is needed for graduation
+ * Calculate graduation progress
  */
 export function calculateGraduationProgress(currentPromptRaised: number): {
   progress: number;
@@ -227,7 +287,7 @@ export function calculateGraduationProgress(currentPromptRaised: number): {
 }
 
 /**
- * Live graduation check - always use this instead of database token_graduated field
+ * Live graduation check
  */
 export function isAgentGraduated(promptRaised: number): boolean {
   const { GRADUATION_PROMPT_AMOUNT } = BONDING_CURVE_CONFIG;
@@ -235,54 +295,7 @@ export function isAgentGraduated(promptRaised: number): boolean {
 }
 
 /**
- * Migration state detection - Phase 4 implementation
- * An agent is "migrating" when it has graduated but hasn't been deployed to DEX yet
- */
-export function isAgentMigrating(promptRaised: number, tokenAddress?: string | null): boolean {
-  const isGraduated = isAgentGraduated(promptRaised);
-  const isTokenDeployed = Boolean(tokenAddress);
-  return isGraduated && !isTokenDeployed;
-}
-
-// TODO: Future refactor - Remove token_graduated field from TypeScript interfaces
-// The database field still exists but UI logic now uses live calculation via isAgentGraduated()
-// Files to update: AgentMarketingTab.tsx, AgentTabsInterface.tsx, SpotlightAgent.tsx, 
-// TradingAgentCard.tsx, UniversalAgentDashboard.tsx interfaces
-
-/**
- * Calculate the amount of tokens that can be bought with a specific PROMPT amount
- * Solves the constant product equation for token amount
- */
-export function calculateTokensFromPrompt(currentTokensSold: number, promptAmount: number): {
-  tokenAmount: number;
-  remainingPrompt: number;
-  newTokensSold: number;
-} {
-  const k = getInvariant();
-  const { promptReserve: currentPromptReserve, tokenReserve: currentTokenReserve } = getCurrentReserves(currentTokensSold);
-  
-  // New PROMPT reserve after adding promptAmount
-  const newPromptReserve = currentPromptReserve + promptAmount;
-  // New token reserve to maintain k constant
-  const newTokenReserve = k / newPromptReserve;
-  
-  // Tokens that can be bought
-  const tokenAmount = Math.floor(currentTokenReserve - newTokenReserve);
-  
-  // Calculate actual cost for this amount of tokens
-  const actualCost = calculateBuyCost(currentTokensSold, tokenAmount).cost;
-  const remainingPrompt = Math.max(0, promptAmount - actualCost);
-  
-  return {
-    tokenAmount,
-    remainingPrompt,
-    newTokensSold: currentTokensSold + tokenAmount
-  };
-}
-
-/**
- * Check if the bonding curve is complete (ready for graduation)
- * Virtuals.io: graduates at 42k PROMPT raised
+ * Check if bonding curve is complete
  */
 export function isBondingCurveComplete(promptRaised: number): boolean {
   const { GRADUATION_PROMPT_AMOUNT } = BONDING_CURVE_CONFIG;
@@ -290,18 +303,27 @@ export function isBondingCurveComplete(promptRaised: number): boolean {
 }
 
 /**
- * Calculate the initial LP creation parameters
- * Virtuals.io: creates LP with all raised PROMPT and remaining tokens
+ * Migration state detection
+ */
+export function isAgentMigrating(promptRaised: number, tokenAddress?: string | null): boolean {
+  const isGraduated = isAgentGraduated(promptRaised);
+  const isTokenDeployed = Boolean(tokenAddress);
+  return isGraduated && !isTokenDeployed;
+}
+
+/**
+ * Calculate LP creation parameters
+ * Uses 70% of raised PROMPT and 200M reserved tokens
  */
 export function calculateLPCreation(finalPromptRaised: number): {
   lpPromptAmount: number;
   lpTokenAmount: number;
 } {
-  const { TOTAL_SUPPLY } = BONDING_CURVE_CONFIG;
+  const { LP_RESERVE } = BONDING_CURVE_CONFIG;
   
-  // In virtuals.io model: all raised PROMPT goes to LP with remaining tokens
-  const lpPromptAmount = finalPromptRaised;
-  const lpTokenAmount = TOTAL_SUPPLY; // All remaining tokens go to LP
+  // 70% of raised PROMPT goes to LP (30% is platform fee)
+  const lpPromptAmount = finalPromptRaised * 0.7;
+  const lpTokenAmount = LP_RESERVE; // 200M reserved tokens
   
   return {
     lpPromptAmount,
@@ -331,3 +353,10 @@ export function formatPrice(price: number): string {
 export function formatPromptAmount(amount: number): string {
   return `${amount.toFixed(3)} PROMPT`;
 }
+
+// Legacy compatibility - maintain old function names
+export const getInvariant = () => 0; // Not used in linear model
+export const getCurrentReserves = (tokensSold: number) => ({ 
+  promptReserve: 0, 
+  tokenReserve: 0 
+}); // Not used in linear model
