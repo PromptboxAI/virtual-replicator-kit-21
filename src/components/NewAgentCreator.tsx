@@ -128,7 +128,7 @@ export function NewAgentCreator() {
         description: "This may take 30-60 seconds. Please wait...",
       });
 
-      const { data: deployment, error: deployError } = await supabase.functions.invoke('deploy-agent-token-v2', {
+      const { data: deployment, error: deployError } = await supabase.functions.invoke('deploy-agent-token-v2-fixed', {
         body: {
           name: agentData.name,
           symbol: agentData.symbol.toUpperCase(),
