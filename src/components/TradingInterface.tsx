@@ -14,7 +14,7 @@ import { LiveTokenPriceDisplay } from './LiveTokenPriceDisplay';
 import { WalletBalanceDisplay } from './WalletBalanceDisplay';
 import { BondingCurvePreview } from './BondingCurvePreview';
 import { useAgentTokens } from '@/hooks/useAgentTokens';
-import { calculateBuyCost, calculateSellReturn, formatPrice, formatPromptAmount, getCurrentPrice, calculateTokensFromPrompt, tokensSoldFromPromptRaised } from '@/lib/bondingCurve';
+import { calculateBuyCostV3, calculateSellReturnV3, formatPriceV3, formatPromptAmountV3, getCurrentPriceV3, calculateTokensFromPromptV3, tokensSoldFromPromptRaisedV3 } from '@/lib/bondingCurveV3';
 import { supabase } from '@/integrations/supabase/client';
 
 interface AgentMetrics {
@@ -183,9 +183,9 @@ export function TradingInterface({
         const currentPromptRaised = metrics?.promptRaised || 0;
         
         // Calculate how many tokens can be bought with this PROMPT amount
-        const tokenResult = calculateTokensFromPrompt(currentPromptRaised, promptAmount);
+        const tokenResult = calculateTokensFromPromptV3(currentPromptRaised, promptAmount);
         const newPromptRaised = currentPromptRaised + promptAmount;
-        const newPrice = getCurrentPrice(tokenResult.newTokensSold);
+        const newPrice = getCurrentPriceV3(tokenResult.newTokensSold);
         
         // Update database with new trade
         await supabase
@@ -198,7 +198,7 @@ export function TradingInterface({
         
         toast({
           title: "Purchase Successful",
-          description: `Bought ${tokenResult.tokenAmount.toFixed(2)} ${agentSymbol} for ${formatPromptAmount(promptAmount)}`,
+          description: `Bought ${tokenResult.tokenAmount.toFixed(2)} ${agentSymbol} for ${formatPromptAmountV3(promptAmount)}`,
         });
       }
       setBuyAmount('');
@@ -251,10 +251,10 @@ export function TradingInterface({
         
         // Calculate how much PROMPT this returns
         // For selling, we need to reverse-calculate from current state
-        const currentTokensSold = tokensSoldFromPromptRaised(currentPromptRaised);
-        const sellResult = calculateSellReturn(currentTokensSold, tokenAmount);
+        const currentTokensSold = tokensSoldFromPromptRaisedV3(currentPromptRaised);
+        const sellResult = calculateSellReturnV3(currentTokensSold, tokenAmount);
         const newPromptRaised = Math.max(0, currentPromptRaised - sellResult.return);
-        const newPrice = getCurrentPrice(sellResult.newTokensSold);
+        const newPrice = getCurrentPriceV3(sellResult.newTokensSold);
         
         // Update database with new trade
         await supabase
@@ -267,7 +267,7 @@ export function TradingInterface({
         
         toast({
           title: "Sale Successful",
-          description: `Sold ${tokenAmount} ${agentSymbol} for ${formatPromptAmount(sellResult.return)}`,
+          description: `Sold ${tokenAmount} ${agentSymbol} for ${formatPromptAmountV3(sellResult.return)}`,
         });
       }
       setSellAmount('');
@@ -395,7 +395,7 @@ export function TradingInterface({
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Price (PROMPT)</p>
               <div className="flex items-center gap-2">
-                <p className="text-lg font-semibold">{formatPrice(metrics.currentPrice)}</p>
+                <p className="text-lg font-semibold">{formatPriceV3(metrics.currentPrice)}</p>
                 <Badge variant={metrics.priceChange24h >= 0 ? "default" : "destructive"}>
                   {metrics.priceChange24h >= 0 ? (
                     <TrendingUp className="h-3 w-3 mr-1" />
@@ -486,7 +486,7 @@ export function TradingInterface({
                 />
                 <div className="text-xs text-muted-foreground">
                   {parseFloat(buyAmount || '0') > 0 && (
-                    <span>You will receive approximately {calculateTokensFromPrompt(metrics.promptRaised, parseFloat(buyAmount)).tokenAmount.toFixed(2)} {agentSymbol}</span>
+                    <span>You will receive approximately {calculateTokensFromPromptV3(metrics.promptRaised, parseFloat(buyAmount)).tokenAmount.toFixed(2)} {agentSymbol}</span>
                   )}
                 </div>
               </div>
