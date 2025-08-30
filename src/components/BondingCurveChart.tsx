@@ -1,8 +1,17 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { TrendingUp, Target } from "lucide-react";
-import { getCurrentPrice, BONDING_CURVE_CONFIG, tokensSoldFromPromptRaised } from "@/lib/bondingCurve";
+import { 
+  getCurrentPriceV3, 
+  BONDING_CURVE_V3_CONFIG, 
+  calculateGraduationProgressV3, 
+  tokensSoldFromPromptRaisedV3, 
+  formatPriceV3, 
+  formatTokenAmountV3,
+  promptRaisedFromTokensSoldV3
+} from "@/lib/bondingCurveV3";
 
 interface BondingCurveChartProps {
   currentTokensSold: number;
@@ -17,21 +26,28 @@ export const BondingCurveChart = ({
   promptRaised,
   className 
 }: BondingCurveChartProps) => {
-  // Generate data points for the bonding curve
+  // Generate enhanced data points showing linear progression to 42k
   const generateCurveData = () => {
     const data = [];
-    const maxTokens = Math.min(currentTokensSold * 2, BONDING_CURVE_CONFIG.TOTAL_SUPPLY * 0.8);
-    const step = maxTokens / 50; // 50 data points
+    const maxPoints = 100;
+    const { CURVE_SUPPLY, GRADUATION_PROMPT_AMOUNT } = BONDING_CURVE_V3_CONFIG;
     
-    for (let tokens = 0; tokens <= maxTokens; tokens += step) {
-      const price = getCurrentPrice(tokens);
-      const promptEquivalent = tokens * price;
+    // Show curve from 0 to max(current position * 1.2, full curve)
+    const actualTokensSold = tokensSoldFromPromptRaisedV3(promptRaised);
+    const maxTokens = Math.max(actualTokensSold * 1.2, CURVE_SUPPLY);
+    const step = maxTokens / maxPoints;
+    
+    for (let i = 0; i <= maxPoints; i++) {
+      const tokensSold = Math.min(i * step, CURVE_SUPPLY);
+      const price = getCurrentPriceV3(tokensSold);
+      const promptRaisedAtPoint = promptRaisedFromTokensSoldV3(tokensSold);
       
       data.push({
-        tokensSold: tokens,
-        price: price,
-        promptRaised: promptEquivalent,
-        isCurrentPoint: Math.abs(tokens - currentTokensSold) < step / 2
+        tokensSold,
+        price,
+        promptRaised: promptRaisedAtPoint,
+        isGraduationZone: promptRaisedAtPoint >= GRADUATION_PROMPT_AMOUNT,
+        isCurrentPoint: Math.abs(tokensSold - actualTokensSold) < step / 2
       });
     }
     
@@ -39,18 +55,22 @@ export const BondingCurveChart = ({
   };
 
   const curveData = generateCurveData();
-  const currentPrice = getCurrentPrice(currentTokensSold);
-  const graduationProgress = Math.min((promptRaised / graduationThreshold) * 100, 100);
+  const actualTokensSold = tokensSoldFromPromptRaisedV3(promptRaised);
+  const currentPrice = getCurrentPriceV3(actualTokensSold);
+  const graduationInfo = calculateGraduationProgressV3(promptRaised);
 
-  // Custom tooltip formatter
+  // Enhanced custom tooltip formatter
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
         <div className="bg-background p-3 border rounded-lg shadow-lg">
-          <p className="text-sm font-medium">{`Tokens Sold: ${(data.tokensSold / 1000000).toFixed(2)}M`}</p>
-          <p className="text-sm text-blue-600">{`Price: $${data.price.toFixed(8)}`}</p>
-          <p className="text-sm text-muted-foreground">{`PROMPT Raised: ${data.promptRaised.toFixed(0)}`}</p>
+          <p className="text-sm font-medium">{`Tokens: ${formatTokenAmountV3(data.tokensSold)}`}</p>
+          <p className="text-sm text-primary">{`Price: ${formatPriceV3(data.price)} PROMPT`}</p>
+          <p className="text-sm text-muted-foreground">{`PROMPT Raised: ${formatTokenAmountV3(data.promptRaised)}`}</p>
+          {data.isGraduationZone && (
+            <p className="text-xs text-green-600 font-medium">✅ Graduation Zone</p>
+          )}
         </div>
       );
     }
@@ -62,70 +82,70 @@ export const BondingCurveChart = ({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <TrendingUp className="h-5 w-5" />
-          Bonding Curve
+          Linear Bonding Curve
         </CardTitle>
         <CardDescription>
-          Token price increases as more tokens are sold following a mathematical curve
+          Price increases linearly to {formatTokenAmountV3(BONDING_CURVE_V3_CONFIG.GRADUATION_PROMPT_AMOUNT)} PROMPT graduation
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Current Stats */}
+        {/* Enhanced Current Stats */}
         <div className="grid grid-cols-3 gap-4">
           <div className="text-center">
-            <div className="text-lg font-bold text-blue-600">
-              ${currentPrice.toFixed(8)}
+            <div className="text-lg font-bold text-primary">
+              {formatPriceV3(currentPrice)}
             </div>
-            <div className="text-xs text-muted-foreground">Current Price</div>
+            <div className="text-xs text-muted-foreground">Current Price (PROMPT)</div>
           </div>
           <div className="text-center">
             <div className="text-lg font-bold">
-              {(currentTokensSold / 1000000).toFixed(2)}M
+              {formatTokenAmountV3(actualTokensSold)}
             </div>
             <div className="text-xs text-muted-foreground">Tokens Sold</div>
           </div>
           <div className="text-center">
             <div className="text-lg font-bold text-green-600">
-              {graduationProgress.toFixed(1)}%
+              {graduationInfo.progressDisplay}
             </div>
             <div className="text-xs text-muted-foreground">To Graduation</div>
           </div>
         </div>
 
-        {/* Chart */}
+        {/* Enhanced Chart */}
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={curveData}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis 
                 dataKey="tokensSold"
-                tickFormatter={(value) => `${(value / 1000000).toFixed(0)}M`}
+                tickFormatter={(value) => formatTokenAmountV3(value)}
                 fontSize={10}
                 stroke="hsl(var(--muted-foreground))"
               />
               <YAxis 
-                tickFormatter={(value) => `$${value.toFixed(6)}`}
+                tickFormatter={(value) => formatPriceV3(value)}
                 fontSize={10}
                 stroke="hsl(var(--muted-foreground))"
               />
               <Tooltip content={<CustomTooltip />} />
               
-              {/* Graduation threshold line */}
+              {/* Current position marker */}
               <ReferenceLine 
-                x={tokensSoldFromPromptRaised(graduationThreshold)} 
-                stroke="hsl(var(--primary))" 
-                strokeDasharray="5 5"
-                label={{ value: "Graduation", position: "top" }}
-              />
-              
-              {/* Current position line */}
-              <ReferenceLine 
-                x={currentTokensSold} 
+                x={actualTokensSold} 
                 stroke="hsl(var(--destructive))" 
-                strokeWidth={2}
+                strokeDasharray="5 5"
                 label={{ value: "Current", position: "top" }}
               />
               
-              {/* Price curve */}
+              {/* Graduation threshold marker */}
+              <ReferenceLine 
+                y={BONDING_CURVE_V3_CONFIG.P1} 
+                stroke="hsl(var(--accent))" 
+                strokeDasharray="5 5"
+                label={{ value: "Max Price", position: "top" }}
+              />
+              
+              {/* Linear price curve */}
               <Line
                 type="monotone"
                 dataKey="price"
@@ -143,29 +163,39 @@ export const BondingCurveChart = ({
           </ResponsiveContainer>
         </div>
 
-        {/* Graduation Info */}
-        {graduationProgress < 100 && (
-          <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg">
-            <Target className="h-4 w-4 text-blue-600" />
-            <div className="flex-1">
-              <div className="text-sm font-medium text-blue-900">
-                {(graduationThreshold - promptRaised).toLocaleString()} PROMPT needed to graduate
-              </div>
-              <div className="text-xs text-blue-600">
-                After graduation, the token will be listed on DEX with liquidity
-              </div>
+        {/* Enhanced Graduation Progress */}
+        <div className="space-y-4">
+          <div>
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-medium">Graduation Progress</span>
+              <span className="text-sm text-muted-foreground">{graduationInfo.progressDisplay}</span>
             </div>
-            <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-              {graduationProgress.toFixed(1)}%
-            </Badge>
+            <Progress value={graduationInfo.progress} className="h-2" />
+            {graduationInfo.isNearGraduation && (
+              <div className="mt-2 text-xs text-primary font-medium">
+                ⚡ Almost ready for DEX launch!
+              </div>
+            )}
           </div>
-        )}
+          
+          <div className="p-3 bg-muted/50 rounded-lg">
+            <div className="text-sm font-medium text-center mb-2">
+              {graduationInfo.countdownMessage}
+            </div>
+            {!graduationInfo.isGraduated && (
+              <div className="text-xs text-muted-foreground text-center">
+                Need {formatTokenAmountV3(graduationInfo.remaining)} more PROMPT to launch on DEX
+              </div>
+            )}
+          </div>
+        </div>
 
-        {/* Curve Explanation */}
+        {/* Enhanced Curve Explanation */}
         <div className="text-xs text-muted-foreground space-y-1">
-          <p>• Price follows a constant product bonding curve (x × y = k)</p>
-          <p>• Each purchase increases the price for the next buyer</p>
-          <p>• At graduation, remaining tokens + raised PROMPT create DEX liquidity</p>
+          <p>• Linear bonding curve: Price = {formatPriceV3(BONDING_CURVE_V3_CONFIG.P0)} + slope × tokens_sold</p>
+          <p>• Each purchase increases price linearly for next buyer</p>
+          <p>• Graduation at {formatTokenAmountV3(BONDING_CURVE_V3_CONFIG.GRADUATION_PROMPT_AMOUNT)} PROMPT creates LP with 70% of funds</p>
+          <p>• {formatTokenAmountV3(BONDING_CURVE_V3_CONFIG.LP_RESERVE)} tokens + PROMPT locked for {BONDING_CURVE_V3_CONFIG.LIQUIDITY_LOCK_YEARS} years</p>
         </div>
       </CardContent>
     </Card>
