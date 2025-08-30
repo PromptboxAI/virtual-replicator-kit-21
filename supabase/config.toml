@@ -41,3 +41,6 @@ verify_jwt = false
 
 [functions.execute-trade]
 verify_jwt = false
+
+[functions.deploy-agent-token-v2-fixed]
+verify_jwt = false

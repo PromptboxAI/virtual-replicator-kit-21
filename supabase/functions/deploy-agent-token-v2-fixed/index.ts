@@ -86,36 +86,23 @@ async function deploySimpleERC20(
 
   const account = privateKeyToAccount(deployerPrivateKey as `0x${string}`);
   
+  const rpcUrl = Deno.env.get('PRIMARY_RPC_URL') || 'https://sepolia.base.org';
+
   const walletClient = createWalletClient({
     account,
     chain: baseSepolia,
-    transport: http()
+    transport: http(rpcUrl)
   });
 
   const publicClient = createPublicClient({
     chain: baseSepolia,
-    transport: http()
+    transport: http(rpcUrl)
   });
 
   console.log(`🔄 Deploying Simple ERC20: ${name} (${symbol}) for agent ${agentId}`);
   console.log(`Creator: ${creatorAddress}`);
 
   try {
-    // Encode constructor parameters (name, symbol)
-    const constructorArgs = encodeFunctionData({
-      abi: [{
-        "inputs": [
-          {"internalType": "string", "name": "_name", "type": "string"},
-          {"internalType": "string", "name": "_symbol", "type": "string"}
-        ],
-        "stateMutability": "nonpayable",
-        "type": "constructor"
-      }],
-      args: [name, symbol]
-    });
-
-    // Remove the function selector (first 4 bytes) to get just the constructor params
-    const constructorParams = constructorArgs.slice(10);
     
     // Deploy the contract
     console.log('Deploying contract with bytecode length:', SIMPLE_ERC20_BYTECODE.length);
@@ -220,7 +207,10 @@ Deno.serve(async (req) => {
       .from('agents')
       .update({ 
         token_address: deploymentResult.contractAddress,
-        token_deployed: true,
+        deployment_method: 'direct-fixed',
+        deployment_tx_hash: deploymentResult.transactionHash,
+        chain_id: 84532,
+        block_number: deploymentResult.blockNumber,
         updated_at: new Date().toISOString()
       })
       .eq('id', agentId);
@@ -236,20 +226,15 @@ Deno.serve(async (req) => {
     const { error: deploymentRecordError } = await supabase
       .from('deployed_contracts')
       .insert({
-        contract_type: 'agent_token_v2',
+        contract_type: 'AGENT',
         contract_address: deploymentResult.contractAddress,
-        network: 'base_sepolia',
-        deployer_address: creatorAddress || 'system',
         transaction_hash: deploymentResult.transactionHash,
-        block_number: deploymentResult.blockNumber,
-        gas_used: deploymentResult.gasUsed.toString(),
-        metadata: {
-          name,
-          symbol,
-          agentId,
-          deploymentMethod: deploymentResult.deploymentMethod
-        },
-        is_active: true
+        network: 'base_sepolia',
+        name,
+        symbol: symbol.toUpperCase(),
+        is_active: true,
+        version: 'v2-fixed',
+        agent_id: agentId
       });
 
     if (deploymentRecordError) {
