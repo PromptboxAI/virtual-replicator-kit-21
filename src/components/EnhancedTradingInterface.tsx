@@ -31,7 +31,8 @@ import {
   calculateGraduationProgress,
   BONDING_CURVE_CONFIG,
   isAgentGraduated,
-  isAgentMigrating
+  isAgentMigrating,
+  tokensSoldFromPromptRaised
 } from '@/lib/bondingCurve';
 import { cn, formatDecimalPlaces } from '@/lib/utils';
 import { LiveTokenPriceDisplay } from './LiveTokenPriceDisplay';
@@ -161,10 +162,11 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
   useEffect(() => {
     if (buyAmount && parseFloat(buyAmount) > 0) {
       const promptAmount = parseFloat(buyAmount);
-      const result = calculateTokensFromPrompt(promptRaised, promptAmount);
+      const currentTokensSold = tokensSoldFromPromptRaised(promptRaised);
+      const result = calculateTokensFromPrompt(currentTokensSold, promptAmount);
       setCalculatedTokens(formatDecimalPlaces(result.tokenAmount));
       
-      const currentPriceCalc = getCurrentPrice(promptRaised / 1000);
+      const currentPriceCalc = getCurrentPrice(currentTokensSold);
       const newPrice = getCurrentPrice(result.newTokensSold);
       const impact = ((newPrice - currentPriceCalc) / currentPriceCalc) * 100;
       setPriceImpact(impact);
@@ -177,7 +179,7 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
   useEffect(() => {
     if (sellAmount && parseFloat(sellAmount) > 0) {
       const tokenAmount = parseFloat(sellAmount);
-      const currentTokensSold = promptRaised * 1000;
+      const currentTokensSold = tokensSoldFromPromptRaised(promptRaised);
       const result = calculateSellReturn(currentTokensSold, tokenAmount);
       setCalculatedPrompt(formatDecimalPlaces(result.return));
     } else {
@@ -492,7 +494,7 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
     }
 
     const tokenAmount = parseFloat(sellAmount);
-    const currentTokensSold = promptRaised * 1000;
+    const currentTokensSold = tokensSoldFromPromptRaised(promptRaised);
     const result = calculateSellReturn(currentTokensSold, tokenAmount);
 
     const slippageNumber = parseFloat(slippage);

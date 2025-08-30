@@ -12,7 +12,8 @@ import {
   calculateTokensFromPrompt, 
   calculateBuyCost,
   calculateGraduationProgress,
-  BONDING_CURVE_CONFIG 
+  BONDING_CURVE_CONFIG,
+  tokensSoldFromPromptRaised
 } from '@/lib/bondingCurve';
 import { cn } from '@/lib/utils';
 import { useTokenBalance } from '@/hooks/useTokenBalance';
@@ -90,7 +91,7 @@ function BondingCurvePreviewContent({
 }) {
   
   // Calculate current state
-  const currentTokensSold = promptRaised * 1000; // Rough conversion for demo
+  const currentTokensSold = tokensSoldFromPromptRaised(promptRaised);
   const currentPrice = getCurrentPrice(currentTokensSold);
   const graduationProgress = calculateGraduationProgress(promptRaised);
   
@@ -110,7 +111,7 @@ function BondingCurvePreviewContent({
     const step = 50; // Every 50 PROMPT
     
     for (let prompt = Math.max(0, promptRaised - 500); prompt <= maxPrompt; prompt += step) {
-      const tokensSold = prompt * 1000;
+      const tokensSold = tokensSoldFromPromptRaised(prompt);
       const price = getCurrentPrice(tokensSold);
       points.push({
         prompt,

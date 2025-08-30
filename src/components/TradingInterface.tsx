@@ -14,7 +14,7 @@ import { LiveTokenPriceDisplay } from './LiveTokenPriceDisplay';
 import { WalletBalanceDisplay } from './WalletBalanceDisplay';
 import { BondingCurvePreview } from './BondingCurvePreview';
 import { useAgentTokens } from '@/hooks/useAgentTokens';
-import { calculateBuyCost, calculateSellReturn, formatPrice, formatPromptAmount, getCurrentPrice, calculateTokensFromPrompt } from '@/lib/bondingCurve';
+import { calculateBuyCost, calculateSellReturn, formatPrice, formatPromptAmount, getCurrentPrice, calculateTokensFromPrompt, tokensSoldFromPromptRaised } from '@/lib/bondingCurve';
 import { supabase } from '@/integrations/supabase/client';
 
 interface AgentMetrics {
@@ -251,7 +251,7 @@ export function TradingInterface({
         
         // Calculate how much PROMPT this returns
         // For selling, we need to reverse-calculate from current state
-        const currentTokensSold = currentPromptRaised > 0 ? currentPromptRaised * 1000 : 0; // Approximate
+        const currentTokensSold = tokensSoldFromPromptRaised(currentPromptRaised);
         const sellResult = calculateSellReturn(currentTokensSold, tokenAmount);
         const newPromptRaised = Math.max(0, currentPromptRaised - sellResult.return);
         const newPrice = getCurrentPrice(sellResult.newTokensSold);
