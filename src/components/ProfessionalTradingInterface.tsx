@@ -8,7 +8,7 @@ import { ProfessionalTradingChart } from './ProfessionalTradingChart';
 import { TokenTradingInterface } from './TokenTradingInterface';
 import { TradingModeGuard } from './TradingModeGuard';
 import { useAgentRealtime } from '@/hooks/useAgentRealtime';
-import { formatPromptAmount, formatPrice, formatTokenAmount } from '@/lib/bondingCurve';
+import { formatPromptAmountV3, formatPriceV3, formatTokenAmountV3 } from '@/lib/bondingCurveV3';
 import { AgentInformationSections } from './AgentInformationSections';
 import { useToast } from '@/hooks/use-toast';
 
@@ -117,7 +117,7 @@ export const ProfessionalTradingInterface = ({
           </div>
           <div className="text-right">
             <div className="text-3xl font-bold text-foreground">
-              {formatPrice(currentPrice)}
+              {formatPriceV3(currentPrice)}
             </div>
             <div className="text-sm text-muted-foreground">
               PROMPT per token
@@ -154,8 +154,8 @@ export const ProfessionalTradingInterface = ({
                   />
                 </div>
                 <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>{formatPromptAmount(agent.prompt_raised)} raised</span>
-                  <span>{formatPromptAmount(agent.graduation_threshold)} needed</span>
+                  <span>{formatPromptAmountV3(agent.prompt_raised)} raised</span>
+                  <span>{formatPromptAmountV3(agent.graduation_threshold)} needed</span>
                 </div>
               </div>
             </Card>
