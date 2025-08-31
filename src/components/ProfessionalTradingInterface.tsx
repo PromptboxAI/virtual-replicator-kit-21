@@ -87,7 +87,7 @@ export const ProfessionalTradingInterface = ({
         <MigrationBanner 
           agentName={agent.name}
           onComplete={() => {
-            checkMigration();
+            checkMigration(agent.prompt_raised, agent.token_address);
             window.location.reload();
           }}
         />

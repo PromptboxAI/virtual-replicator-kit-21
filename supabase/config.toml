@@ -53,3 +53,9 @@ verify_jwt = false
 
 [functions.deploy-agent-token-v2-fixed]
 verify_jwt = false
+
+[functions.deploy-lp-lock-contract]
+verify_jwt = false
+
+[functions.create-liquidity-pool]
+verify_jwt = false
