@@ -44,7 +44,7 @@ export const ProfessionalTradingInterface = ({
   const [tradeType, setTradeType] = useState<'buy' | 'sell'>('buy');
   const { toast } = useToast();
 
-  const { isGraduated, agentData } = useAgentRealtime(agent.id, {
+  const { isGraduated, agentData, isMigrating, checkMigration } = useAgentRealtime(agent.id, {
     id: agent.id,
     prompt_raised: agent.prompt_raised,
     current_price: agent.current_price,
