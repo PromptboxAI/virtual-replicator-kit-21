@@ -11,6 +11,9 @@ import { useAgentRealtime } from '@/hooks/useAgentRealtime';
 import { formatPromptAmountV3, formatPriceV3, formatTokenAmountV3 } from '@/lib/bondingCurveV3';
 import { AgentInformationSections } from './AgentInformationSections';
 import { useToast } from '@/hooks/use-toast';
+import { AgentMigrationStatus } from './AgentMigrationStatus';
+import { MigrationBanner } from './MigrationBanner';
+import { useMigrationPolling } from '@/hooks/useMigrationPolling';
 
 interface Agent {
   id: string;
@@ -79,6 +82,23 @@ export const ProfessionalTradingInterface = ({
 
   return (
     <div className="w-full space-y-6">
+      {/* Migration Banner - Show when agent is graduating */}
+      {isMigrating && (
+        <MigrationBanner 
+          agentName={agent.name}
+          onComplete={() => {
+            checkMigration();
+            window.location.reload();
+          }}
+        />
+      )}
+
+      {/* Migration Status - Show for non-V3 agents */}
+      <AgentMigrationStatus 
+        agentId={agent.id}
+        agentName={agent.name}
+      />
+
       {/* Token Header */}
       <Card className="p-6 bg-gradient-to-r from-background to-background/95 border-border">
         <div className="flex items-center justify-between">

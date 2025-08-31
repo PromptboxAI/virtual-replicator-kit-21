@@ -1,5 +1,14 @@
 project_id = "cjzazuuwapsliacmjxfg"
 
+[functions.execute-bonding-curve-trade-v3]
+verify_jwt = false
+
+[functions.migrate-agent-v3]
+verify_jwt = false
+
+[functions.trigger-agent-graduation]
+verify_jwt = false
+
 [functions.deploy-agent]
 verify_jwt = false
 

@@ -407,6 +407,69 @@ export type Database = {
         }
         Relationships: []
       }
+      agent_migration_state: {
+        Row: {
+          agent_id: string
+          created_at: string
+          id: string
+          migration_completed_at: string | null
+          migration_phase: string
+          migration_started_at: string | null
+          new_price: number | null
+          new_supply: number | null
+          old_price: number | null
+          old_supply: number | null
+          rollback_data: Json | null
+          updated_at: string
+          validation_passed: boolean | null
+        }
+        Insert: {
+          agent_id: string
+          created_at?: string
+          id?: string
+          migration_completed_at?: string | null
+          migration_phase?: string
+          migration_started_at?: string | null
+          new_price?: number | null
+          new_supply?: number | null
+          old_price?: number | null
+          old_supply?: number | null
+          rollback_data?: Json | null
+          updated_at?: string
+          validation_passed?: boolean | null
+        }
+        Update: {
+          agent_id?: string
+          created_at?: string
+          id?: string
+          migration_completed_at?: string | null
+          migration_phase?: string
+          migration_started_at?: string | null
+          new_price?: number | null
+          new_supply?: number | null
+          old_price?: number | null
+          old_supply?: number | null
+          rollback_data?: Json | null
+          updated_at?: string
+          validation_passed?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_migration_state_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_prices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_migration_state_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agent_price_history: {
         Row: {
           agent_id: string
@@ -896,8 +959,11 @@ export type Database = {
           id: string
           is_active: boolean | null
           market_cap: number | null
+          migration_completed_at: string | null
+          migration_validated: boolean | null
           name: string
           price_change_24h: number | null
+          pricing_model: string | null
           prompt_raised: number | null
           status: string | null
           symbol: string
@@ -937,8 +1003,11 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           market_cap?: number | null
+          migration_completed_at?: string | null
+          migration_validated?: boolean | null
           name: string
           price_change_24h?: number | null
+          pricing_model?: string | null
           prompt_raised?: number | null
           status?: string | null
           symbol: string
@@ -978,8 +1047,11 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           market_cap?: number | null
+          migration_completed_at?: string | null
+          migration_validated?: boolean | null
           name?: string
           price_change_24h?: number | null
+          pricing_model?: string | null
           prompt_raised?: number | null
           status?: string | null
           symbol?: string
@@ -2168,6 +2240,21 @@ export type Database = {
         }
         Returns: Json
       }
+      dry_run_agent_migration: {
+        Args: { p_agent_id: string }
+        Returns: {
+          agent_id: string
+          current_price: number
+          current_pricing_model: string
+          current_prompt_raised: number
+          current_supply: number
+          new_price: number
+          new_supply: number
+          price_change_percent: number
+          validation_errors: string[]
+          validation_passed: boolean
+        }[]
+      }
       execute_bonding_curve_trade: {
         Args: {
           p_agent_id: string
@@ -2269,6 +2356,10 @@ export type Database = {
         Args: { key: number }
         Returns: boolean
       }
+      rollback_agent_migration: {
+        Args: { p_agent_id: string }
+        Returns: Json
+      }
       set_admin_by_email: {
         Args: { _email: string }
         Returns: undefined
@@ -2288,6 +2379,13 @@ export type Database = {
           estimated_tokens: number
           impact_price: number
           price_impact_percent: number
+        }[]
+      }
+      validate_agent_migration: {
+        Args: { p_agent_id: string }
+        Returns: {
+          is_valid: boolean
+          validation_errors: string[]
         }[]
       }
       validate_trade_safety: {
