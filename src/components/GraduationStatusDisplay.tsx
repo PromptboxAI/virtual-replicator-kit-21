@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
 import { ExternalLink, Zap, Trophy, Clock, CheckCircle, AlertCircle } from 'lucide-react';
-import { formatPromptAmount } from '@/lib/bondingCurve';
+import { formatPromptAmountV3 } from '@/lib/bondingCurveV3';
 
 interface GraduationEvent {
   id: string;
@@ -172,13 +172,13 @@ export const GraduationStatusDisplay: React.FC<GraduationStatusDisplayProps> = (
             <div className="flex justify-between text-sm mb-2">
               <span>PROMPT Raised</span>
               <span className="font-medium">
-                {formatPromptAmount(currentPromptRaised)} / {formatPromptAmount(GRADUATION_THRESHOLD)}
+                {formatPromptAmountV3(currentPromptRaised)} / {formatPromptAmountV3(GRADUATION_THRESHOLD)}
               </span>
             </div>
             <Progress value={graduationProgress} className="h-2" />
             <p className="text-xs text-muted-foreground mt-2">
               {remainingPrompt > 0 
-                ? `${formatPromptAmount(remainingPrompt)} PROMPT needed to graduate`
+                ? `${formatPromptAmountV3(remainingPrompt)} PROMPT needed to graduate`
                 : 'Ready to graduate!'
               }
             </p>
@@ -212,7 +212,7 @@ export const GraduationStatusDisplay: React.FC<GraduationStatusDisplayProps> = (
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
             <p className="text-muted-foreground">Graduated at</p>
-            <p className="font-medium">{formatPromptAmount(currentPromptRaised)} PROMPT</p>
+            <p className="font-medium">{formatPromptAmountV3(currentPromptRaised)} PROMPT</p>
           </div>
           <div>
             <p className="text-muted-foreground">Date</p>

@@ -27,7 +27,7 @@ import { WalletConnectionGuard } from "@/components/WalletConnectionGuard";
 import { OnboardingGuide } from "@/components/OnboardingGuide";
 // import { useAgentTokens } from "@/hooks/useAgentTokens";
 import { useAccount } from 'wagmi';
-import { getCurrentPrice } from "@/lib/bondingCurve";
+import { getCurrentPriceV3 } from "@/lib/bondingCurveV3";
 
 
 interface AgentFormData {
@@ -318,7 +318,7 @@ export default function CreateAgent() {
       }
 
       // Calculate initial bonding curve price
-      const initialPrice = getCurrentPrice(0); // Start at bonding curve beginning
+      const initialPrice = getCurrentPriceV3(0); // Start at bonding curve beginning
       
       // Create basic agent/token record in database
       const { data, error } = await supabase

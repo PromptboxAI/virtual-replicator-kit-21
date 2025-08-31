@@ -9,7 +9,7 @@ import { MarketStats } from '@/components/MarketStats';
 import { useAgents, type Agent } from '@/hooks/useAgents';
 import { useAuth } from '@/hooks/useAuth';
 import { TermsModal } from '@/components/TermsModal';
-import { isAgentGraduated } from '@/lib/bondingCurve';
+import { isAgentGraduatedV3 } from '@/lib/bondingCurveV3';
 import { 
   TrendingUp, 
   TrendingDown,
@@ -112,7 +112,7 @@ function IndexAgentCard({ agent }: { agent: Agent }) {
         
         {/* Bonding Curve Progress */}
         <div className="h-2 bg-muted/20 rounded relative overflow-hidden">
-          {isAgentGraduated(agent.prompt_raised || 0) ? (
+          {isAgentGraduatedV3(agent.prompt_raised || 0) ? (
             // Graduated agents show full progress bar in green
             <div className="h-full bg-green-600 transition-all w-full" />
           ) : (

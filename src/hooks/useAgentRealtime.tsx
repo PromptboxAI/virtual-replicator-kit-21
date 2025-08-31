@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { isAgentGraduated, isAgentMigrating } from '@/lib/bondingCurve';
+import { isAgentGraduatedV3, isAgentMigratingV3 } from '@/lib/bondingCurveV3';
 
 interface AgentRealtimeData {
   id: string;
@@ -26,8 +26,8 @@ export function useAgentRealtime(agentId: string, initialData?: AgentRealtimeDat
 
     // Calculate initial graduation and migration status
     if (agentData) {
-      setIsGraduated(isAgentGraduated(agentData.prompt_raised));
-      setIsMigrating(isAgentMigrating(agentData.prompt_raised, agentData.token_address));
+      setIsGraduated(isAgentGraduatedV3(agentData.prompt_raised));
+      setIsMigrating(isAgentMigratingV3(agentData.prompt_raised, agentData.token_address));
     }
 
     // Subscribe to real-time updates for this agent
@@ -46,8 +46,8 @@ export function useAgentRealtime(agentId: string, initialData?: AgentRealtimeDat
           const newData = payload.new as AgentRealtimeData;
           
           setAgentData(newData);
-          setIsGraduated(isAgentGraduated(newData.prompt_raised));
-          setIsMigrating(isAgentMigrating(newData.prompt_raised, newData.token_address));
+          setIsGraduated(isAgentGraduatedV3(newData.prompt_raised));
+          setIsMigrating(isAgentMigratingV3(newData.prompt_raised, newData.token_address));
         }
       )
       .subscribe();
@@ -74,8 +74,8 @@ export function useAgentRealtime(agentId: string, initialData?: AgentRealtimeDat
             
           if (data) {
             setAgentData(data);
-            setIsGraduated(isAgentGraduated(data.prompt_raised));
-            setIsMigrating(isAgentMigrating(data.prompt_raised, data.token_address));
+            setIsGraduated(isAgentGraduatedV3(data.prompt_raised));
+            setIsMigrating(isAgentMigratingV3(data.prompt_raised, data.token_address));
           }
         }
       )
@@ -98,8 +98,8 @@ export function useAgentRealtime(agentId: string, initialData?: AgentRealtimeDat
             
           if (data) {
             setAgentData(data);
-            setIsGraduated(isAgentGraduated(data.prompt_raised));
-            setIsMigrating(isAgentMigrating(data.prompt_raised, data.token_address));
+            setIsGraduated(isAgentGraduatedV3(data.prompt_raised));
+            setIsMigrating(isAgentMigratingV3(data.prompt_raised, data.token_address));
           }
         }
       )
@@ -116,8 +116,8 @@ export function useAgentRealtime(agentId: string, initialData?: AgentRealtimeDat
     isGraduated,
     isMigrating, // Phase 4: Migration state
     // Utility functions
-    checkGraduation: (promptRaised: number) => isAgentGraduated(promptRaised),
+    checkGraduation: (promptRaised: number) => isAgentGraduatedV3(promptRaised),
     checkMigration: (promptRaised: number, tokenAddress?: string | null) => 
-      isAgentMigrating(promptRaised, tokenAddress)
+      isAgentMigratingV3(promptRaised, tokenAddress)
   };
 }

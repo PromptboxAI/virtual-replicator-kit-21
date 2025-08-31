@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { isAgentGraduated } from '@/lib/bondingCurve';
+import { isAgentGraduatedV3 } from '@/lib/bondingCurveV3';
 
 export interface OHLCVData {
   time: number;
@@ -134,7 +134,7 @@ export class ChartDataService {
         }
       }
 
-      const graduated = isAgentGraduated(agent.prompt_raised || 0) || agent.token_graduated;
+      const graduated = isAgentGraduatedV3(agent.prompt_raised || 0) || agent.token_graduated;
 
       if (graduated && agent.token_address) {
         // Use DEX data for graduated tokens
