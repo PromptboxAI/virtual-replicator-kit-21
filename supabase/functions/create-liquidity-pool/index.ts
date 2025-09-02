@@ -89,13 +89,13 @@ serve(async (req) => {
     const finalPromptRaised = parseFloat(graduationEvent.prompt_raised_at_graduation || '42000')
     const lpPromptAmount = finalPromptRaised * LP_PROMPT_ALLOCATION_PERCENT // 70% to LP
     const platformKeepAmount = finalPromptRaised * (1 - LP_PROMPT_ALLOCATION_PERCENT) // 30% to platform
-    const lpTokenAmount = 200000000 // 200M tokens for LP (from V3 config)
+    const lpTokenAmount = 196000000 // 196M tokens for LP (200M - 4M platform allocation)
 
     console.log('🚀 Creating REAL liquidity pool for graduation event:', graduationEventId)
     console.log('💰 Total PROMPT raised:', finalPromptRaised)
     console.log('💧 PROMPT for LP (70%):', lpPromptAmount)
     console.log('🏛️ PROMPT for platform (30%):', platformKeepAmount)
-    console.log('🪙 Tokens for LP:', lpTokenAmount)
+    console.log('🪙 Tokens for LP (196M after 4M platform allocation):', lpTokenAmount)
 
     // Get deployer private key for creating the pool
     const privateKey = Deno.env.get('DEPLOYER_PRIVATE_KEY')

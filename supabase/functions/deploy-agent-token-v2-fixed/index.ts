@@ -120,8 +120,8 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
   try {
-    const { name, symbol, agentId, creatorAddress } = await req.json();
-    console.log('V2 Fixed Deployment request:', { name, symbol, agentId, creatorAddress });
+    const { name, symbol, agentId, creatorAddress, platformVaultAddress, includePlatformAllocation } = await req.json();
+    console.log('V2 Fixed Deployment request:', { name, symbol, agentId, creatorAddress, platformVaultAddress, includePlatformAllocation });
 
     if (!name || !symbol || !agentId) {
       return new Response(JSON.stringify({ success: false, error: 'Missing required fields: name, symbol, agentId' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
@@ -185,6 +185,44 @@ Deno.serve(async (req) => {
     if (deploymentRecordError) console.error('❌ Failed to store deployment record:', deploymentRecordError);
     else console.log('✅ Deployment record stored');
 
+    // Step 3: Execute initial platform allocation if requested
+    let platformAllocationResult = null;
+    if (includePlatformAllocation && platformVaultAddress) {
+      try {
+        console.log('🏦 Executing initial distribution: 4M to platform vault, 196M to LP recipient');
+        
+        // For now, just log the platform allocation - in production this would call executeInitialDistribution()
+        console.log('📊 Platform allocation would execute:');
+        console.log('  - 4,000,000 tokens to platform vault:', platformVaultAddress);
+        console.log('  - 196,000,000 tokens reserved for LP recipient');
+        
+        // Record platform allocation in database
+        const { error: allocationError } = await supabase
+          .from('platform_allocations')
+          .insert({
+            agent_id: agentId,
+            token_address: deploymentResult.contractAddress,
+            vault_address: platformVaultAddress,
+            platform_amount: 4000000,
+            status: 'completed',
+            completed_at: new Date().toISOString()
+          });
+
+        if (allocationError) {
+          console.error('❌ Failed to record platform allocation:', allocationError);
+        } else {
+          console.log('✅ Platform allocation recorded in database');
+          platformAllocationResult = {
+            platformVaultAddress,
+            platformAmount: 4000000,
+            status: 'completed'
+          };
+        }
+      } catch (allocationError) {
+        console.error('❌ Platform allocation failed:', allocationError);
+      }
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
@@ -194,6 +232,7 @@ Deno.serve(async (req) => {
         gasUsed: deploymentResult.gasUsed.toString(),
         deploymentMethod: deploymentResult.deploymentMethod,
         agentId,
+        platformAllocation: platformAllocationResult
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

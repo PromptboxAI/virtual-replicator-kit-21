@@ -192,15 +192,36 @@ serve(async (req) => {
       )
     }
 
+    // Step 1: Deploy platform vault first
+    console.log('🏦 Deploying platform vault for agent:', agent.name)
+    
+    const { data: vaultResult, error: vaultError } = await supabase.functions.invoke('deploy-platform-vault', {
+      body: {
+        agentId: agent.id,
+        agentName: agent.name
+      }
+    })
+
+    let platformVaultAddress = null;
+    if (vaultError) {
+      console.error('❌ Platform vault deployment failed:', vaultError)
+      // Continue without vault - not critical for graduation
+    } else {
+      platformVaultAddress = vaultResult?.vaultAddress;
+      console.log('✅ Platform vault deployed:', platformVaultAddress)
+    }
+
     console.log('🚀 Starting V2 contract deployment for agent:', agent.name)
 
-    // Call deploy-agent-token-v2 function
+    // Call deploy-agent-token-v2 function with platform vault address
     const { data: deploymentResult, error: deploymentError } = await supabase.functions.invoke('deploy-agent-token-v2', {
       body: {
         name: agent.name,
         symbol: agent.symbol,
         agentId: agent.id,
-        creatorAddress: agent.creator_wallet_address || '0x742d35Cc6636C0532925a3b8ba4e0e8A4b9f6d4e' // fallback treasury
+        creatorAddress: agent.creator_wallet_address || '0x742d35Cc6636C0532925a3b8ba4e0e8A4b9f6d4e', // fallback treasury
+        platformVaultAddress,
+        includePlatformAllocation: true
       }
     })
 
@@ -286,7 +307,8 @@ serve(async (req) => {
         graduationEventId,
         contractAddress: deploymentResult.contractAddress,
         promptAmount: graduationEvent.prompt_raised_at_graduation.toString(),
-        tokenAmount: "1000000000" // Total supply - tokens sold
+        tokenAmount: "196000000", // 196M tokens (1B total - 4M platform allocation)
+        platformVaultAddress: platformVaultAddress
       }
     })
 

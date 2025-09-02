@@ -59,3 +59,9 @@ verify_jwt = false
 
 [functions.create-liquidity-pool]
 verify_jwt = false
+
+[functions.deploy-platform-vault]
+verify_jwt = false
+
+[functions.update-vault-receiver]
+verify_jwt = false
