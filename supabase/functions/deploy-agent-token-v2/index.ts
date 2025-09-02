@@ -67,13 +67,27 @@ const AGENT_TOKEN_FACTORY_ABI = [
     "stateMutability": "view",
     "type": "function"
   }
-] as const;
-
-// Initialize Supabase client
-const supabase = createClient(
-  Deno.env.get('SUPABASE_URL') ?? '',
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-);
+ ] as const;
+ 
+ // Minimal ABI to call executeInitialDistribution on AgentTokenV2
+ const AGENT_TOKEN_V2_INITIAL_DISTRIBUTION_ABI = [
+   {
+     inputs: [
+       { internalType: 'address', name: '_platformVault', type: 'address' },
+       { internalType: 'address', name: '_lpRecipient', type: 'address' }
+     ],
+     name: 'executeInitialDistribution',
+     outputs: [],
+     stateMutability: 'nonpayable',
+     type: 'function'
+   }
+ ] as const;
+ 
+ // Initialize Supabase client
+ const supabase = createClient(
+   Deno.env.get('SUPABASE_URL') ?? '',
+   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+ );
 
 // Get the deployed PROMPT token address
 async function getPromptTokenAddress(): Promise<string> {
@@ -412,9 +426,9 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { name, symbol, agentId, creatorAddress } = await req.json();
+    const { name, symbol, agentId, creatorAddress, platformVaultAddress, includePlatformAllocation, lpRecipient } = await req.json();
 
-    console.log('V2 Deployment request:', { name, symbol, agentId, creatorAddress });
+    console.log('V2 Deployment request:', { name, symbol, agentId, creatorAddress, platformVaultAddress, includePlatformAllocation, lpRecipient });
 
     if (!name || !symbol || !agentId) {
       throw new Error('Missing required parameters: name, symbol, agentId');
@@ -531,6 +545,64 @@ Deno.serve(async (req) => {
       'v2',
       deploymentResult.blockNumber
     );
+
+    // 🏦 Execute initial distribution on-chain if requested and vault provided
+    if (includePlatformAllocation && platformVaultAddress) {
+      try {
+        const deployerPrivateKey = Deno.env.get('DEPLOYER_PRIVATE_KEY');
+        if (!deployerPrivateKey) throw new Error('DEPLOYER_PRIVATE_KEY not configured');
+
+        const account = privateKeyToAccount(deployerPrivateKey as `0x${string}`);
+        const walletClient = createWalletClient({ account, chain: baseSepolia, transport: http() });
+        const publicClient = createPublicClient({ chain: baseSepolia, transport: http() });
+
+        const lpRecipientAddress = (lpRecipient || finalCreatorAddress) as `0x${string}`;
+
+        console.log('🏦 Calling executeInitialDistribution(...)', {
+          token: deploymentResult.contractAddress,
+          platformVaultAddress,
+          lpRecipientAddress
+        });
+
+        const distHash = await walletClient.writeContract({
+          address: deploymentResult.contractAddress as `0x${string}`,
+          abi: AGENT_TOKEN_V2_INITIAL_DISTRIBUTION_ABI,
+          functionName: 'executeInitialDistribution',
+          args: [platformVaultAddress as `0x${string}`, lpRecipientAddress],
+          account
+        });
+
+        console.log('⏳ Waiting for initial distribution tx confirmation:', distHash);
+        await publicClient.waitForTransactionReceipt({ hash: distHash, confirmations: 2, timeout: 180000 });
+
+        const { error: allocationErr } = await supabase
+          .from('platform_allocations')
+          .insert({
+            agent_id: agentId,
+            token_address: deploymentResult.contractAddress,
+            vault_address: platformVaultAddress,
+            platform_amount: 4000000,
+            status: 'completed',
+            allocation_tx_hash: distHash,
+            completed_at: new Date().toISOString()
+          });
+        if (allocationErr) console.error('❌ Failed to record platform allocation:', allocationErr);
+        else console.log('✅ Platform allocation recorded as completed');
+      } catch (e: any) {
+        console.error('⚠️ executeInitialDistribution failed or not supported, recording pending_onchain:', e?.message || e);
+        const { error: allocationErr } = await supabase
+          .from('platform_allocations')
+          .insert({
+            agent_id: agentId,
+            token_address: deploymentResult.contractAddress,
+            vault_address: platformVaultAddress,
+            platform_amount: 4000000,
+            status: 'pending_onchain',
+            error_message: String(e?.message || e)
+          });
+        if (allocationErr) console.error('❌ Failed to record pending_onchain allocation:', allocationErr);
+      }
+    }
 
     console.log('V2 Agent Token deployment completed successfully');
 

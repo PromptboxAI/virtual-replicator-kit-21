@@ -189,14 +189,12 @@ Deno.serve(async (req) => {
     let platformAllocationResult = null;
     if (includePlatformAllocation && platformVaultAddress) {
       try {
-        console.log('🏦 Executing initial distribution: 4M to platform vault, 196M to LP recipient');
-        
-        // For now, just log the platform allocation - in production this would call executeInitialDistribution()
-        console.log('📊 Platform allocation would execute:');
+        console.log('🏦 Initial distribution requested, but direct-fixed ERC20 has no executeInitialDistribution().');
+        console.log('📊 Recording allocation intent only (no on-chain mint):');
         console.log('  - 4,000,000 tokens to platform vault:', platformVaultAddress);
         console.log('  - 196,000,000 tokens reserved for LP recipient');
         
-        // Record platform allocation in database
+        // Record platform allocation as recorded_only (no on-chain tx executed here)
         const { error: allocationError } = await supabase
           .from('platform_allocations')
           .insert({
@@ -204,22 +202,21 @@ Deno.serve(async (req) => {
             token_address: deploymentResult.contractAddress,
             vault_address: platformVaultAddress,
             platform_amount: 4000000,
-            status: 'completed',
-            completed_at: new Date().toISOString()
+            status: 'recorded_only'
           });
 
         if (allocationError) {
           console.error('❌ Failed to record platform allocation:', allocationError);
         } else {
-          console.log('✅ Platform allocation recorded in database');
+          console.log('✅ Platform allocation intent recorded in database (recorded_only)');
           platformAllocationResult = {
             platformVaultAddress,
             platformAmount: 4000000,
-            status: 'completed'
+            status: 'recorded_only'
           };
         }
       } catch (allocationError) {
-        console.error('❌ Platform allocation failed:', allocationError);
+        console.error('❌ Platform allocation recording failed:', allocationError);
       }
     }
 
