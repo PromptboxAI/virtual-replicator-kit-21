@@ -1529,6 +1529,60 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_allocations: {
+        Row: {
+          agent_id: string
+          allocation_tx_hash: string | null
+          completed_at: string | null
+          created_at: string | null
+          error_message: string | null
+          id: string
+          platform_amount: number
+          status: string | null
+          token_address: string
+          vault_address: string
+        }
+        Insert: {
+          agent_id: string
+          allocation_tx_hash?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          platform_amount?: number
+          status?: string | null
+          token_address: string
+          vault_address: string
+        }
+        Update: {
+          agent_id?: string
+          allocation_tx_hash?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          platform_amount?: number
+          status?: string | null
+          token_address?: string
+          vault_address?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_allocations_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_prices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "platform_allocations_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       platform_revenue: {
         Row: {
           agent_id: string | null
@@ -1986,24 +2040,39 @@ export type Database = {
           id: string
           is_active: boolean
           network: string
+          platform_allocation_percent: number | null
+          platform_vault_address: string | null
           treasury_address: string
           updated_at: string
+          vault_deploy_tx: string | null
+          vault_deployed_at: string | null
+          vault_notes: string | null
         }
         Insert: {
           created_at?: string
           id?: string
           is_active?: boolean
           network: string
+          platform_allocation_percent?: number | null
+          platform_vault_address?: string | null
           treasury_address: string
           updated_at?: string
+          vault_deploy_tx?: string | null
+          vault_deployed_at?: string | null
+          vault_notes?: string | null
         }
         Update: {
           created_at?: string
           id?: string
           is_active?: boolean
           network?: string
+          platform_allocation_percent?: number | null
+          platform_vault_address?: string | null
           treasury_address?: string
           updated_at?: string
+          vault_deploy_tx?: string | null
+          vault_deployed_at?: string | null
+          vault_notes?: string | null
         }
         Relationships: []
       }

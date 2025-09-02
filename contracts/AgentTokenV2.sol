@@ -41,7 +41,19 @@ contract AgentTokenV2 is ERC20, Ownable, ReentrancyGuard {
     address public creator;
     address public platformTreasury;
     
+    // Platform allocation state
+    bool public initialDistributionComplete;
+    address public platformVault;
+    uint256 public constant PLATFORM_ALLOCATION = 4_000_000 * 10**18; // 4M tokens (2% of 200M LP)
+    uint256 public constant LP_ALLOCATION = 196_000_000 * 10**18; // 196M tokens (remaining LP)
+
     // Events
+    event InitialDistributionComplete(
+        address indexed platformVault, 
+        uint256 platformAmount, 
+        address indexed lpRecipient, 
+        uint256 lpAmount
+    );
     event TokensPurchased(
         address indexed buyer,
         uint256 promptAmount,
@@ -268,6 +280,28 @@ contract AgentTokenV2 is ERC20, Ownable, ReentrancyGuard {
         _graduated = graduated;
     }
     
+    /**
+     * @dev Execute one-time initial distribution to platform vault and LP recipient
+     * @param _platformVault Address of the platform vault contract
+     * @param _lpRecipient Address to receive LP allocation (usually this contract for graduation)
+     */
+    function executeInitialDistribution(address _platformVault, address _lpRecipient) external onlyOwner {
+        require(!initialDistributionComplete, "Distribution already complete");
+        require(_platformVault != address(0), "Invalid vault address");
+        require(_lpRecipient != address(0), "Invalid LP recipient");
+
+        initialDistributionComplete = true;
+        platformVault = _platformVault;
+
+        // Mint platform allocation to vault (2% of original 200M LP allocation)
+        _mint(_platformVault, PLATFORM_ALLOCATION);
+
+        // Mint LP allocation to LP recipient (remaining 98% of LP allocation)
+        _mint(_lpRecipient, LP_ALLOCATION);
+
+        emit InitialDistributionComplete(_platformVault, PLATFORM_ALLOCATION, _lpRecipient, LP_ALLOCATION);
+    }
+
     /**
      * @dev Migration support - check if user eligible for migration from V1
      */
