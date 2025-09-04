@@ -1452,6 +1452,72 @@ export type Database = {
           },
         ]
       }
+      dex_trades: {
+        Row: {
+          agent_id: string
+          aggregator_used: boolean | null
+          created_at: string
+          dst_amount: number
+          dst_token: string
+          executed_price: number
+          id: string
+          slippage_percent: number | null
+          src_amount: number
+          src_token: string
+          trade_type: string
+          transaction_hash: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          agent_id: string
+          aggregator_used?: boolean | null
+          created_at?: string
+          dst_amount: number
+          dst_token: string
+          executed_price: number
+          id?: string
+          slippage_percent?: number | null
+          src_amount: number
+          src_token: string
+          trade_type: string
+          transaction_hash: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          agent_id?: string
+          aggregator_used?: boolean | null
+          created_at?: string
+          dst_amount?: number
+          dst_token?: string
+          executed_price?: number
+          id?: string
+          slippage_percent?: number | null
+          src_amount?: number
+          src_token?: string
+          trade_type?: string
+          transaction_hash?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dex_trades_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_prices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dex_trades_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       graduation_transaction_logs: {
         Row: {
           block_number: number | null
