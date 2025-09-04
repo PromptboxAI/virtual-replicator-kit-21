@@ -65,17 +65,50 @@ serve(async (req) => {
       throw new Error(`Agent not found: ${agentError?.message}`);
     }
 
-    // Check if agent is already graduated
+    // 🔀 ROUTE TO DEX IF GRADUATED
     if (agent.token_graduated) {
+      console.log(`🔄 Agent ${agent.name} has graduated - routing to DEX trade`);
+      
+      // Route to DEX trading
+      const { data: dexResult, error: dexError } = await supabase.functions.invoke(
+        'execute-dex-trade',
+        {
+          body: {
+            agentId,
+            userId,
+            tradeType,
+            promptAmount,
+            tokenAmount,
+            slippage,
+            useAggregator: true
+          }
+        }
+      );
+
+      if (dexError) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: 'DEX trade failed',
+            details: dexError.message
+          }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 500
+          }
+        );
+      }
+
       return new Response(
         JSON.stringify({
-          success: false,
-          error: 'Agent has graduated - please trade on DEX using the token address',
+          success: true,
+          ...dexResult,
+          tradedOnDEX: true,
           tokenAddress: agent.token_address
         }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 400
+          status: 200
         }
       );
     }
