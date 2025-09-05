@@ -32,9 +32,35 @@ const serve_handler = async (req: Request): Promise<Response> => {
   }
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
+  
+  // Handle cron job calls
+  const requestBody = req.method === 'POST' ? await req.json().catch(() => ({})) : {};
+  const isScheduledRun = requestBody.scheduled === true;
+  const jobName = 'monitor-production-health';
+  
+  let cronLogId: string | null = null;
 
   try {
-    console.log('🔍 Starting production health monitoring...');
+    console.log(`🔍 Starting production health monitoring... ${isScheduledRun ? '(Scheduled)' : '(Manual)'}`);
+    
+    // Log cron job start if scheduled
+    if (isScheduledRun) {
+      const { data: cronLog, error: cronLogError } = await supabase
+        .from('cron_job_logs')
+        .insert({
+          job_name: jobName,
+          status: 'running',
+          metadata: { request_timestamp: requestBody.timestamp }
+        })
+        .select('id')
+        .single();
+        
+      if (cronLogError) {
+        console.error('❌ Error creating cron log:', cronLogError);
+      } else {
+        cronLogId = cronLog?.id;
+      }
+    }
 
     // Get all graduated agents with their latest data
     const { data: graduatedAgents, error: agentsError } = await supabase
@@ -170,12 +196,48 @@ const serve_handler = async (req: Request): Promise<Response> => {
     console.log(`✅ Health monitoring complete. Generated ${alerts.length} alerts`);
     console.log(`💰 Total platform value: $${metrics.totalPlatformTokensValueUSD.toFixed(2)}`);
 
+    // Update cron job log on success
+    if (cronLogId) {
+      await supabase
+        .from('cron_job_logs')
+        .update({
+          status: 'success',
+          execution_end: new Date().toISOString(),
+          metadata: {
+            ...requestBody,
+            alerts_generated: alerts.length,
+            total_graduated_agents: metrics.totalGraduatedAgents,
+            total_platform_value: metrics.totalPlatformTokensValueUSD,
+            low_liquidity_agents: metrics.lowLiquidityAgents
+          }
+        })
+        .eq('id', cronLogId);
+    }
+
     return new Response(JSON.stringify(metrics), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error: any) {
     console.error('❌ Error in monitor-production-health:', error);
+    
+    // Update cron job log on failure
+    if (cronLogId) {
+      await supabase
+        .from('cron_job_logs')
+        .update({
+          status: 'failed',
+          execution_end: new Date().toISOString(),
+          error_message: error.message,
+          retry_count: 0, // Could implement retry logic here
+          metadata: {
+            ...requestBody,
+            error_details: error.stack
+          }
+        })
+        .eq('id', cronLogId);
+    }
+    
     return new Response(JSON.stringify({ 
       error: error.message,
       details: error.stack 

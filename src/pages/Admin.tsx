@@ -11,6 +11,7 @@ import { RevenueDashboard } from "@/components/RevenueDashboard";
 import { RevenueAuditDashboard } from "@/components/RevenueAuditDashboard";
 import { RevenueFunctionTest } from "@/components/RevenueFunctionTest";
 import { GraduationAnalyticsDashboard } from "@/components/GraduationAnalyticsDashboard";
+import { CronJobStatus } from "@/components/CronJobStatus";
 import { ProductionAlertsPanel } from "@/components/ProductionAlertsPanel";
 import { Header } from "@/components/Header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -178,6 +179,22 @@ const Admin = () => {
           </CardHeader>
           <CardContent>
             <ProductionAlertsPanel />
+          </CardContent>
+        </Card>
+
+        {/* Cron Job Status */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="h-5 w-5" />
+              Automated Job Status
+            </CardTitle>
+            <CardDescription>
+              Monitor scheduled tasks: price synchronization and health monitoring
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <CronJobStatus />
           </CardContent>
         </Card>
 

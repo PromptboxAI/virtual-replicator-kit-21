@@ -1189,6 +1189,42 @@ export type Database = {
         }
         Relationships: []
       }
+      cron_job_logs: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          execution_end: string | null
+          execution_start: string
+          id: string
+          job_name: string
+          metadata: Json | null
+          retry_count: number | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          execution_end?: string | null
+          execution_start?: string
+          id?: string
+          job_name: string
+          metadata?: Json | null
+          retry_count?: number | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          execution_end?: string | null
+          execution_start?: string
+          id?: string
+          job_name?: string
+          metadata?: Json | null
+          retry_count?: number | null
+          status?: string
+        }
+        Relationships: []
+      }
       deployed_contracts: {
         Row: {
           agent_id: string | null

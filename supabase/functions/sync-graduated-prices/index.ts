@@ -48,8 +48,34 @@ serve(async (req) => {
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
   );
 
+  // Handle cron job calls
+  const requestBody = req.method === 'POST' ? await req.json().catch(() => ({})) : {};
+  const isScheduledRun = requestBody.scheduled === true;
+  const jobName = 'sync-graduated-prices';
+  
+  let cronLogId: string | null = null;
+
   try {
-    console.log('🔄 Starting graduated agent price sync...');
+    console.log(`🔄 Starting graduated agent price sync... ${isScheduledRun ? '(Scheduled)' : '(Manual)'}`);
+    
+    // Log cron job start if scheduled
+    if (isScheduledRun) {
+      const { data: cronLog, error: cronLogError } = await supabase
+        .from('cron_job_logs')
+        .insert({
+          job_name: jobName,
+          status: 'running',
+          metadata: { request_timestamp: requestBody.timestamp }
+        })
+        .select('id')
+        .single();
+        
+      if (cronLogError) {
+        console.error('❌ Error creating cron log:', cronLogError);
+      } else {
+        cronLogId = cronLog?.id;
+      }
+    }
 
     // Get all graduated agents that need price updates
     const { data: graduatedAgents, error: agentsError } = await supabase
@@ -230,6 +256,23 @@ serve(async (req) => {
 
     console.log(`🎉 Successfully synced ${successCount}/${graduatedAgents.length} graduated agents`);
 
+    // Update cron job log on success
+    if (cronLogId) {
+      await supabase
+        .from('cron_job_logs')
+        .update({
+          status: 'success',
+          execution_end: new Date().toISOString(),
+          metadata: {
+            ...requestBody,
+            synced_count: successCount,
+            total_agents: graduatedAgents.length,
+            updates: priceUpdates.length
+          }
+        })
+        .eq('id', cronLogId);
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
@@ -246,6 +289,23 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('❌ Price sync failed:', error);
+    
+    // Update cron job log on failure
+    if (cronLogId) {
+      await supabase
+        .from('cron_job_logs')
+        .update({
+          status: 'failed',
+          execution_end: new Date().toISOString(),
+          error_message: error.message,
+          retry_count: 0, // Could implement retry logic here
+          metadata: {
+            ...requestBody,
+            error_details: error.stack
+          }
+        })
+        .eq('id', cronLogId);
+    }
     
     return new Response(
       JSON.stringify({
