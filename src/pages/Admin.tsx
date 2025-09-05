@@ -11,10 +11,11 @@ import { RevenueDashboard } from "@/components/RevenueDashboard";
 import { RevenueAuditDashboard } from "@/components/RevenueAuditDashboard";
 import { RevenueFunctionTest } from "@/components/RevenueFunctionTest";
 import { GraduationAnalyticsDashboard } from "@/components/GraduationAnalyticsDashboard";
+import { ProductionAlertsPanel } from "@/components/ProductionAlertsPanel";
 import { Header } from "@/components/Header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Shield, Settings, Database, Wallet, BarChart3, Activity } from "lucide-react";
+import { Shield, Settings, Database, Wallet, BarChart3, Activity, AlertTriangle } from "lucide-react";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -161,6 +162,22 @@ const Admin = () => {
           </CardHeader>
           <CardContent>
             <RevenueAuditDashboard />
+          </CardContent>
+        </Card>
+
+        {/* Production Alerts & Monitoring */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5" />
+              Production Alerts & Monitoring
+            </CardTitle>
+            <CardDescription>
+              Monitor system health, LP locks, liquidity levels, and graduation failures
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ProductionAlertsPanel />
           </CardContent>
         </Card>
 

@@ -1742,6 +1742,33 @@ export type Database = {
           },
         ]
       }
+      platform_health_snapshots: {
+        Row: {
+          avg_lp_value_usd: number
+          created_at: string
+          graduated_agents_count: number
+          id: string
+          low_liquidity_agents: number
+          total_platform_tokens_value_usd: number
+        }
+        Insert: {
+          avg_lp_value_usd?: number
+          created_at?: string
+          graduated_agents_count?: number
+          id?: string
+          low_liquidity_agents?: number
+          total_platform_tokens_value_usd?: number
+        }
+        Update: {
+          avg_lp_value_usd?: number
+          created_at?: string
+          graduated_agents_count?: number
+          id?: string
+          low_liquidity_agents?: number
+          total_platform_tokens_value_usd?: number
+        }
+        Relationships: []
+      }
       platform_revenue: {
         Row: {
           agent_id: string | null
@@ -2096,6 +2123,63 @@ export type Database = {
             columns: ["distribution_id"]
             isOneToOne: false
             referencedRelation: "revenue_distributions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      system_alerts: {
+        Row: {
+          agent_id: string | null
+          created_at: string
+          dedupe_key: string | null
+          id: string
+          is_resolved: boolean
+          message: string
+          metadata: Json
+          resolved_at: string | null
+          severity: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          agent_id?: string | null
+          created_at?: string
+          dedupe_key?: string | null
+          id?: string
+          is_resolved?: boolean
+          message: string
+          metadata?: Json
+          resolved_at?: string | null
+          severity?: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string | null
+          created_at?: string
+          dedupe_key?: string | null
+          id?: string
+          is_resolved?: boolean
+          message?: string
+          metadata?: Json
+          resolved_at?: string | null
+          severity?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "system_alerts_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_prices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "system_alerts_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
             referencedColumns: ["id"]
           },
         ]
