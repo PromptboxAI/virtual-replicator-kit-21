@@ -210,7 +210,20 @@ serve(async (req) => {
     try {
       // 🔥 REAL IMPLEMENTATION: Create Uniswap V3 Pool and Lock LP Tokens
       
-      const PROMPT_TOKEN_ADDRESS = '0x0000000000000000000000000000000000000000' // Will be fetched from DB
+      // Get PROMPT token address from deployed contracts
+      const { data: promptContract } = await supabase
+        .from('deployed_contracts')
+        .select('contract_address')
+        .eq('contract_type', 'PROMPT')
+        .eq('is_active', true)
+        .single();
+
+      if (!promptContract?.contract_address) {
+        throw new Error('PROMPT token contract not found in deployed contracts');
+      }
+
+      const PROMPT_TOKEN_ADDRESS = promptContract.contract_address;
+      console.log('💰 Using PROMPT token address:', PROMPT_TOKEN_ADDRESS);
       const FEE_TIER = 3000 // 0.3% fee tier
       
       // Step 1: Check if pool already exists

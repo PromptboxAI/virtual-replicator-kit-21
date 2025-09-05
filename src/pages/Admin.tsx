@@ -10,6 +10,7 @@ import { TreasuryManagement } from "@/components/TreasuryManagement";
 import { RevenueDashboard } from "@/components/RevenueDashboard";
 import { RevenueAuditDashboard } from "@/components/RevenueAuditDashboard";
 import { RevenueFunctionTest } from "@/components/RevenueFunctionTest";
+import { GraduationAnalyticsDashboard } from "@/components/GraduationAnalyticsDashboard";
 import { Header } from "@/components/Header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -160,6 +161,22 @@ const Admin = () => {
           </CardHeader>
           <CardContent>
             <RevenueAuditDashboard />
+          </CardContent>
+        </Card>
+
+        {/* Graduation Analytics Dashboard */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="h-5 w-5" />
+              Graduation Analytics
+            </CardTitle>
+            <CardDescription>
+              Track graduated agents, LP values, and platform token allocations
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <GraduationAnalyticsDashboard />
           </CardContent>
         </Card>
 

@@ -1518,6 +1518,99 @@ export type Database = {
           },
         ]
       }
+      graduation_analytics: {
+        Row: {
+          agent_id: string
+          created_at: string
+          days_to_graduation: number | null
+          dex_price: number | null
+          dex_volume_24h: number | null
+          final_price: number
+          final_prompt_raised: number
+          graduation_roi_percent: number | null
+          holder_count: number | null
+          id: string
+          liquidity_depth_score: number | null
+          lp_lock_tx_hash: string | null
+          lp_pool_address: string | null
+          lp_prompt_amount: number
+          lp_token_amount: number
+          lp_unlock_date: string | null
+          lp_value_usd: number | null
+          platform_tokens_value_usd: number | null
+          post_graduation_volume: number | null
+          pre_graduation_volume: number | null
+          price_impact_percent: number | null
+          trading_activity_score: number | null
+          updated_at: string
+        }
+        Insert: {
+          agent_id: string
+          created_at?: string
+          days_to_graduation?: number | null
+          dex_price?: number | null
+          dex_volume_24h?: number | null
+          final_price: number
+          final_prompt_raised: number
+          graduation_roi_percent?: number | null
+          holder_count?: number | null
+          id?: string
+          liquidity_depth_score?: number | null
+          lp_lock_tx_hash?: string | null
+          lp_pool_address?: string | null
+          lp_prompt_amount: number
+          lp_token_amount?: number
+          lp_unlock_date?: string | null
+          lp_value_usd?: number | null
+          platform_tokens_value_usd?: number | null
+          post_graduation_volume?: number | null
+          pre_graduation_volume?: number | null
+          price_impact_percent?: number | null
+          trading_activity_score?: number | null
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string
+          created_at?: string
+          days_to_graduation?: number | null
+          dex_price?: number | null
+          dex_volume_24h?: number | null
+          final_price?: number
+          final_prompt_raised?: number
+          graduation_roi_percent?: number | null
+          holder_count?: number | null
+          id?: string
+          liquidity_depth_score?: number | null
+          lp_lock_tx_hash?: string | null
+          lp_pool_address?: string | null
+          lp_prompt_amount?: number
+          lp_token_amount?: number
+          lp_unlock_date?: string | null
+          lp_value_usd?: number | null
+          platform_tokens_value_usd?: number | null
+          post_graduation_volume?: number | null
+          pre_graduation_volume?: number | null
+          price_impact_percent?: number | null
+          trading_activity_score?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_graduation_analytics_agent"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_prices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_graduation_analytics_agent"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       graduation_transaction_logs: {
         Row: {
           block_number: number | null
