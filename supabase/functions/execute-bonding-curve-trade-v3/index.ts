@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.3';
 
+const ONE_INCH_API_KEY = Deno.env.get('ONE_INCH_API_KEY');
+
 interface TradeRequest {
   agentId: string;
   userId: string;
@@ -70,6 +72,10 @@ serve(async (req) => {
       console.log(`🔄 Agent ${agent.name} has graduated - routing to DEX trade`);
       
       // Route to DEX trading
+      const aggregatorEnabled = Boolean(ONE_INCH_API_KEY);
+      if (!aggregatorEnabled) {
+        console.warn('⚠️ ONE_INCH_API_KEY missing. DEX trade will skip aggregator and use direct route.');
+      }
       const { data: dexResult, error: dexError } = await supabase.functions.invoke(
         'execute-dex-trade',
         {
@@ -80,7 +86,7 @@ serve(async (req) => {
             promptAmount,
             tokenAmount,
             slippage,
-            useAggregator: true
+            useAggregator: aggregatorEnabled
           }
         }
       );

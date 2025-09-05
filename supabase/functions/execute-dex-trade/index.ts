@@ -120,7 +120,15 @@ serve(async (req) => {
 
     let tradeResult;
 
-    if (useAggregator && ONE_INCH_API_KEY) {
+    const aggregatorEnabled = Boolean(ONE_INCH_API_KEY);
+    const aggregatorRequested = useAggregator !== false;
+    const aggregatorUsedActual = aggregatorRequested && aggregatorEnabled;
+
+    if (aggregatorRequested && !aggregatorEnabled) {
+      console.warn('⚠️ 1inch aggregator requested but ONE_INCH_API_KEY is missing. Falling back to direct route.');
+    }
+
+    if (aggregatorUsedActual) {
       // Use 1inch aggregator for best price
       tradeResult = await executeAggregatorTrade(
         srcToken,
@@ -130,7 +138,7 @@ serve(async (req) => {
         userId
       );
     } else {
-      // Direct Uniswap V3 trade
+      // Direct Uniswap V3 trade (simulated)
       tradeResult = await executeDirectUniswapTrade(
         srcToken,
         dstToken,
@@ -139,6 +147,9 @@ serve(async (req) => {
         userId
       );
     }
+
+    // Compute executed price in human units (assumes 18 decimals)
+    const executedPrice = parseFloat(formatUnits(BigInt(tradeResult.dstAmount), 18)) / parseFloat(formatUnits(BigInt(amount), 18));
 
     // Log the DEX trade
     await supabase
@@ -152,9 +163,9 @@ serve(async (req) => {
         src_amount: amount,
         dst_amount: tradeResult.dstAmount,
         transaction_hash: tradeResult.txHash,
-        executed_price: parseFloat(tradeResult.dstAmount) / parseFloat(amount),
+        executed_price: executedPrice,
         slippage_percent: slippage,
-        aggregator_used: useAggregator
+        aggregator_used: aggregatorUsedActual
       });
 
     // Update user token balances
@@ -176,8 +187,8 @@ serve(async (req) => {
         transactionHash: tradeResult.txHash,
         srcAmount: amount,
         dstAmount: tradeResult.dstAmount,
-        executedPrice: parseFloat(tradeResult.dstAmount) / parseFloat(amount),
-        aggregatorUsed: useAggregator,
+        executedPrice: executedPrice,
+        aggregatorUsed: aggregatorUsedActual,
         message: 'DEX trade executed successfully'
       }),
       {
