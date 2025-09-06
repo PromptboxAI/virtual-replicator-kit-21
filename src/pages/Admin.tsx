@@ -17,7 +17,7 @@ import MultiChainDeployment from "@/components/MultiChainDeployment";
 import { Header } from "@/components/Header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Shield, Settings, Database, Wallet, BarChart3, Activity, AlertTriangle } from "lucide-react";
+import { Shield, Settings, Database, Wallet, BarChart3, Activity, AlertTriangle, TrendingUp } from "lucide-react";
 import { TGERunbook } from "@/components/TGERunbook";
 const Admin = () => {
   const navigate = useNavigate();
@@ -117,6 +117,14 @@ const Admin = () => {
               className="w-full"
             >
               Go to Test Lab
+            </Button>
+            <Button 
+              onClick={() => navigate('/price-audit')} 
+              variant="outline" 
+              className="w-full flex items-center gap-2"
+            >
+              <TrendingUp className="h-4 w-4" />
+              Price Audit Dashboard
             </Button>
           </CardContent>
         </Card>

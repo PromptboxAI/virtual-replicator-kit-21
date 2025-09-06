@@ -23,6 +23,7 @@ import TokenAgents from "./pages/TokenAgents";
 import TestLab from "./pages/TestLab";
 import GraduationTest from "./pages/GraduationTest";
 import { FeeTest } from "./pages/FeeTest";
+import PriceAuditDashboard from "./pages/PriceAuditDashboard";
 import { LegacyTradeRedirect } from "./components/LegacyRedirect";
 import { useUserRole } from "./hooks/useUserRole";
 import { Header } from "./components/Header";
@@ -143,6 +144,7 @@ const App = () => (
                   <GraduationTest />
                 </div>
               } />
+              <Route path="/price-audit" element={<AdminProtectedRoute><PriceAuditDashboard /></AdminProtectedRoute>} />
               <Route path="/token-agents" element={<TokenAgents />} />
               <Route path="/fee-test/:agentId" element={<AdminProtectedRoute><FeeTest /></AdminProtectedRoute>} />
               {/* Legacy redirect for old trade routes */}
