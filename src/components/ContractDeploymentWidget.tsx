@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle, AlertCircle, Loader2, Rocket } from 'lucide-react';
 import { useWeb3ContractDeployment } from '@/hooks/useWeb3ContractDeployment';
+import { useAppMode } from '@/hooks/useAppMode';
 
 export function ContractDeploymentWidget() {
   const {
@@ -16,6 +17,31 @@ export function ContractDeploymentWidget() {
     isCorrectNetwork,
     contractsDeployed
   } = useWeb3ContractDeployment();
+  const { isProductionMode } = useAppMode();
+
+  if (isProductionMode) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Rocket className="h-5 w-5" />
+            Smart Contract Deployment
+          </CardTitle>
+          <CardDescription>
+            Deployment is locked in production until TGE
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Testnet-only mode is active. Contract deployment to mainnet is disabled until the Token Generation Event (TGE).
+            </AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (!isConnected) {
     return (

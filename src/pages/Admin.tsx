@@ -18,7 +18,7 @@ import { Header } from "@/components/Header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Shield, Settings, Database, Wallet, BarChart3, Activity, AlertTriangle } from "lucide-react";
-
+import { TGERunbook } from "@/components/TGERunbook";
 const Admin = () => {
   const navigate = useNavigate();
   const { isAdmin, isLoading } = useUserRole();
@@ -75,6 +75,24 @@ const Admin = () => {
           </CardHeader>
           <CardContent>
             <AppModeToggle />
+          </CardContent>
+        </Card>
+
+        {/* TGE Runbook & Checklist */}
+        <Card>
+          <CardHeader>
+            <CardTitle>TGE Runbook & Checklist</CardTitle>
+            <CardDescription>
+              Follow these steps for a safe Token Generation Event
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {/* ... keep existing code (runbook content component) */}
+            <div className="mb-4 text-xs text-muted-foreground">Production is currently locked to testnet until TGE.</div>
+            {/* We'll render the runbook */}
+            <div>
+              <TGERunbook />
+            </div>
           </CardContent>
         </Card>
 

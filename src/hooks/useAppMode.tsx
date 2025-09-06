@@ -4,6 +4,9 @@ import { useAuth } from './useAuth';
 
 export type AppMode = 'test' | 'production';
 
+// Temporary global safety lock: force testnet-only until TGE
+const LOCK_TESTNET_ONLY = true;
+
 export const useAppMode = () => {
   const { user } = useAuth();
   const { isAdmin } = useUserRole();
@@ -11,6 +14,13 @@ export const useAppMode = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Global safety lock
+    if (LOCK_TESTNET_ONLY) {
+      setMode('test');
+      setIsLoading(false);
+      return;
+    }
+
     // For non-admin users, always use production mode (real ERC20 tokens)
     if (!isAdmin) {
       setMode('production');
@@ -30,6 +40,10 @@ export const useAppMode = () => {
   }, [isAdmin]);
 
   const setAppMode = (newMode: AppMode) => {
+    if (LOCK_TESTNET_ONLY) {
+      console.warn('Production mode is temporarily locked until TGE.');
+      return;
+    }
     if (!isAdmin) {
       console.warn('Only admin users can change app mode');
       return;
@@ -47,7 +61,7 @@ export const useAppMode = () => {
     isTestMode,
     isProductionMode,
     setAppMode,
-    canChangeMode: isAdmin,
+    canChangeMode: isAdmin && !LOCK_TESTNET_ONLY,
     isLoading,
   };
 };

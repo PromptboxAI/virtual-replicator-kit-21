@@ -5,6 +5,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { AppModeToggle } from "./AppModeToggle";
+import TestnetOnlyBanner from "./TestnetOnlyBanner";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -142,6 +143,7 @@ export function Header() {
           </div>
         </div>
       </div>
+      <TestnetOnlyBanner />
     </header>
   );
 }
