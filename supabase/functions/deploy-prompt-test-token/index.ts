@@ -1,7 +1,14 @@
 import { createPublicClient, createWalletClient, http } from 'npm:viem'
-import { baseSepolia } from 'npm:viem/chains'
+import { baseSepolia, base, sepolia } from 'npm:viem/chains'
 import { privateKeyToAccount } from 'npm:viem/accounts'
 import { verifyDeployment } from '../_shared/verifyDeployment.ts'
+
+// Chain configuration mapping
+const CHAIN_CONFIG = {
+  84532: { chain: baseSepolia, name: 'Base Sepolia' },
+  8453: { chain: base, name: 'Base Mainnet' },
+  11155111: { chain: sepolia, name: 'Ethereum Sepolia' }
+} as const;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -53,7 +60,25 @@ Deno.serve(async (req) => {
   }
 
   try {
+    const { deployer_address, chain_id = 84532 } = await req.json();
+    
     console.log('Starting PromptTestToken deployment...');
+    console.log('Chain ID:', chain_id);
+    
+    // Validate chain support
+    const chainConfig = CHAIN_CONFIG[chain_id as keyof typeof CHAIN_CONFIG];
+    if (!chainConfig) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: `Unsupported chain ID: ${chain_id}` 
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400
+        }
+      );
+    }
     
     const deployerPrivateKey = Deno.env.get('DEPLOYER_PRIVATE_KEY');
     if (!deployerPrivateKey) {
@@ -64,17 +89,17 @@ Deno.serve(async (req) => {
     console.log('Account address:', account.address);
     
     const publicClient = createPublicClient({
-      chain: baseSepolia,
+      chain: chainConfig.chain,
       transport: http('https://sepolia.base.org')
     });
 
     const walletClient = createWalletClient({
       account,
-      chain: baseSepolia,
+      chain: chainConfig.chain,
       transport: http('https://sepolia.base.org')
     });
 
-    console.log('Deploying contract with gas limit...');
+    console.log(`Deploying contract on ${chainConfig.name} with gas limit...`);
     const hash = await walletClient.deployContract({
       abi: PROMPT_TOKEN_ABI,
       bytecode: PROMPT_TOKEN_BYTECODE as `0x${string}`,

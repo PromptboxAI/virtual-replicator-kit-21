@@ -13,6 +13,7 @@ import { RevenueFunctionTest } from "@/components/RevenueFunctionTest";
 import { GraduationAnalyticsDashboard } from "@/components/GraduationAnalyticsDashboard";
 import { CronJobStatus } from "@/components/CronJobStatus";
 import { ProductionAlertsPanel } from "@/components/ProductionAlertsPanel";
+import MultiChainDeployment from "@/components/MultiChainDeployment";
 import { Header } from "@/components/Header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -179,6 +180,22 @@ const Admin = () => {
           </CardHeader>
           <CardContent>
             <ProductionAlertsPanel />
+          </CardContent>
+        </Card>
+
+        {/* Multi-Chain Deployment */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Settings className="h-5 w-5" />
+              Multi-Chain Deployment
+            </CardTitle>
+            <CardDescription>
+              Deploy contracts across multiple blockchain networks
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <MultiChainDeployment />
           </CardContent>
         </Card>
 

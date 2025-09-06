@@ -1,7 +1,14 @@
 import { createPublicClient, createWalletClient, http, parseEther, getAddress } from 'npm:viem'
-import { base, baseSepolia } from 'npm:viem/chains'
+import { base, baseSepolia, sepolia } from 'npm:viem/chains'
 import { privateKeyToAccount } from 'npm:viem/accounts'
 import { verifyDeployment } from '../_shared/verifyDeployment.ts'
+
+// Chain configuration mapping
+const CHAIN_CONFIG = {
+  84532: { chain: baseSepolia, name: 'Base Sepolia' },
+  8453: { chain: base, name: 'Base Mainnet' },
+  11155111: { chain: sepolia, name: 'Ethereum Sepolia' }
+} as const;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -46,11 +53,32 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { promptTokenAddress, treasuryAddress } = await req.json()
+    const { 
+      promptTokenAddress, 
+      treasuryAddress, 
+      deployer_address, 
+      chain_id = 84532 
+    } = await req.json();
 
-    console.log('🚀 Starting AgentTokenFactory deployment...')
-    console.log('📍 Prompt token address:', promptTokenAddress)
-    console.log('🏦 Treasury address:', treasuryAddress)
+    console.log('🚀 Starting AgentTokenFactory deployment...');
+    console.log('📍 Chain ID:', chain_id);
+    console.log('📍 Prompt token address:', promptTokenAddress);
+    console.log('🏦 Treasury address:', treasuryAddress);
+    
+    // Validate chain support
+    const chainConfig = CHAIN_CONFIG[chain_id as keyof typeof CHAIN_CONFIG];
+    if (!chainConfig) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: `Unsupported chain ID: ${chain_id}` 
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400
+        }
+      );
+    }
 
     // Get private key from environment
     const privateKey = Deno.env.get('DEPLOYER_PRIVATE_KEY')
@@ -65,7 +93,7 @@ Deno.serve(async (req) => {
 
     // Create account and clients
     const account = privateKeyToAccount(formattedPrivateKey as `0x${string}`)
-    const chain = baseSepolia
+    const chain = chainConfig.chain;
     
     const publicClient = createPublicClient({
       chain,
@@ -94,7 +122,7 @@ Deno.serve(async (req) => {
     const checksummedPromptToken = getAddress(promptTokenAddress)
     const checksummedTreasury = getAddress(treasuryAddress)
 
-    console.log('🔄 Deploying AgentTokenFactory contract...');
+    console.log(`🔄 Deploying AgentTokenFactory contract on ${chainConfig.name}...`);
     
     // Deploy the contract with a reasonable gas limit
     const hash = await walletClient.deployContract({
