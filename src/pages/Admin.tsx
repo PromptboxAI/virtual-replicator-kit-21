@@ -19,6 +19,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Shield, Settings, Database, Wallet, BarChart3, Activity, AlertTriangle, TrendingUp } from "lucide-react";
 import { TGERunbook } from "@/components/TGERunbook";
+import { TestingGuide } from "@/components/TestingGuide";
 const Admin = () => {
   const navigate = useNavigate();
   const { isAdmin, isLoading } = useUserRole();
@@ -129,19 +130,20 @@ const Admin = () => {
           </CardContent>
         </Card>
 
-        {/* Token Faucet */}
+        {/* Token Management & Testing Setup */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Database className="h-5 w-5" />
-              Token Management
+              🧪 Comprehensive Testing Setup
             </CardTitle>
             <CardDescription>
-              Distribute test tokens to user wallets
+              Complete testing environment with 200K off-chain PROMPT balance and on-chain token minting
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-6">
             <AdminFaucet />
+            <TestingGuide />
           </CardContent>
         </Card>
 
