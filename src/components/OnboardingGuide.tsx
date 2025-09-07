@@ -23,7 +23,7 @@ export function OnboardingGuide() {
     {
       id: 'wallet',
       title: 'Connect external wallet',
-      description: 'Link MetaMask or another external wallet for token operations',
+      description: 'Link your wallet to create an AI Agent',
       completed: hasExternalWallet,
       icon: Wallet,
       action: authenticated && !hasExternalWallet ? linkWallet : undefined,
