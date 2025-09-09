@@ -48,7 +48,7 @@ export const useUserRole = () => {
     };
 
     fetchUserRole();
-  }, [user]);
+  }, [user?.id]); // Fix: Only depend on user.id which is stable, not the entire user object
 
   const isAdmin = role === 'admin';
 
