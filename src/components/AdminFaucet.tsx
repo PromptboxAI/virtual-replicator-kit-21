@@ -20,6 +20,7 @@ export const AdminFaucet = () => {
   const { user } = useAuth();
   const { balance: offChainBalance, loading: balanceLoading, refetchBalance } = useTokenBalance(user?.id);
   const { toast } = useToast();
+  const [settingBalance, setSettingBalance] = useState(false);
 
   // Your deployer wallet address for quick self-minting
   const DEPLOYER_WALLET = '0x23d03610584B0f0988A6F9C281a37094D5611388';
@@ -104,7 +105,6 @@ export const AdminFaucet = () => {
     handleMintTokens(amount, DEPLOYER_WALLET);
   };
 
-  const [settingBalance, setSettingBalance] = useState(false);
   const handleSetOffchain200k = async () => {
     if (!user?.id) return;
     try {
