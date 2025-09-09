@@ -65,3 +65,6 @@ verify_jwt = false
 
 [functions.update-vault-receiver]
 verify_jwt = false
+
+[functions.set-offchain-balance]
+verify_jwt = false

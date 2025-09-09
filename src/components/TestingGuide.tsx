@@ -1,9 +1,39 @@
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { BookOpen, TrendingUp, Target, AlertTriangle } from 'lucide-react';
-
+import { useAuth } from '@/hooks/useAuth';
+import { useUserRole } from '@/hooks/useUserRole';
+import { useTokenBalance } from '@/hooks/useTokenBalance';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 export const TestingGuide = () => {
+  const { user } = useAuth();
+  const { isAdmin } = useUserRole();
+  const { balance, loading, refetchBalance } = useTokenBalance(user?.id);
+  const { toast } = useToast();
+  const [setting, setSetting] = useState(false);
+
+  const handleTopUp = async () => {
+    if (!user?.id) return;
+    try {
+      setSetting(true);
+      const { data, error } = await supabase.functions.invoke('set-offchain-balance', {
+        body: { requesterId: user.id, targetUserId: user.id, amount: 200000 }
+      });
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || 'Failed to set balance');
+      toast({ title: 'Off-chain balance set', description: 'Your PROMPT test balance is now 200,000' });
+      await refetchBalance();
+    } catch (e: any) {
+      console.error('Set balance error:', e);
+      toast({ title: 'Error', description: e.message || 'Failed to set balance', variant: 'destructive' });
+    } finally {
+      setSetting(false);
+    }
+  };
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -14,6 +44,15 @@ export const TestingGuide = () => {
         <CardDescription>
           Step-by-step testing scenarios for thorough validation of the PROMPT token system
         </CardDescription>
+        <div className="mt-2 flex items-center gap-3 text-sm">
+          <span className="text-muted-foreground">Off-chain PROMPT:</span>
+          <strong>{loading ? 'Loading...' : balance.toLocaleString()}</strong>
+          {isAdmin && (
+            <Button size="sm" variant="secondary" disabled={setting || loading} onClick={handleTopUp}>
+              {setting ? 'Setting...' : 'Set to 200,000'}
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="space-y-6">
         

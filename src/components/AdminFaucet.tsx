@@ -104,6 +104,30 @@ export const AdminFaucet = () => {
     handleMintTokens(amount, DEPLOYER_WALLET);
   };
 
+  const [settingBalance, setSettingBalance] = useState(false);
+  const handleSetOffchain200k = async () => {
+    if (!user?.id) return;
+    try {
+      setSettingBalance(true);
+      const { data, error } = await supabase.functions.invoke('set-offchain-balance', {
+        body: {
+          requesterId: user.id,
+          targetUserId: user.id,
+          amount: 200000
+        }
+      });
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || 'Failed to set balance');
+      toast({ title: 'Off-chain balance set', description: 'Your PROMPT test balance is now 200,000' });
+      await refetchBalance();
+    } catch (e: any) {
+      console.error('Set balance error:', e);
+      toast({ title: 'Error', description: e.message || 'Failed to set balance', variant: 'destructive' });
+    } finally {
+      setSettingBalance(false);
+    }
+  };
+
   const presetAmounts = [
     { label: '1K', value: '1000', description: 'Small test' },
     { label: '10K', value: '10000', description: 'Medium test' },
@@ -134,6 +158,23 @@ export const AdminFaucet = () => {
                     {balanceLoading ? 'Loading...' : `${offChainBalance?.toLocaleString()}`}
                   </p>
                   <Badge variant="secondary" className="mt-1">For Trading Tests</Badge>
+                  <div className="mt-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={handleSetOffchain200k}
+                      disabled={settingBalance || balanceLoading}
+                    >
+                      {settingBalance ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Setting...
+                        </>
+                      ) : (
+                        'Set to 200,000'
+                      )}
+                    </Button>
+                  </div>
                 </div>
                 <Coins className="h-8 w-8 text-muted-foreground" />
               </div>
