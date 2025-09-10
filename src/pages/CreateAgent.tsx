@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -829,13 +830,12 @@ export default function CreateAgent() {
                             <li>• <strong>Use Cases:</strong> Real-world applications and target markets</li>
                           </ul>
                         </div>
-                          <Textarea
-                           id="agent_overview"
-                           placeholder=""
+                        <RichTextEditor
+                          id="agent_overview"
                           value={formData.agent_overview}
-                          onChange={(e) => handleInputChange('agent_overview', e.target.value)}
-                          rows={20}
-                          className="mt-2 min-h-[500px] text-sm"
+                          onChange={(value) => handleInputChange('agent_overview', value)}
+                          placeholder="Provide comprehensive details about your AI Agent..."
+                          className="mt-2"
                         />
                       </div>
                     </CardContent>
