@@ -171,11 +171,41 @@ export function useTokenBalance(userId?: string) {
     }
   };
 
+  const refundTokens = async (amount: number): Promise<boolean> => {
+    if (!userId) {
+      console.error('No user ID for token refund');
+      return false;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('user_token_balances')
+        .update({ balance: balance + amount })
+        .eq('user_id', userId);
+
+      if (error) {
+        console.error('Error refunding tokens:', error);
+        return false;
+      }
+
+      setBalance(prev => prev + amount);
+      toast({
+        title: "Tokens Refunded",
+        description: `${amount} tokens have been refunded to your account`,
+      });
+      return true;
+    } catch (error) {
+      console.error('Token refund error:', error);
+      return false;
+    }
+  };
+
   return {
     balance,
     loading,
     deductTokens,
     addTestTokens,
+    refundTokens,
     isTestMode,
     refetchBalance: fetchBalance
   };

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Upload, Sparkles, Coins, TrendingUp, Info, AlertCircle, Check, Twitter, Link2, X, Code, Rocket, ExternalLink, Settings, Users, Brain, Shield, Zap, HelpCircle } from "lucide-react";
+import { Upload, Sparkles, Coins, TrendingUp, Info, AlertCircle, Check, Twitter, Link2, X, Code, Rocket, ExternalLink, Settings, Users, Brain, Shield, Zap, HelpCircle, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Link } from "react-router-dom";
@@ -29,6 +29,23 @@ import { OnboardingGuide } from "@/components/OnboardingGuide";
 // import { useAgentTokens } from "@/hooks/useAgentTokens";
 import { useAccount } from 'wagmi';
 import { getCurrentPriceV3 } from "@/lib/bondingCurveV3";
+
+// Hook for debounced value
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
 
 
 interface AgentFormData {
@@ -114,7 +131,7 @@ export default function CreateAgent() {
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   
   const { user, loading: authLoading, signIn } = useAuth();
-  const { balance, loading: balanceLoading, deductTokens, addTestTokens } = useTokenBalance(user?.id);
+  const { balance, loading: balanceLoading, deductTokens, addTestTokens, refundTokens } = useTokenBalance(user?.id);
   const { connectTwitter, disconnectTwitter, isConnecting, connectedAccount, setConnectedAccount } = useTwitterAuth();
   const { isTestMode: appIsTestMode } = useAppMode();
   const { isAdmin } = useUserRole();
@@ -149,6 +166,11 @@ export default function CreateAgent() {
     prebuy_amount: 0,
   });
 
+  // Symbol validation states (after formData is declared)
+  const [symbolAvailable, setSymbolAvailable] = useState<boolean | null>(null);
+  const [checkingSymbol, setCheckingSymbol] = useState(false);
+  const debouncedSymbol = useDebounce(formData.symbol, 500);
+
   const categories = [
     "Trading Bot",
     "DeFi Assistant", 
@@ -169,6 +191,34 @@ export default function CreateAgent() {
 
   // Only use frameworks from SDK that have actual deployment handlers
   const allFrameworks = frameworks;
+
+  // Real-time symbol validation
+  useEffect(() => {
+    if (!debouncedSymbol || debouncedSymbol.length < 2) {
+      setSymbolAvailable(null);
+      return;
+    }
+
+    const checkSymbol = async () => {
+      setCheckingSymbol(true);
+      try {
+        const { data } = await supabase
+          .from('agents')
+          .select('symbol')
+          .eq('symbol', debouncedSymbol.toUpperCase())
+          .maybeSingle();
+
+        setSymbolAvailable(!data);
+      } catch (error) {
+        console.error('Symbol validation error:', error);
+        setSymbolAvailable(null);
+      } finally {
+        setCheckingSymbol(false);
+      }
+    };
+
+    checkSymbol();
+  }, [debouncedSymbol]);
 
   // Load existing Twitter connection
   useEffect(() => {
@@ -268,6 +318,41 @@ export default function CreateAgent() {
 
     if (!validateForm()) return;
 
+    // PRE-VALIDATION: Check symbol uniqueness BEFORE deducting tokens
+    try {
+      const { data: existingAgent, error: checkError } = await supabase
+        .from('agents')
+        .select('symbol')
+        .eq('symbol', formData.symbol.toUpperCase())
+        .maybeSingle();
+
+      if (checkError) {
+        toast({
+          title: "Error",
+          description: "Failed to validate symbol availability",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (existingAgent) {
+        toast({
+          title: "Symbol Already Used",
+          description: `The symbol ${formData.symbol.toUpperCase()} is already used on this platform. Please choose a different one.`,
+          variant: "destructive"
+        });
+        return;
+      }
+    } catch (error) {
+      console.error('Symbol validation error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to validate symbol availability",
+        variant: "destructive"
+      });
+      return;
+    }
+
     const totalCost = CREATION_COST + formData.prebuy_amount;
     
     // Check if user has sufficient balance (only in test mode)
@@ -281,10 +366,12 @@ export default function CreateAgent() {
       return;
     }
     
-    // Check token balance and deduct tokens (only in test mode)
+    // NOW deduct tokens after validation passes
+    let tokensDeducted = false;
     if (appIsTestMode) {
       const success = await deductTokens(totalCost);
       if (!success) return;
+      tokensDeducted = true;
     }
     
     setIsCreating(true);
@@ -348,14 +435,24 @@ export default function CreateAgent() {
 
       if (error) {
         console.error('Database error:', error);
-        if (error.code === '23505') {
+        
+        // REFUND tokens if they were deducted
+        if (tokensDeducted) {
+          await refundTokens(totalCost);
+        }
+        
+        if (error.code === '23505' && error.message?.includes('symbol')) {
           toast({ 
-            title: "Symbol Already Exists", 
-            description: "An agent with this symbol already exists. Please choose a different symbol.", 
+            title: "Creation Failed", 
+            description: "This symbol is already used on the platform. Your tokens have been refunded.", 
             variant: "destructive" 
           });
         } else {
-          toast({ title: "Error", description: "Failed to create AI Agent", variant: "destructive" });
+          toast({ 
+            title: "Creation Failed", 
+            description: `Failed to create AI Agent${tokensDeducted ? '. Your tokens have been refunded' : ''}.`, 
+            variant: "destructive" 
+          });
         }
         return;
       }
@@ -398,9 +495,19 @@ export default function CreateAgent() {
       // Navigate to agent page to configure AI
       navigate(`/agent/${agentId}`);
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Creation error:', error);
-      toast({ title: "Error", description: "Something went wrong", variant: "destructive" });
+      
+      // REFUND tokens if they were deducted
+      if (tokensDeducted) {
+        await refundTokens(totalCost);
+      }
+      
+      toast({ 
+        title: "Error", 
+        description: `Something went wrong${tokensDeducted ? '. Your tokens have been refunded' : ''}.`, 
+        variant: "destructive" 
+      });
     } finally {
       setIsCreating(false);
     }
@@ -638,8 +745,31 @@ export default function CreateAgent() {
                               const value = e.target.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
                               handleInputChange('symbol', value);
                             }}
-                            maxLength={10}
+                           maxLength={10}
                           />
+                          {/* Symbol validation feedback */}
+                          {formData.symbol && (
+                            <div className="mt-2 flex items-center gap-2">
+                              {checkingSymbol && (
+                                <>
+                                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                  <p className="text-sm text-muted-foreground">Checking availability...</p>
+                                </>
+                              )}
+                              {!checkingSymbol && symbolAvailable === false && (
+                                <>
+                                  <AlertCircle className="h-4 w-4 text-destructive" />
+                                  <p className="text-sm text-destructive">This symbol is already used on this platform</p>
+                                </>
+                              )}
+                              {!checkingSymbol && symbolAvailable === true && (
+                                <>
+                                  <Check className="h-4 w-4 text-green-500" />
+                                  <p className="text-sm text-green-500">✓ Symbol available on platform</p>
+                                </>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
                       
@@ -1409,7 +1539,7 @@ export default function CreateAgent() {
                     </Button>
                      <Button
                        onClick={handleCreateAgent}
-                       disabled={isCreating || balanceLoading}
+                       disabled={isCreating || balanceLoading || checkingSymbol || symbolAvailable === false}
                        className="flex-1 bg-gradient-primary hover:opacity-90"
                      >
                        {isCreating ? (
