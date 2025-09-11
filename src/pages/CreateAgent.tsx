@@ -765,7 +765,7 @@ export default function CreateAgent() {
                               {!checkingSymbol && symbolAvailable === true && (
                                 <>
                                   <Check className="h-4 w-4 text-green-500" />
-                                  <p className="text-sm text-green-500">✓ Symbol available on platform</p>
+                                  <p className="text-sm text-green-500">Symbol available on platform</p>
                                 </>
                               )}
                             </div>
