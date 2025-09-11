@@ -226,7 +226,7 @@ export default function AllAgents() {
 
                 {/* Holders */}
                 <div className="col-span-1 text-sm text-foreground">
-                  {Math.floor(Math.random() * 5000) + 100}
+                  {agent.token_holders || 0}
                 </div>
 
                 {/* Agentic Level */}

@@ -17,6 +17,7 @@ export interface Agent {
   creator_id: string | null;
   status: string | null;
   test_mode: boolean | null;
+  token_holders: number | null;
   // Bonding curve fields
   prompt_raised: number | null;
   token_graduated: boolean | null;
