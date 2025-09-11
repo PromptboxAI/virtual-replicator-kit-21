@@ -4,8 +4,8 @@ import { useAuth } from './useAuth';
 
 export type AppMode = 'test' | 'production';
 
-// Temporary global safety lock: force testnet-only until TGE
-const LOCK_TESTNET_ONLY = true;
+// Allow toggle visibility but keep automated trading disabled via backend security
+const LOCK_TESTNET_ONLY = false;
 
 export const useAppMode = () => {
   const { user } = useAuth();
