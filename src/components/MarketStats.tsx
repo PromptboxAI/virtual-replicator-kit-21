@@ -53,30 +53,22 @@ export function MarketStats() {
     {
       label: "Total Market Cap",
       value: formatNumber(stats.totalMarketCap),
-      change: "+12.5%",
-      icon: DollarSign,
-      positive: true
+      icon: DollarSign
     },
     {
       label: "Active Agents",
       value: formatCount(stats.activeAgents),
-      change: "+23",
-      icon: Zap,
-      positive: true
+      icon: Zap
     },
     {
       label: "Total Holders",
-      value: formatCount(stats.totalHolders || 892), // Mock data for now
-      change: "+5.2%",
-      icon: Users,
-      positive: true
+      value: formatCount(stats.totalHolders),
+      icon: Users
     },
     {
       label: "24h Volume",
       value: formatNumber(stats.totalVolume),
-      change: "-3.1%",
-      icon: TrendingUp,
-      positive: false
+      icon: TrendingUp
     }
   ];
 
@@ -88,12 +80,9 @@ export function MarketStats() {
             <div>
               <p className="text-sm text-muted-foreground">{stat.label}</p>
               <p className="text-2xl font-bold text-foreground">{stat.value}</p>
-              <p className={`text-sm ${stat.positive ? 'text-success' : 'text-destructive'}`}>
-                {stat.change}
-              </p>
             </div>
-            <div className={`p-3 rounded-lg ${stat.positive ? 'bg-success/10' : 'bg-destructive/10'}`}>
-              <stat.icon className={`w-6 h-6 ${stat.positive ? 'text-success' : 'text-destructive'}`} />
+            <div className="p-3 rounded-lg bg-primary/10">
+              <stat.icon className="w-6 h-6 text-primary" />
             </div>
           </div>
         </Card>
