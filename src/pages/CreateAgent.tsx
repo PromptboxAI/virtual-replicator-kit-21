@@ -29,7 +29,7 @@ import { OnboardingGuide } from "@/components/OnboardingGuide";
 import { getPlainTextFromHTML } from "@/lib/utils";
 // import { useAgentTokens } from "@/hooks/useAgentTokens";
 import { useAccount } from 'wagmi';
-import { getCurrentPriceV3 } from "@/lib/bondingCurveV3";
+import { getCurrentPriceV3, BONDING_CURVE_V3_CONFIG } from "@/lib/bondingCurveV3";
 
 // Hook for debounced value
 function useDebounce<T>(value: T, delay: number): T {
@@ -1479,7 +1479,7 @@ export default function CreateAgent() {
                                   </div>
                                   {formData.prebuy_amount > 0 && (
                                     <div className="text-sm text-muted-foreground">
-                                      You'll receive: ~{(formData.prebuy_amount * 1000).toLocaleString()} ${formData.symbol}
+                                      You'll receive: ~{(formData.prebuy_amount / BONDING_CURVE_V3_CONFIG.P0).toLocaleString()} ${formData.symbol}
                                     </div>
                                   )}
                                 </div>
