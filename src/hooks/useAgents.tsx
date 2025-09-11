@@ -50,7 +50,35 @@ export function useAgents() {
         console.log('Agents error:', error);
 
         if (error) throw error;
-        setAgents(data || []);
+
+        // Compute live holder counts per agent to avoid stale/mock values
+        let agentsWithHolders = data || [];
+        try {
+          const agentIds = (data || []).map(a => a.id);
+          if (agentIds.length > 0) {
+            const { data: holderRows, error: holdersErr } = await supabase
+              .from('agent_token_holders')
+              .select('agent_id, token_balance')
+              .in('agent_id', agentIds)
+              .gt('token_balance', 0);
+
+            if (holdersErr) throw holdersErr;
+
+            const holdersMap = new Map<string, number>();
+            holderRows?.forEach((row: any) => {
+              holdersMap.set(row.agent_id, (holdersMap.get(row.agent_id) || 0) + 1);
+            });
+
+            agentsWithHolders = (data || []).map(a => ({
+              ...a,
+              token_holders: holdersMap.get(a.id) ?? 0,
+            }));
+          }
+        } catch (e) {
+          console.warn('Failed to compute live holder counts, falling back to existing token_holders:', e);
+        }
+
+        setAgents(agentsWithHolders);
       } catch (err: any) {
         console.error('Error fetching agents:', err);
         setError(err.message);
