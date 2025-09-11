@@ -5,9 +5,14 @@ import { useAppMode } from '@/hooks/useAppMode';
 import { TestTube, Zap } from 'lucide-react';
 
 export const AppModeToggle = () => {
-  const { mode, setAppMode, canChangeMode, isTestMode } = useAppMode();
+  const { mode, setAppMode, canChangeMode, isTestMode, isLoading } = useAppMode();
 
-  console.log('AppModeToggle - canChangeMode:', canChangeMode, 'isTestMode:', isTestMode, 'mode:', mode);
+  console.log('AppModeToggle - canChangeMode:', canChangeMode, 'isTestMode:', isTestMode, 'mode:', mode, 'isLoading:', isLoading);
+
+  if (isLoading) {
+    console.log('AppModeToggle - still loading, showing skeleton');
+    return <div className="h-8 w-24 bg-muted rounded-md animate-pulse" />;
+  }
 
   if (!canChangeMode) {
     console.log('AppModeToggle - returning null because canChangeMode is false');
