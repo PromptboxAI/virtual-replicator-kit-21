@@ -150,16 +150,67 @@ async function getAPIKeys(agentId: string, keyNames: string[]): Promise<Record<s
 
 async function executeDeFiOperations(agent: Agent, config: any, apiKeys: Record<string, string>) {
   try {
-    // Check if this is a trading bot with real trading configuration
+    // 🛡️ CRITICAL SECURITY CHECK: Verify automated trading authorization
     if (config.tradingStrategy && config.tradingPairs) {
-      // Execute real trading via trading engine
-      await logMessage(agent.id, 'info', 'Executing real trading strategy');
+      await logMessage(agent.id, 'info', 'Checking automated trading authorization');
       
+      // Check if agent has automated trading permission
+      const { data: agentData, error: agentError } = await supabase
+        .from('agents')
+        .select('allow_automated_trading, max_trade_amount, creator_id, name')
+        .eq('id', agent.id)
+        .single();
+
+      if (agentError || !agentData) {
+        await logMessage(agent.id, 'error', 'Failed to verify agent trading permissions');
+        return;
+      }
+
+      // Log authorization check
+      await logActivity(agent.id, {
+        activity_type: 'authorization_check',
+        title: 'Trading Authorization Verification',
+        description: `Checked automated trading permissions for ${agentData.name}`,
+        metadata: {
+          automated_trading_allowed: agentData.allow_automated_trading,
+          max_trade_amount: agentData.max_trade_amount,
+          creator_id: agentData.creator_id
+        },
+        status: 'completed',
+        result: { 
+          authorized: agentData.allow_automated_trading,
+          permission_level: agentData.allow_automated_trading ? 'authorized' : 'blocked'
+        }
+      });
+
+      if (!agentData.allow_automated_trading) {
+        await logMessage(agent.id, 'warn', 'Automated trading blocked - no user consent');
+        
+        await logActivity(agent.id, {
+          activity_type: 'security_block',
+          title: 'Automated Trading Blocked',
+          description: 'Trading execution blocked due to lack of user authorization',
+          metadata: { 
+            reason: 'no_user_consent',
+            strategy: config.tradingStrategy,
+            pairs: config.tradingPairs
+          },
+          status: 'completed',
+          result: { action: 'blocked', reason: 'User has not authorized automated trading' }
+        });
+        
+        return; // Exit without executing trades
+      }
+      
+      // Even if authorized, invoke trading engine (which now has additional security checks)
       try {
+        await logMessage(agent.id, 'info', 'Invoking trading engine with security checks');
+        
         const tradingResult = await supabase.functions.invoke('trading-engine', {
           body: {
             agentId: agent.id,
-            action: 'run_trading_cycle'
+            action: 'run_trading_cycle',
+            automated: true // Flag that this is automated execution
           }
         });
         
@@ -168,13 +219,14 @@ async function executeDeFiOperations(agent: Agent, config: any, apiKeys: Record<
         }
         
         await logActivity(agent.id, {
-          activity_type: 'autonomous_trading',
-          title: 'Real Trading Cycle Completed',
-          description: `Executed ${config.tradingStrategy} strategy on real markets`,
+          activity_type: 'authorized_trading',
+          title: 'Authorized Trading Cycle Executed',
+          description: `Executed ${config.tradingStrategy} strategy with user authorization`,
           metadata: { 
             strategy: config.tradingStrategy,
             pairs: config.tradingPairs,
             exchanges: config.exchanges,
+            authorization_verified: true,
             result: tradingResult.data 
           },
           status: 'completed',
@@ -182,12 +234,12 @@ async function executeDeFiOperations(agent: Agent, config: any, apiKeys: Record<
         });
         
       } catch (tradingError) {
-        await logMessage(agent.id, 'error', `Real trading failed: ${tradingError.message}`);
+        await logMessage(agent.id, 'error', `Authorized trading failed: ${tradingError.message}`);
         
         await logActivity(agent.id, {
           activity_type: 'trading_error',
-          title: 'Trading Execution Failed',
-          description: `Real trading execution encountered an error: ${tradingError.message}`,
+          title: 'Authorized Trading Failed',
+          description: `Authorized trading execution encountered an error: ${tradingError.message}`,
           status: 'failed',
           result: { error: tradingError.message }
         });

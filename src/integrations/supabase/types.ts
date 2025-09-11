@@ -937,6 +937,7 @@ export type Database = {
       }
       agents: {
         Row: {
+          allow_automated_trading: boolean | null
           avatar_url: string | null
           block_number: number | null
           bonding_curve_supply: number | null
@@ -959,6 +960,7 @@ export type Database = {
           id: string
           is_active: boolean | null
           market_cap: number | null
+          max_trade_amount: number | null
           migration_completed_at: string | null
           migration_validated: boolean | null
           name: string
@@ -972,6 +974,7 @@ export type Database = {
           token_graduated: boolean | null
           token_holders: number | null
           total_supply: number | null
+          trading_wallet_address: string | null
           twitter_api_configured: boolean | null
           twitter_api_encrypted_credentials: string | null
           twitter_url: string | null
@@ -981,6 +984,7 @@ export type Database = {
           website_url: string | null
         }
         Insert: {
+          allow_automated_trading?: boolean | null
           avatar_url?: string | null
           block_number?: number | null
           bonding_curve_supply?: number | null
@@ -1003,6 +1007,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           market_cap?: number | null
+          max_trade_amount?: number | null
           migration_completed_at?: string | null
           migration_validated?: boolean | null
           name: string
@@ -1016,6 +1021,7 @@ export type Database = {
           token_graduated?: boolean | null
           token_holders?: number | null
           total_supply?: number | null
+          trading_wallet_address?: string | null
           twitter_api_configured?: boolean | null
           twitter_api_encrypted_credentials?: string | null
           twitter_url?: string | null
@@ -1025,6 +1031,7 @@ export type Database = {
           website_url?: string | null
         }
         Update: {
+          allow_automated_trading?: boolean | null
           avatar_url?: string | null
           block_number?: number | null
           bonding_curve_supply?: number | null
@@ -1047,6 +1054,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           market_cap?: number | null
+          max_trade_amount?: number | null
           migration_completed_at?: string | null
           migration_validated?: boolean | null
           name?: string
@@ -1060,6 +1068,7 @@ export type Database = {
           token_graduated?: boolean | null
           token_holders?: number | null
           total_supply?: number | null
+          trading_wallet_address?: string | null
           twitter_api_configured?: boolean | null
           twitter_api_encrypted_credentials?: string | null
           twitter_url?: string | null
@@ -1188,6 +1197,51 @@ export type Database = {
           website_url?: string | null
         }
         Relationships: []
+      }
+      automated_action_logs: {
+        Row: {
+          action_data: Json
+          action_type: string
+          agent_id: string
+          authorized: boolean
+          created_at: string | null
+          executed: boolean
+          id: string
+        }
+        Insert: {
+          action_data: Json
+          action_type: string
+          agent_id: string
+          authorized?: boolean
+          created_at?: string | null
+          executed?: boolean
+          id?: string
+        }
+        Update: {
+          action_data?: Json
+          action_type?: string
+          agent_id?: string
+          authorized?: boolean
+          created_at?: string | null
+          executed?: boolean
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automated_action_logs_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_prices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "automated_action_logs_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       cron_job_logs: {
         Row: {
@@ -1723,6 +1777,54 @@ export type Database = {
           validation_results?: Json | null
         }
         Relationships: []
+      }
+      pending_trades: {
+        Row: {
+          agent_id: string
+          amount: number
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string | null
+          id: string
+          signal: Json
+          status: string
+        }
+        Insert: {
+          agent_id: string
+          amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string | null
+          id?: string
+          signal: Json
+          status?: string
+        }
+        Update: {
+          agent_id?: string
+          amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string | null
+          id?: string
+          signal?: Json
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pending_trades_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_prices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_trades_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       platform_allocations: {
         Row: {
@@ -2579,6 +2681,10 @@ export type Database = {
           dynamic_price: number
           static_price: number
         }[]
+      }
+      check_trading_permission: {
+        Args: { p_agent_id: string; p_amount: number }
+        Returns: boolean
       }
       complete_agent_graduation: {
         Args: {

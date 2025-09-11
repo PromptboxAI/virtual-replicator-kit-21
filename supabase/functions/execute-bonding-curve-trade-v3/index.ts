@@ -37,8 +37,45 @@ serve(async (req) => {
       promptAmount = 0, 
       tokenAmount = 0, 
       expectedPrice = 30.0, 
-      slippage = 0.5 
-    }: TradeRequest = await req.json();
+      slippage = 0.5,
+      automated = false,  // Add automated flag
+      userApproved = false  // Add user approval flag
+    }: TradeRequest & { automated?: boolean; userApproved?: boolean } = await req.json();
+
+    console.log(`📈 V3 Trade Request: ${tradeType} for agent ${agentId}`, {
+      automated,
+      userApproved,
+      promptAmount,
+      tokenAmount
+    });
+
+    // 🛡️ CRITICAL SECURITY CHECK: Block automated trades without explicit consent
+    if (automated && !userApproved) {
+      // Check if agent allows automated trading
+      const { data: agent, error: agentError } = await supabase
+        .from('agents')
+        .select('allow_automated_trading, creator_id, name')
+        .eq('id', agentId)
+        .single();
+
+      if (agentError || !agent?.allow_automated_trading) {
+        console.log(`🚫 BLOCKED: Automated trade attempt for agent ${agent?.name || agentId} without user consent`);
+        
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: 'Automated trading not authorized by agent owner',
+            blocked: true,
+            reason: 'User has not granted permission for automated trading',
+            requiresApproval: true
+          }),
+          { 
+            status: 403,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+    }
 
     console.log(`📈 V3 Trade Request: ${tradeType} for agent ${agentId}`);
 

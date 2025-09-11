@@ -237,57 +237,126 @@ async function executeGridStrategy(agentId: string, config: any, marketData: Mar
   };
 }
 
-// Execute trade via 1inch DEX (testnet mode for safety)
+// Execute trade via 1inch DEX (SECURITY HARDENED)
 async function executeTradeVia1inch(signal: TradingSignal, pair: string, agentId: string): Promise<TradeExecution> {
-  const oneInchApiKey = Deno.env.get('ONEINCH_API_KEY');
-  
-  if (!oneInchApiKey) {
+  console.log(`🎯 [TRADING ENGINE] Trade signal received for agent ${agentId}:`, {
+    signal: signal.action,
+    confidence: signal.confidence,
+    amount: signal.suggestedAmount,
+    pair
+  });
+
+  // 🛡️ CRITICAL SECURITY CHECK: Never execute actual trades without explicit consent
+  const REQUIRE_EXPLICIT_APPROVAL = true;
+  const MAX_AUTOMATED_TRADE = 0; // Disable by default
+
+  // Check if agent has automated trading permission
+  const { data: agent, error: agentError } = await supabase
+    .from('agents')
+    .select('allow_automated_trading, max_trade_amount, creator_id, name')
+    .eq('id', agentId)
+    .single();
+
+  if (agentError || !agent) {
+    console.error(`❌ Failed to fetch agent ${agentId}:`, agentError);
     return {
       success: false,
-      error: 'No 1inch API key configured'
+      error: 'Agent not found'
     };
   }
-  
-  try {
-    // For now, simulate the trade execution
-    // In production, this would call 1inch API with actual wallet integration
-    console.log(`Simulating ${signal.action} trade for ${pair} via 1inch`);
+
+  // Log all automated actions for audit trail
+  await supabase.from('automated_action_logs').insert({
+    agent_id: agentId,
+    action_type: 'trade_signal',
+    action_data: {
+      signal: signal.action,
+      confidence: signal.confidence,
+      amount: signal.suggestedAmount,
+      pair,
+      agent_name: agent.name
+    },
+    authorized: agent.allow_automated_trading || false,
+    executed: false
+  });
+
+  if (!agent.allow_automated_trading) {
+    console.log(`🚫 [SECURITY] Automated trading not enabled for agent ${agent.name}`);
     
-    // Log the trade intention
+    // Add to pending trades for manual approval
+    await supabase.from('pending_trades').insert({
+      agent_id: agentId,
+      signal: signal,
+      amount: signal.suggestedAmount,
+      status: 'pending_approval'
+    });
+
+    return {
+      success: false,
+      error: 'Automated trading not authorized - added to approval queue'
+    };
+  }
+
+  // Check trade amount limits
+  if (agent.max_trade_amount > 0 && signal.suggestedAmount > agent.max_trade_amount) {
+    console.log(`🚫 [SECURITY] Trade amount ${signal.suggestedAmount} exceeds limit ${agent.max_trade_amount} for agent ${agent.name}`);
+    return {
+      success: false,
+      error: `Trade amount exceeds maximum limit of ${agent.max_trade_amount}`
+    };
+  }
+
+  // For maximum security, require explicit approval even if automated trading is enabled
+  if (REQUIRE_EXPLICIT_APPROVAL) {
+    console.log(`🔒 [SECURITY] Explicit approval required - adding to pending trades queue`);
+    
+    await supabase.from('pending_trades').insert({
+      agent_id: agentId,
+      signal: signal,
+      amount: signal.suggestedAmount,
+      status: 'pending_approval'
+    });
+
+    // Only log the simulation - never execute real trades
     await supabase.from('agent_activities').insert({
       agent_id: agentId,
-      activity_type: 'trade_execution',
-      title: `${signal.action.toUpperCase()} ${pair}`,
-      description: `Executed ${signal.action} order via 1inch DEX`,
+      activity_type: 'trade_simulation',
+      title: `${signal.action.toUpperCase()} ${pair} - PENDING APPROVAL`,
+      description: `Trading signal generated but requires manual approval`,
       metadata: {
         signal,
         pair,
         exchange: '1inch',
-        mode: 'testnet'
+        mode: 'approval_required',
+        security_status: 'blocked'
       },
       status: 'completed',
       result: {
-        success: true,
+        success: false,
         simulated: true,
-        executedPrice: signal.suggestedAmount,
+        pending_approval: true,
         reason: signal.reason
       }
     });
-    
+
     return {
       success: true,
-      transactionHash: 'simulated_' + Date.now(),
-      executedPrice: signal.suggestedAmount,
-      slippage: 0.1,
-      gasCost: 25
-    };
-  } catch (error) {
-    console.error('Trade execution failed:', error);
-    return {
-      success: false,
-      error: error.message
+      transactionHash: null,
+      executedPrice: 0,
+      slippage: 0,
+      gasCost: 0,
+      pending: true,
+      message: 'Trade added to approval queue - requires manual confirmation'
     };
   }
+
+  // This code path should never be reached with current security settings
+  console.log(`⚠️ [WARNING] Trade execution bypassed security checks - this should not happen!`);
+  
+  return {
+    success: false,
+    error: 'Security validation failed'
+  };
 }
 
 // Main trading engine
@@ -378,13 +447,18 @@ async function runTradingEngine(agentId: string) {
         
         // Execute trade if signal is strong enough and not hold
         if (signal.action !== 'hold' && signal.confidence > 0.7) {
+          console.log(`🎯 [TRADING ENGINE] Strong signal detected: ${signal.action} with confidence ${signal.confidence}`);
+          
+          // Instead of executing real trades, log the signal and require approval
           const execution = await executeTradeVia1inch(signal, pair, agentId);
           
           if (execution.success) {
-            console.log(`Trade executed successfully for ${pair}:`, execution);
+            console.log(`Trade signal processed for ${pair}:`, execution);
           } else {
-            console.error(`Trade execution failed for ${pair}:`, execution.error);
+            console.log(`Trade signal blocked for ${pair}:`, execution.error);
           }
+        } else {
+          console.log(`🔍 [TRADING ENGINE] Signal too weak or HOLD: ${signal.action} (confidence: ${signal.confidence})`);
         }
         
         // Small delay between pairs
