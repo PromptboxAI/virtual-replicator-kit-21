@@ -430,6 +430,11 @@ export default function CreateAgent() {
           creator_id: user.id,
           status: 'ACTIVATING', // Agent is being set up
           test_mode: appIsTestMode, // Set based on current app mode
+          
+          // ✅ V3 BONDING CURVE FIELDS
+          pricing_model: 'linear_v3',           // Use V3 linear bonding curve
+          bonding_curve_supply: 0,              // Initialize token supply at 0
+          migration_validated: true,            // No migration needed - native V3
         }])
         .select()
         .single();
