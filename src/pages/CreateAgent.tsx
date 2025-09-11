@@ -26,6 +26,7 @@ import { usePrivyWallet } from "@/hooks/usePrivyWallet";
 import { FrameworkSDKService, FRAMEWORK_CONFIGS } from "@/lib/frameworkSDK";
 import { WalletConnectionGuard } from "@/components/WalletConnectionGuard";
 import { OnboardingGuide } from "@/components/OnboardingGuide";
+import { getPlainTextFromHTML } from "@/lib/utils";
 // import { useAgentTokens } from "@/hooks/useAgentTokens";
 import { useAccount } from 'wagmi';
 import { getCurrentPriceV3 } from "@/lib/bondingCurveV3";
@@ -966,6 +967,8 @@ export default function CreateAgent() {
                           onChange={(value) => handleInputChange('agent_overview', value)}
                           placeholder="Provide comprehensive details about your AI Agent..."
                           className="mt-2"
+                          maxLength={5000}
+                          showCharacterCount={true}
                         />
                       </div>
                     </CardContent>
@@ -982,7 +985,7 @@ export default function CreateAgent() {
                     </Button>
                     <Button
                       onClick={() => setCurrentStep(2)}
-                      disabled={!formData.short_pitch.trim() || !formData.agent_overview.trim()}
+                      disabled={!formData.short_pitch.trim() || !formData.agent_overview.trim() || getPlainTextFromHTML(formData.agent_overview).length > 5000}
                       className="flex-1 bg-gradient-primary hover:opacity-90"
                     >
                       Next

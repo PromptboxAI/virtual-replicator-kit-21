@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import './rich-text-editor.css';
-import { cn } from '@/lib/utils';
+import { cn, getPlainTextFromHTML } from '@/lib/utils';
 
 interface RichTextEditorProps {
   value: string;
@@ -10,6 +10,8 @@ interface RichTextEditorProps {
   placeholder?: string;
   className?: string;
   id?: string;
+  maxLength?: number;
+  showCharacterCount?: boolean;
 }
 
 export const RichTextEditor: React.FC<RichTextEditorProps> = ({
@@ -17,7 +19,9 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   onChange,
   placeholder = "Start writing...",
   className,
-  id
+  id,
+  maxLength,
+  showCharacterCount = false
 }) => {
   const modules = useMemo(() => ({
     toolbar: [
@@ -38,13 +42,24 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     'link'
   ];
 
+  const plainTextLength = value ? getPlainTextFromHTML(value).length : 0;
+  const isOverLimit = maxLength ? plainTextLength > maxLength : false;
+  const isNearLimit = maxLength ? plainTextLength > maxLength * 0.9 : false;
+
+  const handleChange = (content: string) => {
+    if (maxLength && getPlainTextFromHTML(content).length > maxLength) {
+      return; // Don't allow changes that would exceed the limit
+    }
+    onChange(content);
+  };
+
   return (
     <div className={cn("rich-text-editor", className)}>
       <ReactQuill
         id={id}
         theme="snow"
         value={value}
-        onChange={onChange}
+        onChange={handleChange}
         modules={modules}
         formats={formats}
         placeholder={placeholder}
@@ -55,6 +70,16 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           '--ql-font-size-huge': '1.5rem'
         } as React.CSSProperties}
       />
+      {showCharacterCount && (
+        <div className={cn(
+          "text-sm mt-2 text-right",
+          isOverLimit ? "text-destructive" : 
+          isNearLimit ? "text-warning" : 
+          "text-muted-foreground"
+        )}>
+          {plainTextLength}{maxLength ? ` / ${maxLength}` : ''} characters
+        </div>
+      )}
     </div>
   );
 };

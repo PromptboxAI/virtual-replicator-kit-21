@@ -17,3 +17,17 @@ export function formatDecimalPlaces(value: number | string): string {
   // If there's a non-zero integer part, show 2 decimal places
   return num.toFixed(2);
 }
+
+export function getPlainTextFromHTML(html: string): string {
+  // Create a temporary div element to parse the HTML
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = html;
+  
+  // Get the text content, which strips all HTML tags
+  const text = tempDiv.textContent || tempDiv.innerText || '';
+  
+  // Clean up the temporary element
+  tempDiv.remove();
+  
+  return text.trim();
+}
