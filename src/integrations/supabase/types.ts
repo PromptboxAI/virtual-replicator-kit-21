@@ -946,8 +946,12 @@ export type Database = {
           circulating_supply: number | null
           created_at: string
           creation_cost: number | null
+          creation_expires_at: string | null
+          creation_locked: boolean | null
+          creation_mode: string | null
           creator_ens_name: string | null
           creator_id: string | null
+          creator_prebuy_amount: number | null
           creator_wallet_address: string | null
           current_price: number
           deployment_method: string | null
@@ -993,8 +997,12 @@ export type Database = {
           circulating_supply?: number | null
           created_at?: string
           creation_cost?: number | null
+          creation_expires_at?: string | null
+          creation_locked?: boolean | null
+          creation_mode?: string | null
           creator_ens_name?: string | null
           creator_id?: string | null
+          creator_prebuy_amount?: number | null
           creator_wallet_address?: string | null
           current_price?: number
           deployment_method?: string | null
@@ -1040,8 +1048,12 @@ export type Database = {
           circulating_supply?: number | null
           created_at?: string
           creation_cost?: number | null
+          creation_expires_at?: string | null
+          creation_locked?: boolean | null
+          creation_mode?: string | null
           creator_ens_name?: string | null
           creator_id?: string | null
+          creator_prebuy_amount?: number | null
           creator_wallet_address?: string | null
           current_price?: number
           deployment_method?: string | null
@@ -2672,6 +2684,10 @@ export type Database = {
           token_amount: number
         }[]
       }
+      can_trade_agent: {
+        Args: { p_agent_id: string; p_user_id: string }
+        Returns: boolean
+      }
       check_price_consistency: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -2845,6 +2861,10 @@ export type Database = {
       }
       tokens_sold_from_prompt_v3: {
         Args: { p_prompt_raised: number }
+        Returns: number
+      }
+      unlock_expired_agents: {
+        Args: Record<PropertyKey, never>
         Returns: number
       }
       validate_agent_migration: {
