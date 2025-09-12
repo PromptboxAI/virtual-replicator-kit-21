@@ -1861,7 +1861,8 @@ export default function CreateAgent() {
                    {/* Step 4 Action Buttons */}
                    <div className="flex gap-4">
                      {(() => {
-                       const totalCost = CREATION_COST + formData.prebuy_amount;
+                       const totalCost = CREATION_COST + formData.launch.prebuy_amount;
+                       const deploymentMode = adminSettings?.deployment_mode || 'database';
                        return (
                          <>
                            <Button
@@ -1871,34 +1872,27 @@ export default function CreateAgent() {
                            >
                              Back
                            </Button>
-                     <Button
-                       onClick={() => setCurrentStep(3)}
-                       variant="outline"
-                       className="flex-1"
-                     >
-                       Back
-                    </Button>
-                     <Button
-                       onClick={handleCreateAgent}
-                       className="w-full bg-gradient-primary hover:opacity-90 text-white"
-                       disabled={isCreating || !user || (appIsTestMode && balance < totalCost)}
-                     >
-                       {isCreating ? (
-                         <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                       ) : formData.creation_mode === 'smart_contract' ? (
-                         <Shield className="h-4 w-4 mr-2" />
-                       ) : (
-                         <Rocket className="h-4 w-4 mr-2" />
-                       )}
-                       {isCreating 
-                         ? formData.creation_mode === 'smart_contract' 
-                           ? "Deploying Atomic Contract..." 
-                           : "Creating Agent..."
-                         : formData.creation_mode === 'smart_contract'
-                           ? `Deploy Atomic Contract (${totalCost} $PROMPT)`
-                           : `Create Agent (${totalCost} $PROMPT)`
-                           }
-                         </Button>
+                           <Button
+                             onClick={handleCreateAgent}
+                             className="w-full bg-gradient-primary hover:opacity-90 text-white"
+                             disabled={isCreating || !user || (appIsTestMode && balance < totalCost)}
+                           >
+                             {isCreating ? (
+                               <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                             ) : deploymentMode === 'smart_contract' ? (
+                               <Shield className="h-4 w-4 mr-2" />
+                             ) : (
+                               <Rocket className="h-4 w-4 mr-2" />
+                             )}
+                             {isCreating 
+                               ? deploymentMode === 'smart_contract' 
+                                 ? "Deploying Atomic Contract..." 
+                                 : "Creating Agent..."
+                               : deploymentMode === 'smart_contract'
+                                 ? `Deploy Atomic Contract (${totalCost} $PROMPT)`
+                                 : `Create Agent (${totalCost} $PROMPT)`
+                             }
+                           </Button>
                          </>
                        );
                      })()}

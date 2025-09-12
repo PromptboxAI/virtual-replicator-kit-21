@@ -14,6 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_logs: {
+        Row: {
+          change_reason: string | null
+          changed_by: string
+          created_at: string | null
+          id: string
+          new_value: Json
+          old_value: Json | null
+          setting_key: string
+        }
+        Insert: {
+          change_reason?: string | null
+          changed_by: string
+          created_at?: string | null
+          id?: string
+          new_value: Json
+          old_value?: Json | null
+          setting_key: string
+        }
+        Update: {
+          change_reason?: string | null
+          changed_by?: string
+          created_at?: string | null
+          id?: string
+          new_value?: Json
+          old_value?: Json | null
+          setting_key?: string
+        }
+        Relationships: []
+      }
+      admin_settings: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          key: string
+          updated_at: string | null
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          key: string
+          updated_at?: string | null
+          updated_by?: string | null
+          value: Json
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          key?: string
+          updated_at?: string | null
+          updated_by?: string | null
+          value?: Json
+        }
+        Relationships: []
+      }
       agent_activities: {
         Row: {
           activity_type: string
@@ -2741,6 +2801,10 @@ export type Database = {
         Args: { p_agent_id: string }
         Returns: string
       }
+      get_admin_setting: {
+        Args: { p_key: string }
+        Returns: Json
+      }
       get_agent_ohlcv_data: {
         Args: {
           p_agent_id: string
@@ -2866,6 +2930,15 @@ export type Database = {
       unlock_expired_agents: {
         Args: Record<PropertyKey, never>
         Returns: number
+      }
+      update_admin_setting: {
+        Args: {
+          p_changed_by: string
+          p_key: string
+          p_reason?: string
+          p_value: Json
+        }
+        Returns: undefined
       }
       validate_agent_migration: {
         Args: { p_agent_id: string }

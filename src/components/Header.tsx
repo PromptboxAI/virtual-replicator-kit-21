@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { AppModeToggle } from "./AppModeToggle";
 import TestnetOnlyBanner from "./TestnetOnlyBanner";
+import { SystemStatusIndicator } from "./SystemStatusIndicator";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -58,6 +59,7 @@ export function Header() {
 
           {/* Actions */}
           <div className="flex items-center space-x-4">
+            <SystemStatusIndicator />
             <AppModeToggle />
             
             {!isAboutPage && (
