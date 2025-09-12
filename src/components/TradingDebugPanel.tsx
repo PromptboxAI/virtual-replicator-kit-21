@@ -147,7 +147,7 @@ export const TradingDebugPanel = ({ agentId }: DebugPanelProps) => {
 
   useEffect(() => {
     fetchAgentData();
-    testEdgeFunction();
+    // testEdgeFunction(); // REMOVED: Auto-execution removed to prevent unwanted trades
     
     if (autoRefresh) {
       const interval = setInterval(() => {
