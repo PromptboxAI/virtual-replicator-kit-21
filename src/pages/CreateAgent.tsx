@@ -1860,6 +1860,17 @@ export default function CreateAgent() {
 
                    {/* Step 4 Action Buttons */}
                    <div className="flex gap-4">
+                     {(() => {
+                       const totalCost = CREATION_COST + formData.prebuy_amount;
+                       return (
+                         <>
+                           <Button
+                             onClick={() => setCurrentStep(3)}
+                             variant="outline"
+                             className="flex-1"
+                           >
+                             Back
+                           </Button>
                      <Button
                        onClick={() => setCurrentStep(3)}
                        variant="outline"
@@ -1869,21 +1880,31 @@ export default function CreateAgent() {
                     </Button>
                      <Button
                        onClick={handleCreateAgent}
-                       disabled={isCreating || balanceLoading || checkingSymbol || symbolAvailable === false}
-                       className="flex-1 bg-gradient-primary hover:opacity-90"
+                       className="w-full bg-gradient-primary hover:opacity-90 text-white"
+                       disabled={isCreating || !user || (appIsTestMode && balance < totalCost)}
                      >
                        {isCreating ? (
-                         <div className="flex items-center gap-2">
-                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground"></div>
-                           Creating...
-                         </div>
+                         <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                       ) : formData.creation_mode === 'smart_contract' ? (
+                         <Shield className="h-4 w-4 mr-2" />
                        ) : (
-                         "Launch Agent"
+                         <Rocket className="h-4 w-4 mr-2" />
                        )}
-                     </Button>
-                  </div>
-                </>
-              )}
+                       {isCreating 
+                         ? formData.creation_mode === 'smart_contract' 
+                           ? "Deploying Atomic Contract..." 
+                           : "Creating Agent..."
+                         : formData.creation_mode === 'smart_contract'
+                           ? `Deploy Atomic Contract (${totalCost} $PROMPT)`
+                           : `Create Agent (${totalCost} $PROMPT)`
+                           }
+                         </Button>
+                         </>
+                       );
+                     })()}
+                   </div>
+                 </>
+               )}
 
             </div>
 
