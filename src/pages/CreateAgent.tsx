@@ -11,8 +11,9 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Switch } from "@/components/ui/switch";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Upload, Sparkles, Coins, TrendingUp, Info, AlertCircle, Check, Twitter, Link2, X, Code, Rocket, ExternalLink, Settings, Users, Brain, Shield, Zap, HelpCircle, Loader2 } from "lucide-react";
+import { Upload, Sparkles, Coins, TrendingUp, Info, AlertCircle, Check, Twitter, Link2, X, Code, Rocket, ExternalLink, Settings, Users, Brain, Shield, Zap, HelpCircle, Loader2, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Link } from "react-router-dom";
@@ -62,6 +63,10 @@ interface AgentFormData {
   short_pitch: string;
   agent_overview: string;
   prebuy_amount: number;
+  // 🔒 MEV Protection Fields
+  creation_locked: boolean;
+  lock_duration_minutes: number;
+  creator_prebuy_amount: number;
 }
 
 export default function CreateAgent() {
@@ -165,6 +170,10 @@ export default function CreateAgent() {
     short_pitch: "",
     agent_overview: "",
     prebuy_amount: 0,
+    // 🔒 MEV Protection Defaults
+    creation_locked: false,
+    lock_duration_minutes: 60, // Default 1 hour
+    creator_prebuy_amount: 0,
   });
 
   // Symbol validation states (after formData is declared)
@@ -254,7 +263,7 @@ export default function CreateAgent() {
     loadTwitterConnection();
   }, [user?.id]);
 
-  const handleInputChange = (field: keyof AgentFormData, value: string | number) => {
+  const handleInputChange = (field: keyof AgentFormData, value: string | number | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -409,6 +418,12 @@ export default function CreateAgent() {
       // Calculate initial bonding curve price
       const initialPrice = getCurrentPriceV3(0); // Start at bonding curve beginning
       
+      // Calculate creation expiry time if locked
+      let creationExpiresAt = null;
+      if (formData.creation_locked) {
+        creationExpiresAt = new Date(Date.now() + (formData.lock_duration_minutes * 60 * 1000));
+      }
+      
       // Create basic agent/token record in database
       const { data, error } = await supabase
         .from('agents')
@@ -435,6 +450,12 @@ export default function CreateAgent() {
           pricing_model: 'linear_v3',           // Use V3 linear bonding curve
           bonding_curve_supply: 0,              // Initialize token supply at 0
           migration_validated: true,            // No migration needed - native V3
+          
+          // 🔒 MEV PROTECTION FIELDS
+          creation_locked: formData.creation_locked,
+          creation_expires_at: creationExpiresAt,
+          creator_prebuy_amount: formData.creator_prebuy_amount,
+          creation_mode: 'database',
         }])
         .select()
         .single();
@@ -1555,6 +1576,86 @@ export default function CreateAgent() {
                                 </div>
                               </div>
                             )}
+                          </div>
+                          
+                          {/* 🔒 MEV PROTECTION SECTION */}
+                          <div className="space-y-4">
+                            <div className="border border-purple-200 rounded-lg p-4 bg-purple-50/30 dark:bg-purple-950/30">
+                              <div className="flex items-center gap-2 mb-3">
+                                <Shield className="w-5 h-5 text-purple-600" />
+                                <h4 className="font-medium text-purple-900 dark:text-purple-100">MEV Protection</h4>
+                              </div>
+                              
+                              <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex-1 mr-3">
+                                    <Label className="text-sm font-medium">Enable Creator Lock</Label>
+                                    <p className="text-xs text-muted-foreground">
+                                      Prevent MEV attacks by restricting trading to you during the initial period
+                                    </p>
+                                  </div>
+                                  <Switch
+                                    checked={formData.creation_locked}
+                                    onCheckedChange={(checked) => handleInputChange('creation_locked', checked)}
+                                  />
+                                </div>
+
+                                {formData.creation_locked && (
+                                  <>
+                                    <div className="space-y-2">
+                                      <Label htmlFor="lock_duration">Lock Duration</Label>
+                                      <Select 
+                                        value={formData.lock_duration_minutes.toString()} 
+                                        onValueChange={(value) => handleInputChange('lock_duration_minutes', parseInt(value))}
+                                      >
+                                        <SelectTrigger>
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="15">15 minutes</SelectItem>
+                                          <SelectItem value="60">1 hour</SelectItem>
+                                          <SelectItem value="240">4 hours</SelectItem>
+                                          <SelectItem value="1440">24 hours</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                      <Label htmlFor="creator_prebuy">Creator Pre-buy (during lock)</Label>
+                                      <Input
+                                        id="creator_prebuy"
+                                        type="number"
+                                        value={formData.creator_prebuy_amount === 0 ? "" : formData.creator_prebuy_amount.toString()}
+                                        onChange={(e) => {
+                                          const value = parseInt(e.target.value) || 0;
+                                          handleInputChange('creator_prebuy_amount', value);
+                                        }}
+                                        placeholder="0"
+                                        min="0"
+                                        max="5000"
+                                      />
+                                      <p className="text-xs text-muted-foreground">
+                                        Additional amount only you can buy during the lock period
+                                      </p>
+                                    </div>
+
+                                    <div className="bg-blue-50 dark:bg-blue-950/50 p-3 rounded-lg">
+                                      <div className="flex items-start gap-2">
+                                        <Clock className="w-4 h-4 text-blue-600 mt-0.5" />
+                                        <div className="text-sm">
+                                          <p className="font-medium text-blue-900 dark:text-blue-100">Protection Active</p>
+                                          <p className="text-blue-700 dark:text-blue-300">
+                                            Only you can trade for {formData.lock_duration_minutes >= 60 ? 
+                                              `${Math.floor(formData.lock_duration_minutes / 60)}h ${formData.lock_duration_minutes % 60}m` : 
+                                              `${formData.lock_duration_minutes}m`} after launch
+                                          </p>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </>
+                                )}
+                              </div>
+                            </div>
                           </div>
                           
                           <div className="space-y-4">
