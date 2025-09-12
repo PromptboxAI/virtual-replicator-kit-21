@@ -68,3 +68,6 @@ verify_jwt = false
 
 [functions.set-offchain-balance]
 verify_jwt = false
+
+[functions.unlock-expired-agents]
+verify_jwt = false

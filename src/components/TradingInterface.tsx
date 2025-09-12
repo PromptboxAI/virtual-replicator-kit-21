@@ -7,6 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import { TrendingUp, TrendingDown, BarChart3, Users, Activity } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAppMode } from '@/hooks/useAppMode';
+import { useAuth } from '@/hooks/useAuth';
+import { useAgentLockStatus } from '@/hooks/useAgentLockStatus';
+import { AgentLockStatus } from './AgentLockStatus';
 import { TradingChart } from './TradingChart';
 import { OKXDEXWidget } from './OKXDEXWidget';
 import { AgentDashboard } from './AgentDashboard';
@@ -69,6 +72,10 @@ export function TradingInterface({
   const [activeTab, setActiveTab] = useState('buy');
   const { toast } = useToast();
   const { mode: appMode } = useAppMode(); // ✅ Move hook to top level
+  const { user } = useAuth();
+  
+  // 🛡️ MEV Protection: Check lock status
+  const { isLocked, timeLeft, canTrade, isCreator, loading: lockLoading } = useAgentLockStatus(agentId);
   
   // Smart contract integration for tokens with deployed contracts
   const { buyAgentTokens, sellAgentTokens, loading: isTrading } = useAgentTokens(tokenAddress);
@@ -152,6 +159,20 @@ export function TradingInterface({
       return;
     }
 
+    // 🛡️ MEV Protection: Check if user can trade
+    if (!canTrade(user?.id)) {
+      const lockMessage = isCreator(user?.id) 
+        ? `MEV protection is active for ${timeLeft}. Only you as the creator can trade.`
+        : `MEV protection is active for ${timeLeft}. Only the creator can trade during this period.`;
+      
+      toast({
+        title: "Trading Temporarily Restricted",
+        description: lockMessage,
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!buyAmount || parseFloat(buyAmount) <= 0) {
       toast({
         title: "Invalid Amount",
@@ -216,6 +237,20 @@ export function TradingInterface({
   const handleSell = async () => {
     if (!isConnected) {
       onConnect?.();
+      return;
+    }
+
+    // 🛡️ MEV Protection: Check if user can trade
+    if (!canTrade(user?.id)) {
+      const lockMessage = isCreator(user?.id) 
+        ? `MEV protection is active for ${timeLeft}. Only you as the creator can trade.`
+        : `MEV protection is active for ${timeLeft}. Only the creator can trade during this period.`;
+      
+      toast({
+        title: "Trading Temporarily Restricted",
+        description: lockMessage,
+        variant: "destructive",
+      });
       return;
     }
 
@@ -462,10 +497,32 @@ export function TradingInterface({
         </CardContent>
       </Card>
 
+      {/* MEV Protection Status */}
+      {isLocked && (
+        <AgentLockStatus 
+          agent={{ 
+            id: agentId, 
+            creation_locked: isLocked, 
+            creation_expires_at: null, 
+            creator_id: '', 
+            name: agentName 
+          }} 
+          currentUserId={user?.id}
+          variant="alert"
+        />
+      )}
+
       {/* Trading Interface */}
       <Card>
         <CardHeader>
-          <CardTitle>Trade {agentSymbol}</CardTitle>
+          <CardTitle className="flex items-center justify-between">
+            Trade {agentSymbol}
+            {isLocked && (
+              <Badge variant="secondary" className="text-xs">
+                Lock: {timeLeft}
+              </Badge>
+            )}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -493,10 +550,18 @@ export function TradingInterface({
               
               <Button 
                 onClick={handleBuy}
-                disabled={!buyAmount || loading || !isConnected}
+                disabled={
+                  !buyAmount || 
+                  loading || 
+                  !isConnected || 
+                  !canTrade(user?.id) || 
+                  lockLoading
+                }
                 className="w-full"
               >
-                {loading ? "Processing..." : isConnected ? "Buy Tokens" : "Connect Wallet"}
+                {loading ? "Processing..." : 
+                 !canTrade(user?.id) ? `Locked (${timeLeft})` :
+                 isConnected ? "Buy Tokens" : "Connect Wallet"}
               </Button>
             </TabsContent>
             
@@ -513,11 +578,19 @@ export function TradingInterface({
               
               <Button 
                 onClick={handleSell}
-                disabled={!sellAmount || loading}
+                disabled={
+                  !sellAmount || 
+                  loading || 
+                  !isConnected || 
+                  !canTrade(user?.id) || 
+                  lockLoading
+                }
                 variant="outline"
                 className="w-full"
               >
-                {loading ? "Processing..." : isConnected ? "Sell Tokens" : "Connect Wallet"}
+                {loading ? "Processing..." : 
+                 !canTrade(user?.id) ? `Locked (${timeLeft})` :
+                 isConnected ? "Sell Tokens" : "Connect Wallet"}
               </Button>
             </TabsContent>
           </Tabs>

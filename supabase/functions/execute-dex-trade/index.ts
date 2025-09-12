@@ -96,6 +96,42 @@ serve(async (req) => {
       );
     }
 
+    // 🛡️ MEV PROTECTION: Check if user can trade this agent (even for graduated tokens)
+    const { data: canTradeResult, error: canTradeError } = await supabase.rpc(
+      'can_trade_agent',
+      {
+        p_agent_id: agentId,
+        p_user_id: userId
+      }
+    );
+
+    if (canTradeError) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: `Lock status check failed: ${canTradeError.message}` 
+        }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    if (!canTradeResult) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Trading is temporarily locked for this agent. Only the creator can trade during the MEV protection period.',
+          locked: true
+        }),
+        { 
+          status: 403, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
     // Get PROMPT token address from deployed contracts
     const { data: promptContract } = await supabase
       .from('deployed_contracts')
