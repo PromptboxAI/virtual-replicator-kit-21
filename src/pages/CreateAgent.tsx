@@ -67,6 +67,8 @@ interface AgentFormData {
   creation_locked: boolean;
   lock_duration_minutes: number;
   creator_prebuy_amount: number;
+  // 📈 Smart Contract Integration Fields
+  creation_mode: 'database' | 'smart_contract';
 }
 
 export default function CreateAgent() {
@@ -174,6 +176,8 @@ export default function CreateAgent() {
     creation_locked: false,
     lock_duration_minutes: 60, // Default 1 hour
     creator_prebuy_amount: 0,
+    // 📈 Smart Contract Integration Defaults
+    creation_mode: 'database', // Default to database mode
   });
 
   // Symbol validation states (after formData is declared)
@@ -424,7 +428,7 @@ export default function CreateAgent() {
         creationExpiresAt = new Date(Date.now() + (formData.lock_duration_minutes * 60 * 1000));
       }
       
-      // Create basic agent/token record in database
+      // Create basic agent/token record in database first
       const { data, error } = await supabase
         .from('agents')
         .insert([{
@@ -455,7 +459,7 @@ export default function CreateAgent() {
           creation_locked: formData.creation_locked,
           creation_expires_at: creationExpiresAt,
           creator_prebuy_amount: formData.creator_prebuy_amount,
-          creation_mode: 'database',
+          creation_mode: formData.creation_mode,
         }])
         .select()
         .single();
@@ -486,13 +490,68 @@ export default function CreateAgent() {
 
       const agentId = data.id;
 
-      // For now, note that smart contract deployment will be handled separately
-      // The agent is created with initial bonding curve pricing
-      toast({
-        title: "Info", 
-        description: `Agent created with initial price: ${initialPrice.toFixed(8)} PROMPT per token`,
-        variant: "default"
-      });
+      // 📈 PHASE 3.2: Smart Contract Integration
+      // Handle deployment based on selected mode
+      if (formData.creation_mode === 'smart_contract') {
+        try {
+          toast({
+            title: "Deploying Smart Contract...",
+            description: "Creating agent token with atomic MEV protection",
+          });
+
+          // Call atomic deployment function
+          const { data: deploymentData, error: deploymentError } = await supabase.functions.invoke(
+            'deploy-agent-atomic',
+            {
+              body: {
+                agent_id: agentId,
+                name: formData.name,
+                symbol: formData.symbol.toUpperCase(),
+                creator_address: user.id, // Will be mapped to wallet address
+                prebuy_amount: formData.prebuy_amount || 0
+              }
+            }
+          );
+
+          if (deploymentError || !deploymentData?.success) {
+            console.error('Smart contract deployment failed:', deploymentError);
+            throw new Error(deploymentError?.message || 'Smart contract deployment failed');
+          }
+
+          toast({
+            title: "Smart Contract Deployed!",
+            description: `Token deployed at: ${deploymentData.contract_address}`,
+          });
+
+          if (deploymentData.tokens_received && parseFloat(deploymentData.tokens_received) > 0) {
+            toast({
+              title: "Atomic Prebuy Successful!",
+              description: `Received ${parseFloat(deploymentData.tokens_received).toLocaleString()} ${formData.symbol} tokens`,
+            });
+          }
+
+        } catch (error) {
+          console.error('Smart contract deployment error:', error);
+          toast({
+            title: "Smart Contract Deployment Failed",
+            description: "Falling back to database mode. Your agent has been created.",
+            variant: "destructive"
+          });
+          
+          // Update agent to database mode on failure
+          await supabase
+            .from('agents')
+            .update({ creation_mode: 'database' })
+            .eq('id', agentId);
+        }
+      } else {
+        // Database mode - show info about creation
+        toast({
+          title: "Agent Created Successfully", 
+          description: `Database mode with initial price: ${initialPrice.toFixed(8)} PROMPT per token`,
+          variant: "default"
+        });
+      }
 
       // Initialize agent runtime status for future configuration
       try {
@@ -514,8 +573,9 @@ export default function CreateAgent() {
         console.error('Runtime initialization error:', error);
       }
 
-      // PHASE 2.1: Execute Pre-buy After Creation
-      if (formData.prebuy_amount && formData.prebuy_amount > 0) {
+      // PHASE 2.1: Execute Pre-buy After Creation (Database Mode Only)
+      // For smart contract mode, prebuy is handled atomically above
+      if (formData.creation_mode === 'database' && formData.prebuy_amount && formData.prebuy_amount > 0) {
         console.log(`🚀 Executing pre-buy: ${formData.prebuy_amount} PROMPT for ${formData.symbol}`);
         
         toast({
@@ -1471,12 +1531,108 @@ export default function CreateAgent() {
                         </div>
                       </div>
 
-                      {/* Pre-buy Section */}
+                       {/* Deployment Mode Selection */}
+                      <div className="border-t pt-6">
+                        <div className="mb-6">
+                          <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
+                            <Settings className="h-5 w-5" />
+                            Deployment Mode
+                          </h3>
+                          <p className="text-sm text-muted-foreground mb-4">
+                            Choose how your agent token will be deployed and launched.
+                          </p>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Database Mode */}
+                            <Card className={`cursor-pointer border-2 transition-colors ${
+                              formData.creation_mode === 'database' 
+                                ? 'border-primary bg-primary/5' 
+                                : 'border-border hover:border-primary/50'
+                            }`}
+                            onClick={() => handleInputChange('creation_mode', 'database')}
+                            >
+                              <CardContent className="p-4">
+                                <div className="flex items-center gap-3 mb-2">
+                                  <div className={`w-4 h-4 rounded-full border-2 ${
+                                    formData.creation_mode === 'database' 
+                                      ? 'border-primary bg-primary' 
+                                      : 'border-muted-foreground'
+                                  }`} />
+                                  <h4 className="font-semibold">Database Mode</h4>
+                                  <Badge variant="outline" className="text-xs">Default</Badge>
+                                </div>
+                                <p className="text-sm text-muted-foreground mb-3">
+                                  Fast deployment with optional MEV protection through time locks.
+                                </p>
+                                <div className="space-y-1 text-xs">
+                                  <div className="flex items-center gap-2">
+                                    <Check className="h-3 w-3 text-green-500" />
+                                    <span>Instant deployment</span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Check className="h-3 w-3 text-green-500" />
+                                    <span>Optional MEV protection</span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Check className="h-3 w-3 text-green-500" />
+                                    <span>Low gas costs</span>
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                            
+                            {/* Smart Contract Mode */}
+                            <Card className={`cursor-pointer border-2 transition-colors ${
+                              formData.creation_mode === 'smart_contract' 
+                                ? 'border-primary bg-primary/5' 
+                                : 'border-border hover:border-primary/50'
+                            }`}
+                            onClick={() => handleInputChange('creation_mode', 'smart_contract')}
+                            >
+                              <CardContent className="p-4">
+                                <div className="flex items-center gap-3 mb-2">
+                                  <div className={`w-4 h-4 rounded-full border-2 ${
+                                    formData.creation_mode === 'smart_contract' 
+                                      ? 'border-primary bg-primary' 
+                                      : 'border-muted-foreground'
+                                  }`} />
+                                  <h4 className="font-semibold">Smart Contract</h4>
+                                  <Badge variant="secondary" className="text-xs">Ultimate MEV Protection</Badge>
+                                </div>
+                                <p className="text-sm text-muted-foreground mb-3">
+                                  Atomic deployment + prebuy in a single transaction.
+                                </p>
+                                <div className="space-y-1 text-xs">
+                                  <div className="flex items-center gap-2">
+                                    <Shield className="h-3 w-3 text-blue-500" />
+                                    <span>Atomic MEV protection</span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Zap className="h-3 w-3 text-blue-500" />
+                                    <span>Single transaction</span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Code className="h-3 w-3 text-blue-500" />
+                                    <span>On-chain verification</span>
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          </div>
+                        </div>
+                      </div>
+
+                       {/* Pre-buy Section */}
                       <div className="border-t pt-6">
                         <div className="mb-4">
                           <h3 className="text-lg font-semibold mb-2">Pre-buy Your Token (Optional)</h3>
                           <p className="text-sm text-muted-foreground">
                             Purchase your agent's tokens at launch price before they become available to others.
+                            {formData.creation_mode === 'smart_contract' && (
+                              <span className="block mt-1 text-primary font-medium">
+                                Smart contract mode provides atomic MEV protection for your prebuy.
+                              </span>
+                            )}
                           </p>
                         </div>
                         
