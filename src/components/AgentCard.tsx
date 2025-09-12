@@ -4,6 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TrendingUp, TrendingDown, BarChart3 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { AgentLockStatus } from "./AgentLockStatus";
 
 interface AgentCardProps {
   agent: {
@@ -16,11 +18,15 @@ interface AgentCardProps {
     volumeData?: number[]; // Array of volume values for chart
     category: string;
     holders: number;
+    creator_id?: string;
+    creation_locked?: boolean;
+    creation_expires_at?: string | null;
   };
 }
 
 export function AgentCard({ agent }: AgentCardProps) {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const isPositive = agent.change > 0;
   
   const handleCardClick = () => {
@@ -64,9 +70,16 @@ export function AgentCard({ agent }: AgentCardProps) {
             <h4 className="font-semibold text-foreground group-hover:text-primary transition-colors">
               {agent.name}
             </h4>
-            <Badge variant="outline" className="text-xs">
-              {agent.category}
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="text-xs">
+                {agent.category}
+              </Badge>
+              <AgentLockStatus
+                agent={agent}
+                currentUserId={user?.id}
+                variant="badge"
+              />
+            </div>
           </div>
         </div>
         

@@ -12,6 +12,8 @@ import { usePrivyWallet } from '@/hooks/usePrivyWallet';
 import { useAgentRealtime } from '@/hooks/useAgentRealtime';
 import { useMigrationPolling } from '@/hooks/useMigrationPolling';
 import { supabase } from '@/integrations/supabase/client';
+import { useAgentLockStatus } from '@/hooks/useAgentLockStatus';
+import { AgentLockStatus } from './AgentLockStatus';
 import { TradeFeeDisplay } from './TradeFeeDisplay';
 import { 
   TrendingUp, 
@@ -56,6 +58,9 @@ interface Agent {
   token_graduated?: boolean;
   test_mode?: boolean;
   graduation_threshold?: number;
+  creator_id?: string;
+  creation_locked?: boolean;
+  creation_expires_at?: string | null;
 }
 
 interface TransactionState {
@@ -112,6 +117,9 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
     isTestMode
   } = usePrivyWallet();
   console.log('[EnhancedTradingInterface] usePrivyWallet called successfully');
+
+  // MEV Protection - Agent Lock Status
+  const { isLocked, canTrade, timeLeft, isCreator } = useAgentLockStatus(agent?.id);
 
   // Note: Fee configuration will be integrated with useAgentTokens hook when available
   const defaultFeeConfig = {
@@ -238,6 +246,16 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
 
     const promptAmount = parseFloat(buyAmount);
     const currentBalance = parseFloat(promptBalance);
+
+    // MEV Protection Check
+    if (!canTrade(user?.id)) {
+      toast({
+        title: "Trading Locked",
+        description: `Only the creator can trade during the MEV protection period. ${timeLeft} remaining.`,
+        variant: "destructive",
+      });
+      return;
+    }
 
     if (currentBalance < promptAmount) {
       toast({
@@ -488,6 +506,16 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
       toast({
         title: "Invalid Amount",
         description: "Please enter a valid token amount",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // MEV Protection Check
+    if (!canTrade(user?.id)) {
+      toast({
+        title: "Trading Locked",
+        description: `Only the creator can trade during the MEV protection period. ${timeLeft} remaining.`,
         variant: "destructive",
       });
       return;
@@ -788,6 +816,13 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
         tokenAddress={agent.token_address}
       />
 
+      {/* MEV Protection Status */}
+      <AgentLockStatus
+        agent={agent}
+        currentUserId={user?.id}
+        variant="alert"
+      />
+
       {/* Wallet Status */}
       <WalletStatus />
 
@@ -903,7 +938,13 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
 
               <Button 
                 onClick={handleBuy}
-                disabled={!authenticated || !buyAmount || transaction.status === 'pending' || isMigrating}
+                disabled={
+                  !authenticated || 
+                  !buyAmount || 
+                  transaction.status === 'pending' || 
+                  isMigrating ||
+                  !canTrade(user?.id)
+                }
                 className="w-full"
               >
                 {transaction.status === 'pending' && transaction.type === 'buy' ? (
@@ -911,6 +952,8 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     Processing...
                   </>
+                ) : !canTrade(user?.id) ? (
+                  `Locked (${timeLeft})`
                 ) : (
                   `Buy ${agent.symbol}`
                 )}
@@ -936,7 +979,13 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
 
               <Button 
                 onClick={handleSell}
-                disabled={!authenticated || !sellAmount || transaction.status === 'pending' || isMigrating}
+                disabled={
+                  !authenticated || 
+                  !sellAmount || 
+                  transaction.status === 'pending' || 
+                  isMigrating ||
+                  !canTrade(user?.id)
+                }
                 className="w-full"
                 variant="outline"
               >
@@ -945,6 +994,8 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     Processing...
                   </>
+                ) : !canTrade(user?.id) ? (
+                  `Locked (${timeLeft})`
                 ) : (
                   `Sell ${agent.symbol}`
                 )}

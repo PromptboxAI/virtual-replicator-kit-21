@@ -93,6 +93,23 @@ serve(async (req) => {
       throw new Error('tokenAmount is required and must be positive for sell trades');
     }
 
+    // 🛡️ MEV PROTECTION: Check if user can trade this agent
+    const { data: canTradeResult, error: canTradeError } = await supabase.rpc(
+      'can_trade_agent',
+      {
+        p_agent_id: agentId,
+        p_user_id: userId
+      }
+    );
+
+    if (canTradeError) {
+      throw new Error(`Lock status check failed: ${canTradeError.message}`);
+    }
+
+    if (!canTradeResult) {
+      throw new Error('Trading is temporarily locked for this agent. Only the creator can trade during the MEV protection period.');
+    }
+
     // Get agent data
     const { data: agent, error: agentError } = await supabase
       .from('agents')

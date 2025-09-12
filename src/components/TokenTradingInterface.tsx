@@ -31,6 +31,8 @@ import { useAgentRealtime } from '@/hooks/useAgentRealtime';
 import { useMigrationPolling } from '@/hooks/useMigrationPolling';
 import { MigrationBanner } from './MigrationBanner';
 import { LiveTokenPriceDisplay } from './LiveTokenPriceDisplay';
+import { useAgentLockStatus } from '@/hooks/useAgentLockStatus';
+import { AgentLockStatus } from './AgentLockStatus';
 
 
 
@@ -49,6 +51,9 @@ interface Agent {
   token_holders?: number;
   avatar_url?: string;
   description?: string;
+  creator_id?: string;
+  creation_locked?: boolean;
+  creation_expires_at?: string | null;
 }
 
 interface TokenTradingInterfaceProps {
@@ -69,6 +74,9 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
   const { balance: promptBalance, loading: balanceLoading } = useTokenBalance(user?.id);
   const { buyAgentTokens, sellAgentTokens } = useAgentTokens(agent.token_address);
   const { toast } = useToast();
+  
+  // MEV Protection - Agent Lock Status
+  const { isLocked, canTrade, timeLeft, isCreator } = useAgentLockStatus(agent.id);
   
   // Mock agent token balance - in real implementation, this would come from a hook
   const agentTokenBalance = 0; // TODO: Implement useAgentTokenBalance hook
@@ -182,6 +190,16 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
       return;
     }
 
+    // MEV Protection Check
+    if (!canTrade(user?.id)) {
+      toast({
+        title: "Trading Locked",
+        description: `Only the creator can trade during the MEV protection period. ${timeLeft} remaining.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!promptAmount || !tokenAmount) {
       toast({
         title: "Invalid Amount",
@@ -269,6 +287,13 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
           onComplete={() => console.log('Migration banner dismissed')}
         />
       )}
+
+      {/* MEV Protection Status */}
+      <AgentLockStatus
+        agent={agent}
+        currentUserId={user?.id}
+        variant="alert"
+      />
       
       <div className="space-y-6">
         {/* Trading Panel - Full Width */}
@@ -402,13 +427,19 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
                   loading || 
                   !authenticated || 
                   isMigrating ||
+                  !canTrade(user?.id) ||
                   (tradeType === 'buy' && (promptBalance || 0) < parseFloat(promptAmount || '0')) ||
                   (tradeType === 'sell' && agentTokenBalance < parseFloat(tokenAmount || '0'))
                 }
                 className="w-full"
                 size="lg"
               >
-                {loading ? "Processing..." : `${tradeType === "buy" ? "Buy" : "Sell"} ${agent.symbol}`}
+                {loading 
+                  ? "Processing..." 
+                  : !canTrade(user?.id) 
+                    ? `Locked (${timeLeft})` 
+                    : `${tradeType === "buy" ? "Buy" : "Sell"} ${agent.symbol}`
+                }
               </Button>
 
               {!authenticated && (
