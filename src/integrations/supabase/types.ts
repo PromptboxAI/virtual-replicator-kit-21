@@ -2788,6 +2788,10 @@ export type Database = {
         Args: { tokens_sold: number }
         Returns: number
       }
+      get_current_linear_price_v3: {
+        Args: { p_tokens_sold: number }
+        Returns: number
+      }
       get_current_reserves: {
         Args: { tokens_sold: number }
         Returns: {
@@ -2798,6 +2802,10 @@ export type Database = {
       get_current_user_id: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      get_price_from_prompt_v3: {
+        Args: { p_prompt_raised: number }
+        Returns: number
       }
       has_role: {
         Args: {
@@ -2834,6 +2842,10 @@ export type Database = {
           impact_price: number
           price_impact_percent: number
         }[]
+      }
+      tokens_sold_from_prompt_v3: {
+        Args: { p_prompt_raised: number }
+        Returns: number
       }
       validate_agent_migration: {
         Args: { p_agent_id: string }
