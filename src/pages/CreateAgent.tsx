@@ -493,9 +493,74 @@ export default function CreateAgent() {
         console.error('Runtime initialization error:', error);
       }
 
+      // PHASE 2.1: Execute Pre-buy After Creation
+      if (formData.prebuy_amount && formData.prebuy_amount > 0) {
+        console.log(`🚀 Executing pre-buy: ${formData.prebuy_amount} PROMPT for ${formData.symbol}`);
+        
+        toast({
+          title: "Executing pre-buy...",
+          description: `Purchasing ${formData.prebuy_amount} PROMPT worth of ${formData.symbol} tokens`,
+        });
+
+        try {
+          const { data: tradeData, error: tradeError } = await supabase.functions.invoke(
+            'execute-bonding-curve-trade-v3',
+            {
+              body: {
+                agentId: agentId,
+                userId: user.id,
+                tradeType: 'buy',
+                promptAmount: formData.prebuy_amount,
+                automated: false,
+                userApproved: true
+              }
+            }
+          );
+
+          if (tradeError) {
+            console.error('Pre-buy trade failed:', tradeError);
+            toast({
+              title: "Pre-buy Failed",
+              description: `Agent created but pre-buy failed: ${tradeError.message}. You can buy tokens manually.`,
+              variant: "destructive",
+              action: (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate(`/agent/${agentId}`)}
+                >
+                  Go to Agent
+                </Button>
+              )
+            });
+          } else if (tradeData?.success) {
+            const tokensReceived = tradeData.tokens_bought || tradeData.token_amount || 0;
+            toast({
+              title: "Pre-buy Successful!",
+              description: `Purchased ${tokensReceived.toLocaleString()} ${formData.symbol} tokens`,
+            });
+            console.log(`✅ Pre-buy completed: ${tokensReceived} tokens received`);
+          } else {
+            console.warn('Pre-buy returned unexpected response:', tradeData);
+            toast({
+              title: "Pre-buy Status Unknown",
+              description: "Pre-buy completed but status unclear. Check your holdings on the agent page.",
+              variant: "default"
+            });
+          }
+        } catch (error) {
+          console.error('Pre-buy execution error:', error);
+          toast({
+            title: "Pre-buy Error",
+            description: "Agent created but pre-buy encountered an error. You can buy tokens manually.",
+            variant: "destructive"
+          });
+        }
+      }
+
       toast({ 
         title: "Token Created Successfully!", 
-        description: `${formData.name} token has been created. Now configure your AI agent.`,
+        description: `${formData.name} token has been created${formData.prebuy_amount > 0 ? ' and pre-buy executed' : ''}. Now configure your AI agent.`,
       });
       
       // Navigate to agent page to configure AI
