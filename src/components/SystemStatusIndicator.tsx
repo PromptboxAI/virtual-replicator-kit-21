@@ -21,12 +21,6 @@ export const SystemStatusIndicator = () => {
         </Badge>
       )}
       
-      {!settings.mev_protection_enabled && (
-        <Badge variant="secondary" className="gap-1">
-          <Shield className="h-3 w-3" />
-          MEV Disabled
-        </Badge>
-      )}
     </div>
   );
 };
