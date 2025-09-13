@@ -308,11 +308,12 @@ const Admin = () => {
                          checked ? 'Enabled test mode' : 'Disabled test mode');
                        if (success) {
                          refreshSettings();
-                         // Also sync with useAppMode localStorage for navigation toggle
-                         localStorage.setItem('app-mode', checked ? 'test' : 'production');
+                         // Sync with useAppMode localStorage for navigation toggle
+                         const newAppMode = checked ? 'test' : 'production';
+                         localStorage.setItem('app-mode', newAppMode);
                          window.dispatchEvent(new StorageEvent('storage', {
                            key: 'app-mode',
-                           newValue: checked ? 'test' : 'production'
+                           newValue: newAppMode
                          }));
                        }
                      }}

@@ -2,22 +2,31 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useAppMode } from '@/hooks/useAppMode';
+import { useUpdateAdminSettings } from '@/hooks/useAdminSettings';
 import { TestTube, Zap } from 'lucide-react';
 
 export const AppModeToggle = () => {
   const { mode, setAppMode, canChangeMode, isTestMode, isLoading } = useAppMode();
-
-  console.log('AppModeToggle - canChangeMode:', canChangeMode, 'isTestMode:', isTestMode, 'mode:', mode, 'isLoading:', isLoading);
+  const { updateSetting } = useUpdateAdminSettings();
 
   if (isLoading) {
-    console.log('AppModeToggle - still loading, showing skeleton');
     return <div className="h-8 w-24 bg-muted rounded-md animate-pulse" />;
   }
 
   if (!canChangeMode) {
-    console.log('AppModeToggle - returning null because canChangeMode is false');
     return null;
   }
+
+  const handleModeChange = async (checked: boolean) => {
+    const newMode = checked ? 'production' : 'test';
+    
+    // Update localStorage (for navigation)
+    setAppMode(newMode);
+    
+    // Update database (for admin panel)
+    await updateSetting('test_mode_enabled', !checked, 
+      checked ? 'Switched to production mode' : 'Switched to test mode');
+  };
 
   return (
     <div className="flex items-center gap-2 px-3 py-2 bg-muted rounded-md">
@@ -37,7 +46,7 @@ export const AppModeToggle = () => {
       
       <Switch
         checked={!isTestMode}
-        onCheckedChange={(checked) => setAppMode(checked ? 'production' : 'test')}
+        onCheckedChange={handleModeChange}
         className="scale-75"
       />
     </div>
