@@ -36,9 +36,14 @@ export const useAdminSettings = () => {
 
       if (error) throw error;
 
-      // Convert array of key-value pairs to settings object
+      // Convert array of key-value pairs to settings object with proper JSON parsing
       const settingsObj = data.reduce((acc, item) => {
-        acc[item.key] = item.value;
+        // Parse JSON values, but handle primitives
+        try {
+          acc[item.key] = typeof item.value === 'string' ? JSON.parse(item.value) : item.value;
+        } catch {
+          acc[item.key] = item.value;
+        }
         return acc;
       }, {} as Record<string, any>);
 
@@ -57,6 +62,7 @@ export const useAdminSettings = () => {
       };
 
       const finalSettings = { ...defaultSettings, ...settingsObj };
+      console.log('Admin settings loaded:', finalSettings);
       setSettings(finalSettings as AdminSettings);
     } catch (err) {
       console.error('Error fetching admin settings:', err);
