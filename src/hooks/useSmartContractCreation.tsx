@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useAccount, useWriteContract } from 'wagmi';
+import { useState, useEffect } from 'react';
+import { useAccount, useWriteContract, useReadContract } from 'wagmi';
 import { parseEther, formatEther, Address } from 'viem';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,10 +14,65 @@ export interface AgentFormData {
 }
 
 export const useSmartContractCreation = () => {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected, chain } = useAccount();
   const { writeContractAsync } = useWriteContract();
   const { toast } = useToast();
   const [isDeploying, setIsDeploying] = useState(false);
+  const [isApproving, setIsApproving] = useState(false);
+
+  // Read PROMPT token balance
+  const { data: promptBalance } = useReadContract({
+    address: PROMPT_TOKEN_ADDRESS as Address,
+    abi: PROMPT_TOKEN_ABI,
+    functionName: 'balanceOf',
+    args: address ? [address] : undefined,
+    query: { enabled: !!address && isConnected }
+  });
+
+  // Read PROMPT token allowance for factory
+  const { data: allowance } = useReadContract({
+    address: PROMPT_TOKEN_ADDRESS as Address,
+    abi: PROMPT_TOKEN_ABI,
+    functionName: 'allowance',
+    args: address && FACTORY_ADDRESS ? [address, FACTORY_ADDRESS as Address] : undefined,
+    query: { enabled: !!address && !!FACTORY_ADDRESS && isConnected }
+  });
+
+  // Approve PROMPT tokens for factory spending
+  const approvePrompt = async (spender: Address, amount: bigint) => {
+    if (!isConnected || !address || !writeContractAsync) {
+      throw new Error('Wallet not connected');
+    }
+
+    setIsApproving(true);
+    try {
+      const tx = await writeContractAsync({
+        address: PROMPT_TOKEN_ADDRESS as Address,
+        abi: PROMPT_TOKEN_ABI,
+        functionName: 'approve',
+        args: [spender, amount],
+        account: address,
+        chain
+      });
+
+      toast({
+        title: "Approval Sent",
+        description: "PROMPT spending approved",
+      });
+
+      return tx;
+    } catch (error) {
+      console.error('Approval error:', error);
+      toast({
+        title: "Approval Failed",
+        description: error instanceof Error ? error.message : "Unknown error occurred",
+        variant: "destructive"
+      });
+      throw error;
+    } finally {
+      setIsApproving(false);
+    }
+  };
 
   const deployAtomicAgent = async (agentData: AgentFormData) => {
     if (!isConnected || !address || !writeContractAsync) {
@@ -46,6 +101,8 @@ export const useSmartContractCreation = () => {
           prebuyAmount,
           500n
         ],
+        account: address,
+        chain
       });
 
       toast({
@@ -73,9 +130,11 @@ export const useSmartContractCreation = () => {
 
   return {
     deployAtomicAgent,
+    approvePrompt,
     isConnected,
     isDeploying,
-    promptBalance: '0',
-    allowance: '0'
+    isApproving,
+    promptBalance: promptBalance ? formatEther(promptBalance) : '0',
+    allowance: allowance ? formatEther(allowance) : '0'
   };
 };
