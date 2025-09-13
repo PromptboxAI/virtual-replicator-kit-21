@@ -251,9 +251,17 @@ const Admin = () => {
                   <Switch
                     checked={settings?.mev_protection_enabled || false}
                     onCheckedChange={async (checked) => {
-                      await updateSetting('mev_protection_enabled', checked, 
+                      console.log('MEV Protection toggle clicked:', checked);
+                      console.log('Current MEV setting:', settings?.mev_protection_enabled);
+                      
+                      const success = await updateSetting('mev_protection_enabled', checked, 
                         checked ? 'Enabled MEV protection' : 'Disabled MEV protection');
-                      refreshSettings();
+                      
+                      console.log('Update success:', success);
+                      if (success) {
+                        await refreshSettings();
+                        console.log('Settings refreshed');
+                      }
                     }}
                     disabled={isUpdating}
                   />

@@ -38,10 +38,18 @@ export const useAdminSettings = () => {
 
       // Convert array of key-value pairs to settings object with proper JSON parsing
       const settingsObj = data.reduce((acc, item) => {
-        // Parse JSON values, but handle primitives
+        console.log(`Parsing setting ${item.key}:`, item.value, typeof item.value);
+        // Parse JSON values properly - the RPC function stores them as JSON strings
         try {
-          acc[item.key] = typeof item.value === 'string' ? JSON.parse(item.value) : item.value;
-        } catch {
+          if (typeof item.value === 'string') {
+            acc[item.key] = JSON.parse(item.value);
+            console.log(`Parsed ${item.key} as:`, acc[item.key], typeof acc[item.key]);
+          } else {
+            acc[item.key] = item.value;
+            console.log(`Used direct value for ${item.key}:`, acc[item.key], typeof acc[item.key]);
+          }
+        } catch (error) {
+          console.log(`Failed to parse ${item.key}, using direct value:`, item.value);
           acc[item.key] = item.value;
         }
         return acc;
