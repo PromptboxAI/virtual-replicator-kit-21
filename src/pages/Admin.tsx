@@ -436,7 +436,7 @@ const Admin = () => {
           <Sidebar className="w-64 border-r">
             <SidebarTrigger className="m-2 self-end" />
             
-            <SidebarContent>
+            <SidebarContent className="pt-2">
               <SidebarGroup>
                 <SidebarGroupLabel>Admin Panel</SidebarGroupLabel>
                 <SidebarGroupContent>
@@ -458,7 +458,7 @@ const Admin = () => {
             </SidebarContent>
           </Sidebar>
 
-          <main className="flex-1 p-6">
+          <main className="flex-1 p-6 pt-8">
             <div className="max-w-6xl mx-auto">
               <div className="mb-6">
                 <h1 className="text-3xl font-bold tracking-tight">
