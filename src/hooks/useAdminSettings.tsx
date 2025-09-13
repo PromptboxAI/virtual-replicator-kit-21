@@ -23,6 +23,27 @@ export const useAdminSettings = () => {
 
   useEffect(() => {
     fetchSettings();
+
+    // Set up real-time subscription for admin_settings changes
+    const channel = supabase
+      .channel('admin-settings-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen to all changes (INSERT, UPDATE, DELETE)
+          schema: 'public',
+          table: 'admin_settings'
+        },
+        (payload) => {
+          console.log('Admin settings changed:', payload);
+          fetchSettings(); // Refetch when settings change
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchSettings = async () => {
@@ -136,7 +157,7 @@ export const useUpdateAdminSettings = () => {
       // Use RPC function to update or insert setting
       const { error } = await supabase.rpc('update_admin_setting', {
         p_key: key,
-        p_value: JSON.stringify(value),
+        p_value: value, // Don't JSON.stringify - RPC function handles JSONB conversion
         p_changed_by: user.data.user?.id || 'unknown',
         p_reason: reason || `Updated ${key} setting`,
       });
@@ -185,7 +206,7 @@ export const useUpdateAdminSettings = () => {
       const promises = Object.entries(updates).map(([key, value]) =>
         supabase.rpc('update_admin_setting', {
           p_key: key,
-          p_value: JSON.stringify(value),
+          p_value: value, // Don't JSON.stringify - RPC function handles JSONB conversion
           p_changed_by: user.data.user?.id || 'unknown',
           p_reason: reason || `Bulk update: ${key}`,
         })

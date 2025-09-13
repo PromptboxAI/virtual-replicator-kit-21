@@ -249,18 +249,24 @@ const Admin = () => {
                       Enable MEV protection for all agent trades
                     </p>
                   </div>
-                   <Switch
-                     checked={settings?.mev_protection_enabled || false}
-                     onCheckedChange={async (checked) => {
-                       const success = await updateSetting('mev_protection_enabled', checked, 
-                         checked ? 'Enabled MEV protection' : 'Disabled MEV protection');
-                       
-                       if (success) {
-                         refreshSettings();
-                       }
-                     }}
-                     disabled={isUpdating}
-                   />
+                  <Switch
+                    key={`mev-${settings?.mev_protection_enabled}`}
+                    checked={!!settings?.mev_protection_enabled}
+                    onCheckedChange={async (checked) => {
+                      console.log('MEV Toggle - Current:', settings?.mev_protection_enabled, 'New:', checked);
+                      const success = await updateSetting('mev_protection_enabled', checked, 
+                        checked ? 'Enabled MEV protection' : 'Disabled MEV protection');
+                      
+                      if (success) {
+                        console.log('MEV Toggle - Update successful, refreshing...');
+                        await refreshSettings();
+                        console.log('MEV Toggle - Refresh complete');
+                      } else {
+                        console.error('MEV Toggle - Update failed');
+                      }
+                    }}
+                    disabled={isUpdating}
+                  />
                 </div>
                 
                 {settings?.mev_protection_enabled && (
@@ -307,9 +313,11 @@ const Admin = () => {
                     key={`test-mode-${settings?.test_mode_enabled}`}
                     checked={!!settings?.test_mode_enabled}
                     onCheckedChange={async (checked) => {
+                      console.log('Test Mode Toggle - Current:', settings?.test_mode_enabled, 'New:', checked);
                       const success = await updateSetting('test_mode_enabled', checked, 
                         checked ? 'Enabled test mode' : 'Disabled test mode');
                       if (success) {
+                        console.log('Test Mode Toggle - Update successful, refreshing...');
                         await refreshSettings();
                         // Sync with useAppMode localStorage for navigation toggle
                         const newAppMode = checked ? 'test' : 'production';
@@ -318,6 +326,9 @@ const Admin = () => {
                           key: 'app-mode',
                           newValue: newAppMode
                         }));
+                        console.log('Test Mode Toggle - Complete. New mode:', newAppMode);
+                      } else {
+                        console.error('Test Mode Toggle - Update failed');
                       }
                     }}
                     disabled={isUpdating}
