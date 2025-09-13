@@ -1,8 +1,7 @@
 import { useAdminSettings } from '@/hooks/useAdminSettings';
 import { useUserRole } from '@/hooks/useUserRole';
 import { Badge } from '@/components/ui/badge';
-import { DeploymentModeIndicator } from '@/components/ui/deployment-mode-indicator';
-import { AlertTriangle, Shield, Database } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 
 export const SystemStatusIndicator = () => {
   const { isAdmin } = useUserRole();
@@ -12,15 +11,12 @@ export const SystemStatusIndicator = () => {
 
   return (
     <div className="flex items-center gap-2">
-      <DeploymentModeIndicator mode={settings.deployment_mode} />
-      
       {settings.emergency_pause && (
         <Badge variant="destructive" className="gap-1 animate-pulse">
           <AlertTriangle className="h-3 w-3" />
           Emergency Pause
         </Badge>
       )}
-      
     </div>
   );
 };

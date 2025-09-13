@@ -172,7 +172,7 @@ const Admin = () => {
                       
                       <Badge variant="outline" className="gap-1">
                         <Database className="h-3 w-3" />
-                        Mode: {settings.deployment_mode}
+                        Mode: {settings.deployment_mode || 'database'}
                       </Badge>
                     </>
                   )}

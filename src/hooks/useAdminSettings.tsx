@@ -42,7 +42,22 @@ export const useAdminSettings = () => {
         return acc;
       }, {} as Record<string, any>);
 
-      setSettings(settingsObj as AdminSettings);
+      // Apply default values for missing settings
+      const defaultSettings: AdminSettings = {
+        deployment_mode: 'database',
+        allowed_lock_durations: [15, 60, 240, 1440],
+        allowed_frameworks: ['PROMPT', 'OPENAI', 'ANTHROPIC'],
+        max_prebuy_amount: 1000,
+        creation_fee: 100,
+        test_mode_enabled: true,
+        trading_fee_percent: 1,
+        graduation_threshold: 42000,
+        mev_protection_enabled: false,
+        emergency_pause: false,
+      };
+
+      const finalSettings = { ...defaultSettings, ...settingsObj };
+      setSettings(finalSettings as AdminSettings);
     } catch (err) {
       console.error('Error fetching admin settings:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch settings');
@@ -82,6 +97,8 @@ export const useUpdateAdminSettings = () => {
       setIsUpdating(true);
 
       const user = await supabase.auth.getUser();
+      
+      // Use RPC function to update or insert setting
       const { error } = await supabase.rpc('update_admin_setting', {
         p_key: key,
         p_value: JSON.stringify(value),
