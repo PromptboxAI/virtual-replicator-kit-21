@@ -28,6 +28,9 @@ import { useAdminSettings } from "@/hooks/useAdminSettings";
 import { FrameworkSDKService, FRAMEWORK_CONFIGS } from "@/lib/frameworkSDK";
 import { WalletConnectionGuard } from "@/components/WalletConnectionGuard";
 import { OnboardingGuide } from "@/components/OnboardingGuide";
+import { useSmartContractCreation } from "@/hooks/useSmartContractCreation";
+import { CreatorPrebuyPanel } from "@/components/CreatorPrebuyPanel";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { getPlainTextFromHTML } from "@/lib/utils";
 // import { useAgentTokens } from "@/hooks/useAgentTokens";
 import { useAccount } from 'wagmi';
@@ -181,6 +184,8 @@ export default function CreateAgent() {
   // Symbol validation states (after formData is declared)
   const [symbolAvailable, setSymbolAvailable] = useState<boolean | null>(null);
   const [checkingSymbol, setCheckingSymbol] = useState(false);
+  const [deployMethod, setDeployMethod] = useState<'sequential' | 'atomic'>('sequential');
+  const [approvalReady, setApprovalReady] = useState(false);
   const debouncedSymbol = useDebounce(formData.symbol, 500);
 
   const categories = [
@@ -1554,7 +1559,7 @@ export default function CreateAgent() {
                                       {adminSettings?.deployment_mode === 'smart_contract' ? 'Smart Contract Mode' : 'Database Mode'}
                                     </h4>
                                     <Badge variant={adminSettings?.deployment_mode === 'smart_contract' ? 'default' : 'secondary'}>
-                                      {adminSettings?.deployment_mode === 'smart_contract' ? 'Active' : 'Active'}
+                                      Active
                                     </Badge>
                                   </div>
                                   <p className="text-sm text-muted-foreground mt-1">
@@ -1567,6 +1572,40 @@ export default function CreateAgent() {
                               </div>
                             </CardContent>
                           </Card>
+
+                          {adminSettings?.deployment_mode === 'smart_contract' && (
+                            <div className="mt-4 space-y-4">
+                              <h4 className="font-semibold">Deployment Method</h4>
+                              <RadioGroup value={deployMethod} onValueChange={(value: 'sequential' | 'atomic') => setDeployMethod(value)}>
+                                <div className="flex items-center space-x-2">
+                                  <RadioGroupItem value="sequential" id="sequential" />
+                                  <Label htmlFor="sequential">
+                                    <div>
+                                      <p className="font-medium">Sequential (2 transactions)</p>
+                                      <p className="text-sm text-muted-foreground">Deploy → Approve → Buy</p>
+                                    </div>
+                                  </Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <RadioGroupItem value="atomic" id="atomic" />
+                                  <Label htmlFor="atomic">
+                                    <div>
+                                      <p className="font-medium">Atomic (1 transaction)</p>
+                                      <p className="text-sm text-muted-foreground">Deploy + Buy in single tx</p>
+                                      <Badge className="ml-2 bg-green-100 text-green-800">Max MEV Protection</Badge>
+                                    </div>
+                                  </Label>
+                                </div>
+                              </RadioGroup>
+
+                              {deployMethod === 'atomic' && formData.prebuy_amount > 0 && (
+                                <CreatorPrebuyPanel
+                                  requiredAmount={100 + formData.prebuy_amount}
+                                  onApprovalComplete={() => setApprovalReady(true)}
+                                />
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
 

@@ -1,6 +1,12 @@
 // Contract addresses and ABIs for blockchain integration
 
-export const PROMPT_TOKEN_ADDRESS = localStorage.getItem('promptTokenAddress') || "0x62fa50ce04dd11d2be35f1dee04063e63118c727";
+export const PROMPT_TOKEN_ADDRESS = typeof window !== 'undefined' 
+  ? (localStorage.getItem('promptTokenAddress') || "0x62fa50ce04dd11d2be35f1dee04063e63118c727")
+  : "0x62fa50ce04dd11d2be35f1dee04063e63118c727";
+
+export const FACTORY_ADDRESS = typeof window !== 'undefined'
+  ? (localStorage.getItem('factoryAddress') || "0x1234567890123456789012345678901234567890")
+  : "0x1234567890123456789012345678901234567890";
 
 export const PROMPT_TOKEN_ABI = [
   {
@@ -34,6 +40,16 @@ export const PROMPT_TOKEN_ABI = [
   {
     "inputs": [{"internalType": "address", "name": "account", "type": "address"}],
     "name": "balanceOf",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "address", "name": "owner", "type": "address"},
+      {"internalType": "address", "name": "spender", "type": "address"}
+    ],
+    "name": "allowance",
     "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
     "stateMutability": "view",
     "type": "function"
@@ -83,6 +99,37 @@ export const PROMPT_TOKEN_ABI = [
     "inputs": [],
     "name": "faucet",
     "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+] as const;
+
+export const FACTORY_ABI = [
+  {
+    "inputs": [
+      {"internalType": "string", "name": "name", "type": "string"},
+      {"internalType": "string", "name": "symbol", "type": "string"},
+      {"internalType": "string", "name": "agentId", "type": "string"}
+    ],
+    "name": "createAgentToken",
+    "outputs": [{"internalType": "address", "name": "", "type": "address"}],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "string", "name": "name", "type": "string"},
+      {"internalType": "string", "name": "symbol", "type": "string"},
+      {"internalType": "string", "name": "agentId", "type": "string"},
+      {"internalType": "uint256", "name": "prebuyPromptAmount", "type": "uint256"},
+      {"internalType": "uint256", "name": "maxSlippage", "type": "uint256"}
+    ],
+    "name": "createAgentTokenWithPrebuy",
+    "outputs": [
+      {"internalType": "address", "name": "tokenAddress", "type": "address"},
+      {"internalType": "uint256", "name": "tokensReceived", "type": "uint256"},
+      {"internalType": "uint256", "name": "actualPromptSpent", "type": "uint256"}
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   }
