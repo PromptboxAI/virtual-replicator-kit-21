@@ -299,26 +299,29 @@ const Admin = () => {
                     <Label>Test Mode Enabled</Label>
                     <p className="text-sm text-muted-foreground">
                       Enable test mode for safe development and testing
+                      <br />
+                      <small className="text-xs">Current: {JSON.stringify(settings?.test_mode_enabled)} | Type: {typeof settings?.test_mode_enabled}</small>
                     </p>
                   </div>
-                   <Switch
-                     checked={settings?.test_mode_enabled || false}
-                     onCheckedChange={async (checked) => {
-                       const success = await updateSetting('test_mode_enabled', checked, 
-                         checked ? 'Enabled test mode' : 'Disabled test mode');
-                       if (success) {
-                         refreshSettings();
-                         // Sync with useAppMode localStorage for navigation toggle
-                         const newAppMode = checked ? 'test' : 'production';
-                         localStorage.setItem('app-mode', newAppMode);
-                         window.dispatchEvent(new StorageEvent('storage', {
-                           key: 'app-mode',
-                           newValue: newAppMode
-                         }));
-                       }
-                     }}
-                     disabled={isUpdating}
-                   />
+                  <Switch
+                    key={`test-mode-${settings?.test_mode_enabled}`}
+                    checked={!!settings?.test_mode_enabled}
+                    onCheckedChange={async (checked) => {
+                      const success = await updateSetting('test_mode_enabled', checked, 
+                        checked ? 'Enabled test mode' : 'Disabled test mode');
+                      if (success) {
+                        await refreshSettings();
+                        // Sync with useAppMode localStorage for navigation toggle
+                        const newAppMode = checked ? 'test' : 'production';
+                        localStorage.setItem('app-mode', newAppMode);
+                        window.dispatchEvent(new StorageEvent('storage', {
+                          key: 'app-mode',
+                          newValue: newAppMode
+                        }));
+                      }
+                    }}
+                    disabled={isUpdating}
+                  />
                 </div>
               </CardContent>
             </Card>
