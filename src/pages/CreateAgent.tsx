@@ -147,6 +147,9 @@ export default function CreateAgent() {
   const { isAdmin } = useUserRole();
   const { isConnected, promptBalance } = usePrivyWallet();
   const { settings: adminSettings, isLoading: adminSettingsLoading } = useAdminSettings();
+  
+  // Smart contract creation hook
+  const { deployAtomicAgent, approvePrompt, isDeploying, isApproving, promptBalance: contractPromptBalance, allowance } = useSmartContractCreation();
   // Note: Agent token creation is handled directly in the database for now
   
   // Check if contracts are deployed (from localStorage)
@@ -498,42 +501,78 @@ export default function CreateAgent() {
       const deploymentMode = adminSettings?.deployment_mode || 'database';
       if (deploymentMode === 'smart_contract') {
         try {
-          toast({
-            title: "Deploying Smart Contract...",
-            description: "Creating agent token with atomic MEV protection",
-          });
-
-          // Call atomic deployment function
-          const { data: deploymentData, error: deploymentError } = await supabase.functions.invoke(
-            'deploy-agent-atomic',
-            {
-              body: {
-                agent_id: agentId,
-                name: formData.name,
-                symbol: formData.symbol.toUpperCase(),
-                creator_address: user.id, // Will be mapped to wallet address
-                prebuy_amount: formData.prebuy_amount || 0
-              }
-            }
-          );
-
-          if (deploymentError || !deploymentData?.success) {
-            console.error('Smart contract deployment failed:', deploymentError);
-            throw new Error(deploymentError?.message || 'Smart contract deployment failed');
-          }
-
-          toast({
-            title: "Smart Contract Deployed!",
-            description: `Token deployed at: ${deploymentData.contract_address}`,
-          });
-
-          if (deploymentData.tokens_received && parseFloat(deploymentData.tokens_received) > 0) {
+          if (deployMethod === 'atomic') {
+            // 🚀 TRUE ATOMIC DEPLOYMENT - Client-side wallet interaction
             toast({
-              title: "Atomic Prebuy Successful!",
-              description: `Received ${parseFloat(deploymentData.tokens_received).toLocaleString()} ${formData.symbol} tokens`,
+              title: "Deploying Smart Contract...",
+              description: "Creating agent token with atomic MEV protection via your wallet",
             });
-          }
 
+            const atomicResult = await deployAtomicAgent({
+              ...formData,
+              id: agentId
+            });
+
+            if (atomicResult.success) {
+              // Record the deployment in database
+              const { error: recordError } = await supabase.functions.invoke(
+                'record-deployment',
+                {
+                  body: {
+                    agent_id: agentId,
+                    tx_hash: atomicResult.txHash,
+                    deployment_method: 'atomic_client'
+                  }
+                }
+              );
+
+              if (recordError) {
+                console.warn('Failed to record deployment, but contract deployed successfully:', recordError);
+              }
+
+              toast({
+                title: "Atomic Deployment Successful!",
+                description: `Contract deployed and prebuy executed in single transaction`,
+              });
+            }
+          } else {
+            // 🔄 SEQUENTIAL DEPLOYMENT - Edge function path
+            toast({
+              title: "Deploying Smart Contract...",
+              description: "Creating agent token with sequential deployment",
+            });
+
+            // Call sequential deployment function
+            const { data: deploymentData, error: deploymentError } = await supabase.functions.invoke(
+              'deploy-agent-atomic',
+              {
+                body: {
+                  agent_id: agentId,
+                  name: formData.name,
+                  symbol: formData.symbol.toUpperCase(),
+                  creator_address: user.id, // Will be mapped to wallet address
+                  prebuy_amount: formData.prebuy_amount || 0
+                }
+              }
+            );
+
+            if (deploymentError || !deploymentData?.success) {
+              console.error('Smart contract deployment failed:', deploymentError);
+              throw new Error(deploymentError?.message || 'Smart contract deployment failed');
+            }
+
+            toast({
+              title: "Smart Contract Deployed!",
+              description: `Token deployed at: ${deploymentData.contract_address}`,
+            });
+
+            if (deploymentData.tokens_received && parseFloat(deploymentData.tokens_received) > 0) {
+              toast({
+                title: "Sequential Prebuy Successful!",
+                description: `Received ${parseFloat(deploymentData.tokens_received).toLocaleString()} ${formData.symbol} tokens`,
+              });
+            }
+          }
         } catch (error) {
           console.error('Smart contract deployment error:', error);
           toast({
@@ -1876,26 +1915,30 @@ export default function CreateAgent() {
                            >
                              Back
                            </Button>
-                           <Button
-                             onClick={handleCreateAgent}
-                             className="w-full bg-gradient-primary hover:opacity-90 text-white"
-                             disabled={isCreating || !user || (appIsTestMode && balance < totalCost)}
-                           >
-                             {isCreating ? (
-                               <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                             ) : deploymentMode === 'smart_contract' ? (
-                               <Shield className="h-4 w-4 mr-2" />
-                             ) : (
-                               <Rocket className="h-4 w-4 mr-2" />
-                             )}
-                             {isCreating 
-                               ? deploymentMode === 'smart_contract' 
-                                 ? "Deploying Atomic Contract..." 
-                                 : "Creating Agent..."
-                               : deploymentMode === 'smart_contract'
-                                 ? `Deploy Atomic Contract (${totalCost} $PROMPT)`
-                                 : `Create Agent (${totalCost} $PROMPT)`
-                             }
+                            <Button
+                              onClick={handleCreateAgent}
+                              className="w-full bg-gradient-primary hover:opacity-90 text-white"
+                              disabled={isCreating || isDeploying || !user || (appIsTestMode && balance < totalCost)}
+                            >
+                              {(isCreating || isDeploying) ? (
+                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                              ) : deploymentMode === 'smart_contract' ? (
+                                <Shield className="h-4 w-4 mr-2" />
+                              ) : (
+                                <Rocket className="h-4 w-4 mr-2" />
+                              )}
+                              {(isCreating || isDeploying)
+                                ? deploymentMode === 'smart_contract' 
+                                  ? deployMethod === 'atomic'
+                                    ? "Deploying Atomic Contract..." 
+                                    : "Deploying Sequential Contract..."
+                                  : "Creating Agent..."
+                                : deploymentMode === 'smart_contract'
+                                  ? deployMethod === 'atomic'
+                                    ? `Deploy Atomic Contract (${totalCost} $PROMPT)`
+                                    : `Deploy Sequential Contract (${totalCost} $PROMPT)`
+                                  : `Create Agent (${totalCost} $PROMPT)`
+                              }
                            </Button>
                          </>
                        );
