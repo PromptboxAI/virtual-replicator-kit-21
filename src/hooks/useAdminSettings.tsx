@@ -38,24 +38,19 @@ export const useAdminSettings = () => {
 
       // Convert array of key-value pairs to settings object with proper JSON parsing
       const settingsObj = data.reduce((acc, item) => {
-        console.log(`Raw DB value for ${item.key}:`, item.value, typeof item.value);
-        
         // Handle different value types correctly
         let parsedValue = item.value;
         if (typeof item.value === 'string') {
           try {
             // Try to parse as JSON first
             parsedValue = JSON.parse(item.value);
-            console.log(`JSON parsed ${item.key}:`, parsedValue, typeof parsedValue);
           } catch (error) {
             // If JSON parsing fails, use the string directly
             parsedValue = item.value;
-            console.log(`Using string value for ${item.key}:`, parsedValue);
           }
         }
         
         acc[item.key] = parsedValue;
-        console.log(`Final value for ${item.key}:`, acc[item.key], typeof acc[item.key]);
         return acc;
       }, {} as Record<string, any>);
 
@@ -79,12 +74,10 @@ export const useAdminSettings = () => {
           acc[key] = settingsObj[key]; // Use database value
         } else {
           acc[key] = defaultSettings[key]; // Use default only if missing
-          console.log(`Using default for missing setting ${key}:`, defaultSettings[key]);
         }
         return acc;
       }, {} as Record<string, any>);
 
-      console.log('Final admin settings after processing:', finalSettings);
       setSettings(finalSettings as AdminSettings);
     } catch (err) {
       console.error('Error fetching admin settings:', err);
@@ -135,11 +128,8 @@ export const useUpdateAdminSettings = () => {
       });
 
       if (error) {
-        console.error('RPC update_admin_setting error:', error);
         throw error;
       }
-
-      console.log(`Successfully updated setting ${key} to:`, value);
       
       toast({
         title: "Setting Updated",

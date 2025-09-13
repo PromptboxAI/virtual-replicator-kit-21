@@ -48,6 +48,7 @@ import {
   Rocket
 } from "lucide-react";
 import { TGERunbook } from "@/components/TGERunbook";
+import { AdminSystemValidator } from "@/components/AdminSystemValidator";
 import { TestingGuide } from "@/components/TestingGuide";
 
 type AdminSection = 
@@ -248,23 +249,18 @@ const Admin = () => {
                       Enable MEV protection for all agent trades
                     </p>
                   </div>
-                  <Switch
-                    checked={settings?.mev_protection_enabled || false}
-                    onCheckedChange={async (checked) => {
-                      console.log('MEV Protection toggle clicked:', checked);
-                      console.log('Current MEV setting:', settings?.mev_protection_enabled);
-                      
-                      const success = await updateSetting('mev_protection_enabled', checked, 
-                        checked ? 'Enabled MEV protection' : 'Disabled MEV protection');
-                      
-                      console.log('Update success:', success);
-                      if (success) {
-                        await refreshSettings();
-                        console.log('Settings refreshed');
-                      }
-                    }}
-                    disabled={isUpdating}
-                  />
+                   <Switch
+                     checked={settings?.mev_protection_enabled || false}
+                     onCheckedChange={async (checked) => {
+                       const success = await updateSetting('mev_protection_enabled', checked, 
+                         checked ? 'Enabled MEV protection' : 'Disabled MEV protection');
+                       
+                       if (success) {
+                         refreshSettings();
+                       }
+                     }}
+                     disabled={isUpdating}
+                   />
                 </div>
                 
                 {settings?.mev_protection_enabled && (
@@ -305,27 +301,29 @@ const Admin = () => {
                       Enable test mode for safe development and testing
                     </p>
                   </div>
-                  <Switch
-                    checked={settings?.test_mode_enabled || false}
-                    onCheckedChange={async (checked) => {
-                      console.log('Admin test mode toggle clicked:', checked);
-                      const success = await updateSetting('test_mode_enabled', checked, 
-                        checked ? 'Enabled test mode' : 'Disabled test mode');
-                      if (success) {
-                        refreshSettings();
-                        // Also sync with useAppMode localStorage for navigation toggle
-                        localStorage.setItem('app-mode', checked ? 'test' : 'production');
-                        window.dispatchEvent(new StorageEvent('storage', {
-                          key: 'app-mode',
-                          newValue: checked ? 'test' : 'production'
-                        }));
-                      }
-                    }}
-                    disabled={isUpdating}
-                  />
+                   <Switch
+                     checked={settings?.test_mode_enabled || false}
+                     onCheckedChange={async (checked) => {
+                       const success = await updateSetting('test_mode_enabled', checked, 
+                         checked ? 'Enabled test mode' : 'Disabled test mode');
+                       if (success) {
+                         refreshSettings();
+                         // Also sync with useAppMode localStorage for navigation toggle
+                         localStorage.setItem('app-mode', checked ? 'test' : 'production');
+                         window.dispatchEvent(new StorageEvent('storage', {
+                           key: 'app-mode',
+                           newValue: checked ? 'test' : 'production'
+                         }));
+                       }
+                     }}
+                     disabled={isUpdating}
+                   />
                 </div>
               </CardContent>
             </Card>
+
+            {/* System Validation */}
+            <AdminSystemValidator />
 
             {/* Advanced Settings Link */}
             <Card>
