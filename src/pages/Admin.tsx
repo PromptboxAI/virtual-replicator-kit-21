@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
-import { useAdminSettings } from "@/hooks/useAdminSettings";
+import { useAdminSettings, useUpdateAdminSettings } from "@/hooks/useAdminSettings";
 
 import { ContractDeploymentTest } from "@/components/ContractDeploymentTest";
 import { AppModeToggle } from "@/components/AppModeToggle";
@@ -19,6 +19,8 @@ import { Header } from "@/components/Header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { 
   SidebarProvider, 
   Sidebar, 
@@ -60,7 +62,8 @@ const Admin = () => {
   const navigate = useNavigate();
   const { isAdmin, isLoading } = useUserRole();
   const { user, authenticated, ready } = useAuth();
-  const { settings } = useAdminSettings();
+  const { settings, refreshSettings } = useAdminSettings();
+  const { updateSetting, isUpdating } = useUpdateAdminSettings();
   const [activeSection, setActiveSection] = useState<AdminSection>('system-settings');
 
   console.log('Admin page - auth state:', { user: !!user, authenticated, ready, isAdmin, isLoading });
@@ -162,12 +165,10 @@ const Admin = () => {
                         </Badge>
                       )}
                       
-                      {!settings.mev_protection_enabled && (
-                        <Badge variant="secondary" className="gap-1">
-                          <Shield className="h-3 w-3" />
-                          MEV Protection Disabled
-                        </Badge>
-                      )}
+                      <Badge variant={settings.mev_protection_enabled ? "default" : "secondary"} className="gap-1">
+                        <Shield className="h-3 w-3" />
+                        MEV Protection {settings.mev_protection_enabled ? 'Enabled' : 'Disabled'}
+                      </Badge>
                       
                       <Badge variant="outline" className="gap-1">
                         <Database className="h-3 w-3" />
@@ -176,6 +177,104 @@ const Admin = () => {
                     </>
                   )}
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Deployment Mode Configuration */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Database className="h-5 w-5" />
+                  Deployment Mode Configuration
+                </CardTitle>
+                <CardDescription>
+                  Control how agents are deployed system-wide
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <Label>Global Deployment Mode</Label>
+                  <div className="flex items-center gap-4">
+                    <Button
+                      variant={settings?.deployment_mode === 'database' ? 'default' : 'outline'}
+                      onClick={async () => {
+                        await updateSetting('deployment_mode', 'database', 'Switched to database mode');
+                        refreshSettings();
+                      }}
+                      disabled={isUpdating}
+                      className="gap-2"
+                    >
+                      <Database className="h-4 w-4" />
+                      Database Mode
+                    </Button>
+                    <Button
+                      variant={settings?.deployment_mode === 'smart_contract' ? 'default' : 'outline'}
+                      onClick={async () => {
+                        await updateSetting('deployment_mode', 'smart_contract', 'Switched to smart contract mode');
+                        refreshSettings();
+                      }}
+                      disabled={isUpdating}
+                      className="gap-2"
+                    >
+                      <Shield className="h-4 w-4" />
+                      Smart Contract Mode
+                    </Button>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {settings?.deployment_mode === 'database' 
+                      ? 'Agents are created in database only (faster, testing)'
+                      : 'Agents deploy real smart contracts (slower, production)'}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* MEV Protection Configuration */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5" />
+                  MEV Protection Settings
+                </CardTitle>
+                <CardDescription>
+                  Configure MEV protection features and policies
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>MEV Protection Enabled</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Enable MEV protection for all agent trades
+                    </p>
+                  </div>
+                  <Switch
+                    checked={settings?.mev_protection_enabled || false}
+                    onCheckedChange={async (checked) => {
+                      await updateSetting('mev_protection_enabled', checked, 
+                        checked ? 'Enabled MEV protection' : 'Disabled MEV protection');
+                      refreshSettings();
+                    }}
+                    disabled={isUpdating}
+                  />
+                </div>
+                
+                {settings?.mev_protection_enabled && (
+                  <div className="space-y-3 pt-2 border-t">
+                    <Label>Available Lock Durations</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {(settings?.allowed_lock_durations || [15, 60, 240, 1440]).map((duration) => (
+                        <Badge key={duration} variant="outline" className="gap-1">
+                          <Shield className="h-3 w-3" />
+                          {duration < 60 ? `${duration}m` : `${Math.floor(duration / 60)}h`}
+                        </Badge>
+                      ))}
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Users can select from these lock duration options when creating agents
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -195,20 +294,21 @@ const Admin = () => {
               </CardContent>
             </Card>
 
-            {/* Admin Settings Link */}
+            {/* Advanced Settings Link */}
             <Card>
               <CardHeader>
                 <CardTitle>Advanced Settings</CardTitle>
                 <CardDescription>
-                  Configure system-wide settings and parameters
+                  Access detailed configuration for fees, economics, and emergency controls
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Button 
                   onClick={() => navigate('/admin-settings')} 
                   className="w-full"
+                  variant="outline"
                 >
-                  Open Admin Settings
+                  Open Advanced Settings Panel
                 </Button>
               </CardContent>
             </Card>
