@@ -294,11 +294,36 @@ const Admin = () => {
                   Application Mode
                 </CardTitle>
                 <CardDescription>
-                  Switch between test and production modes
+                  Switch between test and production modes (synced with navigation)
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <AppModeToggle />
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>Test Mode Enabled</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Enable test mode for safe development and testing
+                    </p>
+                  </div>
+                  <Switch
+                    checked={settings?.test_mode_enabled || false}
+                    onCheckedChange={async (checked) => {
+                      console.log('Admin test mode toggle clicked:', checked);
+                      const success = await updateSetting('test_mode_enabled', checked, 
+                        checked ? 'Enabled test mode' : 'Disabled test mode');
+                      if (success) {
+                        refreshSettings();
+                        // Also sync with useAppMode localStorage for navigation toggle
+                        localStorage.setItem('app-mode', checked ? 'test' : 'production');
+                        window.dispatchEvent(new StorageEvent('storage', {
+                          key: 'app-mode',
+                          newValue: checked ? 'test' : 'production'
+                        }));
+                      }
+                    }}
+                    disabled={isUpdating}
+                  />
+                </div>
               </CardContent>
             </Card>
 

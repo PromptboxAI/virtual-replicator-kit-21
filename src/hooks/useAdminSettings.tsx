@@ -120,8 +120,13 @@ export const useUpdateAdminSettings = () => {
         p_reason: reason || `Updated ${key} setting`,
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('RPC update_admin_setting error:', error);
+        throw error;
+      }
 
+      console.log(`Successfully updated setting ${key} to:`, value);
+      
       toast({
         title: "Setting Updated",
         description: `Successfully updated ${key}`,

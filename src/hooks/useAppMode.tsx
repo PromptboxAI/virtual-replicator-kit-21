@@ -37,6 +37,19 @@ export const useAppMode = () => {
       setMode('production');
     }
     setIsLoading(false);
+
+    // Listen for localStorage changes to sync with admin panel
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'app-mode' && e.newValue) {
+        const newMode = e.newValue as AppMode;
+        if (newMode === 'test' || newMode === 'production') {
+          setMode(newMode);
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, [isAdmin]);
 
   const setAppMode = (newMode: AppMode) => {
