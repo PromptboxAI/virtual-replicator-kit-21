@@ -673,14 +673,16 @@ export default function CreateAgent() {
     navigate('/');
   };
 
-  // Show loading state only for authentication
-  if (authLoading) {
-    console.log('Showing loading state', { authLoading, balanceLoading });
+  // Show loading state for authentication and admin settings
+  if (authLoading || adminSettingsLoading) {
+    console.log('Showing loading state', { authLoading, adminSettingsLoading, balanceLoading });
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-muted-foreground">Loading...</p>
+          <p className="mt-2 text-muted-foreground">
+            {authLoading ? 'Authenticating...' : 'Loading admin settings...'}
+          </p>
         </div>
       </div>
     );
@@ -1226,18 +1228,18 @@ export default function CreateAgent() {
                                  )}
                                </SelectValue>
                              </SelectTrigger>
-                               <SelectContent>
-                                 {Object.keys(allFrameworks).map((framework) => {                               
-                                   return (
-                                     <SelectItem key={framework} value={framework}>
-                                       <div className="flex items-center gap-2 w-full">
-                                         <span>{framework}</span>
-                                         {framework === "PROMPT" && (
-                                           <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-                                             Recommended
-                                           </Badge>
-                                         )}
-                                       </div>
+                                <SelectContent>
+                                  {(adminSettings?.allowed_frameworks || Object.keys(allFrameworks)).map((framework) => {                               
+                                    return (
+                                      <SelectItem key={framework} value={framework}>
+                                        <div className="flex items-center gap-2 w-full">
+                                          <span>{framework}</span>
+                                          {framework === "PROMPT" && (
+                                            <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                                              Recommended
+                                            </Badge>
+                                          )}
+                                        </div>
                                      </SelectItem>
                                    );
                                  })}
@@ -1663,12 +1665,12 @@ export default function CreateAgent() {
                                         e.target.select();
                                       }
                                     }}
-                                    placeholder="0"
-                                    min="0"
-                                    max={Math.min(1000, Math.max(0, balance - 100))}
-                                  />
-                                  <div className="text-sm text-muted-foreground">
-                                    Amount in $PROMPT (Max: {Math.min(1000, Math.max(0, balance - 100))})
+                                     placeholder="0"
+                                     min="0"
+                                     max={Math.min(adminSettings?.max_prebuy_amount || 1000, Math.max(0, balance - 100))}
+                                   />
+                                   <div className="text-sm text-muted-foreground">
+                                     Amount in $PROMPT (Max: {Math.min(adminSettings?.max_prebuy_amount || 1000, Math.max(0, balance - 100))})
                                   </div>
                                   {formData.prebuy_amount > 0 && (
                                     <div className="text-sm text-muted-foreground">
@@ -1681,84 +1683,101 @@ export default function CreateAgent() {
                           </div>
                           
                           {/* 🔒 MEV PROTECTION SECTION */}
-                          <div className="space-y-4">
-                            <div className="border border-purple-200 rounded-lg p-4 bg-purple-50/30 dark:bg-purple-950/30">
-                              <div className="flex items-center gap-2 mb-3">
-                                <Shield className="w-5 h-5 text-purple-600" />
-                                <h4 className="font-medium text-purple-900 dark:text-purple-100">MEV Protection</h4>
-                              </div>
-                              
-                              <div className="space-y-4">
-                                <div className="flex items-center justify-between">
-                                  <div className="flex-1 mr-3">
-                                    <Label className="text-sm font-medium">Enable Creator Lock</Label>
-                                    <p className="text-xs text-muted-foreground">
-                                      Prevent MEV attacks by restricting trading to you during the initial period
-                                    </p>
-                                  </div>
-                                  <Switch
-                                    checked={formData.creation_locked}
-                                    onCheckedChange={(checked) => handleInputChange('creation_locked', checked)}
-                                  />
+                          {(adminSettings?.deployment_mode || 'database') === 'database' ? (
+                            <div className="space-y-4">
+                              <div className="border border-purple-200 rounded-lg p-4 bg-purple-50/30 dark:bg-purple-950/30">
+                                <div className="flex items-center gap-2 mb-3">
+                                  <Shield className="w-5 h-5 text-purple-600" />
+                                  <h4 className="font-medium text-purple-900 dark:text-purple-100">MEV Protection</h4>
                                 </div>
-
-                                {formData.creation_locked && (
-                                  <>
-                                    <div className="space-y-2">
-                                      <Label htmlFor="lock_duration">Lock Duration</Label>
-                                      <Select 
-                                        value={formData.lock_duration_minutes.toString()} 
-                                        onValueChange={(value) => handleInputChange('lock_duration_minutes', parseInt(value))}
-                                      >
-                                        <SelectTrigger>
-                                          <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                          <SelectItem value="15">15 minutes</SelectItem>
-                                          <SelectItem value="60">1 hour</SelectItem>
-                                          <SelectItem value="240">4 hours</SelectItem>
-                                          <SelectItem value="1440">24 hours</SelectItem>
-                                        </SelectContent>
-                                      </Select>
-                                    </div>
-
-                                    <div className="space-y-2">
-                                      <Label htmlFor="creator_prebuy">Creator Pre-buy (during lock)</Label>
-                                      <Input
-                                        id="creator_prebuy"
-                                        type="number"
-                                        value={formData.creator_prebuy_amount === 0 ? "" : formData.creator_prebuy_amount.toString()}
-                                        onChange={(e) => {
-                                          const value = parseInt(e.target.value) || 0;
-                                          handleInputChange('creator_prebuy_amount', value);
-                                        }}
-                                        placeholder="0"
-                                        min="0"
-                                        max="5000"
-                                      />
+                                
+                                <div className="space-y-4">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex-1 mr-3">
+                                      <Label className="text-sm font-medium">Enable Creator Lock</Label>
                                       <p className="text-xs text-muted-foreground">
-                                        Additional amount only you can buy during the lock period
+                                        Prevent MEV attacks by restricting trading to you during the initial period
                                       </p>
                                     </div>
+                                    <Switch
+                                      checked={formData.creation_locked}
+                                      onCheckedChange={(checked) => handleInputChange('creation_locked', checked)}
+                                    />
+                                  </div>
 
-                                    <div className="bg-blue-50 dark:bg-blue-950/50 p-3 rounded-lg">
-                                      <div className="flex items-start gap-2">
-                                        <Clock className="w-4 h-4 text-blue-600 mt-0.5" />
-                                        <div className="text-sm">
-                                          <p className="font-medium text-blue-900 dark:text-blue-100">Protection Active</p>
-                                          <p className="text-blue-700 dark:text-blue-300">
-                                            Only you can trade for {formData.lock_duration_minutes >= 60 ? 
-                                              `${Math.floor(formData.lock_duration_minutes / 60)}h ${formData.lock_duration_minutes % 60}m` : 
-                                              `${formData.lock_duration_minutes}m`} after launch
-                                          </p>
+                                  {formData.creation_locked && (
+                                    <>
+                                      <div className="space-y-2">
+                                        <Label htmlFor="lock_duration">Lock Duration</Label>
+                                        <Select 
+                                          value={formData.lock_duration_minutes.toString()} 
+                                          onValueChange={(value) => handleInputChange('lock_duration_minutes', parseInt(value))}
+                                        >
+                                          <SelectTrigger>
+                                            <SelectValue />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            {(adminSettings?.allowed_lock_durations || [15, 60, 240, 1440]).map((minutes) => (
+                                              <SelectItem key={minutes} value={minutes.toString()}>
+                                                {minutes >= 1440 ? `${Math.floor(minutes / 1440)} day${Math.floor(minutes / 1440) > 1 ? 's' : ''}` :
+                                                 minutes >= 60 ? `${Math.floor(minutes / 60)} hour${Math.floor(minutes / 60) > 1 ? 's' : ''}` :
+                                                 `${minutes} minute${minutes > 1 ? 's' : ''}`}
+                                              </SelectItem>
+                                            ))}
+                                          </SelectContent>
+                                        </Select>
+                                      </div>
+
+                                      <div className="space-y-2">
+                                        <Label htmlFor="creator_prebuy">Creator Pre-buy (during lock)</Label>
+                                        <Input
+                                          id="creator_prebuy"
+                                          type="number"
+                                          value={formData.creator_prebuy_amount === 0 ? "" : formData.creator_prebuy_amount.toString()}
+                                          onChange={(e) => {
+                                            const value = parseInt(e.target.value) || 0;
+                                            handleInputChange('creator_prebuy_amount', value);
+                                          }}
+                                          placeholder="0"
+                                          min="0"
+                                          max="5000"
+                                        />
+                                        <p className="text-xs text-muted-foreground">
+                                          Additional amount only you can buy during the lock period
+                                        </p>
+                                      </div>
+
+                                      <div className="bg-blue-50 dark:bg-blue-950/50 p-3 rounded-lg">
+                                        <div className="flex items-start gap-2">
+                                          <Clock className="w-4 h-4 text-blue-600 mt-0.5" />
+                                          <div className="text-sm">
+                                            <p className="font-medium text-blue-900 dark:text-blue-100">Protection Active</p>
+                                            <p className="text-blue-700 dark:text-blue-300">
+                                              Only you can trade for {formData.lock_duration_minutes >= 60 ? 
+                                                `${Math.floor(formData.lock_duration_minutes / 60)}h ${formData.lock_duration_minutes % 60}m` : 
+                                                `${formData.lock_duration_minutes}m`} after launch
+                                            </p>
+                                          </div>
                                         </div>
                                       </div>
-                                    </div>
-                                  </>
-                                )}
+                                    </>
+                                  )}
+                                </div>
                               </div>
                             </div>
-                          </div>
+                          ) : (
+                            <div className="space-y-4">
+                              <div className="border border-green-200 rounded-lg p-4 bg-green-50/30 dark:bg-green-950/30">
+                                <div className="flex items-center gap-2 mb-3">
+                                  <Shield className="w-5 h-5 text-green-600" />
+                                  <h4 className="font-medium text-green-900 dark:text-green-100">Smart Contract MEV Protection</h4>
+                                </div>
+                                <p className="text-sm text-green-700 dark:text-green-300">
+                                  MEV protection is automatically enabled for smart contract deployments through on-chain mechanisms.
+                                </p>
+                              </div>
+                            </div>
+                          )}
                           
                           <div className="space-y-4">
                             <div className="p-4 bg-muted rounded-lg">
