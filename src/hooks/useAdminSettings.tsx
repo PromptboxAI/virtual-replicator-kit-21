@@ -38,24 +38,28 @@ export const useAdminSettings = () => {
 
       // Convert array of key-value pairs to settings object with proper JSON parsing
       const settingsObj = data.reduce((acc, item) => {
-        console.log(`Parsing setting ${item.key}:`, item.value, typeof item.value);
-        // Parse JSON values properly - the RPC function stores them as JSON strings
-        try {
-          if (typeof item.value === 'string') {
-            acc[item.key] = JSON.parse(item.value);
-            console.log(`Parsed ${item.key} as:`, acc[item.key], typeof acc[item.key]);
-          } else {
-            acc[item.key] = item.value;
-            console.log(`Used direct value for ${item.key}:`, acc[item.key], typeof acc[item.key]);
+        console.log(`Raw DB value for ${item.key}:`, item.value, typeof item.value);
+        
+        // Handle different value types correctly
+        let parsedValue = item.value;
+        if (typeof item.value === 'string') {
+          try {
+            // Try to parse as JSON first
+            parsedValue = JSON.parse(item.value);
+            console.log(`JSON parsed ${item.key}:`, parsedValue, typeof parsedValue);
+          } catch (error) {
+            // If JSON parsing fails, use the string directly
+            parsedValue = item.value;
+            console.log(`Using string value for ${item.key}:`, parsedValue);
           }
-        } catch (error) {
-          console.log(`Failed to parse ${item.key}, using direct value:`, item.value);
-          acc[item.key] = item.value;
         }
+        
+        acc[item.key] = parsedValue;
+        console.log(`Final value for ${item.key}:`, acc[item.key], typeof acc[item.key]);
         return acc;
       }, {} as Record<string, any>);
 
-      // Apply default values for missing settings
+      // Apply default values for missing settings ONLY
       const defaultSettings: AdminSettings = {
         deployment_mode: 'database',
         allowed_lock_durations: [15, 60, 240, 1440],
@@ -69,8 +73,18 @@ export const useAdminSettings = () => {
         emergency_pause: false,
       };
 
-      const finalSettings = { ...defaultSettings, ...settingsObj };
-      console.log('Admin settings loaded:', finalSettings);
+      // ONLY use defaults for keys that don't exist in the database
+      const finalSettings = Object.keys(defaultSettings).reduce((acc, key) => {
+        if (settingsObj.hasOwnProperty(key)) {
+          acc[key] = settingsObj[key]; // Use database value
+        } else {
+          acc[key] = defaultSettings[key]; // Use default only if missing
+          console.log(`Using default for missing setting ${key}:`, defaultSettings[key]);
+        }
+        return acc;
+      }, {} as Record<string, any>);
+
+      console.log('Final admin settings after processing:', finalSettings);
       setSettings(finalSettings as AdminSettings);
     } catch (err) {
       console.error('Error fetching admin settings:', err);
