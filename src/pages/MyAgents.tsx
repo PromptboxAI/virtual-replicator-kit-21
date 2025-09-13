@@ -230,9 +230,15 @@ export default function MyAgents() {
                     <TrendingUp className="h-4 w-4 text-primary" />
                     <span className="text-sm font-medium text-muted-foreground">Active Agents</span>
                   </div>
-                  <p className="text-2xl font-bold">
-                    {myAgents.filter(agent => agent.status === 'AVAILABLE').length}
-                  </p>
+                   <p className="text-2xl font-bold">
+                     {myAgents.filter(agent => {
+                       const runtimeStatus = agentStatuses[agent.id];
+                       if (runtimeStatus) {
+                         return runtimeStatus.is_active;
+                       }
+                       return agent.is_active !== false;
+                     }).length}
+                   </p>
                 </CardContent>
               </Card>
               
