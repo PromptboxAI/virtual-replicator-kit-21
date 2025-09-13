@@ -436,7 +436,7 @@ const Admin = () => {
           <Sidebar className="w-64 border-r">
             <SidebarTrigger className="m-2 self-end" />
             
-            <SidebarContent className="pt-2">
+            <SidebarContent className="pt-12">
               <SidebarGroup>
                 <SidebarGroupLabel>Admin Panel</SidebarGroupLabel>
                 <SidebarGroupContent>
