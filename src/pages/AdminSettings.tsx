@@ -27,8 +27,6 @@ export default function AdminSettings() {
   const { settings, isLoading, error, refreshSettings } = useAdminSettings();
   const { updateSetting, updateMultipleSettings, isUpdating } = useUpdateAdminSettings();
 
-  const [localSettings, setLocalSettings] = useState(settings);
-
   if (roleLoading || isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -55,8 +53,15 @@ export default function AdminSettings() {
   if (!settings) return null;
 
   const handleSettingChange = async (key: string, value: any) => {
-    await updateSetting(key as any, value);
-    refreshSettings();
+    console.log('🔧 Changing setting:', key, 'to:', value);
+    const success = await updateSetting(key as any, value);
+    console.log('🔧 Setting change result:', success);
+    
+    // Force refresh regardless of real-time subscription
+    setTimeout(() => {
+      console.log('🔄 Force refreshing settings...');
+      refreshSettings();
+    }, 100);
   };
 
   const handleEmergencyPause = async () => {

@@ -35,11 +35,13 @@ export const useAdminSettings = () => {
           table: 'admin_settings'
         },
         (payload) => {
-          console.log('Admin settings changed:', payload);
+          console.log('🔔 Admin settings real-time change:', payload);
           fetchSettings(); // Refetch when settings change
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('🔌 Admin settings subscription status:', status);
+      });
 
     return () => {
       supabase.removeChannel(channel);
