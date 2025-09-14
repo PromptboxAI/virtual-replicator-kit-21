@@ -57,25 +57,18 @@ export const useAdminSettings = () => {
         .from('admin_settings')
         .select('key, value');
 
+      console.log('🔍 Admin settings fetch result:', { data, error });
+
       if (error) throw error;
 
-      // Convert array of key-value pairs to settings object with proper JSON parsing
+      // Convert array of key-value pairs to settings object
+      // Supabase JSONB values are already parsed, no need to JSON.parse again
       const settingsObj = data.reduce((acc, item) => {
-        // Handle different value types correctly
-        let parsedValue = item.value;
-        if (typeof item.value === 'string') {
-          try {
-            // Try to parse as JSON first
-            parsedValue = JSON.parse(item.value);
-          } catch (error) {
-            // If JSON parsing fails, use the string directly
-            parsedValue = item.value;
-          }
-        }
-        
-        acc[item.key] = parsedValue;
+        acc[item.key] = item.value;
         return acc;
       }, {} as Record<string, any>);
+
+      console.log('🔍 Settings object:', settingsObj);
 
       // Apply default values for missing settings ONLY
       const defaultSettings: AdminSettings = {
@@ -101,6 +94,7 @@ export const useAdminSettings = () => {
         return acc;
       }, {} as Record<string, any>);
 
+      console.log('🔍 Final settings:', finalSettings);
       setSettings(finalSettings as AdminSettings);
     } catch (err) {
       console.error('Error fetching admin settings:', err);
