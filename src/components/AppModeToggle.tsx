@@ -20,14 +20,21 @@ export const AppModeToggle = () => {
   const handleModeChange = async (checked: boolean) => {
     const newMode = checked ? 'production' : 'test';
     
+    console.log('AppModeToggle - handleModeChange called');
+    console.log('AppModeToggle - Current mode:', mode, 'isTestMode:', isTestMode);
+    console.log('AppModeToggle - Toggle checked:', checked, 'New mode:', newMode);
+    
     // Update localStorage (for navigation)
     setAppMode(newMode);
     
     // Update database (for admin panel) 
     // checked = true means production (test_mode_enabled = false)
     // checked = false means test (test_mode_enabled = true)
-    await updateSetting('test_mode_enabled', !checked, 
-      checked ? 'Switched to production mode' : 'Switched to test mode');
+    const testModeEnabled = !checked; // Invert because checked=true means production
+    console.log('AppModeToggle - Setting test_mode_enabled to:', testModeEnabled);
+    
+    await updateSetting('test_mode_enabled', testModeEnabled, 
+      `Switched to ${newMode} mode via navigation toggle`);
   };
 
   return (
