@@ -100,20 +100,6 @@ export const useAdminSettings = () => {
       }, {} as Record<string, any>);
 
       setSettings(finalSettings as AdminSettings);
-      
-      // Sync localStorage with database test_mode_enabled setting
-      if (finalSettings.test_mode_enabled !== undefined) {
-        const expectedAppMode = finalSettings.test_mode_enabled ? 'test' : 'production';
-        const currentAppMode = localStorage.getItem('app-mode');
-        if (currentAppMode !== expectedAppMode) {
-          localStorage.setItem('app-mode', expectedAppMode);
-          // Dispatch storage event to update useAppMode
-          window.dispatchEvent(new StorageEvent('storage', {
-            key: 'app-mode',
-            newValue: expectedAppMode
-          }));
-        }
-      }
     } catch (err) {
       console.error('Error fetching admin settings:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch settings');
