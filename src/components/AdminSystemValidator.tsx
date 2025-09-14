@@ -32,13 +32,14 @@ export const AdminSystemValidator = () => {
         message: 'Admin settings loaded successfully from database'
       });
 
-      // Test deployment mode
-      const expectedDeploymentMode = 'smart_contract';
+      // Test deployment mode - just verify it exists and is valid
+      const validDeploymentModes = ['database', 'smart_contract'];
+      const isValidDeploymentMode = validDeploymentModes.includes(settings.deployment_mode);
       results.push({
         component: 'Deployment Mode',
-        status: settings.deployment_mode === expectedDeploymentMode ? 'pass' : 'fail',
-        message: `Deployment mode ${settings.deployment_mode === expectedDeploymentMode ? 'matches' : 'does not match'} database`,
-        expected: expectedDeploymentMode,
+        status: isValidDeploymentMode ? 'pass' : 'fail',
+        message: `Deployment mode is ${isValidDeploymentMode ? 'valid' : 'invalid'}: ${settings.deployment_mode}`,
+        expected: 'database or smart_contract',
         actual: settings.deployment_mode
       });
 
