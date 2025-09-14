@@ -300,39 +300,43 @@ const Admin = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Test Mode Enabled</Label>
+                <div className="flex items-center justify-between p-4 border border-border rounded-lg">
+                  <div>
+                    <h3 className="font-medium text-foreground">Application Mode</h3>
                     <p className="text-sm text-muted-foreground">
-                      Enable test mode for safe development and testing
-                      <br />
-                      <small className="text-xs">Current: {JSON.stringify(settings?.test_mode_enabled)} | Type: {typeof settings?.test_mode_enabled}</small>
+                      {settings?.test_mode_enabled 
+                        ? "Test mode is active - showing test agents and using test data" 
+                        : "Live mode is active - showing production agents and real data"
+                      }
                     </p>
                   </div>
-                  <Switch
-                    key={`test-mode-${settings?.test_mode_enabled}`}
-                    checked={!!settings?.test_mode_enabled}
-                    onCheckedChange={async (checked) => {
-                      console.log('Test Mode Toggle - Current:', settings?.test_mode_enabled, 'New:', checked);
-                      const success = await updateSetting('test_mode_enabled', checked, 
-                        checked ? 'Enabled test mode' : 'Disabled test mode');
-                      if (success) {
-                        console.log('Test Mode Toggle - Update successful, refreshing...');
-                        await refreshSettings();
-                        // Sync with useAppMode localStorage for navigation toggle
-                        const newAppMode = checked ? 'test' : 'production';
-                        localStorage.setItem('app-mode', newAppMode);
-                        window.dispatchEvent(new StorageEvent('storage', {
-                          key: 'app-mode',
-                          newValue: newAppMode
-                        }));
-                        console.log('Test Mode Toggle - Complete. New mode:', newAppMode);
-                      } else {
-                        console.error('Test Mode Toggle - Update failed');
-                      }
-                    }}
-                    disabled={isUpdating}
-                  />
+                  <div className="flex items-center gap-3">
+                    <div className={`px-3 py-1 rounded-full text-sm font-medium ${
+                      settings?.test_mode_enabled 
+                        ? "bg-orange-100 text-orange-800" 
+                        : "bg-green-100 text-green-800"
+                    }`}>
+                      {settings?.test_mode_enabled ? "Test Mode Enabled" : "Live Mode Enabled"}
+                    </div>
+                    <Switch
+                      key={`test-mode-${settings?.test_mode_enabled}`}
+                      checked={!settings?.test_mode_enabled}
+                      onCheckedChange={async (checked) => {
+                        const success = await updateSetting('test_mode_enabled', !checked);
+                        if (success) {
+                          await refreshSettings();
+                          // Sync with useAppMode localStorage
+                          const newAppMode = checked ? 'production' : 'test';
+                          localStorage.setItem('app-mode', newAppMode);
+                          window.dispatchEvent(new StorageEvent('storage', {
+                            key: 'app-mode',
+                            newValue: newAppMode
+                          }));
+                        }
+                      }}
+                      disabled={isUpdating}
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>
