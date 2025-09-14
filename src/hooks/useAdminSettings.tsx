@@ -168,7 +168,9 @@ export const useUpdateAdminSettings = () => {
       
       toast({
         title: "Setting Updated",
-        description: `Successfully updated ${key}`,
+        description: key === 'test_mode_enabled'
+          ? `Test mode ${value ? 'enabled' : 'disabled'}`
+          : `Successfully updated ${key}`,
       });
 
       return true;

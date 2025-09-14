@@ -325,13 +325,6 @@ const Admin = () => {
                         const success = await updateSetting('test_mode_enabled', !checked);
                         if (success) {
                           await refreshSettings();
-                          // Sync with useAppMode localStorage
-                          const newAppMode = checked ? 'production' : 'test';
-                          localStorage.setItem('app-mode', newAppMode);
-                          window.dispatchEvent(new StorageEvent('storage', {
-                            key: 'app-mode',
-                            newValue: newAppMode
-                          }));
                         }
                       }}
                       disabled={isUpdating}

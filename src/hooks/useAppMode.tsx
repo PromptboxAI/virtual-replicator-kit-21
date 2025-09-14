@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useUserRole } from './useUserRole';
 import { useAuth } from './useAuth';
+import { useAdminSettings } from './useAdminSettings';
 
 export type AppMode = 'test' | 'production';
 
@@ -10,47 +11,27 @@ const LOCK_TESTNET_ONLY = false;
 export const useAppMode = () => {
   const { user } = useAuth();
   const { isAdmin } = useUserRole();
-  const [mode, setMode] = useState<AppMode>('test');
+  const { settings, isLoading: settingsLoading } = useAdminSettings();
   const [isLoading, setIsLoading] = useState(true);
+
+  // Use admin settings as the single source of truth
+  const isTestMode = settings?.test_mode_enabled ?? true; // Default to test mode
+  const mode: AppMode = isTestMode ? 'test' : 'production';
 
   useEffect(() => {
     // Global safety lock
     if (LOCK_TESTNET_ONLY) {
-      setMode('test');
       setIsLoading(false);
       return;
     }
 
-    // For non-admin users, always use production mode (real ERC20 tokens)
-    if (!isAdmin) {
-      setMode('production');
-      setIsLoading(false);
+    // Wait for settings to load
+    if (settingsLoading) {
       return;
     }
 
-    // For admin users, check localStorage for preference
-    const savedMode = localStorage.getItem('app-mode') as AppMode;
-    if (savedMode && (savedMode === 'test' || savedMode === 'production')) {
-      setMode(savedMode);
-    } else {
-      // Default admins to production mode
-      setMode('production');
-    }
     setIsLoading(false);
-
-    // Listen for localStorage changes to sync with admin panel
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'app-mode' && e.newValue) {
-        const newMode = e.newValue as AppMode;
-        if (newMode === 'test' || newMode === 'production') {
-          setMode(newMode);
-        }
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, [isAdmin]);
+  }, [settingsLoading]);
 
   const setAppMode = (newMode: AppMode) => {
     if (LOCK_TESTNET_ONLY) {
@@ -62,11 +43,10 @@ export const useAppMode = () => {
       return;
     }
     
-    setMode(newMode);
-    localStorage.setItem('app-mode', newMode);
+    // This function is deprecated - mode should only be changed via admin panel
+    console.warn('setAppMode is deprecated. Use admin settings to change mode.');
   };
 
-  const isTestMode = mode === 'test';
   const isProductionMode = mode === 'production';
 
   return {
@@ -75,6 +55,6 @@ export const useAppMode = () => {
     isProductionMode,
     setAppMode,
     canChangeMode: isAdmin && !LOCK_TESTNET_ONLY,
-    isLoading,
+    isLoading: isLoading || settingsLoading,
   };
 };
