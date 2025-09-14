@@ -1590,77 +1590,79 @@ export default function CreateAgent() {
                         </div>
                       </div>
 
-                       {/* Deployment Mode Selection */}
-                      <div className="border-t pt-6">
-                        {/* Deployment Mode Display */}
-                        <div className="mb-6">
-                          <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
-                            <Settings className="h-5 w-5" />
-                            Deployment Mode
-                          </h3>
-                          <p className="text-sm text-muted-foreground mb-4">
-                            Admin-controlled deployment method for all agents.
-                          </p>
-                          
-                          <Card className="border-2 border-primary/20 bg-primary/5">
-                            <CardContent className="p-4">
-                              <div className="flex items-center gap-3">
-                                <Shield className="h-5 w-5 text-primary" />
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2">
-                                    <h4 className="font-semibold">
-                                      {adminSettings?.deployment_mode === 'smart_contract' ? 'Smart Contract Mode' : 'Database Mode'}
-                                    </h4>
-                                    <Badge variant={adminSettings?.deployment_mode === 'smart_contract' ? 'default' : 'secondary'}>
-                                      Active
-                                    </Badge>
-                                  </div>
-                                  <p className="text-sm text-muted-foreground mt-1">
-                                    {adminSettings?.deployment_mode === 'smart_contract' 
-                                      ? 'Real ERC-20 token with atomic MEV protection and on-chain verification.'
-                                      : 'Fast deployment with database-based token management and optional MEV protection.'
-                                    }
-                                  </p>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
+                        {/* Deployment Mode Selection - Only visible to admins */}
+                       {isAdmin && (
+                         <div className="border-t pt-6">
+                           {/* Deployment Mode Display */}
+                           <div className="mb-6">
+                             <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
+                               <Settings className="h-5 w-5" />
+                               Deployment Mode
+                             </h3>
+                             <p className="text-sm text-muted-foreground mb-4">
+                               Admin-controlled deployment method for all agents.
+                             </p>
+                             
+                             <Card className="border-2 border-primary/20 bg-primary/5">
+                               <CardContent className="p-4">
+                                 <div className="flex items-center gap-3">
+                                   <Shield className="h-5 w-5 text-primary" />
+                                   <div className="flex-1">
+                                     <div className="flex items-center gap-2">
+                                       <h4 className="font-semibold">
+                                         {adminSettings?.deployment_mode === 'smart_contract' ? 'Smart Contract Mode' : 'Database Mode'}
+                                       </h4>
+                                       <Badge variant={adminSettings?.deployment_mode === 'smart_contract' ? 'default' : 'secondary'}>
+                                         Active
+                                       </Badge>
+                                     </div>
+                                     <p className="text-sm text-muted-foreground mt-1">
+                                       {adminSettings?.deployment_mode === 'smart_contract' 
+                                         ? 'Real ERC-20 token with atomic MEV protection and on-chain verification.'
+                                         : 'Fast deployment with database-based token management and optional MEV protection.'
+                                       }
+                                     </p>
+                                   </div>
+                                 </div>
+                               </CardContent>
+                             </Card>
 
-                          {adminSettings?.deployment_mode === 'smart_contract' && (
-                            <div className="mt-4 space-y-4">
-                              <h4 className="font-semibold">Deployment Method</h4>
-                              <RadioGroup value={deployMethod} onValueChange={(value: 'sequential' | 'atomic') => setDeployMethod(value)}>
-                                <div className="flex items-center space-x-2">
-                                  <RadioGroupItem value="sequential" id="sequential" />
-                                  <Label htmlFor="sequential">
-                                    <div>
-                                      <p className="font-medium">Sequential (2 transactions)</p>
-                                      <p className="text-sm text-muted-foreground">Deploy → Approve → Buy</p>
-                                    </div>
-                                  </Label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                  <RadioGroupItem value="atomic" id="atomic" />
-                                  <Label htmlFor="atomic">
-                                    <div>
-                                      <p className="font-medium">Atomic (1 transaction)</p>
-                                      <p className="text-sm text-muted-foreground">Deploy + Buy in single tx</p>
-                                      <Badge className="ml-2 bg-green-100 text-green-800">Max MEV Protection</Badge>
-                                    </div>
-                                  </Label>
-                                </div>
-                              </RadioGroup>
+                             {adminSettings?.deployment_mode === 'smart_contract' && (
+                               <div className="mt-4 space-y-4">
+                                 <h4 className="font-semibold">Deployment Method</h4>
+                                 <RadioGroup value={deployMethod} onValueChange={(value: 'sequential' | 'atomic') => setDeployMethod(value)}>
+                                   <div className="flex items-center space-x-2">
+                                     <RadioGroupItem value="sequential" id="sequential" />
+                                     <Label htmlFor="sequential">
+                                       <div>
+                                         <p className="font-medium">Sequential (2 transactions)</p>
+                                         <p className="text-sm text-muted-foreground">Deploy → Approve → Buy</p>
+                                       </div>
+                                     </Label>
+                                   </div>
+                                   <div className="flex items-center space-x-2">
+                                     <RadioGroupItem value="atomic" id="atomic" />
+                                     <Label htmlFor="atomic">
+                                       <div>
+                                         <p className="font-medium">Atomic (1 transaction)</p>
+                                         <p className="text-sm text-muted-foreground">Deploy + Buy in single tx</p>
+                                         <Badge className="ml-2 bg-green-100 text-green-800">Max MEV Protection</Badge>
+                                       </div>
+                                     </Label>
+                                   </div>
+                                 </RadioGroup>
 
-                              {deployMethod === 'atomic' && formData.prebuy_amount > 0 && (
-                                <CreatorPrebuyPanel
-                                  requiredAmount={100 + formData.prebuy_amount}
-                                  onApprovalComplete={() => setApprovalReady(true)}
-                                />
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </div>
+                                 {deployMethod === 'atomic' && formData.prebuy_amount > 0 && (
+                                   <CreatorPrebuyPanel
+                                     requiredAmount={100 + formData.prebuy_amount}
+                                     onApprovalComplete={() => setApprovalReady(true)}
+                                   />
+                                 )}
+                               </div>
+                             )}
+                           </div>
+                         </div>
+                       )}
 
                        {/* Pre-buy Section */}
                       <div className="border-t pt-6">
