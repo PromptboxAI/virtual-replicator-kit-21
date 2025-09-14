@@ -320,9 +320,9 @@ const Admin = () => {
                     </div>
                     <Switch
                       key={`test-mode-${settings?.test_mode_enabled}`}
-                      checked={!settings?.test_mode_enabled}
+                      checked={settings?.test_mode_enabled ?? false}
                       onCheckedChange={async (checked) => {
-                        const success = await updateSetting('test_mode_enabled', !checked);
+                        const success = await updateSetting('test_mode_enabled', checked);
                         if (success) {
                           await refreshSettings();
                         }
