@@ -1273,20 +1273,34 @@ export default function CreateAgent() {
                                </SelectValue>
                              </SelectTrigger>
                                 <SelectContent>
-                                  {(adminSettings?.allowed_frameworks || Object.keys(allFrameworks)).map((framework) => {                               
-                                    return (
-                                      <SelectItem key={framework} value={framework}>
-                                        <div className="flex items-center gap-2 w-full">
-                                          <span>{framework}</span>
-                                          {framework === "PROMPT" && (
-                                            <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-                                              Recommended
-                                            </Badge>
-                                          )}
-                                        </div>
-                                     </SelectItem>
-                                   );
-                                 })}
+                                   {Object.keys(allFrameworks).filter(framework => {
+                                     // If admin settings exist, filter by allowed frameworks
+                                     // Handle the PROMPT vs "PROMPT (Default Framework)" mismatch
+                                     if (adminSettings?.allowed_frameworks) {
+                                       return adminSettings.allowed_frameworks.some(allowed => 
+                                         framework === allowed || 
+                                         (allowed === "PROMPT" && framework === "PROMPT (Default Framework)") ||
+                                         (allowed === "Custom" && !adminSettings.allowed_frameworks.includes(framework))
+                                       );
+                                     }
+                                     // If no admin settings, show all frameworks
+                                     return true;
+                                   }).map((framework) => {                               
+                                     const displayName = framework === "PROMPT (Default Framework)" ? "PROMPT" : framework;
+                                     const selectValue = framework === "PROMPT (Default Framework)" ? "PROMPT" : framework;
+                                     return (
+                                       <SelectItem key={framework} value={selectValue}>
+                                         <div className="flex items-center gap-2 w-full">
+                                           <span>{displayName}</span>
+                                           {(framework === "PROMPT (Default Framework)" || framework === "PROMPT") && (
+                                             <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                                               Recommended
+                                             </Badge>
+                                           )}
+                                         </div>
+                                      </SelectItem>
+                                    );
+                                  })}
                              </SelectContent>
                          </Select>
                          
