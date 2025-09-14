@@ -23,7 +23,9 @@ export const AppModeToggle = () => {
     // Update localStorage (for navigation)
     setAppMode(newMode);
     
-    // Update database (for admin panel)
+    // Update database (for admin panel) 
+    // checked = true means production (test_mode_enabled = false)
+    // checked = false means test (test_mode_enabled = true)
     await updateSetting('test_mode_enabled', !checked, 
       checked ? 'Switched to production mode' : 'Switched to test mode');
   };
