@@ -153,6 +153,9 @@ export const ProfessionalTradingInterface = ({
         <div className="lg:col-span-2 space-y-6">
           <ProfessionalTradingChart
             agentId={agent.id}
+            agentName={agent.name}
+            agentSymbol={agent.symbol}
+            agentAvatar={agent.avatar_url}
             promptAmount={promptAmount}
             tradeType={tradeType}
             onPriceUpdate={handlePriceUpdate}

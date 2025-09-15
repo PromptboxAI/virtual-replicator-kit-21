@@ -13,21 +13,19 @@ import {
 import { ChartDataService, OHLCVData } from '@/services/chartDataService';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useTheme } from 'next-themes';
 import { 
-  TrendingUp, 
-  TrendingDown, 
-  Minus, 
-  ZoomIn, 
-  ZoomOut, 
-  Ruler,
-  Move,
-  RotateCcw
+  Pencil, Trash2, ZoomIn, ZoomOut, TrendingUp, Minus, Square, Circle, 
+  Type, Magnet, Triangle, ArrowUp, ArrowDown, RotateCcw, Move, Ruler
 } from 'lucide-react';
 import { formatMarketCapUSD, formatPriceUSD, PROMPT_USD_RATE } from '@/lib/formatters';
 
 interface AdvancedTradingChartProps {
   agentId: string;
+  agentName?: string;
+  agentSymbol?: string;
+  agentAvatar?: string;
   viewMode: 'price' | 'marketcap';
   chartType: 'candlestick' | 'line' | 'area';
   promptAmount?: number;
@@ -36,10 +34,13 @@ interface AdvancedTradingChartProps {
 }
 
 export type ChartInterval = '1m' | '5m' | '15m' | '1h' | '4h' | '1d';
-export type DrawingTool = 'none' | 'trendline' | 'horizontal' | 'ruler';
+export type DrawingTool = 'none' | 'trendline' | 'horizontal' | 'ruler' | 'fib-retracement' | 'fib-extension' | 'fib-fan' | 'rectangle' | 'circle' | 'triangle' | 'text' | 'brush' | 'eraser' | 'magnet';
 
 export const AdvancedTradingChart = ({ 
-  agentId, 
+  agentId,
+  agentName,
+  agentSymbol,
+  agentAvatar, 
   viewMode,
   chartType,
   promptAmount = 0, 
@@ -70,20 +71,43 @@ export const AdvancedTradingChart = ({
   ];
 
   const drawingTools = [
-    { value: 'none' as DrawingTool, label: 'Select', icon: Move },
-    { value: 'trendline' as DrawingTool, label: 'Trend Line', icon: TrendingUp },
-    { value: 'horizontal' as DrawingTool, label: 'Horizontal', icon: Minus },
-    { value: 'ruler' as DrawingTool, label: 'Ruler', icon: Ruler },
+    { value: 'none' as DrawingTool, label: 'Select', icon: Move, group: 'navigation' },
+    { value: 'trendline' as DrawingTool, label: 'Trend Line', icon: TrendingUp, group: 'lines' },
+    { value: 'horizontal' as DrawingTool, label: 'Horizontal Line', icon: Minus, group: 'lines' },
+    { value: 'ruler' as DrawingTool, label: 'Vertical Line', icon: Ruler, group: 'lines' },
+  ];
+
+  const fibonacciTools = [
+    { name: 'fib-retracement', icon: ArrowUp, label: 'Fibonacci Retracement' },
+    { name: 'fib-extension', icon: ArrowDown, label: 'Fibonacci Extension' },
+    { name: 'fib-fan', icon: Triangle, label: 'Fibonacci Fan' },
+  ];
+
+  const shapeTools = [
+    { name: 'rectangle', icon: Square, label: 'Rectangle' },
+    { name: 'circle', icon: Circle, label: 'Circle' },
+    { name: 'triangle', icon: Triangle, label: 'Triangle' },
+  ];
+
+  const annotationTools = [
+    { name: 'text', icon: Type, label: 'Text' },
+    { name: 'brush', icon: Pencil, label: 'Brush' },
+    { name: 'eraser', icon: Trash2, label: 'Eraser' },
+  ];
+
+  const specialTools = [
+    { name: 'magnet', icon: Magnet, label: 'Magnet' },
   ];
 
   // Convert price data to market cap data
   const convertToMarketCap = (data: OHLCVData[], totalSupply: number = 100000000): OHLCVData[] => {
     return data.map(item => ({
       ...item,
-      open: item.open * totalSupply * PROMPT_USD_RATE,
-      high: item.high * totalSupply * PROMPT_USD_RATE,
-      low: item.low * totalSupply * PROMPT_USD_RATE,
-      close: item.close * totalSupply * PROMPT_USD_RATE,
+      // Convert USD price to market cap (price is already in USD from formatters)
+      open: item.open * totalSupply,
+      high: item.high * totalSupply,
+      low: item.low * totalSupply,
+      close: item.close * totalSupply,
     }));
   };
 
@@ -258,7 +282,7 @@ export const AdvancedTradingChart = ({
           if (volumeSeriesRef.current) {
             const volumeData = processedData.map(item => ({
               time: item.time,
-              value: viewMode === 'marketcap' ? item.volume * PROMPT_USD_RATE : item.volume,
+              value: viewMode === 'marketcap' ? item.volume : item.volume,
               color: item.close >= item.open ? '#22c55e4D' : '#ef44444D',
             }));
             volumeSeriesRef.current.setData(volumeData);
@@ -266,10 +290,12 @@ export const AdvancedTradingChart = ({
 
           // Update price callback and current price display
           if (processedData.length > 0) {
-            const latestPrice = data[data.length - 1].close;
+            const latestPrice = viewMode === 'marketcap' 
+              ? processedData[processedData.length - 1].close
+              : data[data.length - 1].close;
             setCurrentPrice(latestPrice);
             if (onPriceUpdate) {
-              onPriceUpdate(latestPrice); // Always use raw price for callbacks
+              onPriceUpdate(data[data.length - 1].close); // Always use raw price for callbacks
             }
           }
 
@@ -380,16 +406,24 @@ export const AdvancedTradingChart = ({
           <div className="flex items-center justify-between">
             {/* Agent Info and Current Price */}
             <div className="flex items-center gap-3">
-              <div className="text-sm font-medium">Agent Token</div>
-              <Badge variant={isGraduated ? "default" : "secondary"} className="text-xs">
-                {isGraduated ? "DEX" : "Bonding"}
-              </Badge>
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={agentAvatar} />
+                <AvatarFallback>
+                  {agentSymbol?.substring(1, 3) || agentName?.substring(0, 2) || 'AT'}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <h3 className="font-semibold text-sm">{agentSymbol || agentName || 'Agent Token'}</h3>
+                <Badge variant={isGraduated ? "default" : "secondary"} className="text-xs">
+                  {isGraduated ? "DEX" : "Bonding"}
+                </Badge>
+              </div>
               <div className="text-sm font-mono">
                 {currentPrice > 0 && (
                   <span className={currentPrice >= (chartData[chartData.length - 2]?.close || 0) ? "text-green-500" : "text-red-500"}>
                     {viewMode === 'marketcap' 
-                      ? formatMarketCapUSD(currentPrice * 100000000 * PROMPT_USD_RATE)
-                      : formatPriceUSD(currentPrice * PROMPT_USD_RATE)
+                      ? formatMarketCapUSD(currentPrice * 100000000)
+                      : formatPriceUSD(currentPrice)
                     }
                   </span>
                 )}
