@@ -1,0 +1,453 @@
+import React, { useEffect, useRef, useState } from 'react';
+import { 
+  createChart, 
+  ColorType,
+  CandlestickSeries,
+  HistogramSeries,
+  LineSeries,
+  AreaSeries,
+  CrosshairMode,
+  LineStyle,
+  PriceScaleMode
+} from 'lightweight-charts';
+import { ChartDataService, OHLCVData } from '@/services/chartDataService';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { useTheme } from 'next-themes';
+import { 
+  TrendingUp, 
+  TrendingDown, 
+  Minus, 
+  ZoomIn, 
+  ZoomOut, 
+  Ruler,
+  Move,
+  RotateCcw
+} from 'lucide-react';
+import { formatMarketCapUSD, formatPriceUSD, PROMPT_USD_RATE } from '@/lib/formatters';
+
+interface AdvancedTradingChartProps {
+  agentId: string;
+  viewMode: 'price' | 'marketcap';
+  chartType: 'candlestick' | 'line' | 'area';
+  promptAmount?: number;
+  tradeType?: 'buy' | 'sell';
+  onPriceUpdate?: (price: number) => void;
+}
+
+export type ChartInterval = '1m' | '5m' | '15m' | '1h' | '4h' | '1d';
+export type DrawingTool = 'none' | 'trendline' | 'horizontal' | 'ruler';
+
+export const AdvancedTradingChart = ({ 
+  agentId, 
+  viewMode,
+  chartType,
+  promptAmount = 0, 
+  tradeType = 'buy',
+  onPriceUpdate 
+}: AdvancedTradingChartProps) => {
+  const chartContainerRef = useRef<HTMLDivElement>(null);
+  const chartRef = useRef<any>(null);
+  const mainSeriesRef = useRef<any>(null);
+  const volumeSeriesRef = useRef<any>(null);
+  
+  const { theme } = useTheme();
+  const [interval, setInterval] = useState<ChartInterval>('5m');
+  const [isGraduated, setIsGraduated] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [chartData, setChartData] = useState<OHLCVData[]>([]);
+  const [activeTool, setActiveTool] = useState<DrawingTool>('none');
+  const [showVolume, setShowVolume] = useState(true);
+
+  const intervals: { value: ChartInterval; label: string }[] = [
+    { value: '1m', label: '1m' },
+    { value: '5m', label: '5m' },
+    { value: '15m', label: '15m' },
+    { value: '1h', label: '1h' },
+    { value: '4h', label: '4h' },
+    { value: '1d', label: '1d' },
+  ];
+
+  const drawingTools = [
+    { value: 'none' as DrawingTool, label: 'Select', icon: Move },
+    { value: 'trendline' as DrawingTool, label: 'Trend Line', icon: TrendingUp },
+    { value: 'horizontal' as DrawingTool, label: 'Horizontal', icon: Minus },
+    { value: 'ruler' as DrawingTool, label: 'Ruler', icon: Ruler },
+  ];
+
+  // Convert price data to market cap data
+  const convertToMarketCap = (data: OHLCVData[], totalSupply: number = 100000000): OHLCVData[] => {
+    return data.map(item => ({
+      ...item,
+      open: item.open * totalSupply * PROMPT_USD_RATE,
+      high: item.high * totalSupply * PROMPT_USD_RATE,
+      low: item.low * totalSupply * PROMPT_USD_RATE,
+      close: item.close * totalSupply * PROMPT_USD_RATE,
+    }));
+  };
+
+  // Initialize chart
+  useEffect(() => {
+    if (!chartContainerRef.current) return;
+
+    const chart = createChart(chartContainerRef.current, {
+      layout: {
+        background: { type: ColorType.Solid, color: theme === 'dark' ? '#0a0a0a' : '#ffffff' },
+        textColor: theme === 'dark' ? '#d4d4d8' : '#71717a',
+      },
+      grid: {
+        vertLines: { color: theme === 'dark' ? '#27272a' : '#f4f4f5' },
+        horzLines: { color: theme === 'dark' ? '#27272a' : '#f4f4f5' },
+      },
+      width: chartContainerRef.current.clientWidth,
+      height: 500,
+      timeScale: {
+        timeVisible: true,
+        secondsVisible: false,
+        borderColor: theme === 'dark' ? '#27272a' : '#e4e4e7',
+      },
+      rightPriceScale: {
+        borderColor: theme === 'dark' ? '#27272a' : '#e4e4e7',
+        mode: PriceScaleMode.Normal,
+      },
+      crosshair: {
+        mode: CrosshairMode.Normal,
+        vertLine: {
+          width: 1,
+          color: theme === 'dark' ? '#52525b' : '#a1a1aa',
+          style: LineStyle.Dashed,
+        },
+        horzLine: {
+          width: 1,
+          color: theme === 'dark' ? '#52525b' : '#a1a1aa',
+          style: LineStyle.Dashed,
+        },
+      },
+    });
+
+    chartRef.current = chart;
+
+    // Handle resize
+    const handleResize = () => {
+      if (chartContainerRef.current && chartRef.current) {
+        chartRef.current.applyOptions({
+          width: chartContainerRef.current.clientWidth,
+        });
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (chartRef.current) {
+        chartRef.current.remove();
+      }
+    };
+  }, [theme]);
+
+  // Update chart series based on type and view mode
+  useEffect(() => {
+    if (!chartRef.current) return;
+
+    // Remove existing series
+    if (mainSeriesRef.current) {
+      chartRef.current.removeSeries(mainSeriesRef.current);
+    }
+    if (volumeSeriesRef.current) {
+      chartRef.current.removeSeries(volumeSeriesRef.current);
+    }
+
+    // Create new series based on chart type
+    let mainSeries;
+    
+    if (chartType === 'candlestick') {
+      mainSeries = chartRef.current.addSeries(CandlestickSeries, {
+        upColor: '#22c55e',
+        downColor: '#ef4444',
+        borderDownColor: '#ef4444',
+        borderUpColor: '#22c55e',
+        wickDownColor: '#ef4444',
+        wickUpColor: '#22c55e',
+        priceFormat: {
+          type: 'price',
+          precision: viewMode === 'marketcap' ? 2 : 8,
+          minMove: viewMode === 'marketcap' ? 0.01 : 0.00000001,
+        },
+      });
+    } else if (chartType === 'line') {
+      mainSeries = chartRef.current.addSeries(LineSeries, {
+        color: '#3b82f6',
+        lineWidth: 2,
+        priceFormat: {
+          type: 'price',
+          precision: viewMode === 'marketcap' ? 2 : 8,
+          minMove: viewMode === 'marketcap' ? 0.01 : 0.00000001,
+        },
+      });
+    } else { // area
+      mainSeries = chartRef.current.addSeries(AreaSeries, {
+        topColor: 'rgba(59, 130, 246, 0.4)',
+        bottomColor: 'rgba(59, 130, 246, 0.0)',
+        lineColor: '#3b82f6',
+        lineWidth: 2,
+        priceFormat: {
+          type: 'price',
+          precision: viewMode === 'marketcap' ? 2 : 8,
+          minMove: viewMode === 'marketcap' ? 0.01 : 0.00000001,
+        },
+      });
+    }
+
+    // Add volume series if enabled
+    if (showVolume) {
+      const volumeSeries = chartRef.current.addSeries(HistogramSeries, {
+        color: '#26a69a',
+        priceFormat: {
+          type: 'volume',
+        },
+        priceScaleId: 'volume',
+      });
+
+      chartRef.current.priceScale('volume').applyOptions({
+        scaleMargins: {
+          top: 0.8,
+          bottom: 0,
+        },
+      });
+
+      volumeSeriesRef.current = volumeSeries;
+    }
+
+    mainSeriesRef.current = mainSeries;
+  }, [chartType, viewMode, showVolume, theme]);
+
+  // Load and update chart data
+  useEffect(() => {
+    const loadChartData = async () => {
+      try {
+        setLoading(true);
+        const { data, isGraduated: graduated } = await ChartDataService.getChartData(agentId, interval);
+        
+        setIsGraduated(graduated);
+        
+        // Convert data based on view mode
+        const processedData = viewMode === 'marketcap' ? convertToMarketCap(data) : data;
+        setChartData(processedData);
+
+        if (mainSeriesRef.current && processedData.length > 0) {
+          if (chartType === 'candlestick') {
+            const candlestickData = processedData.map(item => ({
+              time: item.time,
+              open: item.open,
+              high: item.high,
+              low: item.low,
+              close: item.close,
+            }));
+            mainSeriesRef.current.setData(candlestickData);
+          } else {
+            const lineData = processedData.map(item => ({
+              time: item.time,
+              value: item.close,
+            }));
+            mainSeriesRef.current.setData(lineData);
+          }
+
+          // Update volume data
+          if (volumeSeriesRef.current) {
+            const volumeData = processedData.map(item => ({
+              time: item.time,
+              value: viewMode === 'marketcap' ? item.volume * PROMPT_USD_RATE : item.volume,
+              color: item.close >= item.open ? '#22c55e4D' : '#ef44444D',
+            }));
+            volumeSeriesRef.current.setData(volumeData);
+          }
+
+          // Update price callback
+          if (onPriceUpdate && processedData.length > 0) {
+            onPriceUpdate(data[data.length - 1].close); // Always use raw price for callbacks
+          }
+
+          // Fit content
+          chartRef.current?.timeScale().fitContent();
+        }
+      } catch (error) {
+        console.error('Failed to load chart data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadChartData();
+  }, [agentId, interval, viewMode, chartType, onPriceUpdate]);
+
+  const handleZoomIn = () => {
+    if (chartRef.current) {
+      const timeScale = chartRef.current.timeScale();
+      const range = timeScale.getVisibleRange();
+      if (range) {
+        const duration = range.to - range.from;
+        const newDuration = duration * 0.8;
+        const center = (range.from + range.to) / 2;
+        timeScale.setVisibleRange({
+          from: center - newDuration / 2,
+          to: center + newDuration / 2,
+        });
+      }
+    }
+  };
+
+  const handleZoomOut = () => {
+    if (chartRef.current) {
+      const timeScale = chartRef.current.timeScale();
+      const range = timeScale.getVisibleRange();
+      if (range) {
+        const duration = range.to - range.from;
+        const newDuration = duration * 1.2;
+        const center = (range.from + range.to) / 2;
+        timeScale.setVisibleRange({
+          from: center - newDuration / 2,
+          to: center + newDuration / 2,
+        });
+      }
+    }
+  };
+
+  const handleResetZoom = () => {
+    if (chartRef.current) {
+      chartRef.current.timeScale().fitContent();
+    }
+  };
+
+  return (
+    <div className="w-full bg-card border border-border rounded-lg">
+      {/* Advanced Chart Header */}
+      <div className="p-4 border-b border-border">
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          {/* Status and Info */}
+          <div className="flex items-center gap-2">
+            <Badge variant={isGraduated ? "default" : "secondary"}>
+              {isGraduated ? "DEX Trading" : "Bonding Curve"}
+            </Badge>
+            {promptAmount > 0 && (
+              <Badge variant="outline" className="text-xs">
+                Simulating {promptAmount} PROMPT {tradeType}
+              </Badge>
+            )}
+            <Badge variant="outline" className="text-xs">
+              {viewMode === 'marketcap' ? 'Market Cap View' : 'Price per Token'}
+            </Badge>
+          </div>
+
+          {/* Time Interval Controls */}
+          <div className="flex gap-1">
+            {intervals.map((int) => (
+              <Button
+                key={int.value}
+                variant={interval === int.value ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setInterval(int.value)}
+                className="text-xs px-2 py-1"
+              >
+                {int.label}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        {/* Drawing Tools and Chart Controls */}
+        <div className="flex items-center justify-between mt-3 flex-wrap gap-2">
+          {/* Drawing Tools */}
+          <div className="flex items-center gap-1">
+            {drawingTools.map((tool) => {
+              const Icon = tool.icon;
+              return (
+                <Button
+                  key={tool.value}
+                  variant={activeTool === tool.value ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setActiveTool(tool.value)}
+                  className="text-xs px-2 py-1"
+                  title={tool.label}
+                >
+                  <Icon className="h-3 w-3" />
+                </Button>
+              );
+            })}
+          </div>
+
+          {/* Zoom and View Controls */}
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleZoomIn}
+              className="text-xs px-2 py-1"
+              title="Zoom In"
+            >
+              <ZoomIn className="h-3 w-3" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleZoomOut}
+              className="text-xs px-2 py-1"
+              title="Zoom Out"
+            >
+              <ZoomOut className="h-3 w-3" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleResetZoom}
+              className="text-xs px-2 py-1"
+              title="Reset Zoom"
+            >
+              <RotateCcw className="h-3 w-3" />
+            </Button>
+            <Button
+              variant={showVolume ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setShowVolume(!showVolume)}
+              className="text-xs px-2 py-1"
+            >
+              Volume
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Chart Container */}
+      <div className="relative">
+        {loading && (
+          <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10">
+            <div className="text-muted-foreground">Loading chart data...</div>
+          </div>
+        )}
+        <div 
+          ref={chartContainerRef} 
+          className="w-full cursor-crosshair"
+          style={{ height: '500px' }}
+        />
+        {chartData.length === 0 && !loading && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center space-y-2">
+              <h3 className="text-lg font-semibold text-muted-foreground">No Trading Data</h3>
+              <p className="text-sm text-muted-foreground">
+                {isGraduated ? 'DEX trading data will appear here' : 'Bonding curve trades will appear here'}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {viewMode === 'marketcap' 
+                  ? 'Market cap progression toward $75,000 graduation' 
+                  : 'Price per token changes with each trade'
+                }
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default AdvancedTradingChart;
