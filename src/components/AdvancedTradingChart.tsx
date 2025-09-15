@@ -93,7 +93,7 @@ export const AdvancedTradingChart = ({
 
     const chart = createChart(chartContainerRef.current, {
       layout: {
-        background: { type: ColorType.Solid, color: theme === 'dark' ? '#0a0a0a' : '#ffffff' },
+        background: { type: ColorType.Solid, color: 'transparent' },
         textColor: theme === 'dark' ? '#d4d4d8' : '#71717a',
       },
       grid: {
@@ -325,9 +325,9 @@ export const AdvancedTradingChart = ({
   };
 
   return (
-    <div className="flex h-full bg-chart-background border border-border rounded-lg overflow-hidden">
+    <div className="flex h-full bg-background border border-border rounded-lg overflow-hidden">
       {/* Left Toolbar - TradingView Style */}
-      <div className="w-12 bg-muted/30 border-r border-border flex flex-col items-center py-2 gap-1">
+      <div className="w-12 bg-background/50 border-r border-border flex flex-col items-center py-2 gap-1">
         {drawingTools.map((tool) => {
           const Icon = tool.icon;
           return (
@@ -376,7 +376,7 @@ export const AdvancedTradingChart = ({
       {/* Main Chart Area */}
       <div className="flex-1 flex flex-col">
         {/* Top Header */}
-        <div className="p-3 border-b border-border bg-muted/20">
+        <div className="p-3 border-b border-border bg-background/80">
           <div className="flex items-center justify-between">
             {/* Agent Info and Current Price */}
             <div className="flex items-center gap-3">
