@@ -5,6 +5,7 @@ import { TrendingUp, TrendingDown, Activity, BarChart3 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { isAgentGraduatedV3, formatPriceV3, getCurrentPriceV3, tokensSoldFromPromptRaisedV3 } from '@/lib/bondingCurveV3';
 import { useAgentRealtime } from '@/hooks/useAgentRealtime';
+import { formatPriceUSD, formatMarketCapUSD } from '@/lib/formatters';
 
 interface SpotlightAgentProps {
   agent: {
@@ -42,19 +43,9 @@ export function SpotlightAgent({ agent }: SpotlightAgentProps) {
     navigate(`/agent/${agent.id}`);
   };
   
-  const formatPrice = (price?: number) => {
-    if (typeof price !== 'number' || isNaN(price)) return '$0.00';
-    if (price < 0.000001) return price.toExponential(3);
-    if (price < 0.01) return price.toFixed(6);
-    return price.toFixed(2);
-  };
-
-  const formatMarketCap = (marketCap?: number) => {
-    if (typeof marketCap !== 'number' || isNaN(marketCap)) return 'N/A';
-    if (marketCap >= 1000000) return `$${(marketCap / 1000000).toFixed(1)}M`;
-    if (marketCap >= 1000) return `$${(marketCap / 1000).toFixed(1)}K`;
-    return `$${marketCap.toFixed(0)}`;
-  };
+  // Use USD formatting for all displays
+  const currentPrice = getCurrentPriceV3(tokensSoldFromPromptRaisedV3(agent.prompt_raised || 0));
+  const marketCapInPrompt = currentPrice * 1000000000; // price × 1B total supply;
   
   return (
     <div className="relative">
@@ -96,7 +87,7 @@ export function SpotlightAgent({ agent }: SpotlightAgentProps) {
           </div>
           
           <div className="text-right">
-            <div className="text-2xl font-bold text-foreground">${formatPriceV3(getCurrentPriceV3(tokensSoldFromPromptRaisedV3(agent.prompt_raised || 0)))}</div>
+            <div className="text-2xl font-bold text-foreground">{formatPriceUSD(currentPrice)}</div>
             {agent.price_change_24h !== undefined && (
               <div className={`flex items-center space-x-1 ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
                 {isPositive ? (
@@ -116,13 +107,13 @@ export function SpotlightAgent({ agent }: SpotlightAgentProps) {
           <div>
             <div className="text-sm text-muted-foreground">Market Cap</div>
             <div className="text-lg font-semibold text-foreground">
-              {agent.market_cap ? formatMarketCap(agent.market_cap) : 'N/A'}
+              {formatMarketCapUSD(marketCapInPrompt)}
             </div>
           </div>
           <div>
             <div className="text-sm text-muted-foreground">24h Volume</div>
             <div className="text-lg font-semibold text-foreground">
-              {agent.volume_24h ? formatMarketCap(agent.volume_24h) : 'N/A'}
+              {agent.volume_24h ? formatMarketCapUSD(agent.volume_24h) : 'N/A'}
             </div>
           </div>
           <div>

@@ -1024,6 +1024,7 @@ export type Database = {
           id: string
           is_active: boolean | null
           market_cap: number | null
+          market_cap_usd: number | null
           max_trade_amount: number | null
           migration_completed_at: string | null
           migration_validated: boolean | null
@@ -1031,6 +1032,7 @@ export type Database = {
           price_change_24h: number | null
           pricing_model: string | null
           prompt_raised: number | null
+          prompt_usd_rate: number | null
           status: string | null
           symbol: string
           test_mode: boolean | null
@@ -1075,6 +1077,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           market_cap?: number | null
+          market_cap_usd?: number | null
           max_trade_amount?: number | null
           migration_completed_at?: string | null
           migration_validated?: boolean | null
@@ -1082,6 +1085,7 @@ export type Database = {
           price_change_24h?: number | null
           pricing_model?: string | null
           prompt_raised?: number | null
+          prompt_usd_rate?: number | null
           status?: string | null
           symbol: string
           test_mode?: boolean | null
@@ -1126,6 +1130,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           market_cap?: number | null
+          market_cap_usd?: number | null
           max_trade_amount?: number | null
           migration_completed_at?: string | null
           migration_validated?: boolean | null
@@ -1133,6 +1138,7 @@ export type Database = {
           price_change_24h?: number | null
           pricing_model?: string | null
           prompt_raised?: number | null
+          prompt_usd_rate?: number | null
           status?: string | null
           symbol?: string
           test_mode?: boolean | null
