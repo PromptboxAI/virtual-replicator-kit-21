@@ -31,7 +31,8 @@ export function AgentPayment({ agentName, cost, agentId, onPaymentSuccess, onCan
   
   const costNumber = parseFloat(cost);
   const balanceNumber = parseFloat(promptBalance);
-  const hasSufficientBalance = balanceNumber >= costNumber;
+  const totalCost = 100 + costNumber; // Creation fee + prebuy
+  const hasSufficientBalance = balanceNumber >= totalCost;
 
   const handlePayment = async () => {
     if (!isConnected) {
@@ -46,7 +47,7 @@ export function AgentPayment({ agentName, cost, agentId, onPaymentSuccess, onCan
     if (!hasSufficientBalance) {
       toast({
         title: "Insufficient Balance",
-        description: `You need ${cost} $PROMPT tokens but only have ${promptBalance}.`,
+        description: `You need ${totalCost} $PROMPT tokens but only have ${promptBalance}.`,
         variant: "destructive"
       });
       return;
@@ -55,12 +56,12 @@ export function AgentPayment({ agentName, cost, agentId, onPaymentSuccess, onCan
     setIsProcessing(true);
     
     try {
-      const success = await payForAgentCreation(cost, treasuryAddress, agentId);
+      const success = await payForAgentCreation(totalCost.toString(), treasuryAddress, agentId);
       
       if (success) {
         toast({
           title: "Payment Successful! 🎉",
-          description: `Successfully paid ${cost} $PROMPT tokens for ${agentName}`,
+          description: `Successfully paid ${totalCost} $PROMPT tokens for ${agentName}`,
         });
         onPaymentSuccess();
       }
@@ -110,7 +111,13 @@ export function AgentPayment({ agentName, cost, agentId, onPaymentSuccess, onCan
             <span>{agentName}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="font-medium">Creation Cost:</span>
+            <span className="font-medium">Creation Fee:</span>
+            <Badge variant="outline" className="font-mono">
+              100 $PROMPT
+            </Badge>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="font-medium">Pre-buy Amount:</span>
             <Badge variant="outline" className="font-mono">
               {cost} $PROMPT
             </Badge>
@@ -120,7 +127,7 @@ export function AgentPayment({ agentName, cost, agentId, onPaymentSuccess, onCan
             <span>Total:</span>
             <span className="flex items-center gap-1">
               <Coins className="h-4 w-4" />
-              {cost} $PROMPT
+              {(100 + parseFloat(cost)).toString()} $PROMPT
             </span>
           </div>
         </div>
@@ -158,7 +165,7 @@ export function AgentPayment({ agentName, cost, agentId, onPaymentSuccess, onCan
               <div>
                 <h4 className="font-medium text-yellow-800">Insufficient Balance</h4>
                 <p className="text-sm text-yellow-700">
-                  You need {cost} $PROMPT tokens but only have {promptBalance}. 
+                  You need {totalCost} $PROMPT tokens but only have {promptBalance}. 
                   Please add more tokens to your wallet to proceed.
                 </p>
               </div>
@@ -181,7 +188,7 @@ export function AgentPayment({ agentName, cost, agentId, onPaymentSuccess, onCan
             ) : (
               <>
                 <Coins className="h-4 w-4 mr-2" />
-                Pay {cost} $PROMPT
+                Pay {totalCost} $PROMPT
               </>
             )}
           </Button>
