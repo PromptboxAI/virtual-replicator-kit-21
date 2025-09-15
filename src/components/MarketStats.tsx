@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { TrendingUp, Users, Zap, DollarSign, Loader2 } from "lucide-react";
 import { useMarketStats } from "@/hooks/useMarketStats";
+import { formatMarketCapUSD } from "@/lib/formatters";
 
 export function MarketStats() {
   const { stats, loading, error } = useMarketStats();
@@ -29,17 +30,6 @@ export function MarketStats() {
     );
   }
 
-  const formatNumber = (num: number) => {
-    if (num >= 1000000000) {
-      return `$${(num / 1000000000).toFixed(1)}B`;
-    } else if (num >= 1000000) {
-      return `$${(num / 1000000).toFixed(1)}M`;
-    } else if (num >= 1000) {
-      return `$${(num / 1000).toFixed(1)}K`;
-    }
-    return `$${num.toFixed(0)}`;
-  };
-
   const formatCount = (num: number) => {
     if (num >= 1000000) {
       return `${(num / 1000000).toFixed(1)}M`;
@@ -52,7 +42,7 @@ export function MarketStats() {
   const marketStatsData = [
     {
       label: "Total Market Cap",
-      value: formatNumber(stats.totalMarketCap),
+      value: formatMarketCapUSD(stats.totalMarketCap), // Convert PROMPT to USD
       icon: DollarSign
     },
     {
@@ -67,7 +57,7 @@ export function MarketStats() {
     },
     {
       label: "24h Volume",
-      value: formatNumber(stats.totalVolume),
+      value: formatMarketCapUSD(stats.totalVolume), // Convert PROMPT to USD
       icon: TrendingUp
     }
   ];

@@ -378,14 +378,14 @@ export function formatTokenAmountV3(amount: number, decimals: number = 2): strin
 }
 
 export function formatPriceV3(price: number): string {
-  if (price < 0.0001) {
-    return price.toExponential(3);
-  } else if (price < 0.01) {
-    return price.toFixed(6);
-  } else if (price < 1) {
-    return price.toFixed(4);
+  if (price === 0) return '0';
+  if (price < 0.000001) {
+    return price.toFixed(10).replace(/\.?0+$/, '');
   }
-  return price.toFixed(3);
+  if (price < 0.01) {
+    return price.toFixed(8).replace(/\.?0+$/, '');
+  }
+  return price.toFixed(6);
 }
 
 export function formatPromptAmountV3(amount: number, showSymbol: boolean = true): string {
