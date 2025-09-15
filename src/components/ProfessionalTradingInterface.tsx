@@ -9,6 +9,7 @@ import { TokenTradingInterface } from './TokenTradingInterface';
 import { TradingModeGuard } from './TradingModeGuard';
 import { useAgentRealtime } from '@/hooks/useAgentRealtime';
 import { formatPromptAmountV3, formatPriceV3, formatTokenAmountV3 } from '@/lib/bondingCurveV3';
+import { formatMarketCapUSD } from '@/lib/formatters';
 import { AgentInformationSections } from './AgentInformationSections';
 import { useToast } from '@/hooks/use-toast';
 import { AgentMigrationStatus } from './AgentMigrationStatus';
@@ -203,7 +204,7 @@ export const ProfessionalTradingInterface = ({
           <>
             <Card className="p-4 text-center">
               <div className="text-lg font-bold text-foreground">
-                ${agent.market_cap.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {formatMarketCapUSD(agent.market_cap)}
               </div>
               <div className="text-sm text-muted-foreground">FDV</div>
             </Card>
@@ -241,7 +242,7 @@ export const ProfessionalTradingInterface = ({
           <>
             <Card className="p-4 text-center">
               <div className="text-lg font-bold text-foreground">
-                ${agent.market_cap.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {formatMarketCapUSD(agent.market_cap)}
               </div>
               <div className="text-sm text-muted-foreground">Market Cap</div>
             </Card>
