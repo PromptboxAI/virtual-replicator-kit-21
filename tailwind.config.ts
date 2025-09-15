@@ -70,6 +70,11 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				chart: {
+					background: 'hsl(var(--chart-background))',
+					grid: 'hsl(var(--chart-grid))',
+					text: 'hsl(var(--chart-text))'
 				}
 			},
 			borderRadius: {

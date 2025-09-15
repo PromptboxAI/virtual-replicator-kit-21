@@ -52,9 +52,9 @@ export const ProfessionalTradingChart = ({
   }, [agentId, promptAmount, tradeType]);
 
   return (
-    <div className="space-y-4">
+    <div className="h-[600px]">
       {/* Chart Controls */}
-      <Card className="p-3">
+      <Card className="p-3 mb-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1">
@@ -62,17 +62,9 @@ export const ProfessionalTradingChart = ({
                 variant={viewMode === 'price' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setViewMode('price')}
-                className="text-xs"
+                className="text-xs h-7"
               >
-                Price per Token
-              </Button>
-              <Button
-                variant={viewMode === 'marketcap' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setViewMode('marketcap')}
-                className="text-xs"
-              >
-                Market Cap
+                Price / MCAP
               </Button>
             </div>
             <div className="h-4 w-px bg-border mx-2" />
@@ -81,27 +73,36 @@ export const ProfessionalTradingChart = ({
                 variant={chartType === 'candlestick' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setChartType('candlestick')}
-                className="text-xs"
+                className="text-xs h-7"
               >
-                Candles
+                📊
               </Button>
               <Button
                 variant={chartType === 'line' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setChartType('line')}
-                className="text-xs"
+                className="text-xs h-7"
               >
-                Line
+                📈
               </Button>
               <Button
                 variant={chartType === 'area' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setChartType('area')}
-                className="text-xs"
+                className="text-xs h-7"
               >
-                Area
+                🔺
               </Button>
             </div>
+            <div className="h-4 w-px bg-border mx-2" />
+            <Button
+              variant={viewMode === 'price' ? 'outline' : 'default'}
+              size="sm"
+              onClick={() => setViewMode(viewMode === 'price' ? 'marketcap' : 'price')}
+              className="text-xs h-7"
+            >
+              {viewMode === 'price' ? 'Show MCAP' : 'Show Price'}
+            </Button>
           </div>
           
           <Badge variant="outline" className="text-xs">
@@ -111,18 +112,20 @@ export const ProfessionalTradingChart = ({
       </Card>
 
       {/* Advanced Chart Component */}
-      <AdvancedTradingChart
-        agentId={agentId}
-        viewMode={viewMode}
-        chartType={chartType}
-        promptAmount={promptAmount}
-        tradeType={tradeType}
-        onPriceUpdate={onPriceUpdate}
-      />
+      <div className="h-[520px]">
+        <AdvancedTradingChart
+          agentId={agentId}
+          viewMode={viewMode}
+          chartType={chartType}
+          promptAmount={promptAmount}
+          tradeType={tradeType}
+          onPriceUpdate={onPriceUpdate}
+        />
+      </div>
       
       {/* Price Impact Display - Only show for buy/sell simulation */}
       {priceImpact && promptAmount > 0 && (
-        <Card className="p-4">
+        <Card className="p-4 mt-2">
           <div className="space-y-2">
             <h4 className="text-sm font-medium flex items-center gap-2">
               Trade Impact Simulation

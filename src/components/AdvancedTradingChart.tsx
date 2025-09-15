@@ -58,6 +58,7 @@ export const AdvancedTradingChart = ({
   const [chartData, setChartData] = useState<OHLCVData[]>([]);
   const [activeTool, setActiveTool] = useState<DrawingTool>('none');
   const [showVolume, setShowVolume] = useState(true);
+  const [currentPrice, setCurrentPrice] = useState<number>(0);
 
   const intervals: { value: ChartInterval; label: string }[] = [
     { value: '1m', label: '1m' },
@@ -100,7 +101,7 @@ export const AdvancedTradingChart = ({
         horzLines: { color: theme === 'dark' ? '#27272a' : '#f4f4f5' },
       },
       width: chartContainerRef.current.clientWidth,
-      height: 500,
+      height: chartContainerRef.current.clientHeight,
       timeScale: {
         timeVisible: true,
         secondsVisible: false,
@@ -263,9 +264,13 @@ export const AdvancedTradingChart = ({
             volumeSeriesRef.current.setData(volumeData);
           }
 
-          // Update price callback
-          if (onPriceUpdate && processedData.length > 0) {
-            onPriceUpdate(data[data.length - 1].close); // Always use raw price for callbacks
+          // Update price callback and current price display
+          if (processedData.length > 0) {
+            const latestPrice = data[data.length - 1].close;
+            setCurrentPrice(latestPrice);
+            if (onPriceUpdate) {
+              onPriceUpdate(latestPrice); // Always use raw price for callbacks
+            }
           }
 
           // Fit content
@@ -320,131 +325,134 @@ export const AdvancedTradingChart = ({
   };
 
   return (
-    <div className="w-full bg-card border border-border rounded-lg">
-      {/* Advanced Chart Header */}
-      <div className="p-4 border-b border-border">
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          {/* Status and Info */}
-          <div className="flex items-center gap-2">
-            <Badge variant={isGraduated ? "default" : "secondary"}>
-              {isGraduated ? "DEX Trading" : "Bonding Curve"}
-            </Badge>
-            {promptAmount > 0 && (
-              <Badge variant="outline" className="text-xs">
-                Simulating {promptAmount} PROMPT {tradeType}
-              </Badge>
-            )}
-            <Badge variant="outline" className="text-xs">
-              {viewMode === 'marketcap' ? 'Market Cap View' : 'Price per Token'}
-            </Badge>
-          </div>
-
-          {/* Time Interval Controls */}
-          <div className="flex gap-1">
-            {intervals.map((int) => (
-              <Button
-                key={int.value}
-                variant={interval === int.value ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setInterval(int.value)}
-                className="text-xs px-2 py-1"
-              >
-                {int.label}
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        {/* Drawing Tools and Chart Controls */}
-        <div className="flex items-center justify-between mt-3 flex-wrap gap-2">
-          {/* Drawing Tools */}
-          <div className="flex items-center gap-1">
-            {drawingTools.map((tool) => {
-              const Icon = tool.icon;
-              return (
-                <Button
-                  key={tool.value}
-                  variant={activeTool === tool.value ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setActiveTool(tool.value)}
-                  className="text-xs px-2 py-1"
-                  title={tool.label}
-                >
-                  <Icon className="h-3 w-3" />
-                </Button>
-              );
-            })}
-          </div>
-
-          {/* Zoom and View Controls */}
-          <div className="flex items-center gap-1">
+    <div className="flex h-full bg-chart-background border border-border rounded-lg overflow-hidden">
+      {/* Left Toolbar - TradingView Style */}
+      <div className="w-12 bg-muted/30 border-r border-border flex flex-col items-center py-2 gap-1">
+        {drawingTools.map((tool) => {
+          const Icon = tool.icon;
+          return (
             <Button
-              variant="ghost"
+              key={tool.value}
+              variant={activeTool === tool.value ? "default" : "ghost"}
               size="sm"
-              onClick={handleZoomIn}
-              className="text-xs px-2 py-1"
-              title="Zoom In"
+              onClick={() => setActiveTool(tool.value)}
+              className="w-10 h-10 p-0"
+              title={tool.label}
             >
-              <ZoomIn className="h-3 w-3" />
+              <Icon className="h-4 w-4" />
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleZoomOut}
-              className="text-xs px-2 py-1"
-              title="Zoom Out"
-            >
-              <ZoomOut className="h-3 w-3" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleResetZoom}
-              className="text-xs px-2 py-1"
-              title="Reset Zoom"
-            >
-              <RotateCcw className="h-3 w-3" />
-            </Button>
-            <Button
-              variant={showVolume ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setShowVolume(!showVolume)}
-              className="text-xs px-2 py-1"
-            >
-              Volume
-            </Button>
-          </div>
-        </div>
+          );
+        })}
+        <div className="w-8 h-px bg-border my-1" />
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleZoomIn}
+          className="w-10 h-10 p-0"
+          title="Zoom In"
+        >
+          <ZoomIn className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleZoomOut}
+          className="w-10 h-10 p-0"
+          title="Zoom Out"
+        >
+          <ZoomOut className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleResetZoom}
+          className="w-10 h-10 p-0"
+          title="Reset Zoom"
+        >
+          <RotateCcw className="h-4 w-4" />
+        </Button>
       </div>
 
-      {/* Chart Container */}
-      <div className="relative">
-        {loading && (
-          <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10">
-            <div className="text-muted-foreground">Loading chart data...</div>
-          </div>
-        )}
-        <div 
-          ref={chartContainerRef} 
-          className="w-full cursor-crosshair"
-          style={{ height: '500px' }}
-        />
-        {chartData.length === 0 && !loading && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center space-y-2">
-              <h3 className="text-lg font-semibold text-muted-foreground">No Trading Data</h3>
-              <p className="text-sm text-muted-foreground">
-                {isGraduated ? 'DEX trading data will appear here' : 'Bonding curve trades will appear here'}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {viewMode === 'marketcap' 
-                  ? 'Market cap progression toward $75,000 graduation' 
-                  : 'Price per token changes with each trade'
-                }
-              </p>
+      {/* Main Chart Area */}
+      <div className="flex-1 flex flex-col">
+        {/* Top Header */}
+        <div className="p-3 border-b border-border bg-muted/20">
+          <div className="flex items-center justify-between">
+            {/* Agent Info and Current Price */}
+            <div className="flex items-center gap-3">
+              <div className="text-sm font-medium">Agent Token</div>
+              <Badge variant={isGraduated ? "default" : "secondary"} className="text-xs">
+                {isGraduated ? "DEX" : "Bonding"}
+              </Badge>
+              <div className="text-sm font-mono">
+                {currentPrice > 0 && (
+                  <span className={currentPrice >= (chartData[chartData.length - 2]?.close || 0) ? "text-green-500" : "text-red-500"}>
+                    {viewMode === 'marketcap' 
+                      ? formatMarketCapUSD(currentPrice * 100000000 * PROMPT_USD_RATE)
+                      : formatPriceUSD(currentPrice * PROMPT_USD_RATE)
+                    }
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Time Intervals */}
+            <div className="flex gap-1">
+              {intervals.map((int) => (
+                <Button
+                  key={int.value}
+                  variant={interval === int.value ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setInterval(int.value)}
+                  className="text-xs px-3 py-1 h-7"
+                >
+                  {int.label}
+                </Button>
+              ))}
+            </div>
+
+            {/* Right Controls */}
+            <div className="flex items-center gap-2">
+              <Button
+                variant={showVolume ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setShowVolume(!showVolume)}
+                className="text-xs px-3 py-1 h-7"
+              >
+                Volume
+              </Button>
             </div>
           </div>
-        )}
+        </div>
+
+        {/* Chart Container */}
+        <div className="flex-1 relative">
+          {loading && (
+            <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10">
+              <div className="text-muted-foreground">Loading chart data...</div>
+            </div>
+          )}
+          <div 
+            ref={chartContainerRef} 
+            className="w-full h-full cursor-crosshair"
+          />
+          {chartData.length === 0 && !loading && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center space-y-2">
+                <h3 className="text-lg font-semibold text-muted-foreground">No Trading Data</h3>
+                <p className="text-sm text-muted-foreground">
+                  {isGraduated ? 'DEX trading data will appear here' : 'Bonding curve trades will appear here'}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {viewMode === 'marketcap' 
+                    ? 'Market cap progression toward $75,000 graduation' 
+                    : 'Price per token changes with each trade'
+                  }
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
