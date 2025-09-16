@@ -2,10 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { 
   createChart, 
   ColorType,
-  CandlestickSeries,
-  HistogramSeries,
-  LineSeries,
-  AreaSeries,
   CrosshairMode,
   LineStyle,
   PriceScaleMode
@@ -256,16 +252,20 @@ export const AdvancedTradingChart = ({
   useEffect(() => {
     const loadChartData = async () => {
       try {
+        console.log('Loading chart data for agent:', agentId, 'interval:', interval);
         setLoading(true);
         const { data, isGraduated: graduated } = await ChartDataService.getChartData(agentId, interval);
         
+        console.log('Chart data loaded:', { data: data.length, graduated });
         setIsGraduated(graduated);
         
         // Convert data based on view mode
         const processedData = viewMode === 'marketcap' ? convertToMarketCap(data) : data;
         setChartData(processedData);
+        console.log('Processed chart data:', processedData.length, 'points');
 
         if (mainSeriesRef.current && processedData.length > 0) {
+          console.log('Setting chart series data...');
           if (chartType === 'candlestick') {
             const candlestickData = processedData.map(item => ({
               time: item.time,
@@ -299,6 +299,7 @@ export const AdvancedTradingChart = ({
               ? processedData[processedData.length - 1].close
               : data[data.length - 1].close;
             setCurrentPrice(latestPrice);
+            console.log('Updated current price:', latestPrice);
             if (onPriceUpdate) {
               onPriceUpdate(data[data.length - 1].close); // Always use raw USD price for callbacks
             }
@@ -306,6 +307,9 @@ export const AdvancedTradingChart = ({
 
           // Fit content
           chartRef.current?.timeScale().fitContent();
+          console.log('Chart initialized successfully');
+        } else {
+          console.log('No chart series or data available');
         }
       } catch (error) {
         console.error('Failed to load chart data:', error);
