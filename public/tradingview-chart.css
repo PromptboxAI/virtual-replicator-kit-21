@@ -1,0 +1,35 @@
+/* TradingView Chart Custom Styles */
+.tv-lightweight-charts {
+  background: transparent !important;
+}
+
+.chart-container {
+  background: transparent !important;
+}
+
+/* Dark theme overrides */
+.tv-chart-container {
+  background: transparent !important;
+}
+
+.tv-chart-container .chart-markup-table {
+  background: transparent !important;
+}
+
+/* Remove TradingView branding for professional look */
+.tv-floating-toolbar__widget-wrapper,
+.tv-chart-container .tv-attribution,
+.tv-chart-container .tv-floating-toolbar {
+  display: none !important;
+}
+
+/* Ensure chart fills container */
+.tv-chart-container iframe {
+  background: transparent !important;
+}
+
+/* Professional styling */
+.tv-chart-container .tv-chart-container__controls {
+  background: rgba(0, 0, 0, 0.1) !important;
+  backdrop-filter: blur(10px) !important;
+}
