@@ -17,9 +17,10 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useTheme } from 'next-themes';
 import { 
   Pencil, Trash2, ZoomIn, ZoomOut, TrendingUp, Minus, Square, Circle, 
-  Type, Magnet, Triangle, ArrowUp, ArrowDown, RotateCcw, Move, Ruler
+  Type, Magnet, Triangle, ArrowUp, ArrowDown, RotateCcw, Move, Ruler,
+  PenTool, Eraser, Target, MousePointer
 } from 'lucide-react';
-import { formatMarketCapUSD, formatPriceUSD, PROMPT_USD_RATE } from '@/lib/formatters';
+import { formatMarketCapUSD, formatPriceUSD } from '@/lib/formatters';
 
 interface AdvancedTradingChartProps {
   agentId: string;
@@ -34,7 +35,7 @@ interface AdvancedTradingChartProps {
 }
 
 export type ChartInterval = '1m' | '5m' | '15m' | '1h' | '4h' | '1d';
-export type DrawingTool = 'none' | 'trendline' | 'horizontal' | 'ruler' | 'fib-retracement' | 'fib-extension' | 'fib-fan' | 'rectangle' | 'circle' | 'triangle' | 'text' | 'brush' | 'eraser' | 'magnet';
+export type DrawingTool = 'none' | 'trendline' | 'horizontal' | 'vertical' | 'fib-retracement' | 'fib-extension' | 'fib-fan' | 'rectangle' | 'circle' | 'triangle' | 'text' | 'brush' | 'eraser' | 'magnet';
 
 export const AdvancedTradingChart = ({ 
   agentId,
@@ -70,40 +71,44 @@ export const AdvancedTradingChart = ({
     { value: '1d', label: '1d' },
   ];
 
-  const drawingTools = [
-    { value: 'none' as DrawingTool, label: 'Select', icon: Move, group: 'navigation' },
-    { value: 'trendline' as DrawingTool, label: 'Trend Line', icon: TrendingUp, group: 'lines' },
-    { value: 'horizontal' as DrawingTool, label: 'Horizontal Line', icon: Minus, group: 'lines' },
-    { value: 'ruler' as DrawingTool, label: 'Vertical Line', icon: Ruler, group: 'lines' },
+  // Professional drawing tools in organized groups
+  const navigationTools = [
+    { value: 'none' as DrawingTool, label: 'Select', icon: MousePointer },
+  ];
+
+  const lineTools = [
+    { value: 'trendline' as DrawingTool, label: 'Trend Line', icon: TrendingUp },
+    { value: 'horizontal' as DrawingTool, label: 'Horizontal Line', icon: Minus },
+    { value: 'vertical' as DrawingTool, label: 'Vertical Line', icon: Ruler },
   ];
 
   const fibonacciTools = [
-    { name: 'fib-retracement', icon: ArrowUp, label: 'Fibonacci Retracement' },
-    { name: 'fib-extension', icon: ArrowDown, label: 'Fibonacci Extension' },
-    { name: 'fib-fan', icon: Triangle, label: 'Fibonacci Fan' },
+    { value: 'fib-retracement' as DrawingTool, label: 'Fibonacci Retracement', icon: ArrowUp },
+    { value: 'fib-extension' as DrawingTool, label: 'Fibonacci Extension', icon: ArrowDown },
+    { value: 'fib-fan' as DrawingTool, label: 'Fibonacci Fan', icon: Triangle },
   ];
 
   const shapeTools = [
-    { name: 'rectangle', icon: Square, label: 'Rectangle' },
-    { name: 'circle', icon: Circle, label: 'Circle' },
-    { name: 'triangle', icon: Triangle, label: 'Triangle' },
+    { value: 'rectangle' as DrawingTool, label: 'Rectangle', icon: Square },
+    { value: 'circle' as DrawingTool, label: 'Circle', icon: Circle },
+    { value: 'triangle' as DrawingTool, label: 'Triangle', icon: Triangle },
   ];
 
   const annotationTools = [
-    { name: 'text', icon: Type, label: 'Text' },
-    { name: 'brush', icon: Pencil, label: 'Brush' },
-    { name: 'eraser', icon: Trash2, label: 'Eraser' },
+    { value: 'text' as DrawingTool, label: 'Text', icon: Type },
+    { value: 'brush' as DrawingTool, label: 'Brush', icon: PenTool },
+    { value: 'eraser' as DrawingTool, label: 'Eraser', icon: Eraser },
   ];
 
   const specialTools = [
-    { name: 'magnet', icon: Magnet, label: 'Magnet' },
+    { value: 'magnet' as DrawingTool, label: 'Magnet Mode', icon: Target },
   ];
 
   // Convert price data to market cap data
   const convertToMarketCap = (data: OHLCVData[], totalSupply: number = 100000000): OHLCVData[] => {
     return data.map(item => ({
       ...item,
-      // Convert USD price to market cap (price is already in USD from formatters)
+      // Convert USD price to market cap (price is already in USD)
       open: item.open * totalSupply,
       high: item.high * totalSupply,
       low: item.low * totalSupply,
@@ -187,7 +192,7 @@ export const AdvancedTradingChart = ({
     let mainSeries;
     
     if (chartType === 'candlestick') {
-      mainSeries = chartRef.current.addSeries(CandlestickSeries, {
+      mainSeries = chartRef.current.addCandlestickSeries({
         upColor: '#22c55e',
         downColor: '#ef4444',
         borderDownColor: '#ef4444',
@@ -201,7 +206,7 @@ export const AdvancedTradingChart = ({
         },
       });
     } else if (chartType === 'line') {
-      mainSeries = chartRef.current.addSeries(LineSeries, {
+      mainSeries = chartRef.current.addLineSeries({
         color: '#3b82f6',
         lineWidth: 2,
         priceFormat: {
@@ -211,7 +216,7 @@ export const AdvancedTradingChart = ({
         },
       });
     } else { // area
-      mainSeries = chartRef.current.addSeries(AreaSeries, {
+      mainSeries = chartRef.current.addAreaSeries({
         topColor: 'rgba(59, 130, 246, 0.4)',
         bottomColor: 'rgba(59, 130, 246, 0.0)',
         lineColor: '#3b82f6',
@@ -226,7 +231,7 @@ export const AdvancedTradingChart = ({
 
     // Add volume series if enabled
     if (showVolume) {
-      const volumeSeries = chartRef.current.addSeries(HistogramSeries, {
+      const volumeSeries = chartRef.current.addHistogramSeries({
         color: '#26a69a',
         priceFormat: {
           type: 'volume',
@@ -282,7 +287,7 @@ export const AdvancedTradingChart = ({
           if (volumeSeriesRef.current) {
             const volumeData = processedData.map(item => ({
               time: item.time,
-              value: viewMode === 'marketcap' ? item.volume : item.volume,
+              value: item.volume,
               color: item.close >= item.open ? '#22c55e4D' : '#ef44444D',
             }));
             volumeSeriesRef.current.setData(volumeData);
@@ -295,7 +300,7 @@ export const AdvancedTradingChart = ({
               : data[data.length - 1].close;
             setCurrentPrice(latestPrice);
             if (onPriceUpdate) {
-              onPriceUpdate(data[data.length - 1].close); // Always use raw price for callbacks
+              onPriceUpdate(data[data.length - 1].close); // Always use raw USD price for callbacks
             }
           }
 
@@ -310,6 +315,19 @@ export const AdvancedTradingChart = ({
     };
 
     loadChartData();
+
+    // Set up real-time updates
+    const unsubscribe = ChartDataService.subscribeToRealTimeUpdates(agentId, (newData: OHLCVData) => {
+      console.log('Real-time chart update received:', newData);
+      setCurrentPrice(newData.close);
+      if (onPriceUpdate) {
+        onPriceUpdate(newData.close);
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
   }, [agentId, interval, viewMode, chartType, onPriceUpdate]);
 
   const handleZoomIn = () => {
@@ -350,31 +368,55 @@ export const AdvancedTradingChart = ({
     }
   };
 
+  const renderToolGroup = (tools: any[], showSeparator: boolean = true) => (
+    <>
+      {tools.map((tool) => {
+        const Icon = tool.icon;
+        return (
+          <Button
+            key={tool.value}
+            variant={activeTool === tool.value ? "default" : "ghost"}
+            size="sm"
+            onClick={() => setActiveTool(tool.value)}
+            className="w-10 h-10 p-0 mb-1"
+            title={tool.label}
+          >
+            <Icon className="h-4 w-4" />
+          </Button>
+        );
+      })}
+      {showSeparator && <div className="w-8 h-px bg-border my-2" />}
+    </>
+  );
+
   return (
     <div className="flex h-full bg-background border border-border rounded-lg overflow-hidden">
-      {/* Left Toolbar - TradingView Style */}
-      <div className="w-12 bg-background/50 border-r border-border flex flex-col items-center py-2 gap-1">
-        {drawingTools.map((tool) => {
-          const Icon = tool.icon;
-          return (
-            <Button
-              key={tool.value}
-              variant={activeTool === tool.value ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setActiveTool(tool.value)}
-              className="w-10 h-10 p-0"
-              title={tool.label}
-            >
-              <Icon className="h-4 w-4" />
-            </Button>
-          );
-        })}
-        <div className="w-8 h-px bg-border my-1" />
+      {/* Left Toolbar - Professional Trading Tools */}
+      <div className="w-12 bg-background/50 border-r border-border flex flex-col items-center py-2">
+        {/* Navigation Tools */}
+        {renderToolGroup(navigationTools)}
+        
+        {/* Line Drawing Tools */}
+        {renderToolGroup(lineTools)}
+        
+        {/* Fibonacci Tools */}
+        {renderToolGroup(fibonacciTools)}
+        
+        {/* Shape Tools */}
+        {renderToolGroup(shapeTools)}
+        
+        {/* Annotation Tools */}
+        {renderToolGroup(annotationTools)}
+        
+        {/* Special Tools */}
+        {renderToolGroup(specialTools)}
+        
+        {/* Zoom Controls */}
         <Button
           variant="ghost"
           size="sm"
           onClick={handleZoomIn}
-          className="w-10 h-10 p-0"
+          className="w-10 h-10 p-0 mb-1"
           title="Zoom In"
         >
           <ZoomIn className="h-4 w-4" />
@@ -383,7 +425,7 @@ export const AdvancedTradingChart = ({
           variant="ghost"
           size="sm"
           onClick={handleZoomOut}
-          className="w-10 h-10 p-0"
+          className="w-10 h-10 p-0 mb-1"
           title="Zoom Out"
         >
           <ZoomOut className="h-4 w-4" />
@@ -415,7 +457,7 @@ export const AdvancedTradingChart = ({
               <div>
                 <h3 className="font-semibold text-sm">{agentSymbol || agentName || 'Agent Token'}</h3>
                 <Badge variant={isGraduated ? "default" : "secondary"} className="text-xs">
-                  {isGraduated ? "DEX" : "Bonding"}
+                  {isGraduated ? "DEX Trading" : "Bonding Curve"}
                 </Badge>
               </div>
               <div className="text-sm font-mono">
@@ -480,7 +522,7 @@ export const AdvancedTradingChart = ({
                 <p className="text-xs text-muted-foreground">
                   {viewMode === 'marketcap' 
                     ? 'Market cap progression toward $75,000 graduation' 
-                    : 'Price per token changes with each trade'
+                    : 'USD price per token changes with each trade'
                   }
                 </p>
               </div>
