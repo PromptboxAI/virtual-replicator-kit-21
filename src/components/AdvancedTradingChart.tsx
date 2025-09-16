@@ -4,7 +4,11 @@ import {
   ColorType,
   CrosshairMode,
   LineStyle,
-  PriceScaleMode
+  PriceScaleMode,
+  CandlestickSeries,
+  LineSeries,
+  AreaSeries,
+  HistogramSeries
 } from 'lightweight-charts';
 import { ChartDataService, OHLCVData } from '@/services/chartDataService';
 import { Button } from '@/components/ui/button';
@@ -188,7 +192,7 @@ export const AdvancedTradingChart = ({
     let mainSeries;
     
     if (chartType === 'candlestick') {
-      mainSeries = chartRef.current.addCandlestickSeries({
+      mainSeries = chartRef.current.addSeries(CandlestickSeries, {
         upColor: '#22c55e',
         downColor: '#ef4444',
         borderDownColor: '#ef4444',
@@ -202,7 +206,7 @@ export const AdvancedTradingChart = ({
         },
       });
     } else if (chartType === 'line') {
-      mainSeries = chartRef.current.addLineSeries({
+      mainSeries = chartRef.current.addSeries(LineSeries, {
         color: '#3b82f6',
         lineWidth: 2,
         priceFormat: {
@@ -212,7 +216,7 @@ export const AdvancedTradingChart = ({
         },
       });
     } else { // area
-      mainSeries = chartRef.current.addAreaSeries({
+      mainSeries = chartRef.current.addSeries(AreaSeries, {
         topColor: 'rgba(59, 130, 246, 0.4)',
         bottomColor: 'rgba(59, 130, 246, 0.0)',
         lineColor: '#3b82f6',
@@ -227,7 +231,7 @@ export const AdvancedTradingChart = ({
 
     // Add volume series if enabled
     if (showVolume) {
-      const volumeSeries = chartRef.current.addHistogramSeries({
+      const volumeSeries = chartRef.current.addSeries(HistogramSeries, {
         color: '#26a69a',
         priceFormat: {
           type: 'volume',
