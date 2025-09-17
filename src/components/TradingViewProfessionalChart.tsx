@@ -5,18 +5,8 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { ChartDataService, OHLCVData } from '@/services/chartDataService';
 import { formatMarketCapUSD, formatPriceUSD } from '@/lib/formatters';
 import { 
-  Settings, Volume2, TrendingUp, RotateCcw, Maximize2,
-  PenTool, Minus, Square, Triangle, Type, Target
+  Settings, Volume2, RotateCcw
 } from 'lucide-react';
-
-// TradingView Widget TypeScript declarations
-declare global {
-  interface Window {
-    TradingView: {
-      widget: new (config: any) => any;
-    };
-  }
-}
 
 interface TradingViewProfessionalChartProps {
   agentId: string;
@@ -32,148 +22,6 @@ interface TradingViewProfessionalChartProps {
 
 export type ChartInterval = '1' | '5' | '15' | '60' | '240' | '1D';
 
-// TradingView Datafeed Implementation
-class CustomDatafeed {
-  private agentId: string;
-  private lastBar: any = null;
-  private subscribers: any = {};
-
-  constructor(agentId: string) {
-    this.agentId = agentId;
-  }
-
-  onReady(callback: any) {
-    setTimeout(() => {
-      callback({
-        supported_resolutions: ['1', '5', '15', '60', '240', '1D'],
-        supports_marks: true,
-        supports_timescale_marks: true,
-        supports_time: true,
-        exchanges: [
-          {
-            value: 'AGENT',
-            name: 'Agent Platform',
-            desc: 'Agent Trading Platform',
-          },
-        ],
-        symbols_types: [
-          {
-            name: 'crypto',
-            value: 'crypto',
-          },
-        ],
-      });
-    }, 0);
-  }
-
-  searchSymbols(userInput: string, exchange: string, symbolType: string, onResult: any) {
-    // Return empty for search - we only show our agent token
-    onResult([]);
-  }
-
-  resolveSymbol(symbolName: string, onResolve: any, onError: any) {
-    const symbolInfo = {
-      name: symbolName,
-      ticker: symbolName,
-      description: `${symbolName} Token`,
-      type: 'crypto',
-      session: '24x7',
-      timezone: 'Etc/UTC',
-      exchange: 'AGENT',
-      minmov: 1,
-      pricescale: 100000000,
-      has_intraday: true,
-      has_weekly_and_monthly: false,
-      supported_resolutions: ['1', '5', '15', '60', '240', '1D'],
-      volume_precision: 2,
-      data_status: 'streaming',
-    };
-
-    setTimeout(() => onResolve(symbolInfo), 0);
-  }
-
-  async getBars(symbolInfo: any, resolution: string, periodParams: any, onResult: any, onError: any) {
-    try {
-      console.log('Getting bars for:', symbolInfo.name, 'resolution:', resolution);
-      
-      // Map resolution to our interval format
-      const intervalMap: Record<string, string> = {
-        '1': '1m',
-        '5': '5m', 
-        '15': '15m',
-        '60': '1h',
-        '240': '4h',
-        '1D': '1d'
-      };
-
-      const interval = intervalMap[resolution] || '5m';
-      const { data } = await ChartDataService.getChartData(this.agentId, interval as any);
-      
-      if (data.length === 0) {
-        onResult([], { noData: true });
-        return;
-      }
-
-      const bars = data.map((item: OHLCVData) => ({
-        time: item.time * 1000, // TradingView expects milliseconds
-        open: item.open,
-        high: item.high,
-        low: item.low,
-        close: item.close,
-        volume: item.volume,
-      }));
-
-      this.lastBar = bars[bars.length - 1];
-      onResult(bars, { noData: false });
-    } catch (error) {
-      console.error('Error getting bars:', error);
-      onError(error);
-    }
-  }
-
-  subscribeBars(symbolInfo: any, resolution: string, onRealtimeCallback: any, subscriberUID: string, onResetCacheNeededCallback: any) {
-    console.log('Subscribing to bars:', symbolInfo.name);
-    this.subscribers[subscriberUID] = onRealtimeCallback;
-
-    // Set up real-time updates
-    const unsubscribe = ChartDataService.subscribeToRealTimeUpdates(this.agentId, (newData: OHLCVData) => {
-      const bar = {
-        time: newData.time * 1000,
-        open: newData.open,
-        high: newData.high,
-        low: newData.low,
-        close: newData.close,
-        volume: newData.volume,
-      };
-
-      if (this.lastBar && bar.time === this.lastBar.time) {
-        // Update existing bar
-        onRealtimeCallback(bar);
-      } else {
-        // New bar
-        onRealtimeCallback(bar);
-      }
-      
-      this.lastBar = bar;
-    });
-
-    // Store unsubscribe function for cleanup
-    this.subscribers[`${subscriberUID}_unsubscribe`] = unsubscribe;
-  }
-
-  unsubscribeBars(subscriberUID: string) {
-    console.log('Unsubscribing from bars:', subscriberUID);
-    delete this.subscribers[subscriberUID];
-    
-    // Call unsubscribe function if it exists
-    const unsubscribeFn = this.subscribers[`${subscriberUID}_unsubscribe`];
-    if (unsubscribeFn) {
-      unsubscribeFn();
-      delete this.subscribers[`${subscriberUID}_unsubscribe`];
-    }
-  }
-}
-
 export const TradingViewProfessionalChart = ({ 
   agentId,
   agentName,
@@ -184,14 +32,11 @@ export const TradingViewProfessionalChart = ({
   onPriceUpdate 
 }: TradingViewProfessionalChartProps) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
-  const tvWidgetRef = useRef<any>(null);
-  const datafeedRef = useRef<CustomDatafeed | null>(null);
-  
   const [interval, setInterval] = useState<ChartInterval>('5');
   const [isGraduated, setIsGraduated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [currentPrice, setCurrentPrice] = useState<number>(0);
-  const [showVolume, setShowVolume] = useState(true);
+  const [chartData, setChartData] = useState<OHLCVData[]>([]);
 
   const intervals: { value: ChartInterval; label: string }[] = [
     { value: '1', label: '1m' },
@@ -202,101 +47,114 @@ export const TradingViewProfessionalChart = ({
     { value: '1D', label: '1D' },
   ];
 
-  // Initialize TradingView widget
+  // Load chart data
   useEffect(() => {
-    if (!chartContainerRef.current) return;
-
-    // Load TradingView widget script
-    const script = document.createElement('script');
-    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
-    script.async = true;
-    script.innerHTML = JSON.stringify({
-      autosize: true,
-      symbol: agentSymbol || `CRYPTO:${agentId.slice(0, 8)}USD`,
-      interval: interval,
-      timezone: "Etc/UTC",
-      theme: "dark",
-      style: "1",
-      locale: "en",
-      backgroundColor: "rgba(0, 0, 0, 0)",
-      gridColor: "rgba(255, 255, 255, 0.06)",
-      allow_symbol_change: false,
-      calendar: false,
-      support_host: "https://www.tradingview.com"
-    });
-
-    if (chartContainerRef.current) {
-      chartContainerRef.current.appendChild(script);
-    }
-
-    setLoading(false);
-
-
-    return () => {
-      // Cleanup script if needed
-      if (chartContainerRef.current) {
-        const scripts = chartContainerRef.current.getElementsByTagName('script');
-        for (let i = scripts.length - 1; i >= 0; i--) {
-          scripts[i].remove();
-        }
-      }
-    };
-  }, [agentId, agentSymbol, interval]);
-
-  // Load initial data and set up real-time updates
-  useEffect(() => {
-    const loadInitialData = async () => {
+    const loadData = async () => {
+      setLoading(true);
       try {
-        const { data, isGraduated: graduated } = await ChartDataService.getChartData(agentId, '5m');
-        setIsGraduated(graduated);
+        const intervalMap: Record<ChartInterval, any> = {
+          '1': '1m', '5': '5m', '15': '15m', '60': '1h', '240': '4h', '1D': '1d'
+        };
         
-        if (data.length > 0) {
-          const latestPrice = data[data.length - 1].close;
-          setCurrentPrice(latestPrice);
-          if (onPriceUpdate) {
-            onPriceUpdate(latestPrice);
-          }
+        const result = await ChartDataService.getChartData(agentId, intervalMap[interval]);
+        setChartData(result.data);
+        setIsGraduated(result.isGraduated);
+        
+        if (result.data.length > 0) {
+          const latestPrice = result.data[result.data.length - 1].close;
+          setCurrentPrice(viewMode === 'marketcap' ? latestPrice * 1000000000 : latestPrice);
+          onPriceUpdate?.(latestPrice);
         }
       } catch (error) {
-        console.error('Failed to load initial data:', error);
+        console.error('Failed to load chart data:', error);
       }
+      setLoading(false);
     };
 
-    loadInitialData();
+    loadData();
+  }, [agentId, interval, viewMode, onPriceUpdate]);
 
-    // Set up real-time price updates
+  // Real-time updates
+  useEffect(() => {
     const unsubscribe = ChartDataService.subscribeToRealTimeUpdates(agentId, (newData: OHLCVData) => {
-      setCurrentPrice(newData.close);
-      if (onPriceUpdate) {
-        onPriceUpdate(newData.close);
-      }
+      setCurrentPrice(viewMode === 'marketcap' ? newData.close * 1000000000 : newData.close);
+      onPriceUpdate?.(newData.close);
+      
+      // Update chart data
+      setChartData(prev => {
+        const updated = [...prev];
+        const lastIndex = updated.length - 1;
+        if (lastIndex >= 0 && updated[lastIndex].time === newData.time) {
+          updated[lastIndex] = newData;
+        } else {
+          updated.push(newData);
+        }
+        return updated.slice(-1000); // Keep last 1000 points
+      });
     });
 
-    return () => {
-      unsubscribe();
-    };
-  }, [agentId, onPriceUpdate]);
+    return unsubscribe;
+  }, [agentId, viewMode, onPriceUpdate]);
 
-  const handleFullscreen = () => {
-    if (tvWidgetRef.current) {
-      tvWidgetRef.current.chart().executeActionById('chartProperties');
+  const renderSimpleChart = () => {
+    if (chartData.length === 0) {
+      return (
+        <div className="flex items-center justify-center h-full text-muted-foreground">
+          No trading data available yet
+        </div>
+      );
     }
+
+    const maxPrice = Math.max(...chartData.map(d => d.high));
+    const minPrice = Math.min(...chartData.map(d => d.low));
+    const priceRange = maxPrice - minPrice;
+
+    return (
+      <div className="relative w-full h-full p-4">
+        <svg className="w-full h-full">
+          {/* Price line */}
+          <polyline
+            fill="none"
+            stroke="#8b5cf6"
+            strokeWidth="2"
+            points={chartData.map((d, i) => {
+              const x = (i / (chartData.length - 1)) * 100;
+              const y = 100 - ((d.close - minPrice) / priceRange) * 80;
+              return `${x},${y}`;
+            }).join(' ')}
+            vectorEffect="non-scaling-stroke"
+          />
+          
+          {/* Volume bars */}
+          {showVolume && chartData.map((d, i) => {
+            const maxVolume = Math.max(...chartData.map(v => v.volume));
+            const x = (i / (chartData.length - 1)) * 100;
+            const height = (d.volume / maxVolume) * 15;
+            return (
+              <rect
+                key={i}
+                x={`${x}%`}
+                y={`${85}%`}
+                width="1"
+                height={`${height}%`}
+                fill="#374151"
+                opacity="0.6"
+              />
+            );
+          })}
+        </svg>
+      </div>
+    );
   };
 
-  const handleReset = () => {
-    if (tvWidgetRef.current && tvWidgetRef.current.chart) {
-      tvWidgetRef.current.chart().executeActionById('timeScaleReset');
-    }
-  };
+  const [showVolume, setShowVolume] = useState(true);
 
   return (
     <div className="flex h-full bg-background border border-border rounded-lg overflow-hidden">
-      {/* Professional Chart Container */}
       <div className="flex-1 flex flex-col">
-        {/* Top Header */}
+        {/* Header */}
         <div className="p-3 border-b border-border bg-background/80">
           <div className="flex items-center justify-between">
-            {/* Agent Info and Current Price */}
             <div className="flex items-center gap-3">
               <Avatar className="h-8 w-8">
                 <AvatarImage src={agentAvatar} />
@@ -314,7 +172,7 @@ export const TradingViewProfessionalChart = ({
                 {currentPrice > 0 && (
                   <span className="text-primary">
                     {viewMode === 'marketcap' 
-                      ? formatMarketCapUSD(currentPrice * 100000000)
+                      ? formatMarketCapUSD(currentPrice)
                       : formatPriceUSD(currentPrice)
                     }
                   </span>
@@ -322,7 +180,6 @@ export const TradingViewProfessionalChart = ({
               </div>
             </div>
 
-            {/* Time Intervals */}
             <div className="flex gap-1">
               {intervals.map((int) => (
                 <Button
@@ -337,42 +194,32 @@ export const TradingViewProfessionalChart = ({
               ))}
             </div>
 
-            {/* Chart Controls */}
             <div className="flex items-center gap-2">
               <Button
-                variant="ghost"
+                variant={showVolume ? "default" : "ghost"}
                 size="sm"
-                onClick={handleReset}
+                onClick={() => setShowVolume(!showVolume)}
                 className="text-xs px-3 py-1 h-7"
-                title="Reset Chart"
               >
-                <RotateCcw className="h-4 w-4" />
+                <Volume2 className="h-4 w-4" />
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleFullscreen}
-                className="text-xs px-3 py-1 h-7"
-                title="Chart Settings"
-              >
+              <Button variant="ghost" size="sm" className="text-xs px-3 py-1 h-7">
                 <Settings className="h-4 w-4" />
               </Button>
             </div>
           </div>
         </div>
 
-        {/* TradingView Chart Container */}
+        {/* Chart */}
         <div className="flex-1 relative">
           {loading && (
             <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10">
-              <div className="text-muted-foreground">Loading professional chart...</div>
+              <div className="text-muted-foreground">Loading chart data...</div>
             </div>
           )}
-          <div 
-            ref={chartContainerRef} 
-            className="w-full h-full"
-            style={{ minHeight: '400px' }}
-          />
+          <div ref={chartContainerRef} className="w-full h-full" style={{ minHeight: '400px' }}>
+            {renderSimpleChart()}
+          </div>
         </div>
       </div>
     </div>
