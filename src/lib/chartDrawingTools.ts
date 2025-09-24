@@ -1,4 +1,5 @@
 import { IChartApi, ISeriesApi, Time } from 'lightweight-charts';
+import { ChartDrawingPersistence } from '@/services/chartDrawingPersistence';
 
 export interface DrawingTool {
   id: string;
@@ -38,10 +39,12 @@ export class ChartDrawingManager {
   private agentId: string;
   private isDrawing = false;
   private currentDrawingType: 'trendline' | 'horizontal' | 'text' | null = null;
+  private persistence: ChartDrawingPersistence;
 
   constructor(chart: IChartApi, agentId: string) {
     this.chart = chart;
     this.agentId = agentId;
+    this.persistence = new ChartDrawingPersistence(agentId);
     this.loadDrawings();
     this.setupEventListeners();
   }
@@ -158,28 +161,38 @@ export class ChartDrawingManager {
     return id;
   }
 
-  removeDrawing(id: string) {
+  async removeDrawing(id: string) {
     const series = this.drawingSeries.get(id);
     if (series) {
       this.chart.removeSeries(series);
       this.drawingSeries.delete(id);
     }
     this.drawings.delete(id);
-    this.saveDrawings();
+    
+    // Remove from database
+    if (this.persistence) {
+      await this.persistence.removeDrawing(id);
+    }
+    
     console.log('Removed drawing:', id);
   }
 
-  clearAllDrawings() {
+  async clearAllDrawings() {
     this.drawingSeries.forEach((series) => {
       this.chart.removeSeries(series);
     });
     this.drawings.clear();
     this.drawingSeries.clear();
-    this.saveDrawings();
+    
+    // Clear from database
+    if (this.persistence) {
+      await this.persistence.clearAllDrawings();
+    }
+    
     console.log('Cleared all drawings');
   }
 
-  toggleDrawingVisibility(id: string) {
+  async toggleDrawingVisibility(id: string) {
     const drawing = this.drawings.get(id);
     const series = this.drawingSeries.get(id);
     
@@ -191,7 +204,11 @@ export class ChartDrawingManager {
         ...options,
         color: drawing.visible ? drawing.data.color : 'transparent',
       });
-      this.saveDrawings();
+      
+      // Update database
+      if (this.persistence) {
+        await this.persistence.updateDrawingVisibility(id, drawing.visible);
+      }
     }
   }
 
@@ -199,27 +216,30 @@ export class ChartDrawingManager {
     return Array.from(this.drawings.values());
   }
 
-  private saveDrawings() {
+  private async saveDrawings() {
     try {
-      const drawingsData = Array.from(this.drawings.entries());
-      localStorage.setItem(`chart_drawings_${this.agentId}`, JSON.stringify(drawingsData));
+      if (!this.persistence) return;
+      
+      // Save all drawings to database
+      const drawings = Array.from(this.drawings.values());
+      await Promise.all(drawings.map(drawing => this.persistence?.saveDrawing(drawing)));
     } catch (error) {
       console.warn('Failed to save drawings:', error);
     }
   }
 
-  private loadDrawings() {
+  private async loadDrawings() {
     try {
-      const saved = localStorage.getItem(`chart_drawings_${this.agentId}`);
-      if (saved) {
-        const drawingsData = JSON.parse(saved) as [string, DrawingTool][];
-        drawingsData.forEach(([id, drawing]) => {
-          this.drawings.set(id, drawing);
-          // Recreate series for loaded drawings
-          this.recreateDrawing(id, drawing);
-        });
-        console.log('Loaded', drawingsData.length, 'drawings');
-      }
+      if (!this.persistence) return;
+      
+      const savedDrawings = await this.persistence.loadDrawings();
+      savedDrawings.forEach(drawing => {
+        this.drawings.set(drawing.id, drawing);
+        // Recreate series for loaded drawings
+        this.recreateDrawing(drawing.id, drawing);
+      });
+      
+      console.log('Loaded', savedDrawings.length, 'drawings from database');
     } catch (error) {
       console.warn('Failed to load drawings:', error);
     }

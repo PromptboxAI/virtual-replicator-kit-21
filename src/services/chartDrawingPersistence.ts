@@ -37,7 +37,7 @@ export class ChartDrawingPersistence {
     }
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('chart_drawings')
         .upsert({
           id: drawing.id,
@@ -69,7 +69,7 @@ export class ChartDrawingPersistence {
     }
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('chart_drawings')
         .select('*')
         .eq('agent_id', this.agentId)
@@ -81,7 +81,7 @@ export class ChartDrawingPersistence {
         return this.loadFromLocalStorage();
       }
 
-      const drawings: DrawingTool[] = data.map(item => ({
+      const drawings: DrawingTool[] = (data || []).map((item: any) => ({
         id: item.id,
         type: item.drawing_type,
         data: item.drawing_data,
@@ -102,7 +102,7 @@ export class ChartDrawingPersistence {
     }
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('chart_drawings')
         .delete()
         .eq('id', drawingId)
@@ -127,7 +127,7 @@ export class ChartDrawingPersistence {
     }
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('chart_drawings')
         .delete()
         .eq('agent_id', this.agentId)
@@ -157,7 +157,7 @@ export class ChartDrawingPersistence {
     }
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('chart_drawings')
         .update({ 
           visible, 

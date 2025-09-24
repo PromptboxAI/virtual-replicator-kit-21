@@ -1321,6 +1321,39 @@ export type Database = {
           },
         ]
       }
+      chart_drawings: {
+        Row: {
+          agent_id: string
+          created_at: string
+          drawing_data: Json
+          drawing_type: string
+          id: string
+          updated_at: string
+          user_id: string
+          visible: boolean
+        }
+        Insert: {
+          agent_id: string
+          created_at?: string
+          drawing_data: Json
+          drawing_type: string
+          id: string
+          updated_at?: string
+          user_id: string
+          visible?: boolean
+        }
+        Update: {
+          agent_id?: string
+          created_at?: string
+          drawing_data?: Json
+          drawing_type?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+          visible?: boolean
+        }
+        Relationships: []
+      }
       cron_job_logs: {
         Row: {
           created_at: string

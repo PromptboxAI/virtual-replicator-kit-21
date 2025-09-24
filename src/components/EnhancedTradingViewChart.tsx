@@ -8,6 +8,12 @@ import { ChartDataService, OHLCVData } from '@/services/chartDataService';
 import { formatMarketCapUSD, formatPriceUSD } from '@/lib/formatters';
 import { useTheme } from 'next-themes';
 import { useChartRealtime } from '@/hooks/useChartRealtime';
+import { useChartDrawings } from '@/hooks/useChartDrawings';
+import { useMobileGestures } from '@/hooks/useMobileGestures';
+import { useAdvancedIndicators } from '@/hooks/useAdvancedIndicators';
+import { TechnicalIndicators } from '@/lib/technicalIndicators';
+import { ChartToolbar } from '@/components/ChartToolbar';
+import { ChartPriceImpact } from '@/components/ChartPriceImpact';
 import { 
   Settings, Volume2, TrendingUp, TrendingDown,
   BarChart3, Activity, Wifi, WifiOff
@@ -52,7 +58,50 @@ export const EnhancedTradingViewChart = ({
   const [priceAnimation, setPriceAnimation] = useState<'up' | 'down' | null>(null);
   const [showVolume, setShowVolume] = useState(true);
   const [showTechnicalIndicators, setShowTechnicalIndicators] = useState(false);
+  const [showGraduationOverlay, setShowGraduationOverlay] = useState(true);
+  const [showPriceImpact, setShowPriceImpact] = useState(true);
   const { theme } = useTheme();
+
+  // Initialize chart drawing tools
+  const {
+    activeDrawingMode,
+    drawings,
+    drawingCount,
+    setDrawingMode,
+    createHorizontalLine,
+    createTextAnnotation,
+    removeDrawing,
+    clearAllDrawings,
+    toggleDrawingVisibility,
+  } = useChartDrawings({
+    chart: chartRef.current,
+    agentId,
+    enabled: true,
+  });
+
+  // Initialize mobile gestures
+  const {
+    gestureActive,
+    resetZoom,
+    zoomIn,
+    zoomOut,
+  } = useMobileGestures({
+    chart: chartRef.current,
+    containerRef: chartContainerRef,
+    enabled: true,
+  });
+
+  // Initialize advanced indicators
+  const {
+    activeIndicators,
+    toggleIndicator,
+    isIndicatorActive,
+    clearAllIndicators,
+  } = useAdvancedIndicators({
+    chart: chartRef.current,
+    data: chartData,
+    enabled: showTechnicalIndicators,
+  });
 
   const intervals: { value: ChartInterval; label: string }[] = [
     { value: '1', label: '1m' },
@@ -389,32 +438,58 @@ export const EnhancedTradingViewChart = ({
                 </Button>
               ))}
             </div>
-
-            <div className="flex items-center gap-2">
-              <Button
-                variant={showVolume ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setShowVolume(!showVolume)}
-                className="text-xs px-3 py-1 h-7"
-                title="Toggle Volume"
-              >
-                <BarChart3 className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={showTechnicalIndicators ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setShowTechnicalIndicators(!showTechnicalIndicators)}
-                className="text-xs px-3 py-1 h-7"
-                title="Technical Indicators"
-              >
-                <Activity className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="sm" className="text-xs px-3 py-1 h-7">
-                <Settings className="h-4 w-4" />
-              </Button>
-            </div>
           </div>
         </div>
+
+        {/* Chart Toolbar */}
+        <ChartToolbar
+          // Drawing tools
+          activeDrawingMode={activeDrawingMode}
+          onDrawingModeChange={setDrawingMode}
+          drawingCount={drawingCount}
+          onClearDrawings={clearAllDrawings}
+          
+          // Chart controls
+          onZoomIn={zoomIn}
+          onZoomOut={zoomOut}
+          onResetZoom={resetZoom}
+          onFullscreen={() => {
+            if (chartContainerRef.current) {
+              if (document.fullscreenElement) {
+                document.exitFullscreen();
+              } else {
+                chartContainerRef.current.requestFullscreen();
+              }
+            }
+          }}
+          
+          // Screenshot and export
+          onScreenshot={() => {
+            if (chartRef.current) {
+              const canvas = (chartRef.current as any).takeScreenshot();
+              if (canvas) {
+                const link = document.createElement('a');
+                link.download = `${agentName || 'chart'}-${Date.now()}.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+              }
+            }
+          }}
+          onExportData={() => {
+            const dataStr = JSON.stringify(chartData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${agentName || 'chart'}-data-${Date.now()}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+          }}
+          
+          // Overlay toggles  
+          graduationVisible={showGraduationOverlay}
+          onToggleGraduation={() => setShowGraduationOverlay(!showGraduationOverlay)}
+        />
 
         {/* Chart */}
         <div className="flex-1 relative">
@@ -423,12 +498,19 @@ export const EnhancedTradingViewChart = ({
               <div className="text-muted-foreground">Loading chart data...</div>
             </div>
           )}
+          
+          {gestureActive && (
+            <div className="absolute top-4 left-4 bg-primary/90 text-primary-foreground px-2 py-1 rounded text-xs z-20">
+              Touch gesture active
+            </div>
+          )}
+          
           <div ref={chartContainerRef} className="w-full h-full" style={{ minHeight: '400px' }} />
         </div>
 
         {/* Price Impact Overlay */}
-        {promptAmount > 0 && (
-          <div className="absolute top-16 right-4 bg-background/90 border border-border rounded-lg p-3 shadow-lg">
+        {promptAmount > 0 && showPriceImpact && (
+          <div className="absolute bottom-4 right-4 bg-background/90 border border-border rounded-lg p-3 shadow-lg">
             <div className="text-xs text-muted-foreground mb-1">Trade Impact</div>
             <div className="flex items-center gap-2">
               <Badge variant={tradeType === 'buy' ? 'default' : 'destructive'} className="text-xs">
