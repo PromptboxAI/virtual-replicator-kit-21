@@ -7,9 +7,10 @@ import { Card } from '@/components/ui/card';
 import { ChartDataService, OHLCVData } from '@/services/chartDataService';
 import { formatMarketCapUSD, formatPriceUSD } from '@/lib/formatters';
 import { useTheme } from 'next-themes';
+import { useChartRealtime } from '@/hooks/useChartRealtime';
 import { 
   Settings, Volume2, TrendingUp, TrendingDown,
-  BarChart3, Activity
+  BarChart3, Activity, Wifi, WifiOff
 } from 'lucide-react';
 
 interface EnhancedTradingViewChartProps {
@@ -48,6 +49,7 @@ export const EnhancedTradingViewChart = ({
   const [loading, setLoading] = useState(true);
   const [currentPrice, setCurrentPrice] = useState<number>(0);
   const [chartData, setChartData] = useState<OHLCVData[]>([]);
+  const [priceAnimation, setPriceAnimation] = useState<'up' | 'down' | null>(null);
   const [showVolume, setShowVolume] = useState(true);
   const [showTechnicalIndicators, setShowTechnicalIndicators] = useState(false);
   const { theme } = useTheme();
@@ -260,49 +262,72 @@ export const EnhancedTradingViewChart = ({
     loadData();
   }, [agentId, interval, viewMode, chartType, showVolume, showTechnicalIndicators, calculateSMA, onPriceUpdate]);
 
-  // Real-time updates
-  useEffect(() => {
-    if (!agentId) return;
-
-    const unsubscribe = ChartDataService.subscribeToRealTimeUpdates(agentId, (newData: OHLCVData) => {
-      const processedPrice = viewMode === 'marketcap' ? newData.close * 1000000000 : newData.close;
-      setCurrentPrice(processedPrice);
-      onPriceUpdate?.(newData.close);
-      
-      // Update chart with new data point
-      if (mainSeriesRef.current) {
-        try {
-          if (chartType === 'candlestick') {
-            const candleData = {
-              time: newData.time as Time,
-              open: viewMode === 'marketcap' ? newData.open * 1000000000 : newData.open,
-              high: viewMode === 'marketcap' ? newData.high * 1000000000 : newData.high,
-              low: viewMode === 'marketcap' ? newData.low * 1000000000 : newData.low,
-              close: processedPrice,
-            };
-            mainSeriesRef.current.update(candleData);
-          } else {
-            mainSeriesRef.current.update({
-              time: newData.time as Time,
-              value: processedPrice,
-            });
-          }
-
-          if (showVolume && volumeSeriesRef.current) {
-            volumeSeriesRef.current.update({
-              time: newData.time as Time,
-              value: newData.volume,
-              color: newData.close >= newData.open ? '#10b981' : '#ef4444',
-            });
-          }
-        } catch (error) {
-          console.warn('Error updating real-time data:', error);
+  // Enhanced real-time updates with price animation
+  const handleRealtimeUpdate = useCallback((newData: OHLCVData) => {
+    const processedPrice = viewMode === 'marketcap' ? newData.close * 1000000000 : newData.close;
+    
+    // Animate price changes
+    const oldPrice = currentPrice;
+    if (oldPrice !== processedPrice) {
+      setPriceAnimation(processedPrice > oldPrice ? 'up' : 'down');
+      setTimeout(() => setPriceAnimation(null), 1000);
+    }
+    
+    setCurrentPrice(processedPrice);
+    onPriceUpdate?.(newData.close);
+    
+    // Update chart with new data point
+    if (mainSeriesRef.current) {
+      try {
+        if (chartType === 'candlestick') {
+          const candleData = {
+            time: newData.time as Time,
+            open: viewMode === 'marketcap' ? newData.open * 1000000000 : newData.open,
+            high: viewMode === 'marketcap' ? newData.high * 1000000000 : newData.high,
+            low: viewMode === 'marketcap' ? newData.low * 1000000000 : newData.low,
+            close: processedPrice,
+          };
+          mainSeriesRef.current.update(candleData);
+        } else {
+          mainSeriesRef.current.update({
+            time: newData.time as Time,
+            value: processedPrice,
+          });
         }
-      }
-    });
 
-    return unsubscribe;
-  }, [agentId, viewMode, chartType, showVolume, onPriceUpdate]);
+        if (showVolume && volumeSeriesRef.current) {
+          volumeSeriesRef.current.update({
+            time: newData.time as Time,
+            value: newData.volume,
+            color: newData.close >= newData.open ? '#10b981' : '#ef4444',
+          });
+        }
+      } catch (error) {
+        console.warn('Error updating real-time data:', error);
+      }
+    }
+  }, [viewMode, currentPrice, onPriceUpdate, chartType, showVolume]);
+
+  const handlePriceChange = useCallback((price: number) => {
+    const processedPrice = viewMode === 'marketcap' ? price * 1000000000 : price;
+    
+    // Animate price changes
+    const oldPrice = currentPrice;
+    if (oldPrice !== processedPrice) {
+      setPriceAnimation(processedPrice > oldPrice ? 'up' : 'down');
+      setTimeout(() => setPriceAnimation(null), 1000);
+    }
+    
+    setCurrentPrice(processedPrice);
+    onPriceUpdate?.(price);
+  }, [viewMode, currentPrice, onPriceUpdate]);
+
+  const { isConnected } = useChartRealtime({
+    agentId,
+    onUpdate: handleRealtimeUpdate,
+    onPriceChange: handlePriceChange,
+    enabled: !loading
+  });
 
   return (
     <Card className="flex h-full bg-background border border-border rounded-lg overflow-hidden">
@@ -317,20 +342,36 @@ export const EnhancedTradingViewChart = ({
                   {agentSymbol?.substring(1, 3) || agentName?.substring(0, 2) || 'AT'}
                 </AvatarFallback>
               </Avatar>
-              <div>
-                <h3 className="font-semibold text-sm">{agentSymbol || agentName || 'Agent Token'}</h3>
-                <Badge variant={isGraduated ? "default" : "secondary"} className="text-xs">
-                  {isGraduated ? "DEX Trading" : "Bonding Curve"}
-                </Badge>
+               <div>
+                <div className="text-sm font-medium text-foreground">{agentName || 'Unknown Agent'}</div>
+                <div className="text-xs text-muted-foreground flex items-center gap-1">
+                  {agentSymbol || '$AGENT'}
+                  {isConnected ? (
+                    <Wifi className="h-3 w-3 text-green-500" />
+                  ) : (
+                    <WifiOff className="h-3 w-3 text-red-500" />
+                  )}
+                </div>
               </div>
               <div className="text-sm font-mono">
                 {currentPrice > 0 && (
-                  <span className="text-primary font-semibold">
-                    {viewMode === 'marketcap' 
-                      ? formatMarketCapUSD(currentPrice)
-                      : formatPriceUSD(currentPrice)
-                    }
-                  </span>
+                  <div className="text-right">
+                    <div className={`text-lg font-bold transition-colors duration-1000 ${
+                      priceAnimation === 'up' ? 'text-green-500' : 
+                      priceAnimation === 'down' ? 'text-red-500' : 'text-primary'
+                    }`}>
+                      {viewMode === 'marketcap' 
+                        ? formatMarketCapUSD(currentPrice)
+                        : formatPriceUSD(currentPrice)
+                      }
+                    </div>
+                    <div className="text-xs text-muted-foreground flex items-center gap-1">
+                      {viewMode === 'price' ? 'Price (USD)' : 'Market Cap'}
+                      {isConnected && (
+                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                      )}
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
