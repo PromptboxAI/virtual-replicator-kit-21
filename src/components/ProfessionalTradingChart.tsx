@@ -4,7 +4,7 @@ import { useTheme } from 'next-themes';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { TradingViewProfessionalChart } from './TradingViewProfessionalChart';
+import { EnhancedTradingViewChart } from './EnhancedTradingViewChart';
 import { formatPriceUSD, formatMarketCapUSD } from '@/lib/formatters';
 
 interface ProfessionalTradingChartProps {
@@ -119,7 +119,7 @@ export const ProfessionalTradingChart = ({
 
       {/* Professional TradingView Chart Component */}
       <div className="h-[520px]">
-          <TradingViewProfessionalChart
+          <EnhancedTradingViewChart
             agentId={agentId}
             agentName={agentName}
             agentSymbol={agentSymbol}
