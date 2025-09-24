@@ -85,7 +85,7 @@ export class ChartDrawingManager {
       style: options?.style || 'solid',
     };
 
-    const lineSeries = this.chart.addSeries('Line', {
+    const lineSeries = (this.chart as any).addLineSeries({
       color: lineData.color,
       lineWidth: lineData.width,
       lineStyle: lineData.style === 'dashed' ? 1 : 0,
@@ -131,7 +131,7 @@ export class ChartDrawingManager {
     };
 
     // Create a line series for the text marker
-    const markerSeries = this.chart.addSeries('Line', {
+    const markerSeries = (this.chart as any).addLineSeries({
       color: 'transparent',
       priceLineVisible: false,
       crosshairMarkerVisible: false,
@@ -237,7 +237,7 @@ export class ChartDrawingManager {
   }
 
   private recreateHorizontalLine(id: string, data: HorizontalLineData) {
-    const lineSeries = this.chart.addSeries('Line', {
+    const lineSeries = (this.chart as any).addLineSeries({
       color: data.color,
       lineWidth: data.width,
       lineStyle: data.style === 'dashed' ? 1 : 0,
@@ -260,7 +260,7 @@ export class ChartDrawingManager {
   }
 
   private recreateTextAnnotation(id: string, data: TextAnnotationData) {
-    const markerSeries = this.chart.addSeries('Line', {
+    const markerSeries = (this.chart as any).addLineSeries({
       color: 'transparent',
       priceLineVisible: false,
       crosshairMarkerVisible: false,

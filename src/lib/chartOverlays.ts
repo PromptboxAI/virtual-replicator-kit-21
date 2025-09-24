@@ -34,7 +34,7 @@ export class ChartOverlayManager {
 
     const targetPrice = viewMode === 'marketcap' ? threshold.marketCap : threshold.price;
 
-    this.graduationLine = this.chart.addSeries('Line', {
+    this.graduationLine = (this.chart as any).addLineSeries({
       color: threshold.color,
       lineWidth: 2,
       lineStyle: 1, // Dashed
@@ -64,7 +64,7 @@ export class ChartOverlayManager {
       this.chart.removeSeries(this.tradeMarkers);
     }
 
-    this.tradeMarkers = this.chart.addSeries('Line', {
+    this.tradeMarkers = (this.chart as any).addLineSeries({
       color: 'transparent',
       priceLineVisible: false,
     });
@@ -85,7 +85,7 @@ export class ChartOverlayManager {
       this.chart.removeSeries(this.volumeSpikes);
     }
 
-    this.volumeSpikes = this.chart.addSeries('Line', {
+    this.volumeSpikes = (this.chart as any).addLineSeries({
       color: 'transparent',
       priceLineVisible: false,
     });
@@ -102,7 +102,7 @@ export class ChartOverlayManager {
 
   addLiquidityPoolEvent(time: Time, price: number, eventType: 'created' | 'migrated', viewMode: 'price' | 'marketcap') {
     // Create a special marker for LP events
-    const lpSeries = this.chart.addSeries('Line', {
+    const lpSeries = (this.chart as any).addLineSeries({
       color: 'transparent',
       priceLineVisible: false,
     });
@@ -115,7 +115,7 @@ export class ChartOverlayManager {
   }
 
   addCurrentPositionIndicator(time: Time, price: number, position: number, viewMode: 'price' | 'marketcap') {
-    const positionSeries = this.chart.addSeries('Line', {
+    const positionSeries = (this.chart as any).addLineSeries({
       color: 'transparent',
       priceLineVisible: false,
     });

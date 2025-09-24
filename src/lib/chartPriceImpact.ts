@@ -80,7 +80,7 @@ export class ChartPriceImpactManager {
     this.clearPriceImpact();
 
     // Create semi-transparent overlay showing price impact
-    this.impactOverlay = this.chart.addSeries('Area', {
+    this.impactOverlay = (this.chart as any).addAreaSeries({
       topColor: tradeType === 'buy' 
         ? 'rgba(16, 185, 129, 0.2)' 
         : 'rgba(239, 68, 68, 0.2)',
@@ -92,7 +92,7 @@ export class ChartPriceImpactManager {
     });
 
     // Create impact price line
-    this.impactLine = this.chart.addSeries('Line', {
+    this.impactLine = (this.chart as any).addLineSeries({
       color: this.getImpactColor(this.currentImpactData?.slippageLevel || 'low'),
       lineWidth: 3,
       lineStyle: 1, // Dashed
