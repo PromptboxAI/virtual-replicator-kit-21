@@ -2899,6 +2899,25 @@ export type Database = {
           trading_fee_percent: number
         }[]
       }
+      get_bonding_curve_config_v4: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          curve_supply: number
+          graduation_threshold: number
+          initial_prompt_reserve: number
+          initial_token_reserve: number
+          lp_lock_duration_days: number
+          lp_prompt_allocation_percent: number
+          lp_supply: number
+          max_daily_trade_default: number
+          max_single_trade_default: number
+          max_user_daily_default: number
+          p0: number
+          p1: number
+          total_supply: number
+          trading_fee_percent: number
+        }[]
+      }
       get_bonding_curve_invariant: {
         Args: Record<PropertyKey, never>
         Returns: number
@@ -2908,6 +2927,10 @@ export type Database = {
         Returns: number
       }
       get_current_linear_price_v3: {
+        Args: { p_tokens_sold: number }
+        Returns: number
+      }
+      get_current_linear_price_v4: {
         Args: { p_tokens_sold: number }
         Returns: number
       }
@@ -2923,6 +2946,10 @@ export type Database = {
         Returns: string
       }
       get_price_from_prompt_v3: {
+        Args: { p_prompt_raised: number }
+        Returns: number
+      }
+      get_price_from_prompt_v4: {
         Args: { p_prompt_raised: number }
         Returns: number
       }
@@ -2963,6 +2990,10 @@ export type Database = {
         }[]
       }
       tokens_sold_from_prompt_v3: {
+        Args: { p_prompt_raised: number }
+        Returns: number
+      }
+      tokens_sold_from_prompt_v4: {
         Args: { p_prompt_raised: number }
         Returns: number
       }

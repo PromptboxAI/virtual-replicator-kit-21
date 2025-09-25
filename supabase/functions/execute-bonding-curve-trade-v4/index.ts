@@ -42,7 +42,7 @@ serve(async (req) => {
       userApproved = false  // Add user approval flag
     }: TradeRequest & { automated?: boolean; userApproved?: boolean } = await req.json();
 
-    console.log(`📈 V3 Trade Request: ${tradeType} for agent ${agentId}`, {
+    console.log(`📈 V4 Trade Request: ${tradeType} for agent ${agentId}`, {
       automated,
       userApproved,
       promptAmount,
