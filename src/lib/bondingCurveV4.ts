@@ -16,7 +16,7 @@ export const BONDING_CURVE_V4_CONFIG = {
   P1: 0.00075,   // Ending price at graduation - ~7.2x higher than V3
   
   // CORRECTED Graduation & Economics - Now uses dynamic graduation config
-  GRADUATION_PROMPT_AMOUNT: 150000, // Default 150K PROMPT (~$15K competitive with Pump.fun)
+  GRADUATION_PROMPT_AMOUNT: 120000, // Default 120K PROMPT (~$12K, balanced approach)
   AGENT_CREATION_COST: 100, // 100 PROMPT creation fee (separate from curve)
   
   // Trading fees (virtuals.io standard)
