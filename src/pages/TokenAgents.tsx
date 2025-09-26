@@ -43,9 +43,9 @@ const TokenAgents = () => {
 
             <div className="space-y-4">
               <h1 className="text-5xl font-bold text-foreground leading-tight">
-                AI Agents for the{" "}
+                Your Token.{" "}
                 <span className="bg-gradient-primary bg-clip-text text-transparent">
-                  Token Economy
+                  Your AI
                 </span>
               </h1>
               <p className="text-lg text-muted-foreground max-w-lg">
