@@ -45,7 +45,11 @@ const TokenAgents = () => {
               <h1 className="text-5xl font-bold text-foreground leading-tight">
                 Your Token.{" "}
                 <span className="bg-gradient-primary bg-clip-text text-transparent">
-                  Your AI
+                  Your AI.
+                </span>
+                <br />
+                <span className="bg-gradient-primary bg-clip-text text-transparent">
+                  Your Future.
                 </span>
               </h1>
               <p className="text-lg text-muted-foreground max-w-lg">
