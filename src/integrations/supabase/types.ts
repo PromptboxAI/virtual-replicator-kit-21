@@ -1005,6 +1005,9 @@ export type Database = {
           chain_id: number | null
           circulating_supply: number | null
           created_at: string
+          created_p0: number | null
+          created_p1: number | null
+          created_prompt_usd_rate: number | null
           creation_cost: number | null
           creation_expires_at: string | null
           creation_locked: boolean | null
@@ -1020,6 +1023,7 @@ export type Database = {
           description: string | null
           framework: string | null
           graduation_event_id: string | null
+          graduation_mode: string | null
           graduation_threshold: number | null
           id: string
           is_active: boolean | null
@@ -1035,6 +1039,7 @@ export type Database = {
           prompt_usd_rate: number | null
           status: string | null
           symbol: string
+          target_market_cap_usd: number | null
           test_mode: boolean | null
           token_address: string | null
           token_graduated: boolean | null
@@ -1058,6 +1063,9 @@ export type Database = {
           chain_id?: number | null
           circulating_supply?: number | null
           created_at?: string
+          created_p0?: number | null
+          created_p1?: number | null
+          created_prompt_usd_rate?: number | null
           creation_cost?: number | null
           creation_expires_at?: string | null
           creation_locked?: boolean | null
@@ -1073,6 +1081,7 @@ export type Database = {
           description?: string | null
           framework?: string | null
           graduation_event_id?: string | null
+          graduation_mode?: string | null
           graduation_threshold?: number | null
           id?: string
           is_active?: boolean | null
@@ -1088,6 +1097,7 @@ export type Database = {
           prompt_usd_rate?: number | null
           status?: string | null
           symbol: string
+          target_market_cap_usd?: number | null
           test_mode?: boolean | null
           token_address?: string | null
           token_graduated?: boolean | null
@@ -1111,6 +1121,9 @@ export type Database = {
           chain_id?: number | null
           circulating_supply?: number | null
           created_at?: string
+          created_p0?: number | null
+          created_p1?: number | null
+          created_prompt_usd_rate?: number | null
           creation_cost?: number | null
           creation_expires_at?: string | null
           creation_locked?: boolean | null
@@ -1126,6 +1139,7 @@ export type Database = {
           description?: string | null
           framework?: string | null
           graduation_event_id?: string | null
+          graduation_mode?: string | null
           graduation_threshold?: number | null
           id?: string
           is_active?: boolean | null
@@ -1141,6 +1155,7 @@ export type Database = {
           prompt_usd_rate?: number | null
           status?: string | null
           symbol?: string
+          target_market_cap_usd?: number | null
           test_mode?: boolean | null
           token_address?: string | null
           token_graduated?: boolean | null
