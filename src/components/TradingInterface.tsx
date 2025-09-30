@@ -19,6 +19,7 @@ import { BondingCurvePreview } from './BondingCurvePreview';
 import { useAgentTokens } from '@/hooks/useAgentTokens';
 import { calculateBuyCostV4, calculateSellReturnV4, formatPriceV4, formatPromptAmountV4, getCurrentPriceV4, calculateTokensFromPromptV4, tokensSoldFromPromptRaisedV4 } from '@/lib/bondingCurveV4';
 import { supabase } from '@/integrations/supabase/client';
+import { getAgentGraduationThreshold } from '@/services/GraduationService';
 
 interface AgentMetrics {
   promptRaised: number;
@@ -70,6 +71,7 @@ export function TradingInterface({
   const [sellAmount, setSellAmount] = useState('');
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('buy');
+  const [graduationThreshold, setGraduationThreshold] = useState<number>(42000);
   const { toast } = useToast();
   const { mode: appMode } = useAppMode(); // ✅ Move hook to top level
   const { user } = useAuth();
@@ -79,6 +81,11 @@ export function TradingInterface({
   
   // Smart contract integration for tokens with deployed contracts
   const { buyAgentTokens, sellAgentTokens, loading: isTrading } = useAgentTokens(tokenAddress);
+
+  // Load graduation threshold for this agent
+  useEffect(() => {
+    getAgentGraduationThreshold(agentId).then(setGraduationThreshold);
+  }, [agentId]);
 
   useEffect(() => {
     // Fetch real-time data from Moralis for graduated tokens, use agent data for others
@@ -482,16 +489,16 @@ export function TradingInterface({
           <div className="space-y-3">
             <div className="flex justify-between text-sm">
               <span>PROMPT Raised</span>
-              <span>{metrics.promptRaised.toLocaleString()} / 42,000</span>
+              <span>{metrics.promptRaised.toLocaleString()} / {graduationThreshold.toLocaleString()}</span>
             </div>
             <div className="w-full bg-muted rounded-full h-2">
               <div 
                 className="bg-primary h-2 rounded-full transition-all"
-                style={{ width: `${(metrics.promptRaised / 42000) * 100}%` }}
+                style={{ width: `${(metrics.promptRaised / graduationThreshold) * 100}%` }}
               />
             </div>
             <p className="text-xs text-muted-foreground">
-              When 42,000 PROMPT is raised, this token will graduate to Uniswap
+              When {graduationThreshold.toLocaleString()} PROMPT is raised, this token will graduate to Uniswap
             </p>
           </div>
         </CardContent>

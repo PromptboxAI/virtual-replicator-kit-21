@@ -434,6 +434,26 @@ export default function CreateAgent() {
         creationExpiresAt = new Date(Date.now() + (formData.lock_duration_minutes * 60 * 1000));
       }
       
+      // ✅ V4 DYNAMIC PRICING: Calculate P0/P1 based on current PROMPT price
+      const currentPromptUsdRate = 0.10; // TODO: Get from price oracle or admin settings
+      
+      // Get graduation mode from admin settings
+      const { data: graduationConfigData } = await supabase
+        .from('admin_settings')
+        .select('value')
+        .eq('key', 'graduation_config')
+        .single();
+      
+      const graduationConfig = graduationConfigData?.value as any;
+      const graduationMode = graduationConfig?.graduation_mode || 'database';
+      const targetMarketCapUsd = graduationMode === 'smart_contract' ? 65000 : null;
+      
+      // Calculate P0 and P1 using V4 dynamic functions
+      const P0 = 0.000004 / currentPromptUsdRate; // Target $0.000004 per token at start
+      const CURVE_SUPPLY = 800_000_000;
+      const graduationThreshold = graduationMode === 'database' ? 42000 : (65000 / currentPromptUsdRate);
+      const P1 = (2 * graduationThreshold / CURVE_SUPPLY) - P0;
+      
       // Create basic agent/token record in database first
       const { data, error } = await supabase
         .from('agents')
@@ -455,6 +475,13 @@ export default function CreateAgent() {
           creator_id: user.id,
           status: 'ACTIVATING', // Agent is being set up
           test_mode: appIsTestMode, // Set based on current app mode
+          
+          // ✅ V4 DYNAMIC PRICING FIELDS (stored at creation time)
+          created_prompt_usd_rate: currentPromptUsdRate,
+          created_p0: P0,
+          created_p1: P1,
+          graduation_mode: graduationMode,
+          target_market_cap_usd: targetMarketCapUsd,
           
           // ✅ V3 BONDING CURVE FIELDS
           pricing_model: 'linear_v3',           // Use V3 linear bonding curve

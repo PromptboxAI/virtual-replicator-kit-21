@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -6,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { isAgentGraduatedV3, formatPriceV3, getCurrentPriceV3, tokensSoldFromPromptRaisedV3 } from '@/lib/bondingCurveV3';
 import { useAgentRealtime } from '@/hooks/useAgentRealtime';
 import { formatPriceUSD, formatMarketCapUSD } from '@/lib/formatters';
+import { getAgentGraduationThreshold } from '@/services/GraduationService';
 
 interface SpotlightAgentProps {
   agent: {
@@ -27,6 +29,7 @@ interface SpotlightAgentProps {
 
 export function SpotlightAgent({ agent }: SpotlightAgentProps) {
   const navigate = useNavigate();
+  const [graduationThreshold, setGraduationThreshold] = useState<number>(42000);
   
   // Real-time graduation status - Phase 3 implementation
   const { isGraduated } = useAgentRealtime(agent.id, {
@@ -36,6 +39,10 @@ export function SpotlightAgent({ agent }: SpotlightAgentProps) {
     market_cap: agent.market_cap,
     token_holders: agent.token_holders
   });
+  
+  useEffect(() => {
+    getAgentGraduationThreshold(agent.id).then(setGraduationThreshold);
+  }, [agent.id]);
   
   const isPositive = (agent.price_change_24h || 0) > 0;
   
@@ -150,12 +157,12 @@ export function SpotlightAgent({ agent }: SpotlightAgentProps) {
             <div className="space-y-2 mb-4">
               <div className="flex justify-between text-sm text-muted-foreground">
                 <span>Bonding Curve Progress</span>
-                <span>{agent.prompt_raised.toLocaleString()} / 42,000</span>
+                <span>{agent.prompt_raised.toLocaleString()} / {graduationThreshold.toLocaleString()}</span>
               </div>
               <div className="w-full bg-muted rounded-full h-2">
                 <div 
                   className="bg-primary h-2 rounded-full transition-all"
-                  style={{ width: `${Math.min((agent.prompt_raised / 42000) * 100, 100)}%` }}
+                  style={{ width: `${Math.min((agent.prompt_raised / graduationThreshold) * 100, 100)}%` }}
                 />
               </div>
             </div>

@@ -29,7 +29,7 @@ export function DatabaseCleanupTool() {
           token_address: null,
           token_graduated: false,
           status: 'PENDING',
-          prompt_raised: 1000  // Well below 42000 graduation threshold
+          prompt_raised: 1000  // Well below graduation threshold (database mode: 42K, smart_contract mode: dynamic)
         })
         .eq('id', agentId);
       

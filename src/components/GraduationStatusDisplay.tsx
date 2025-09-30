@@ -27,7 +27,7 @@ interface GraduationStatusDisplayProps {
   tokenAddress?: string;
 }
 
-const GRADUATION_THRESHOLD = 42000;
+import { getAgentGraduationThreshold } from '@/services/GraduationService';
 
 export const GraduationStatusDisplay: React.FC<GraduationStatusDisplayProps> = ({
   agentId,
@@ -37,8 +37,19 @@ export const GraduationStatusDisplay: React.FC<GraduationStatusDisplayProps> = (
 }) => {
   const [graduationEvent, setGraduationEvent] = useState<GraduationEvent | null>(null);
   const [loading, setLoading] = useState(true);
+  const [graduationThreshold, setGraduationThreshold] = useState<number>(42000);
 
   useEffect(() => {
+    const loadGraduationData = async () => {
+      try {
+        // Fetch graduation threshold for this agent
+        const threshold = await getAgentGraduationThreshold(agentId);
+        setGraduationThreshold(threshold);
+      } catch (error) {
+        console.error('Error loading graduation threshold:', error);
+      }
+    };
+
     const fetchGraduationEvent = async () => {
       if (!isGraduated) {
         setLoading(false);
@@ -66,6 +77,7 @@ export const GraduationStatusDisplay: React.FC<GraduationStatusDisplayProps> = (
       }
     };
 
+    loadGraduationData();
     fetchGraduationEvent();
 
     // Subscribe to real-time updates for graduation events
@@ -93,8 +105,8 @@ export const GraduationStatusDisplay: React.FC<GraduationStatusDisplayProps> = (
     };
   }, [agentId, isGraduated]);
 
-  const graduationProgress = Math.min((currentPromptRaised / GRADUATION_THRESHOLD) * 100, 100);
-  const remainingPrompt = Math.max(GRADUATION_THRESHOLD - currentPromptRaised, 0);
+  const graduationProgress = Math.min((currentPromptRaised / graduationThreshold) * 100, 100);
+  const remainingPrompt = Math.max(graduationThreshold - currentPromptRaised, 0);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -172,7 +184,7 @@ export const GraduationStatusDisplay: React.FC<GraduationStatusDisplayProps> = (
             <div className="flex justify-between text-sm mb-2">
               <span>PROMPT Raised</span>
               <span className="font-medium">
-                {formatPromptAmountV3(currentPromptRaised)} / {formatPromptAmountV3(GRADUATION_THRESHOLD)}
+                {formatPromptAmountV3(currentPromptRaised)} / {formatPromptAmountV3(graduationThreshold)}
               </span>
             </div>
             <Progress value={graduationProgress} className="h-2" />

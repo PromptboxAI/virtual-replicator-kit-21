@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { DeploymentModeIndicator } from '@/components/ui/deployment-mode-indicator';
+import { AdminGraduationSettings } from '@/components/AdminGraduationSettings';
 import { Navigate } from 'react-router-dom';
 import { 
   Shield, 
@@ -19,7 +20,8 @@ import {
   Clock, 
   AlertTriangle,
   Activity,
-  Users
+  Users,
+  Trophy
 } from 'lucide-react';
 
 export default function AdminSettings() {
@@ -91,10 +93,14 @@ export default function AdminSettings() {
       </div>
 
       <Tabs defaultValue="deployment" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="deployment" className="gap-2">
             <Database className="h-4 w-4" />
             Deployment
+          </TabsTrigger>
+          <TabsTrigger value="graduation" className="gap-2">
+            <Trophy className="h-4 w-4" />
+            Graduation
           </TabsTrigger>
           <TabsTrigger value="mev" className="gap-2">
             <Shield className="h-4 w-4" />
@@ -176,6 +182,10 @@ export default function AdminSettings() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="graduation">
+          <AdminGraduationSettings />
         </TabsContent>
 
         <TabsContent value="mev">
