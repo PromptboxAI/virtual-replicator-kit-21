@@ -121,7 +121,8 @@ export function useAgentTokens(tokenAddress?: string) {
     });
 
     try {
-      const { data, error } = await supabase.functions.invoke('execute-trade', {
+      // Use V4 trading engine with dynamic pricing
+      const { data, error } = await supabase.functions.invoke('execute-bonding-curve-trade-v4', {
         body: {
           agentId: agent.id,
           userId: user.id,
@@ -176,7 +177,8 @@ export function useAgentTokens(tokenAddress?: string) {
     });
 
     try {
-      const { data, error } = await supabase.functions.invoke('execute-trade', {
+      // Use V4 trading engine with dynamic pricing
+      const { data, error } = await supabase.functions.invoke('execute-bonding-curve-trade-v4', {
         body: {
           // Note: Agent ID should be passed here - this needs to be fixed
           userId: user.id,

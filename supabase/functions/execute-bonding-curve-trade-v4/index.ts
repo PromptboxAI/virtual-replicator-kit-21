@@ -77,7 +77,7 @@ serve(async (req) => {
       }
     }
 
-    console.log(`📈 V3 Trade Request: ${tradeType} for agent ${agentId}`);
+    console.log(`📈 V4 Trade Request: ${tradeType} for agent ${agentId}`);
 
     // Validate required parameters
     if (!agentId || !userId || !tradeType) {
@@ -110,10 +110,10 @@ serve(async (req) => {
       throw new Error('Trading is temporarily locked for this agent. Only the creator can trade during the MEV protection period.');
     }
 
-    // Get agent data
+    // Get agent data with V4 pricing fields
     const { data: agent, error: agentError } = await supabase
       .from('agents')
-      .select('*')
+      .select('*, created_prompt_usd_rate, created_p0, created_p1, graduation_mode, target_market_cap_usd')
       .eq('id', agentId)
       .single();
 
@@ -121,9 +121,38 @@ serve(async (req) => {
       throw new Error(`Agent not found: ${agentError?.message}`);
     }
 
+    // Calculate dynamic graduation threshold using agent's creation-time pricing
+    const graduationMode = agent.graduation_mode || 'database';
+    const targetMarketCapUSD = agent.target_market_cap_usd || 65000;
+    const createdPromptUsdRate = agent.created_prompt_usd_rate || 0.10;
+    const createdP0 = agent.created_p0 || 0.00004;
+    const createdP1 = agent.created_p1 || 0.0001;
+
+    // Calculate graduation threshold dynamically
+    let graduationThreshold: number;
+    if (graduationMode === 'smart_contract') {
+      // USD-based: graduationThreshold = targetMarketCapUSD / createdPromptUsdRate
+      graduationThreshold = targetMarketCapUSD / createdPromptUsdRate;
+    } else {
+      // Database mode: fixed 42K PROMPT
+      graduationThreshold = 42000;
+    }
+
+    console.log(`🎓 Agent ${agent.name} graduation config:`, {
+      mode: graduationMode,
+      threshold: graduationThreshold,
+      targetMarketCapUSD,
+      createdPromptUsdRate,
+      createdP0,
+      createdP1
+    });
+
     // 🔀 ROUTE TO DEX IF GRADUATED
-    if (agent.token_graduated) {
-      console.log(`🔄 Agent ${agent.name} has graduated - routing to DEX trade`);
+    const currentPromptRaised = agent.prompt_raised || 0;
+    const hasGraduated = currentPromptRaised >= graduationThreshold || agent.token_graduated;
+    
+    if (hasGraduated) {
+      console.log(`🔄 Agent ${agent.name} has graduated (${currentPromptRaised} >= ${graduationThreshold}) - routing to DEX trade`);
       
       // Route to DEX trading
       const aggregatorEnabled = Boolean(ONE_INCH_API_KEY);
@@ -173,26 +202,8 @@ serve(async (req) => {
       );
     }
 
-    // Check if agent uses V3 pricing (if not, migrate first)
-    if (agent.pricing_model !== 'linear_v3') {
-      console.log(`🔄 Agent ${agent.name} not yet migrated to V3, migrating now...`);
-      
-      const { data: migrationData, error: migrationError } = await supabase.functions.invoke(
-        'migrate-agent-v3',
-        {
-          body: {
-            agentId: agentId,
-            dryRun: false
-          }
-        }
-      );
-
-      if (migrationError) {
-        throw new Error(`Failed to migrate agent to V3: ${migrationError.message}`);
-      }
-
-      console.log(`✅ Agent ${agent.name} successfully migrated to V3`);
-    }
+    // V4 uses stored creation-time pricing - no migration needed
+    console.log(`✅ Agent ${agent.name} using V4 pricing with stored config`);
 
     // Run safety validation
     const { data: safetyResult, error: safetyError } = await supabase.rpc(
@@ -242,7 +253,9 @@ serve(async (req) => {
     // Store pre-trade PROMPT raised for graduation check
     const preTradePromptRaised = agent.prompt_raised || 0;
 
-    // Execute the trade using V3 bonding curve
+    // Execute the trade using V4 bonding curve with dynamic pricing
+    // NOTE: The database function execute_bonding_curve_trade handles all pricing logic
+    // including V3 and V4 support via the pricing_model field and trigger functions
     const { data: tradeResult, error: tradeError } = await supabase.rpc(
       'execute_bonding_curve_trade',
       {
@@ -270,11 +283,19 @@ serve(async (req) => {
       );
     }
 
-    console.log(`✅ Trade executed successfully`);
+    console.log(`✅ V4 Trade executed successfully`);
 
-    // 🎓 GRADUATION CHECK - Auto-trigger if threshold reached
-    if (tradeResult.graduated && tradeResult.graduation_event_id) {
-      console.log(`🎉 Agent ${agent.name} has reached graduation! Triggering auto-graduation...`);
+    // 🎓 GRADUATION CHECK - Auto-trigger if dynamic threshold reached
+    const postTradePromptRaised = tradeResult.prompt_raised || currentPromptRaised;
+    const didGraduate = postTradePromptRaised >= graduationThreshold && preTradePromptRaised < graduationThreshold;
+    
+    if (didGraduate || (tradeResult.graduated && tradeResult.graduation_event_id)) {
+      console.log(`🎉 Agent ${agent.name} has reached graduation threshold!`, {
+        preTradePromptRaised,
+        postTradePromptRaised,
+        graduationThreshold,
+        mode: graduationMode
+      });
 
       // Background task to trigger graduation (don't wait for it)
       supabase.functions.invoke('trigger-agent-graduation', {
@@ -316,8 +337,8 @@ serve(async (req) => {
       }
     );
 
-  } catch (error) {
-    console.error('❌ V3 Trade execution failed:', error);
+   } catch (error) {
+    console.error('❌ V4 Trade execution failed:', error);
     
     return new Response(
       JSON.stringify({
