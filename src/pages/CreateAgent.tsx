@@ -483,8 +483,8 @@ export default function CreateAgent() {
           graduation_mode: graduationMode,
           target_market_cap_usd: targetMarketCapUsd,
           
-          // ✅ V3 BONDING CURVE FIELDS
-          pricing_model: 'linear_v3',           // Use V3 linear bonding curve
+          // ✅ V4 BONDING CURVE FIELDS
+          pricing_model: 'linear_v4',           // Use V4 dynamic linear bonding curve
           bonding_curve_supply: 0,              // Initialize token supply at 0
           migration_validated: true,            // No migration needed - native V3
           
@@ -655,7 +655,7 @@ export default function CreateAgent() {
 
         try {
           const { data: tradeData, error: tradeError } = await supabase.functions.invoke(
-            'execute-bonding-curve-trade-v3',
+            'execute-bonding-curve-trade-v4',
             {
               body: {
                 agentId: agentId,
