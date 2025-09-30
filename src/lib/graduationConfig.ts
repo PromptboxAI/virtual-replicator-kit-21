@@ -9,8 +9,8 @@ export const getGraduationThreshold = (config: GraduationConfig): number => {
   const { mode, targetMarketCapUSD, promptUsdRate } = config;
 
   if (mode === 'database') {
-    // Test/Demo mode: Flexible range 100K-150K PROMPT ($10K-$15K)
-    return 120000; // 120K PROMPT (middle of range, ~$12K at $0.10)
+    // Test/Demo mode: Fixed amount, no USD dependency (test tokens only)
+    return 42000; // 42K PROMPT test tokens
   } else {
     // Production mode: Dynamic USD-pegged targeting $50K-$75K
     // Target: $65,000 market cap at graduation (middle of $50K-$75K range)
@@ -35,7 +35,7 @@ export const DEFAULT_GRADUATION_CONFIG: GraduationConfig = {
 };
 
 // Examples:
-// Database mode: Always 120,000 PROMPT (~$12K, competitive range)
+// Database mode: Always 42,000 PROMPT (fixed test amount, no USD dependency)
 // Smart contract mode at $0.10 PROMPT: 650,000 PROMPT = $65K
 // Smart contract mode at $0.50 PROMPT: 130,000 PROMPT = $65K  
 // Smart contract mode at $1.00 PROMPT: 65,000 PROMPT = $65K
