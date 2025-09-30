@@ -1,22 +1,91 @@
 /**
- * Bonding Curve V4 - Corrected Linear Model
- * Fixes 100x token issue with proper pricing parameters
- * Phase 6: Critical Fix Implementation
+ * Bonding Curve V4 - Dynamic USD-Based Pricing
+ * Phase 1: Implements correct inverse relationship (higher PROMPT = fewer tokens)
+ * Fixes: Higher PROMPT price = FEWER tokens per PROMPT (maintaining USD value)
  */
 
-// V4 Configuration - CORRECTED parameters to fix token pricing
-export const BONDING_CURVE_V4_CONFIG = {
-  // Core parameters (corrected for proper pricing)
+import { getGraduationThreshold, DEFAULT_GRADUATION_CONFIG, type GraduationConfig } from './graduationConfig';
+
+// Dynamic pricing configuration
+export interface DynamicBondingConfig {
+  promptUsdRate: number;  // Current PROMPT price in USD
+  targetUsdPerToken: number;  // Target USD per token at start ($10 per 2.5M = $0.000004)
+  graduationConfig: GraduationConfig;
+}
+
+// Calculate dynamic P0 based on PROMPT price (CORRECTED: inverse relationship)
+export function calculateDynamicP0(config: DynamicBondingConfig): number {
+  // P0 = Target USD per token / PROMPT USD rate
+  // Example: $0.000004 / $0.10 = 0.00004 PROMPT per token
+  // Example: $0.000004 / $1.00 = 0.000004 PROMPT per token (10x less PROMPT = 10x more tokens)
+  return config.targetUsdPerToken / config.promptUsdRate;
+}
+
+// Calculate dynamic P1 based on graduation threshold
+export function calculateDynamicP1(config: DynamicBondingConfig): number {
+  const graduationThreshold = getGraduationThreshold(config.graduationConfig);
+  const P0 = calculateDynamicP0(config);
+  const CURVE_SUPPLY = 800_000_000;
+  
+  // P1 = (2 * graduationThreshold / CURVE_SUPPLY) - P0
+  return (2 * graduationThreshold / CURVE_SUPPLY) - P0;
+}
+
+// Base configuration type
+export type BondingCurveConfig = {
+  CURVE_SUPPLY: number;
+  LP_RESERVE: number;
+  TOTAL_SUPPLY: number;
+  AGENT_CREATION_COST: number;
+  TRADING_FEE_PERCENTAGE: number;
+  AGENT_REVENUE_PERCENTAGE: number;
+  PLATFORM_REVENUE_PERCENTAGE: number;
+  MAX_PRICE_IMPACT_WARNING: number;
+  MAX_DAILY_VOLUME_LIMIT: number;
+  GRADUATION_WARNING_THRESHOLD: number;
+  HIGH_SLIPPAGE_THRESHOLD: number;
+  LP_PROMPT_PERCENTAGE: number;
+  PLATFORM_KEEP_PERCENTAGE: number;
+  LIQUIDITY_LOCK_YEARS: number;
+  P0: number;
+  P1: number;
+  GRADUATION_PROMPT_AMOUNT: number;
+};
+
+// Create dynamic bonding curve configuration
+export function createDynamicBondingConfig(
+  promptUsdRate: number = 0.10,
+  mode: 'database' | 'smart_contract' = 'database'
+): BondingCurveConfig {
+  const config: DynamicBondingConfig = {
+    promptUsdRate,
+    targetUsdPerToken: 0.000004, // $10 for 2.5M tokens
+    graduationConfig: {
+      mode,
+      targetMarketCapUSD: 65000, // $65K production target
+      promptUsdRate
+    }
+  };
+  
+  const P0 = calculateDynamicP0(config);
+  const P1 = calculateDynamicP1(config);
+  const graduationThreshold = getGraduationThreshold(config.graduationConfig);
+  
+  return {
+    ...BONDING_CURVE_V4_CONFIG_BASE,
+    P0,
+    P1,
+    GRADUATION_PROMPT_AMOUNT: graduationThreshold
+  };
+}
+
+// Base configuration (non-dynamic values)
+const BONDING_CURVE_V4_CONFIG_BASE = {
+  // Core parameters
   CURVE_SUPPLY: 800_000_000, // 800M tokens on bonding curve
   LP_RESERVE: 200_000_000,   // 200M tokens for LP
   TOTAL_SUPPLY: 1_000_000_000, // 1B total supply
   
-  // CORRECTED Linear pricing model
-  P0: 0.0000075, // Starting price (PROMPT per token) - 7.5x higher than V3
-  P1: 0.00075,   // Ending price at graduation - ~7.2x higher than V3
-  
-  // CORRECTED Graduation & Economics - Now uses dynamic graduation config
-  GRADUATION_PROMPT_AMOUNT: 42000, // Default 42K PROMPT (test mode fixed amount)
   AGENT_CREATION_COST: 100, // 100 PROMPT creation fee (separate from curve)
   
   // Trading fees (virtuals.io standard)
@@ -36,21 +105,29 @@ export const BONDING_CURVE_V4_CONFIG = {
   LP_PROMPT_PERCENTAGE: 0.7, // 70% of raised PROMPT goes to LP
   PLATFORM_KEEP_PERCENTAGE: 0.3, // 30% stays as platform revenue
   LIQUIDITY_LOCK_YEARS: 10, // 10-year LP lock
-} as const;
+};
 
-// Derived constants
-const PRICE_SLOPE = (BONDING_CURVE_V4_CONFIG.P1 - BONDING_CURVE_V4_CONFIG.P0) / BONDING_CURVE_V4_CONFIG.CURVE_SUPPLY;
+// Export default configuration (for backwards compatibility)
+export const BONDING_CURVE_V4_CONFIG = createDynamicBondingConfig();
+
+/**
+ * Get price slope for a given config (can be dynamic)
+ */
+function getPriceSlope(config: BondingCurveConfig = BONDING_CURVE_V4_CONFIG): number {
+  return (config.P1 - config.P0) / config.CURVE_SUPPLY;
+}
 
 /**
  * Get current price using linear formula: P(S) = P0 + slope * S
  */
-export function getCurrentPriceV4(tokensSold: number): number {
-  const { P0, P1, CURVE_SUPPLY } = BONDING_CURVE_V4_CONFIG;
+export function getCurrentPriceV4(tokensSold: number, config: BondingCurveConfig = BONDING_CURVE_V4_CONFIG): number {
+  const { P0, P1, CURVE_SUPPLY } = config;
+  const slope = getPriceSlope(config);
   
   if (tokensSold <= 0) return P0;
   if (tokensSold >= CURVE_SUPPLY) return P1;
   
-  return P0 + (PRICE_SLOPE * tokensSold);
+  return P0 + (slope * tokensSold);
 }
 
 /**
@@ -59,18 +136,19 @@ export function getCurrentPriceV4(tokensSold: number): number {
  * prompt_raised = p0*s + 0.5*slope*s^2
  * Solve: 0.5*slope*s^2 + p0*s - prompt_raised = 0
  */
-export function tokensSoldFromPromptRaisedV4(promptRaised: number): number {
-  const { P0, CURVE_SUPPLY } = BONDING_CURVE_V4_CONFIG;
+export function tokensSoldFromPromptRaisedV4(promptRaised: number, config: BondingCurveConfig = BONDING_CURVE_V4_CONFIG): number {
+  const { P0, CURVE_SUPPLY } = config;
+  const slope = getPriceSlope(config);
   
   if (promptRaised <= 0) return 0;
   
   // For very small slope, use simple division
-  if (Math.abs(PRICE_SLOPE) < 1e-15) {
+  if (Math.abs(slope) < 1e-15) {
     return Math.min(promptRaised / P0, CURVE_SUPPLY);
   }
   
   // Quadratic formula: ax² + bx + c = 0
-  const a = PRICE_SLOPE / 2;
+  const a = slope / 2;
   const b = P0;
   const c = -promptRaised;
   
@@ -86,21 +164,22 @@ export function tokensSoldFromPromptRaisedV4(promptRaised: number): number {
  * Calculate PROMPT raised from tokens sold using integral
  * prompt_raised = p0*s + 0.5*slope*s^2
  */
-export function promptRaisedFromTokensSoldV4(tokensSold: number): number {
-  const { P0, CURVE_SUPPLY } = BONDING_CURVE_V4_CONFIG;
+export function promptRaisedFromTokensSoldV4(tokensSold: number, config: BondingCurveConfig = BONDING_CURVE_V4_CONFIG): number {
+  const { P0, CURVE_SUPPLY } = config;
+  const slope = getPriceSlope(config);
   
   if (tokensSold <= 0) return 0;
   
   const s = Math.min(tokensSold, CURVE_SUPPLY);
-  return P0 * s + (PRICE_SLOPE * s * s) / 2;
+  return P0 * s + (slope * s * s) / 2;
 }
 
 /**
  * Get price directly from PROMPT raised
  */
-export function getPriceFromPromptV4(promptRaised: number): number {
-  const tokensSold = tokensSoldFromPromptRaisedV4(promptRaised);
-  return getCurrentPriceV4(tokensSold);
+export function getPriceFromPromptV4(promptRaised: number, config: BondingCurveConfig = BONDING_CURVE_V4_CONFIG): number {
+  const tokensSold = tokensSoldFromPromptRaisedV4(promptRaised, config);
+  return getCurrentPriceV4(tokensSold, config);
 }
 
 /**
@@ -109,7 +188,8 @@ export function getPriceFromPromptV4(promptRaised: number): number {
 export function calculateBuyCostV4(
   currentTokensSold: number,
   tokenAmount: number,
-  includeFees: boolean = true
+  includeFees: boolean = true,
+  config: BondingCurveConfig = BONDING_CURVE_V4_CONFIG
 ): {
   cost: number;
   averagePrice: number;
@@ -118,10 +198,10 @@ export function calculateBuyCostV4(
   newPrice: number;
   slippage: number;
 } {
-  const { CURVE_SUPPLY, TRADING_FEE_PERCENTAGE } = BONDING_CURVE_V4_CONFIG;
+  const { CURVE_SUPPLY, TRADING_FEE_PERCENTAGE } = config;
   
   if (tokenAmount <= 0) {
-    const currentPrice = getCurrentPriceV4(currentTokensSold);
+    const currentPrice = getCurrentPriceV4(currentTokensSold, config);
     return {
       cost: 0,
       averagePrice: currentPrice,
@@ -136,8 +216,8 @@ export function calculateBuyCostV4(
   const endTokensSold = Math.min(startTokensSold + tokenAmount, CURVE_SUPPLY);
   const actualTokenAmount = endTokensSold - startTokensSold;
   
-  const startPromptRaised = promptRaisedFromTokensSoldV4(startTokensSold);
-  const endPromptRaised = promptRaisedFromTokensSoldV4(endTokensSold);
+  const startPromptRaised = promptRaisedFromTokensSoldV4(startTokensSold, config);
+  const endPromptRaised = promptRaisedFromTokensSoldV4(endTokensSold, config);
   
   let cost = endPromptRaised - startPromptRaised;
   
@@ -145,8 +225,8 @@ export function calculateBuyCostV4(
     cost = cost / (1 - TRADING_FEE_PERCENTAGE);
   }
   
-  const currentPrice = getCurrentPriceV4(startTokensSold);
-  const newPrice = getCurrentPriceV4(endTokensSold);
+  const currentPrice = getCurrentPriceV4(startTokensSold, config);
+  const newPrice = getCurrentPriceV4(endTokensSold, config);
   const averagePrice = actualTokenAmount > 0 ? cost / actualTokenAmount : newPrice;
   
   const priceImpact = currentPrice > 0 ? ((newPrice - currentPrice) / currentPrice) * 100 : 0;
@@ -168,7 +248,8 @@ export function calculateBuyCostV4(
 export function calculateSellReturnV4(
   currentTokensSold: number,
   tokenAmount: number,
-  includeFees: boolean = true
+  includeFees: boolean = true,
+  config: BondingCurveConfig = BONDING_CURVE_V4_CONFIG
 ): {
   return: number;
   averagePrice: number;
@@ -177,10 +258,10 @@ export function calculateSellReturnV4(
   newPrice: number;
   slippage: number;
 } {
-  const { TRADING_FEE_PERCENTAGE } = BONDING_CURVE_V4_CONFIG;
+  const { TRADING_FEE_PERCENTAGE } = config;
   
   if (tokenAmount <= 0) {
-    const currentPrice = getCurrentPriceV4(currentTokensSold);
+    const currentPrice = getCurrentPriceV4(currentTokensSold, config);
     return {
       return: 0,
       averagePrice: currentPrice,
@@ -195,8 +276,8 @@ export function calculateSellReturnV4(
   const endTokensSold = Math.max(0, startTokensSold - tokenAmount);
   const actualTokenAmount = startTokensSold - endTokensSold;
   
-  const startPromptRaised = promptRaisedFromTokensSoldV4(startTokensSold);
-  const endPromptRaised = promptRaisedFromTokensSoldV4(endTokensSold);
+  const startPromptRaised = promptRaisedFromTokensSoldV4(startTokensSold, config);
+  const endPromptRaised = promptRaisedFromTokensSoldV4(endTokensSold, config);
   
   let returnAmount = startPromptRaised - endPromptRaised;
   
@@ -204,8 +285,8 @@ export function calculateSellReturnV4(
     returnAmount = returnAmount * (1 - TRADING_FEE_PERCENTAGE);
   }
   
-  const currentPrice = getCurrentPriceV4(startTokensSold);
-  const newPrice = getCurrentPriceV4(endTokensSold);
+  const currentPrice = getCurrentPriceV4(startTokensSold, config);
+  const newPrice = getCurrentPriceV4(endTokensSold, config);
   const averagePrice = actualTokenAmount > 0 ? returnAmount / actualTokenAmount : newPrice;
   
   const priceImpact = currentPrice > 0 ? ((currentPrice - newPrice) / currentPrice) * 100 : 0;
@@ -227,7 +308,8 @@ export function calculateSellReturnV4(
 export function calculateTokensFromPromptV4(
   currentTokensSold: number,
   promptAmount: number,
-  includeFees: boolean = true
+  includeFees: boolean = true,
+  config: BondingCurveConfig = BONDING_CURVE_V4_CONFIG
 ): {
   tokenAmount: number;
   remainingPrompt: number;
@@ -236,10 +318,10 @@ export function calculateTokensFromPromptV4(
   newPrice: number;
   priceImpact: number;
 } {
-  const { CURVE_SUPPLY, TRADING_FEE_PERCENTAGE } = BONDING_CURVE_V4_CONFIG;
+  const { CURVE_SUPPLY, TRADING_FEE_PERCENTAGE } = config;
   
   if (promptAmount <= 0) {
-    const currentPrice = getCurrentPriceV4(currentTokensSold);
+    const currentPrice = getCurrentPriceV4(currentTokensSold, config);
     return {
       tokenAmount: 0,
       remainingPrompt: 0,
@@ -256,21 +338,21 @@ export function calculateTokensFromPromptV4(
   }
   
   const startTokensSold = Math.max(0, currentTokensSold);
-  const startPromptRaised = promptRaisedFromTokensSoldV4(startTokensSold);
+  const startPromptRaised = promptRaisedFromTokensSoldV4(startTokensSold, config);
   const targetPromptRaised = startPromptRaised + availablePrompt;
   
-  const maxPromptRaised = promptRaisedFromTokensSoldV4(CURVE_SUPPLY);
+  const maxPromptRaised = promptRaisedFromTokensSoldV4(CURVE_SUPPLY, config);
   const actualTargetPrompt = Math.min(targetPromptRaised, maxPromptRaised);
   
-  const endTokensSold = tokensSoldFromPromptRaisedV4(actualTargetPrompt);
+  const endTokensSold = tokensSoldFromPromptRaisedV4(actualTargetPrompt, config);
   const tokenAmount = endTokensSold - startTokensSold;
   
   const actualPromptUsed = actualTargetPrompt - startPromptRaised;
   const actualPromptPaid = includeFees ? actualPromptUsed / (1 - TRADING_FEE_PERCENTAGE) : actualPromptUsed;
   const remainingPrompt = promptAmount - actualPromptPaid;
   
-  const currentPrice = getCurrentPriceV4(startTokensSold);
-  const newPrice = getCurrentPriceV4(endTokensSold);
+  const currentPrice = getCurrentPriceV4(startTokensSold, config);
+  const newPrice = getCurrentPriceV4(endTokensSold, config);
   const averagePrice = tokenAmount > 0 ? actualPromptPaid / tokenAmount : newPrice;
   const priceImpact = currentPrice > 0 ? ((newPrice - currentPrice) / currentPrice) * 100 : 0;
   
@@ -287,7 +369,7 @@ export function calculateTokensFromPromptV4(
 /**
  * Calculate graduation progress
  */
-export function calculateGraduationProgressV4(currentPromptRaised: number): {
+export function calculateGraduationProgressV4(currentPromptRaised: number, config: BondingCurveConfig = BONDING_CURVE_V4_CONFIG): {
   progress: number;
   remaining: number;
   isGraduated: boolean;
@@ -295,7 +377,7 @@ export function calculateGraduationProgressV4(currentPromptRaised: number): {
   progressDisplay: string;
   countdownMessage: string;
 } {
-  const { GRADUATION_PROMPT_AMOUNT, GRADUATION_WARNING_THRESHOLD } = BONDING_CURVE_V4_CONFIG;
+  const { GRADUATION_PROMPT_AMOUNT, GRADUATION_WARNING_THRESHOLD } = config;
   
   const progress = Math.min((currentPromptRaised / GRADUATION_PROMPT_AMOUNT) * 100, 100);
   const remaining = Math.max(0, GRADUATION_PROMPT_AMOUNT - currentPromptRaised);
@@ -328,14 +410,15 @@ export function calculateGraduationProgressV4(currentPromptRaised: number): {
  */
 export function calculateFeesV4(
   amount: number,
-  transactionType: 'buy' | 'sell'
+  transactionType: 'buy' | 'sell',
+  config: BondingCurveConfig = BONDING_CURVE_V4_CONFIG
 ): {
   totalFees: number;
   agentRevenue: number;
   platformRevenue: number;
   netAmount: number;
 } {
-  const { TRADING_FEE_PERCENTAGE, AGENT_REVENUE_PERCENTAGE, PLATFORM_REVENUE_PERCENTAGE } = BONDING_CURVE_V4_CONFIG;
+  const { TRADING_FEE_PERCENTAGE, AGENT_REVENUE_PERCENTAGE, PLATFORM_REVENUE_PERCENTAGE } = config;
   
   const totalFees = amount * TRADING_FEE_PERCENTAGE;
   const agentRevenue = amount * AGENT_REVENUE_PERCENTAGE;
@@ -356,13 +439,13 @@ export function calculateFeesV4(
 /**
  * Calculate LP creation parameters
  */
-export function calculateLPCreationV4(finalPromptRaised: number): {
+export function calculateLPCreationV4(finalPromptRaised: number, config: BondingCurveConfig = BONDING_CURVE_V4_CONFIG): {
   lpPromptAmount: number;
   lpTokenAmount: number;
   platformKeepAmount: number;
   totalValue: number;
 } {
-  const { LP_PROMPT_PERCENTAGE, PLATFORM_KEEP_PERCENTAGE, LP_RESERVE } = BONDING_CURVE_V4_CONFIG;
+  const { LP_PROMPT_PERCENTAGE, PLATFORM_KEEP_PERCENTAGE, LP_RESERVE } = config;
   
   const lpPromptAmount = finalPromptRaised * LP_PROMPT_PERCENTAGE;
   const platformKeepAmount = finalPromptRaised * PLATFORM_KEEP_PERCENTAGE;
@@ -380,17 +463,17 @@ export function calculateLPCreationV4(finalPromptRaised: number): {
 /**
  * Calculate market statistics
  */
-export function calculateMarketStatsV4(currentPromptRaised: number): {
+export function calculateMarketStatsV4(currentPromptRaised: number, config: BondingCurveConfig = BONDING_CURVE_V4_CONFIG): {
   currentPrice: number;
   marketCap: number;
   totalVolume: number;
   tokensSold: number;
   liquidityDepth: number;
 } {
-  const { TOTAL_SUPPLY } = BONDING_CURVE_V4_CONFIG;
+  const { TOTAL_SUPPLY } = config;
   
-  const tokensSold = tokensSoldFromPromptRaisedV4(currentPromptRaised);
-  const currentPrice = getCurrentPriceV4(tokensSold);
+  const tokensSold = tokensSoldFromPromptRaisedV4(currentPromptRaised, config);
+  const currentPrice = getCurrentPriceV4(tokensSold, config);
   const marketCap = currentPrice * TOTAL_SUPPLY;
   const totalVolume = currentPromptRaised;
   const liquidityDepth = currentPromptRaised * 0.1; // Rough estimate
@@ -411,13 +494,14 @@ export function validateTradeAmountV4(
   promptAmount: number,
   tokenAmount: number,
   tradeType: 'buy' | 'sell',
-  currentPromptRaised: number
+  currentPromptRaised: number,
+  config: BondingCurveConfig = BONDING_CURVE_V4_CONFIG
 ): {
   isValid: boolean;
   errors: string[];
   warnings: string[];
 } {
-  const { MAX_PRICE_IMPACT_WARNING, HIGH_SLIPPAGE_THRESHOLD, GRADUATION_PROMPT_AMOUNT } = BONDING_CURVE_V4_CONFIG;
+  const { MAX_PRICE_IMPACT_WARNING, HIGH_SLIPPAGE_THRESHOLD, GRADUATION_PROMPT_AMOUNT } = config;
   
   const errors: string[] = [];
   const warnings: string[] = [];
@@ -438,8 +522,8 @@ export function validateTradeAmountV4(
   
   // Calculate impact for warnings
   if (tradeType === 'buy' && promptAmount > 0) {
-    const currentTokensSold = tokensSoldFromPromptRaisedV4(currentPromptRaised);
-    const result = calculateTokensFromPromptV4(currentTokensSold, promptAmount);
+    const currentTokensSold = tokensSoldFromPromptRaisedV4(currentPromptRaised, config);
+    const result = calculateTokensFromPromptV4(currentTokensSold, promptAmount, true, config);
     
     if (result.priceImpact > MAX_PRICE_IMPACT_WARNING) {
       warnings.push(`High price impact: ${result.priceImpact.toFixed(1)}%`);
@@ -477,8 +561,8 @@ export function formatPromptAmountV4(amount: number, showSymbol: boolean = true)
 }
 
 // Legacy compatibility functions for migration
-export function isAgentGraduatedV4(promptRaised: number): boolean {
-  return promptRaised >= BONDING_CURVE_V4_CONFIG.GRADUATION_PROMPT_AMOUNT;
+export function isAgentGraduatedV4(promptRaised: number, config: BondingCurveConfig = BONDING_CURVE_V4_CONFIG): boolean {
+  return promptRaised >= config.GRADUATION_PROMPT_AMOUNT;
 }
 
 export function isBondingCurveCompleteV4(promptRaised: number): boolean {
