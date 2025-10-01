@@ -67,38 +67,8 @@ const Admin = () => {
   const { updateSetting, isUpdating } = useUpdateAdminSettings();
   const [activeSection, setActiveSection] = useState<AdminSection>('system-settings');
 
-  console.log('Admin page - auth state:', { user: !!user, authenticated, ready, isAdmin, isLoading });
-
-  useEffect(() => {
-    if (ready && !isLoading) {
-      if (!authenticated) {
-        console.log('Admin page - not authenticated, redirecting to auth');
-        navigate('/auth');
-        return;
-      }
-      
-      if (!isAdmin) {
-        console.log('Admin page - not admin, redirecting to home');
-        navigate('/');
-        return;
-      }
-    }
-  }, [authenticated, ready, isAdmin, isLoading, navigate]);
-
-  if (!ready || isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-muted-foreground">Loading admin panel...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!authenticated || !isAdmin) {
-    return null; // Will redirect
-  }
+  // AdminProtectedRoute already handles authentication/authorization
+  // No need for duplicate checks here
 
   const sidebarItems = [
     {
