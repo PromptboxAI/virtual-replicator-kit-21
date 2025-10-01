@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -78,8 +79,34 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
   // MEV Protection - Agent Lock Status
   const { isLocked, canTrade, timeLeft, isCreator } = useAgentLockStatus(agent.id);
   
-  // Mock agent token balance - in real implementation, this would come from a hook
-  const agentTokenBalance = 0; // TODO: Implement useAgentTokenBalance hook
+  // Get user's agent token balance
+  const [agentTokenBalance, setAgentTokenBalance] = useState<number>(0);
+  
+  useEffect(() => {
+    const fetchAgentTokenBalance = async () => {
+      if (!user?.id || !agent.id) {
+        setAgentTokenBalance(0);
+        return;
+      }
+      
+      const { data, error } = await supabase
+        .from('agent_token_holders')
+        .select('token_balance')
+        .eq('agent_id', agent.id)
+        .eq('user_id', user.id)
+        .single();
+      
+      if (error) {
+        console.log('No token balance found for user');
+        setAgentTokenBalance(0);
+        return;
+      }
+      
+      setAgentTokenBalance(data?.token_balance || 0);
+    };
+    
+    fetchAgentTokenBalance();
+  }, [user?.id, agent.id]);
   
   // Fee configuration (default values until integrated with useAgentTokens)
   const feeConfig = {
