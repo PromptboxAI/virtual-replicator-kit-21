@@ -43,13 +43,10 @@ const TokenAgents = () => {
 
             <div className="space-y-4">
               <h1 className="text-5xl font-bold text-foreground leading-tight">
-                Your Token.{" "}
+                Launch first<br />
+                Build fast<br />
                 <span className="bg-gradient-primary bg-clip-text text-transparent">
-                  Your AI.
-                </span>
-                <br />
-                <span className="bg-gradient-primary bg-clip-text text-transparent">
-                  Your Future.
+                  Tokenized AI Agents
                 </span>
               </h1>
               <p className="text-lg text-muted-foreground max-w-lg">
