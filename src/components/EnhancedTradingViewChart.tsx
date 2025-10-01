@@ -4,8 +4,7 @@ import {
   IChartApi, 
   LineStyle, 
   CrosshairMode, 
-  Time, 
-  SeriesType,
+  Time,
   CandlestickSeries,
   LineSeries,
   AreaSeries,
@@ -179,7 +178,7 @@ export const EnhancedTradingViewChart = ({
     // Add main price series based on chart type (using v5 API)
     try {
       if (chartType === 'candlestick') {
-        const candlestickSeries = chart.addSeries(CandlestickSeries, {
+        const candleSeries = chart.addSeries(CandlestickSeries, {
           upColor: '#10b981',
           downColor: '#ef4444',
           borderUpColor: '#10b981',
@@ -187,30 +186,30 @@ export const EnhancedTradingViewChart = ({
           wickUpColor: '#10b981',
           wickDownColor: '#ef4444',
         });
-        mainSeriesRef.current = candlestickSeries;
+        mainSeriesRef.current = candleSeries;
       } else if (chartType === 'line') {
-        const lineSeries = chart.addSeries(LineSeries, {
+        const line = chart.addSeries(LineSeries, {
           color: '#8b5cf6',
           lineWidth: 2,
         });
-        mainSeriesRef.current = lineSeries;
+        mainSeriesRef.current = line;
       } else if (chartType === 'area') {
-        const areaSeries = chart.addSeries(AreaSeries, {
+        const area = chart.addSeries(AreaSeries, {
           topColor: 'rgba(139, 92, 246, 0.56)',
           bottomColor: 'rgba(139, 92, 246, 0.04)',
           lineColor: '#8b5cf6',
           lineWidth: 2,
         });
-        mainSeriesRef.current = areaSeries;
+        mainSeriesRef.current = area;
       }
     } catch (error) {
       console.error('Error creating chart series:', error);
       // Fallback to basic line series using v5 API
-      const lineSeries = chart.addSeries(LineSeries, {
+      const line = chart.addSeries(LineSeries, {
         color: '#8b5cf6',
         lineWidth: 2,
       });
-      mainSeriesRef.current = lineSeries;
+      mainSeriesRef.current = line;
     }
 
     // Handle resize
