@@ -1,5 +1,16 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { createChart, IChartApi, LineStyle, CrosshairMode, Time, SeriesType } from 'lightweight-charts';
+import { 
+  createChart, 
+  IChartApi, 
+  LineStyle, 
+  CrosshairMode, 
+  Time, 
+  SeriesType,
+  CandlestickSeries,
+  LineSeries,
+  AreaSeries,
+  HistogramSeries
+} from 'lightweight-charts';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -146,47 +157,58 @@ export const EnhancedTradingViewChart = ({
 
     chartRef.current = chart;
 
-    // Add volume series if enabled
+    // Add volume series if enabled (using v5 API)
     if (showVolume) {
       try {
-        const volumeSeries = (chart as any).addHistogramSeries({
+        const volumeSeries = chart.addSeries(HistogramSeries, {
           color: isDark ? '#6b7280' : '#9ca3af',
           priceFormat: { type: 'volume' },
-          priceScaleId: '',
+          priceScaleId: 'volume',
+        });
+        
+        chart.priceScale('volume').applyOptions({
           scaleMargins: { top: 0.8, bottom: 0 },
         });
+        
         volumeSeriesRef.current = volumeSeries;
       } catch (error) {
-        console.warn('Volume series not supported');
+        console.warn('Volume series not supported:', error);
       }
     }
 
-    // Add main price series based on chart type
+    // Add main price series based on chart type (using v5 API)
     try {
       if (chartType === 'candlestick') {
-        const candlestickSeries = (chart as any).addCandlestickSeries({
-          upColor: '#10b981', downColor: '#ef4444',
-          borderUpColor: '#10b981', borderDownColor: '#ef4444',
-          wickUpColor: '#10b981', wickDownColor: '#ef4444',
+        const candlestickSeries = chart.addSeries(CandlestickSeries, {
+          upColor: '#10b981',
+          downColor: '#ef4444',
+          borderUpColor: '#10b981',
+          borderDownColor: '#ef4444',
+          wickUpColor: '#10b981',
+          wickDownColor: '#ef4444',
         });
         mainSeriesRef.current = candlestickSeries;
       } else if (chartType === 'line') {
-        const lineSeries = (chart as any).addLineSeries({
-          color: '#8b5cf6', lineWidth: 2,
+        const lineSeries = chart.addSeries(LineSeries, {
+          color: '#8b5cf6',
+          lineWidth: 2,
         });
         mainSeriesRef.current = lineSeries;
       } else if (chartType === 'area') {
-        const areaSeries = (chart as any).addAreaSeries({
+        const areaSeries = chart.addSeries(AreaSeries, {
           topColor: 'rgba(139, 92, 246, 0.56)',
           bottomColor: 'rgba(139, 92, 246, 0.04)',
-          lineColor: '#8b5cf6', lineWidth: 2,
+          lineColor: '#8b5cf6',
+          lineWidth: 2,
         });
         mainSeriesRef.current = areaSeries;
       }
     } catch (error) {
-      // Fallback to basic line series
-      const lineSeries = (chart as any).addLineSeries({
-        color: '#8b5cf6', lineWidth: 2,
+      console.error('Error creating chart series:', error);
+      // Fallback to basic line series using v5 API
+      const lineSeries = chart.addSeries(LineSeries, {
+        color: '#8b5cf6',
+        lineWidth: 2,
       });
       mainSeriesRef.current = lineSeries;
     }
@@ -290,8 +312,9 @@ export const EnhancedTradingViewChart = ({
                 close: viewMode === 'marketcap' ? item.close * 1000000000 : item.close,
               })), 20);
               
-              const smaLine = (chartRef.current as any).addLineSeries({
-                color: '#f59e0b', lineWidth: 1,
+              const smaLine = chartRef.current!.addSeries(LineSeries, {
+                color: '#f59e0b',
+                lineWidth: 1,
               });
               smaLine.setData(sma20);
             } catch (error) {
