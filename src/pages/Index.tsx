@@ -199,7 +199,9 @@ const Index = () => {
             <AnimatedBackground />
           </div>
           <div className="flex items-center justify-center gap-2 mb-4 relative z-10">
-            <h1 className="text-6xl font-bold text-black">
+            <h1 className="text-6xl font-bold text-black leading-tight">
+              Launch first<br />
+              Build fast<br />
               Tokenized AI Agents
             </h1>
           </div>
