@@ -15,6 +15,7 @@ interface ProfessionalTradingChartProps {
   promptAmount?: number;
   tradeType?: 'buy' | 'sell';
   onPriceUpdate?: (price: number) => void;
+  agentMarketCap?: number;
 }
 
 export type ChartInterval = '1m' | '5m' | '15m' | '1h' | '4h' | '1d';
@@ -28,7 +29,8 @@ export const ProfessionalTradingChart = ({
   agentAvatar,
   promptAmount = 0, 
   tradeType = 'buy',
-  onPriceUpdate 
+  onPriceUpdate,
+  agentMarketCap
 }: ProfessionalTradingChartProps) => {
   const [priceImpact, setPriceImpact] = useState<PriceImpactData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -129,6 +131,7 @@ export const ProfessionalTradingChart = ({
             promptAmount={promptAmount}
             tradeType={tradeType}
             onPriceUpdate={onPriceUpdate}
+            agentMarketCap={agentMarketCap}
           />
       </div>
       
