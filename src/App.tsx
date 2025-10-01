@@ -121,7 +121,7 @@ const App = () => (
               <Route path="/market" element={<Market />} />
               <Route path="/agents" element={<AllAgents />} />
               <Route path="/agent/:agentId" element={<UnifiedAgentPage />} />
-              <Route path="/admin" element={<Admin />} />
+              <Route path="/admin" element={<AdminProtectedRoute><Admin /></AdminProtectedRoute>} />
               <Route path="/admin-settings" element={<AdminProtectedRoute><AdminSettings /></AdminProtectedRoute>} />
               <Route path="/test-simple" element={<div><h1>Simple Test Route Working!</h1></div>} />
               <Route path="/contract-test" element={

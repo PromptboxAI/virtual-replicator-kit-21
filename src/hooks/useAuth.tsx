@@ -62,7 +62,7 @@ export function useAuth() {
       setTimeout(closeModals, 500);
       setTimeout(closeModals, 1000);
     }
-  }, [ready, authenticated, user]);
+  }, [ready, authenticated, user?.id]); // Only depend on user.id, not entire user object
 
   // Sync Privy user with Supabase profiles (optimized with localStorage cache)
   useEffect(() => {
@@ -167,7 +167,7 @@ export function useAuth() {
     setIsProcessing(false);
     // Run sync in background
     syncUserProfile();
-  }, [ready, authenticated, user]);
+  }, [ready, authenticated, user?.id]); // Only depend on user.id to prevent unnecessary re-renders
 
   const handleAcceptTerms = async () => {
     if (!user) return;
