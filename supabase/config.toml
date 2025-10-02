@@ -15,8 +15,9 @@ verify_jwt = false
 [functions.agent-runtime]
 verify_jwt = false
 
-[functions.agent-scheduler]
-verify_jwt = false
+# DISABLED: Preventing ghost trades
+# [functions.agent-scheduler]
+# verify_jwt = false
 
 [functions.post-tweet]
 verify_jwt = false

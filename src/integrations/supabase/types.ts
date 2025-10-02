@@ -2859,6 +2859,10 @@ export type Database = {
         Args: { p_key: string }
         Returns: Json
       }
+      get_agent_current_price_v4: {
+        Args: { p_agent_id: string }
+        Returns: number
+      }
       get_agent_ohlcv_data: {
         Args: {
           p_agent_id: string

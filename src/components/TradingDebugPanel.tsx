@@ -23,6 +23,7 @@ interface AgentDebugData {
   token_graduated: boolean;
   is_active: boolean;
   test_mode: boolean;
+  pricing_model: string;
 }
 
 export const TradingDebugPanel = ({ agentId }: DebugPanelProps) => {
@@ -40,30 +41,42 @@ export const TradingDebugPanel = ({ agentId }: DebugPanelProps) => {
     try {
       const { data, error } = await supabase
         .from('agents')
-        .select('id, name, symbol, prompt_raised, current_price, market_cap, token_graduated, is_active, test_mode')
+        .select('id, name, symbol, prompt_raised, current_price, market_cap, token_graduated, is_active, test_mode, pricing_model')
         .eq('id', agentId)
         .single();
       
       if (error) throw error;
-      setAgentData(data);
+      setAgentData(data as any);
       
-      // Also fetch the dynamic price using the new bonding curve function
+      // Fetch the correct dynamic price based on pricing model
       if (data) {
-        await fetchDynamicPrice(data.prompt_raised);
+        await fetchDynamicPrice(data.id, data.pricing_model || 'linear_v3');
       }
     } catch (error) {
       console.error('Debug: Failed to fetch agent data:', error);
     }
   };
 
-  const fetchDynamicPrice = async (promptRaised: number) => {
+  const fetchDynamicPrice = async (agentId: string, pricingModel: string) => {
     try {
-      const { data, error } = await supabase.rpc('get_current_bonding_curve_price', { 
-        tokens_sold: Math.max(0, promptRaised * 0.1) 
-      });
-      
-      if (error) throw error;
-      setDynamicPrice(data);
+      // Use correct pricing function based on agent's pricing_model
+      if (pricingModel === 'linear_v4') {
+        const { data, error } = await supabase.rpc('get_agent_current_price_v4', { 
+          p_agent_id: agentId 
+        });
+        
+        if (error) throw error;
+        setDynamicPrice(data);
+      } else {
+        // Legacy V3 pricing for older agents
+        const { data: agent } = await supabase
+          .from('agents')
+          .select('current_price')
+          .eq('id', agentId)
+          .single();
+        
+        setDynamicPrice(agent?.current_price || null);
+      }
     } catch (error) {
       console.error('Debug: Failed to fetch dynamic price:', error);
       setDynamicPrice(null);
@@ -224,14 +237,14 @@ export const TradingDebugPanel = ({ agentId }: DebugPanelProps) => {
               <div>Symbol: {agentData.symbol}</div>
               <div>PROMPT Raised: {agentData.prompt_raised}</div>
               
-              {/* Price Status - Now showing correctly */}
-              <div className="bg-green-100 p-2 rounded text-xs space-y-1">
-                <div className="font-semibold text-green-800">✅ PRICES SYNCHRONIZED:</div>
-                <div>Static Price (DB): ${agentData.current_price.toFixed(6)} ✅</div>
-                <div>Dynamic Price (AMM): ${dynamicPrice?.toFixed(6) || '...'} ✅</div>
+              {/* Price Status - Now showing V4 pricing correctly */}
+              <div className="bg-blue-100 p-2 rounded text-xs space-y-1">
+                <div className="font-semibold text-blue-800">📊 PRICING MODEL: {agentData.pricing_model?.toUpperCase() || 'UNKNOWN'}</div>
+                <div>DB Price: {agentData.current_price.toFixed(8)} PROMPT</div>
+                <div>Calculated: {dynamicPrice?.toFixed(8) || '...'} PROMPT</div>
                 {dynamicPrice && (
-                  <div className="text-green-600">
-                    Difference: {Math.abs(((agentData.current_price - dynamicPrice) / dynamicPrice) * 100) < 0.1 ? 'Synchronized' : (((agentData.current_price - dynamicPrice) / dynamicPrice) * 100).toFixed(1) + '%'}
+                  <div className={Math.abs(agentData.current_price - dynamicPrice) < 0.00000001 ? 'text-green-600' : 'text-yellow-600'}>
+                    Diff: {Math.abs(agentData.current_price - dynamicPrice) < 0.00000001 ? '✅ Synchronized' : `${(((agentData.current_price - dynamicPrice) / dynamicPrice) * 100).toFixed(2)}%`}
                   </div>
                 )}
               </div>
