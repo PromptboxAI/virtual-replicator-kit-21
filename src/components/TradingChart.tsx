@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
 import { TrendingUp, TrendingDown } from 'lucide-react';
+import { formatChartPrice } from '@/lib/formatters';
 
 interface ChartData {
   timestamp: string;
@@ -65,13 +66,7 @@ export function TradingChart({ tokenAddress, agentSymbol, currentPrice, priceCha
   };
 
   const formatPrice = (price: number) => {
-    if (price >= 0.01) {
-      return price.toFixed(2);
-    } else if (price >= 0.000001) {
-      return price.toFixed(6);
-    } else {
-      return price.toExponential(2);
-    }
+    return formatChartPrice(price);
   };
 
   const formatTime = (timestamp: string) => {

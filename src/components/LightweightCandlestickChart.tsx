@@ -66,6 +66,7 @@ export const LightweightCandlestickChart = ({
       },
       rightPriceScale: {
         borderColor: theme === 'dark' ? '#27272a' : '#e4e4e7',
+        mode: 1, // Logarithmic mode for better V4 price scaling
       },
       crosshair: {
         mode: 1,

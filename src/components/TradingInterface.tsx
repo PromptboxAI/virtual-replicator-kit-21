@@ -20,6 +20,8 @@ import { useAgentTokens } from '@/hooks/useAgentTokens';
 import { calculateBuyCostV4, calculateSellReturnV4, formatPriceV4, formatPromptAmountV4, getCurrentPriceV4, calculateTokensFromPromptV4, tokensSoldFromPromptRaisedV4 } from '@/lib/bondingCurveV4';
 import { supabase } from '@/integrations/supabase/client';
 import { getAgentGraduationThreshold } from '@/services/GraduationService';
+import { useAgentFDV } from '@/hooks/useAgentFDV';
+import { formatMarketCapUSD } from '@/lib/formatters';
 
 interface AgentMetrics {
   promptRaised: number;
@@ -75,6 +77,7 @@ export function TradingInterface({
   const { toast } = useToast();
   const { mode: appMode } = useAppMode(); // ✅ Move hook to top level
   const { user } = useAuth();
+  const correctFdv = useAgentFDV(agentId);
   
   // 🛡️ MEV Protection: Check lock status
   const { isLocked, timeLeft, canTrade, isCreator, loading: lockLoading } = useAgentLockStatus(agentId);
@@ -451,7 +454,7 @@ export function TradingInterface({
             
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">FDV</p>
-              <p className="text-lg font-semibold">${(metrics.marketCap / 1000).toFixed(2)}k</p>
+              <p className="text-lg font-semibold">{formatMarketCapUSD(correctFdv)}</p>
             </div>
             
             <div className="space-y-1">

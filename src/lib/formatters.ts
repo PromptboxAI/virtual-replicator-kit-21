@@ -6,10 +6,16 @@ export const formatPriceUSD = (priceInPrompt: number): string => {
 
   if (usdPrice === 0) return '$0.00';
 
-  // NEVER use scientific notation
-  if (usdPrice < 0.00001) {
-    const decimals = Math.max(8, -Math.floor(Math.log10(usdPrice)));
+  // V4 pricing: handle very small numbers (0.0000004 to 0.000075 USD range)
+  if (usdPrice < 0.000001) {
+    // For ultra-small prices, show 8-10 decimals
+    const decimals = Math.max(10, -Math.floor(Math.log10(usdPrice)) + 2);
     return `$${usdPrice.toFixed(decimals).replace(/\.?0+$/, '')}`;
+  }
+
+  if (usdPrice < 0.0001) {
+    // V4 range: show 6-8 decimals
+    return `$${usdPrice.toFixed(8).replace(/\.?0+$/, '')}`;
   }
 
   if (usdPrice < 0.01) {
@@ -43,4 +49,33 @@ export const formatPromptAmount = (amount: number): string => {
   if (amount >= 1_000_000) return `${(amount / 1_000_000).toFixed(2)}M`;
   if (amount >= 1_000) return `${(amount / 1_000).toFixed(2)}K`;
   return amount.toLocaleString(undefined, { maximumFractionDigits: 0 });
+};
+
+// Format chart Y-axis values for small V4 prices
+export const formatChartPrice = (price: number): string => {
+  if (price === 0) return '0';
+  
+  // V4 pricing range handling
+  if (price < 0.000001) {
+    return price.toExponential(1);
+  }
+  
+  if (price < 0.0001) {
+    // Show significant digits for V4 range
+    return price.toFixed(8).replace(/\.?0+$/, '');
+  }
+  
+  if (price < 0.01) {
+    return price.toFixed(6).replace(/\.?0+$/, '');
+  }
+  
+  if (price < 1) {
+    return price.toFixed(4);
+  }
+  
+  if (price < 1000) {
+    return price.toFixed(2);
+  }
+  
+  return price.toLocaleString(undefined, { maximumFractionDigits: 0 });
 };

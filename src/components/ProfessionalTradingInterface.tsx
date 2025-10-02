@@ -9,7 +9,8 @@ import { TokenTradingInterface } from './TokenTradingInterface';
 import { TradingModeGuard } from './TradingModeGuard';
 import { useAgentRealtime } from '@/hooks/useAgentRealtime';
 import { formatPromptAmountV3, formatPriceV3, formatTokenAmountV3 } from '@/lib/bondingCurveV3';
-import { formatMarketCapUSD } from '@/lib/formatters';
+import { formatPriceUSD, formatMarketCapUSD } from '@/lib/formatters';
+import { useAgentFDV } from '@/hooks/useAgentFDV';
 import { AgentInformationSections } from './AgentInformationSections';
 import { useToast } from '@/hooks/use-toast';
 import { AgentMigrationStatus } from './AgentMigrationStatus';
@@ -44,6 +45,7 @@ export const ProfessionalTradingInterface = ({
   const [promptAmount, setPromptAmount] = useState<number>(0);
   const [tradeType, setTradeType] = useState<'buy' | 'sell'>('buy');
   const { toast } = useToast();
+  const correctFdv = useAgentFDV(agent.id);
 
   const { isGraduated, agentData, isMigrating, checkMigration } = useAgentRealtime(agent.id, {
     id: agent.id,
@@ -208,7 +210,7 @@ export const ProfessionalTradingInterface = ({
           <>
             <Card className="p-4 text-center">
               <div className="text-lg font-bold text-foreground">
-                {formatMarketCapUSD(agent.market_cap)}
+                {formatMarketCapUSD(correctFdv)}
               </div>
               <div className="text-sm text-muted-foreground">FDV</div>
             </Card>
@@ -246,7 +248,7 @@ export const ProfessionalTradingInterface = ({
           <>
             <Card className="p-4 text-center">
               <div className="text-lg font-bold text-foreground">
-                {formatMarketCapUSD(agent.market_cap)}
+                {formatMarketCapUSD(correctFdv)}
               </div>
               <div className="text-sm text-muted-foreground">Market Cap</div>
             </Card>
