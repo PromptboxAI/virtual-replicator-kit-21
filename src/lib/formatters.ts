@@ -29,13 +29,17 @@ export const formatPriceUSD = (priceInPrompt: number): string => {
   return `$${usdPrice.toFixed(2)}`;
 };
 
-export const formatMarketCapUSD = (marketCapInPrompt: number): string => {
-  const usdValue = marketCapInPrompt * PROMPT_USD_RATE;
-
-  if (usdValue >= 1_000_000_000) return `$${(usdValue / 1_000_000_000).toFixed(2)}B`;
-  if (usdValue >= 1_000_000) return `$${(usdValue / 1_000_000).toFixed(2)}M`;
-  if (usdValue >= 1_000) return `$${(usdValue / 1_000).toFixed(2)}k`;
-  return `$${usdValue.toFixed(2)}`;
+/**
+ * Format market cap value for display
+ * @param marketCapUSD - Market cap already in USD (no conversion needed)
+ * @returns Formatted string with $ and appropriate suffix (B/M/k)
+ */
+export const formatMarketCapUSD = (marketCapUSD: number): string => {
+  // Value is already in USD from useAgentFDV - just format it
+  if (marketCapUSD >= 1_000_000_000) return `$${(marketCapUSD / 1_000_000_000).toFixed(2)}B`;
+  if (marketCapUSD >= 1_000_000) return `$${(marketCapUSD / 1_000_000).toFixed(2)}M`;
+  if (marketCapUSD >= 1_000) return `$${(marketCapUSD / 1_000).toFixed(2)}k`;
+  return `$${marketCapUSD.toFixed(2)}`;
 };
 
 export const formatTokenAmount = (amount: number): string => {
