@@ -94,7 +94,7 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
         .select('token_balance')
         .eq('agent_id', agent.id)
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
       
       if (error) {
         console.log('No token balance found for user');
