@@ -35,6 +35,7 @@ import { getPlainTextFromHTML } from "@/lib/utils";
 // import { useAgentTokens } from "@/hooks/useAgentTokens";
 import { useAccount } from 'wagmi';
 import { getCurrentPriceV3, BONDING_CURVE_V3_CONFIG } from "@/lib/bondingCurveV3";
+import { createDynamicBondingConfig } from "@/lib/bondingCurveV4";
 
 // Hook for debounced value
 function useDebounce<T>(value: T, delay: number): T {
@@ -434,7 +435,7 @@ export default function CreateAgent() {
         creationExpiresAt = new Date(Date.now() + (formData.lock_duration_minutes * 60 * 1000));
       }
       
-      // ✅ V4 DYNAMIC PRICING: Calculate P0/P1 based on current PROMPT price
+      // ✅ V4 DYNAMIC PRICING: Use centralized config function
       const currentPromptUsdRate = 0.10; // TODO: Get from price oracle or admin settings
       
       // Get graduation mode from admin settings
@@ -448,11 +449,11 @@ export default function CreateAgent() {
       const graduationMode = graduationConfig?.graduation_mode || 'database';
       const targetMarketCapUsd = graduationMode === 'smart_contract' ? 65000 : null;
       
-      // Calculate P0 and P1 using V4 dynamic functions
-      const P0 = 0.000004 / currentPromptUsdRate; // Target $0.000004 per token at start
-      const CURVE_SUPPLY = 800_000_000;
-      const graduationThreshold = graduationMode === 'database' ? 42000 : (65000 / currentPromptUsdRate);
-      const P1 = (2 * graduationThreshold / CURVE_SUPPLY) - P0;
+      // 🎯 Use centralized bonding config - single source of truth
+      const bondingConfig = createDynamicBondingConfig(currentPromptUsdRate, graduationMode);
+      const P0 = bondingConfig.P0;
+      const P1 = bondingConfig.P1;
+      const graduationThreshold = bondingConfig.GRADUATION_PROMPT_AMOUNT;
       
       // Create basic agent/token record in database first
       const { data, error } = await supabase

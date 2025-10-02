@@ -55,31 +55,40 @@ export const formatPromptAmount = (amount: number): string => {
   return amount.toLocaleString(undefined, { maximumFractionDigits: 0 });
 };
 
-// Format chart Y-axis values for small V4 prices
+// Format chart Y-axis values for small V4 prices (USD display)
 export const formatChartPrice = (price: number): string => {
-  if (price === 0) return '0';
+  if (price === 0) return '$0.00';
   
-  // V4 pricing range handling
-  if (price < 0.000001) {
-    return price.toExponential(1);
+  // Convert PROMPT to USD first
+  const usdPrice = price * PROMPT_USD_RATE;
+  
+  // V4 pricing range handling (ultra-small values)
+  if (usdPrice < 0.0000001) {
+    // Use scientific notation for extremely small values
+    return `$${usdPrice.toExponential(2)}`;
   }
   
-  if (price < 0.0001) {
-    // Show significant digits for V4 range
-    return price.toFixed(8).replace(/\.?0+$/, '');
+  if (usdPrice < 0.000001) {
+    // 7-8 decimals for very small V4 values (e.g., $0.00000886)
+    return `$${usdPrice.toFixed(8).replace(/\.?0+$/, '')}`;
   }
   
-  if (price < 0.01) {
-    return price.toFixed(6).replace(/\.?0+$/, '');
+  if (usdPrice < 0.0001) {
+    // 6-7 decimals for small V4 range
+    return `$${usdPrice.toFixed(7).replace(/\.?0+$/, '')}`;
   }
   
-  if (price < 1) {
-    return price.toFixed(4);
+  if (usdPrice < 0.01) {
+    return `$${usdPrice.toFixed(6).replace(/\.?0+$/, '')}`;
   }
   
-  if (price < 1000) {
-    return price.toFixed(2);
+  if (usdPrice < 1) {
+    return `$${usdPrice.toFixed(4)}`;
   }
   
-  return price.toLocaleString(undefined, { maximumFractionDigits: 0 });
+  if (usdPrice < 1000) {
+    return `$${usdPrice.toFixed(2)}`;
+  }
+  
+  return `$${usdPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
 };
