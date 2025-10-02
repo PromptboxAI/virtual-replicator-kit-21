@@ -61,6 +61,7 @@ interface Agent {
   creator_id?: string;
   creation_locked?: boolean;
   creation_expires_at?: string | null;
+  pricing_model?: 'linear_v3' | 'linear_v4';
 }
 
 interface TransactionState {
@@ -828,8 +829,10 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
 
       {/* Live Token Price Display */}
       <LiveTokenPriceDisplay
+        agentId={agent.id}
         agentSymbol={agent.symbol}
         promptRaised={promptRaised}
+        pricingModel={agent.pricing_model as 'linear_v3' | 'linear_v4'}
         tradeAmount={parseFloat(buyAmount || sellAmount || '0')}
         tradeType={buyAmount ? 'buy' : 'sell'}
       />

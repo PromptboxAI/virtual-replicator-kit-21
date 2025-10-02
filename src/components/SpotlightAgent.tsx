@@ -4,10 +4,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TrendingUp, TrendingDown, Activity, BarChart3 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { isAgentGraduatedV3, formatPriceV3, getCurrentPriceV3, tokensSoldFromPromptRaisedV3 } from '@/lib/bondingCurveV3';
 import { useAgentRealtime } from '@/hooks/useAgentRealtime';
-import { formatPriceUSD, formatMarketCapUSD } from '@/lib/formatters';
+import { formatMarketCapUSD } from '@/lib/formatters';
 import { getAgentGraduationThreshold } from '@/services/GraduationService';
+import { PriceDisplay } from './PriceDisplay';
+import { useAgentFDV } from '@/hooks/useAgentFDV';
 
 interface SpotlightAgentProps {
   agent: {
@@ -45,14 +46,11 @@ export function SpotlightAgent({ agent }: SpotlightAgentProps) {
   }, [agent.id]);
   
   const isPositive = (agent.price_change_24h || 0) > 0;
+  const marketCap = useAgentFDV(agent.id);
   
   const handleTradeClick = () => {
     navigate(`/agent/${agent.id}`);
   };
-  
-  // Use USD formatting for all displays
-  const currentPrice = getCurrentPriceV3(tokensSoldFromPromptRaisedV3(agent.prompt_raised || 0));
-  const marketCapInPrompt = currentPrice * 1000000000; // price × 1B total supply;
   
   return (
     <div className="relative">
@@ -94,7 +92,7 @@ export function SpotlightAgent({ agent }: SpotlightAgentProps) {
           </div>
           
           <div className="text-right">
-            <div className="text-2xl font-bold text-foreground">{formatPriceUSD(currentPrice)}</div>
+            <PriceDisplay agentId={agent.id} variant="usd-primary" showBoth={false} />
             {agent.price_change_24h !== undefined && (
               <div className={`flex items-center space-x-1 ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
                 {isPositive ? (
@@ -114,7 +112,7 @@ export function SpotlightAgent({ agent }: SpotlightAgentProps) {
           <div>
             <div className="text-sm text-muted-foreground">Market Cap</div>
             <div className="text-lg font-semibold text-foreground">
-              {formatMarketCapUSD(marketCapInPrompt)}
+              {formatMarketCapUSD(marketCap)}
             </div>
           </div>
           <div>

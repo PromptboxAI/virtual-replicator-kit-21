@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { TrendingUp, TrendingDown, Activity, Users, DollarSign, BarChart3 } from 'lucide-react';
+import { TrendingUp, TrendingDown, Activity, Users, BarChart3 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { isAgentGraduatedV3, formatPriceV3, getCurrentPriceV3, tokensSoldFromPromptRaisedV3 } from '@/lib/bondingCurveV3';
 import { useAgentRealtime } from '@/hooks/useAgentRealtime';
-import { formatPriceUSD, formatMarketCapUSD } from '@/lib/formatters';
+import { formatMarketCapUSD } from '@/lib/formatters';
 import { getAgentGraduationThreshold } from '@/services/GraduationService';
+import { PriceDisplay } from './PriceDisplay';
+import { useAgentFDV } from '@/hooks/useAgentFDV';
 
 interface AgentCardProps {
   agent: {
@@ -43,13 +44,11 @@ export function TradingAgentCard({ agent }: AgentCardProps) {
     getAgentGraduationThreshold(agent.id).then(setGraduationThreshold);
   }, [agent.id]);
   
+  const marketCap = useAgentFDV(agent.id);
+  
   const handleTradeClick = () => {
     navigate(`/agent/${agent.id}`);
   };
-
-  // Use USD formatting for all displays
-  const currentPrice = getCurrentPriceV3(tokensSoldFromPromptRaisedV3(agent.prompt_raised || 0));
-  const marketCapInPrompt = currentPrice * 1000000000; // price × 1B total supply
 
   return (
     <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group">
@@ -79,9 +78,7 @@ export function TradingAgentCard({ agent }: AgentCardProps) {
           </div>
           
           <div className="text-right">
-            <div className="text-lg font-semibold">
-              {formatPriceUSD(currentPrice)}
-            </div>
+            <PriceDisplay agentId={agent.id} variant="compact" showBoth={false} />
             {agent.price_change_24h !== undefined && (
               <div className={`flex items-center gap-1 text-sm ${
                 agent.price_change_24h >= 0 ? 'text-green-600' : 'text-red-600'
@@ -113,7 +110,7 @@ export function TradingAgentCard({ agent }: AgentCardProps) {
           <div>
             <div className="text-muted-foreground">Market Cap</div>
             <div className="font-medium">
-              {formatMarketCapUSD(marketCapInPrompt)}
+              {formatMarketCapUSD(marketCap)}
             </div>
           </div>
           

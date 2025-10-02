@@ -410,6 +410,7 @@ export function TradingInterface({
 
       {/* Live Token Price Display */}
       <LiveTokenPriceDisplay
+        agentId={agentId}
         agentSymbol={agentSymbol}
         promptRaised={metrics.promptRaised}
         tradeAmount={parseFloat(buyAmount || sellAmount || '0')}

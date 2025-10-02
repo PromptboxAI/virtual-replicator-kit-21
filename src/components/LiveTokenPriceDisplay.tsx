@@ -13,29 +13,57 @@ import {
   calculateGraduationProgressV3,
   BONDING_CURVE_V3_CONFIG
 } from '@/lib/bondingCurveV3';
+import { 
+  getCurrentPriceV4, 
+  tokensSoldFromPromptRaisedV4, 
+  calculateBuyCostV4, 
+  calculateSellReturnV4,
+  formatPriceV4,
+  formatTokenAmountV4,
+  BONDING_CURVE_V4_CONFIG
+} from '@/lib/bondingCurveV4';
 import { cn } from '@/lib/utils';
+import { PriceDisplay } from './PriceDisplay';
 
 interface LiveTokenPriceDisplayProps {
+  agentId: string;
   agentSymbol: string;
   promptRaised: number;
+  pricingModel?: 'linear_v3' | 'linear_v4';
   tradeAmount?: number;
   tradeType?: 'buy' | 'sell';
   className?: string;
 }
 
 export function LiveTokenPriceDisplay({ 
+  agentId,
   agentSymbol, 
-  promptRaised, 
+  promptRaised,
+  pricingModel = 'linear_v3', 
   tradeAmount, 
   tradeType = 'buy',
   className 
 }: LiveTokenPriceDisplayProps) {
   const [showInverse, setShowInverse] = useState(false);
   
-  // Calculate current metrics using V3 functions
-  const tokensSold = tokensSoldFromPromptRaisedV3(promptRaised);
-  const currentPrice = getCurrentPriceV3(tokensSold);
-  const graduationInfo = calculateGraduationProgressV3(promptRaised);
+  // Use appropriate pricing functions based on pricing model
+  const isV4 = pricingModel === 'linear_v4';
+  const tokensSold = isV4 
+    ? tokensSoldFromPromptRaisedV4(promptRaised)
+    : tokensSoldFromPromptRaisedV3(promptRaised);
+  const currentPrice = isV4 
+    ? getCurrentPriceV4(tokensSold)
+    : getCurrentPriceV3(tokensSold);
+  const graduationInfo = isV4
+    ? { 
+        promptRaised,
+        threshold: BONDING_CURVE_V4_CONFIG.GRADUATION_PROMPT_AMOUNT,
+        percentComplete: (promptRaised / BONDING_CURVE_V4_CONFIG.GRADUATION_PROMPT_AMOUNT) * 100,
+        isGraduated: promptRaised >= BONDING_CURVE_V4_CONFIG.GRADUATION_PROMPT_AMOUNT,
+        isNearGraduation: promptRaised >= BONDING_CURVE_V4_CONFIG.GRADUATION_PROMPT_AMOUNT * 0.9,
+        countdownMessage: `${promptRaised.toLocaleString()} / ${BONDING_CURVE_V4_CONFIG.GRADUATION_PROMPT_AMOUNT.toLocaleString()} PROMPT`
+      }
+    : calculateGraduationProgressV3(promptRaised);
   
   // Calculate trade impact if provided
   let newPrice = currentPrice;
@@ -45,21 +73,38 @@ export function LiveTokenPriceDisplay({
   
   if (tradeAmount && tradeAmount > 0) {
     if (tradeType === 'buy') {
-      const impact = calculateBuyCostV3(tokensSold, tradeAmount);
-      newPrice = getCurrentPriceV3(impact.newTokensSold);
+      const impact = isV4
+        ? calculateBuyCostV4(tokensSold, tradeAmount)
+        : calculateBuyCostV3(tokensSold, tradeAmount);
+      newPrice = isV4
+        ? getCurrentPriceV4(impact.newTokensSold)
+        : getCurrentPriceV3(impact.newTokensSold);
       priceImpact = impact.priceImpact;
-      isHighImpact = impact.isHighImpact;
+      // V3 returns isHighImpact, V4 doesn't - calculate manually for V4
+      isHighImpact = isV4 
+        ? Math.abs(priceImpact) > BONDING_CURVE_V4_CONFIG.MAX_PRICE_IMPACT_WARNING
+        : (impact as any).isHighImpact;
       slippage = impact.slippage;
     } else {
-      const impact = calculateSellReturnV3(tokensSold, tradeAmount);
-      newPrice = getCurrentPriceV3(impact.newTokensSold);
+      const impact = isV4
+        ? calculateSellReturnV4(tokensSold, tradeAmount)
+        : calculateSellReturnV3(tokensSold, tradeAmount);
+      newPrice = isV4
+        ? getCurrentPriceV4(impact.newTokensSold)
+        : getCurrentPriceV3(impact.newTokensSold);
       priceImpact = impact.priceImpact;
-      isHighImpact = impact.isHighImpact;
+      // V3 returns isHighImpact, V4 doesn't - calculate manually for V4
+      isHighImpact = isV4 
+        ? Math.abs(priceImpact) > BONDING_CURVE_V4_CONFIG.MAX_PRICE_IMPACT_WARNING
+        : (impact as any).isHighImpact;
       slippage = impact.slippage;
     }
   }
   
-  // Use V3 formatters from library
+  // Use appropriate formatters based on pricing model
+  const formatPrice = isV4 ? formatPriceV4 : formatPriceV3;
+  const formatTokenAmount = isV4 ? formatTokenAmountV4 : formatTokenAmountV3;
+  const HIGH_SLIPPAGE = isV4 ? BONDING_CURVE_V4_CONFIG.HIGH_SLIPPAGE_THRESHOLD : BONDING_CURVE_V3_CONFIG.HIGH_SLIPPAGE_THRESHOLD;
   
   // Calculate forward and inverse rates
   const forwardRate = currentPrice; // 1 Token = X PROMPT
@@ -84,34 +129,33 @@ export function LiveTokenPriceDisplay({
           </Button>
         </div>
         
-        {/* Price Display */}
+        {/* Price Display - Use unified PriceDisplay component */}
         <div className="space-y-2">
           {showInverse ? (
             <div className="text-center">
               <div className="text-2xl font-bold">
-                {formatTokenAmountV3(inverseRate)}
+                {formatTokenAmount(inverseRate)}
               </div>
               <div className="text-sm text-muted-foreground">
                 {agentSymbol} per 1 PROMPT
               </div>
             </div>
           ) : (
-            <div className="text-center">
-              <div className="text-2xl font-bold">
-                {formatPriceV3(forwardRate)}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                PROMPT per 1 {agentSymbol}
-              </div>
+            <div className="flex justify-center">
+              <PriceDisplay 
+                agentId={agentId}
+                variant="prompt-primary"
+                showBoth={false}
+              />
             </div>
           )}
           
           {/* Alternative rate display */}
           <div className="text-center text-xs text-muted-foreground">
             {showInverse ? (
-              <>1 {agentSymbol} = {formatPriceV3(forwardRate)} PROMPT</>
+              <>1 {agentSymbol} = {formatPrice(forwardRate)} PROMPT</>
             ) : (
-              <>1 PROMPT = {formatTokenAmountV3(inverseRate)} {agentSymbol}</>
+              <>1 PROMPT = {formatTokenAmount(inverseRate)} {agentSymbol}</>
             )}
           </div>
         </div>
@@ -131,7 +175,7 @@ export function LiveTokenPriceDisplay({
         )}
         
         {/* Enhanced Price Impact Warning */}
-        {tradeAmount && (isHighImpact || Math.abs(priceImpact) > BONDING_CURVE_V3_CONFIG.HIGH_SLIPPAGE_THRESHOLD) && (
+        {tradeAmount && (isHighImpact || Math.abs(priceImpact) > HIGH_SLIPPAGE) && (
           <div className={cn(
             "flex items-center gap-1 p-2 rounded-lg text-sm",
             isHighImpact 
@@ -155,12 +199,12 @@ export function LiveTokenPriceDisplay({
           <div className="border-t pt-3 space-y-2">
             <div className="flex justify-between text-xs text-muted-foreground">
               <span>Current Price</span>
-              <span>{formatPriceV3(currentPrice)} PROMPT</span>
+              <span>{formatPrice(currentPrice)} PROMPT</span>
             </div>
             <div className="flex justify-between text-xs">
               <span>Price After Trade</span>
               <div className="flex items-center gap-1">
-                <span>{formatPriceV3(newPrice)} PROMPT</span>
+                <span>{formatPrice(newPrice)} PROMPT</span>
                 {priceImpact !== 0 && (
                   <Badge variant={priceImpact > 0 ? "default" : "destructive"} className="text-xs px-1">
                     {priceImpact > 0 ? (
@@ -177,9 +221,9 @@ export function LiveTokenPriceDisplay({
             {/* Rate Change Display */}
             <div className="text-xs text-muted-foreground text-center pt-1 border-t">
               {showInverse ? (
-                <>New rate: {formatTokenAmountV3(1 / newPrice)} {agentSymbol} per PROMPT</>
+                <>New rate: {formatTokenAmount(1 / newPrice)} {agentSymbol} per PROMPT</>
               ) : (
-                <>New rate: {formatPriceV3(newPrice)} PROMPT per {agentSymbol}</>
+                <>New rate: {formatPrice(newPrice)} PROMPT per {agentSymbol}</>
               )}
             </div>
           </div>
