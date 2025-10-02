@@ -85,9 +85,16 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
   useEffect(() => {
     const fetchAgentTokenBalance = async () => {
       if (!user?.id || !agent.id) {
+        console.log('⚠️ Missing user or agent ID:', { userId: user?.id, agentId: agent.id });
         setAgentTokenBalance(0);
         return;
       }
+      
+      console.log('🔍 Fetching token balance for:', { 
+        userId: user.id, 
+        agentId: agent.id,
+        agentSymbol: agent.symbol 
+      });
       
       const { data, error } = await supabase
         .from('agent_token_holders')
@@ -97,12 +104,18 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
         .maybeSingle();
       
       if (error) {
-        console.log('No token balance found for user');
+        console.error('❌ Error fetching token balance:', error);
         setAgentTokenBalance(0);
         return;
       }
       
-      setAgentTokenBalance(data?.token_balance || 0);
+      const balance = data?.token_balance || 0;
+      console.log('✅ Token balance fetched:', { 
+        balance, 
+        rawData: data,
+        agentSymbol: agent.symbol 
+      });
+      setAgentTokenBalance(balance);
     };
     
     fetchAgentTokenBalance();
@@ -116,12 +129,15 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
           event: '*',
           schema: 'public',
           table: 'agent_token_holders',
-          filter: `agent_id=eq.${agent.id},user_id=eq.${user.id}`
+          filter: `agent_id=eq.${agent.id}`
         },
-        (payload) => {
-          console.log('Token balance updated:', payload);
-          if (payload.new && 'token_balance' in payload.new) {
-            setAgentTokenBalance((payload.new as any).token_balance || 0);
+        (payload: any) => {
+          console.log('🔄 Token balance realtime update:', payload);
+          // Only update if it's for this specific user
+          if (payload.new && payload.new.user_id === user?.id) {
+            const newBalance = payload.new.token_balance || 0;
+            console.log('✅ Updating balance to:', newBalance);
+            setAgentTokenBalance(newBalance);
           }
         }
       )
@@ -130,7 +146,7 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user?.id, agent.id]);
+  }, [user?.id, agent.id, agent.symbol]);
   
   // Fee configuration (default values until integrated with useAgentTokens)
   const feeConfig = {
