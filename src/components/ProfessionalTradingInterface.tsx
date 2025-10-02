@@ -82,6 +82,11 @@ export const ProfessionalTradingInterface = ({
   const progressPercentage = Math.min((agent.prompt_raised / agent.graduation_threshold) * 100, 100);
   const liquidityPool = agent.prompt_raised * 0.8; // 80% goes to liquidity
   const topHolders = Math.min(agent.token_holders * 0.1, 10); // Estimate top 10 holders percentage
+  
+  // USD conversion for display (1 PROMPT = $0.10)
+  const PROMPT_USD_RATE = 0.10;
+  const promptRaisedUSD = agent.prompt_raised * PROMPT_USD_RATE;
+  const graduationThresholdUSD = agent.graduation_threshold * PROMPT_USD_RATE;
 
   return (
     <div className="w-full space-y-6">
@@ -181,8 +186,8 @@ export const ProfessionalTradingInterface = ({
                   />
                 </div>
                 <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>{formatPromptAmountV3(agent.prompt_raised)} raised</span>
-                  <span>{formatPromptAmountV3(agent.graduation_threshold)} needed</span>
+                  <span>${promptRaisedUSD.toFixed(2)} raised</span>
+                  <span>${graduationThresholdUSD.toFixed(2)} needed</span>
                 </div>
               </div>
             </Card>
@@ -212,7 +217,9 @@ export const ProfessionalTradingInterface = ({
               <div className="text-lg font-bold text-foreground">
                 {formatMarketCapUSD(marketCap)}
               </div>
-              <div className="text-sm text-muted-foreground">Market Cap</div>
+              <div className="text-sm text-muted-foreground">
+                {isGraduated ? 'FDV' : 'Market Cap'}
+              </div>
             </Card>
 
             <Card className="p-4 text-center">
@@ -250,7 +257,9 @@ export const ProfessionalTradingInterface = ({
               <div className="text-lg font-bold text-foreground">
                 {formatMarketCapUSD(marketCap)}
               </div>
-              <div className="text-sm text-muted-foreground">Market Cap</div>
+              <div className="text-sm text-muted-foreground">
+                FDV
+              </div>
             </Card>
 
             <Card className="p-4 text-center">

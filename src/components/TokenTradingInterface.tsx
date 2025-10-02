@@ -106,6 +106,30 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
     };
     
     fetchAgentTokenBalance();
+    
+    // Set up realtime subscription for balance updates
+    const channel = supabase
+      .channel(`agent_token_holders:${agent.id}:${user?.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'agent_token_holders',
+          filter: `agent_id=eq.${agent.id},user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('Token balance updated:', payload);
+          if (payload.new && 'token_balance' in payload.new) {
+            setAgentTokenBalance((payload.new as any).token_balance || 0);
+          }
+        }
+      )
+      .subscribe();
+    
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user?.id, agent.id]);
   
   // Fee configuration (default values until integrated with useAgentTokens)
