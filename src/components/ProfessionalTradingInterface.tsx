@@ -161,7 +161,7 @@ export const ProfessionalTradingInterface = ({
             promptAmount={promptAmount}
             tradeType={tradeType}
             onPriceUpdate={handlePriceUpdate}
-            agentMarketCap={agent.market_cap}
+            agentMarketCap={marketCap}
           />
           
           {/* Graduation Progress under chart */}
