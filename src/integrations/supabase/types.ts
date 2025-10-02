@@ -780,6 +780,7 @@ export type Database = {
           price_per_token: number
           prompt_amount: number
           token_amount: number
+          tokens_sold_before: number | null
           transaction_hash: string | null
           user_id: string
         }
@@ -792,6 +793,7 @@ export type Database = {
           price_per_token: number
           prompt_amount: number
           token_amount: number
+          tokens_sold_before?: number | null
           transaction_hash?: string | null
           user_id: string
         }
@@ -804,6 +806,7 @@ export type Database = {
           price_per_token?: number
           prompt_amount?: number
           token_amount?: number
+          tokens_sold_before?: number | null
           transaction_hash?: string | null
           user_id?: string
         }
@@ -906,6 +909,7 @@ export type Database = {
           price_per_token: number
           prompt_amount: number
           token_amount: number
+          tokens_sold_before: number | null
           transaction_hash: string | null
           user_id: string
         }
@@ -918,6 +922,7 @@ export type Database = {
           price_per_token: number
           prompt_amount: number
           token_amount: number
+          tokens_sold_before?: number | null
           transaction_hash?: string | null
           user_id: string
         }
@@ -930,6 +935,7 @@ export type Database = {
           price_per_token?: number
           prompt_amount?: number
           token_amount?: number
+          tokens_sold_before?: number | null
           transaction_hash?: string | null
           user_id?: string
         }
