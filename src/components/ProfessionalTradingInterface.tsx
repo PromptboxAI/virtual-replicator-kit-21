@@ -45,7 +45,7 @@ export const ProfessionalTradingInterface = ({
   const [promptAmount, setPromptAmount] = useState<number>(0);
   const [tradeType, setTradeType] = useState<'buy' | 'sell'>('buy');
   const { toast } = useToast();
-  const correctFdv = useAgentFDV(agent.id);
+  const marketCap = useAgentFDV(agent.id);
 
   const { isGraduated, agentData, isMigrating, checkMigration } = useAgentRealtime(agent.id, {
     id: agent.id,
@@ -210,9 +210,9 @@ export const ProfessionalTradingInterface = ({
           <>
             <Card className="p-4 text-center">
               <div className="text-lg font-bold text-foreground">
-                {formatMarketCapUSD(correctFdv)}
+                {formatMarketCapUSD(marketCap)}
               </div>
-              <div className="text-sm text-muted-foreground">FDV</div>
+              <div className="text-sm text-muted-foreground">Market Cap</div>
             </Card>
 
             <Card className="p-4 text-center">
@@ -248,7 +248,7 @@ export const ProfessionalTradingInterface = ({
           <>
             <Card className="p-4 text-center">
               <div className="text-lg font-bold text-foreground">
-                {formatMarketCapUSD(correctFdv)}
+                {formatMarketCapUSD(marketCap)}
               </div>
               <div className="text-sm text-muted-foreground">Market Cap</div>
             </Card>

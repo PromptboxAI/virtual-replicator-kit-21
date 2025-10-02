@@ -77,7 +77,7 @@ export function TradingInterface({
   const { toast } = useToast();
   const { mode: appMode } = useAppMode(); // ✅ Move hook to top level
   const { user } = useAuth();
-  const correctFdv = useAgentFDV(agentId);
+  const calculatedMarketCap = useAgentFDV(agentId);
   
   // 🛡️ MEV Protection: Check lock status
   const { isLocked, timeLeft, canTrade, isCreator, loading: lockLoading } = useAgentLockStatus(agentId);
@@ -453,8 +453,8 @@ export function TradingInterface({
             </div>
             
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">FDV</p>
-              <p className="text-lg font-semibold">{formatMarketCapUSD(correctFdv)}</p>
+              <p className="text-sm text-muted-foreground">Market Cap</p>
+              <p className="text-lg font-semibold">{formatMarketCapUSD(calculatedMarketCap)}</p>
             </div>
             
             <div className="space-y-1">
