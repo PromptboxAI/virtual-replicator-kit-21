@@ -87,8 +87,8 @@ export const ProfessionalTradingInterface = ({
 
   return (
     <div className="w-full space-y-6">
-      {/* Migration Banner - Show when agent is graduating */}
-      {isMigrating && (
+      {/* Migration Banner - Only show for V3 agents that are graduating */}
+      {isMigrating && agent.pricing_model !== 'linear_v4' && (
         <MigrationBanner 
           agentName={agent.name}
           onComplete={() => {

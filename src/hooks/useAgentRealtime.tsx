@@ -109,7 +109,7 @@ export function useAgentRealtime(agentId: string, initialData?: AgentRealtimeDat
       supabase.removeChannel(channel);
       supabase.removeChannel(tradesChannel);
     };
-  }, [agentId, agentData]);
+  }, [agentId]); // Remove agentData dependency to prevent infinite loops
 
   return {
     agentData,
