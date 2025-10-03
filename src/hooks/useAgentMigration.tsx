@@ -43,8 +43,10 @@ export function useAgentMigration(agentId: string) {
       }
 
       const isV3 = agent.pricing_model === 'linear_v3';
+      const isV4 = agent.pricing_model === 'linear_v4';
       const migrationValidated = agent.migration_validated || false;
-      const needsMigration = !isV3 || !migrationValidated;
+      // V4 agents don't need migration, only legacy and unvalidated V3
+      const needsMigration = !isV4 && (!isV3 || !migrationValidated);
 
       setMigrationStatus({
         isV3,

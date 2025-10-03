@@ -84,8 +84,8 @@ export function AgentMigrationStatus({ agentId, agentName }: AgentMigrationStatu
     }
   };
 
-  // Don't show anything if agent is already properly migrated
-  if (migrationStatus.isV3 && migrationStatus.migrationValidated) {
+  // Don't show anything if agent doesn't need migration (V4 or validated V3)
+  if (!migrationStatus.needsMigration) {
     return null;
   }
 
