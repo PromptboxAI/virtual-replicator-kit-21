@@ -265,31 +265,30 @@ export const EnhancedTradingViewChart = ({
         
         if (result.data.length > 0 && chartRef.current && mainSeriesRef.current) {
           const processedData = result.data.map(item => {
-            // For price view, use the actual price from trades
-            // For market cap view, use database market cap if available
-            const basePrice = viewMode === 'marketcap' && agentMarketCap 
-              ? agentMarketCap 
-              : item.close;
+            // For price view, use actual price from trades
+            // For market cap view, calculate market cap at that point (price * 1B total supply)
+            const TOTAL_SUPPLY = 1_000_000_000; // 1 billion tokens
             
             if (chartType === 'candlestick') {
               return {
                 time: item.time as Time,
-                open: viewMode === 'marketcap' && agentMarketCap ? agentMarketCap : item.open,
-                high: viewMode === 'marketcap' && agentMarketCap ? agentMarketCap : item.high,
-                low: viewMode === 'marketcap' && agentMarketCap ? agentMarketCap : item.low,
-                close: basePrice,
+                open: viewMode === 'marketcap' ? item.open * TOTAL_SUPPLY : item.open,
+                high: viewMode === 'marketcap' ? item.high * TOTAL_SUPPLY : item.high,
+                low: viewMode === 'marketcap' ? item.low * TOTAL_SUPPLY : item.low,
+                close: viewMode === 'marketcap' ? item.close * TOTAL_SUPPLY : item.close,
               };
             } else {
               return {
                 time: item.time as Time,
-                value: basePrice,
+                value: viewMode === 'marketcap' ? item.close * TOTAL_SUPPLY : item.close,
               };
             }
           });
 
           const latestItem = result.data[result.data.length - 1];
-          const latestPrice = viewMode === 'marketcap' && agentMarketCap 
-            ? agentMarketCap 
+          const TOTAL_SUPPLY = 1_000_000_000;
+          const latestPrice = viewMode === 'marketcap' 
+            ? latestItem.close * TOTAL_SUPPLY
             : latestItem.close;
           setCurrentPrice(latestPrice);
           onPriceUpdate?.(latestItem.close);
@@ -314,9 +313,10 @@ export const EnhancedTradingViewChart = ({
           // Add technical indicators if enabled
           if (showTechnicalIndicators && result.data.length > 20) {
             try {
+              const TOTAL_SUPPLY = 1_000_000_000;
               const sma20 = calculateSMA(result.data.map(item => ({
                 ...item,
-                close: viewMode === 'marketcap' ? item.close * 1000000000 : item.close,
+                close: viewMode === 'marketcap' ? item.close * TOTAL_SUPPLY : item.close,
               })), 20);
               
               const smaLine = chartRef.current!.addSeries(LineSeries, {
@@ -343,8 +343,9 @@ export const EnhancedTradingViewChart = ({
 
   // Enhanced real-time updates with price animation
   const handleRealtimeUpdate = useCallback((newData: OHLCVData) => {
-    const processedPrice = viewMode === 'marketcap' && agentMarketCap 
-      ? agentMarketCap 
+    const TOTAL_SUPPLY = 1_000_000_000;
+    const processedPrice = viewMode === 'marketcap' 
+      ? newData.close * TOTAL_SUPPLY
       : newData.close;
     
     // Animate price changes
@@ -363,9 +364,9 @@ export const EnhancedTradingViewChart = ({
         if (chartType === 'candlestick') {
           const candleData = {
             time: newData.time as Time,
-            open: viewMode === 'marketcap' && agentMarketCap ? agentMarketCap : newData.open,
-            high: viewMode === 'marketcap' && agentMarketCap ? agentMarketCap : newData.high,
-            low: viewMode === 'marketcap' && agentMarketCap ? agentMarketCap : newData.low,
+            open: viewMode === 'marketcap' ? newData.open * TOTAL_SUPPLY : newData.open,
+            high: viewMode === 'marketcap' ? newData.high * TOTAL_SUPPLY : newData.high,
+            low: viewMode === 'marketcap' ? newData.low * TOTAL_SUPPLY : newData.low,
             close: processedPrice,
           };
           mainSeriesRef.current.update(candleData);
@@ -390,8 +391,9 @@ export const EnhancedTradingViewChart = ({
   }, [viewMode, currentPrice, onPriceUpdate, chartType, showVolume]);
 
   const handlePriceChange = useCallback((price: number) => {
-    const processedPrice = viewMode === 'marketcap' && agentMarketCap 
-      ? agentMarketCap 
+    const TOTAL_SUPPLY = 1_000_000_000;
+    const processedPrice = viewMode === 'marketcap' 
+      ? price * TOTAL_SUPPLY
       : price;
     
     // Animate price changes
