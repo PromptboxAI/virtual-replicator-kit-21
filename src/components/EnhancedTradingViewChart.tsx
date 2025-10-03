@@ -265,22 +265,31 @@ export const EnhancedTradingViewChart = ({
         
         if (result.data.length > 0 && chartRef.current && mainSeriesRef.current) {
           const processedData = result.data.map(item => {
-            // For price view, use actual price from trades
-            // For market cap view, calculate market cap at that point (price * 1B total supply)
-            const TOTAL_SUPPLY = 1_000_000_000; // 1 billion tokens
+            // ALWAYS convert to USD for display
+            const TOTAL_SUPPLY = 1_000_000_000;
             
             if (chartType === 'candlestick') {
               return {
                 time: item.time as Time,
-                open: viewMode === 'marketcap' ? item.open * TOTAL_SUPPLY : item.open,
-                high: viewMode === 'marketcap' ? item.high * TOTAL_SUPPLY : item.high,
-                low: viewMode === 'marketcap' ? item.low * TOTAL_SUPPLY : item.low,
-                close: viewMode === 'marketcap' ? item.close * TOTAL_SUPPLY : item.close,
+                open: viewMode === 'marketcap' 
+                  ? item.open * TOTAL_SUPPLY * PROMPT_USD_RATE 
+                  : item.open * PROMPT_USD_RATE,
+                high: viewMode === 'marketcap' 
+                  ? item.high * TOTAL_SUPPLY * PROMPT_USD_RATE 
+                  : item.high * PROMPT_USD_RATE,
+                low: viewMode === 'marketcap' 
+                  ? item.low * TOTAL_SUPPLY * PROMPT_USD_RATE 
+                  : item.low * PROMPT_USD_RATE,
+                close: viewMode === 'marketcap' 
+                  ? item.close * TOTAL_SUPPLY * PROMPT_USD_RATE 
+                  : item.close * PROMPT_USD_RATE,
               };
             } else {
               return {
                 time: item.time as Time,
-                value: viewMode === 'marketcap' ? item.close * TOTAL_SUPPLY : item.close,
+                value: viewMode === 'marketcap' 
+                  ? item.close * TOTAL_SUPPLY * PROMPT_USD_RATE 
+                  : item.close * PROMPT_USD_RATE,
               };
             }
           });
@@ -288,8 +297,8 @@ export const EnhancedTradingViewChart = ({
           const latestItem = result.data[result.data.length - 1];
           const TOTAL_SUPPLY = 1_000_000_000;
           const latestPrice = viewMode === 'marketcap' 
-            ? latestItem.close * TOTAL_SUPPLY * PROMPT_USD_RATE // Convert PROMPT mcap to USD
-            : latestItem.close; // Keep in PROMPT for formatPriceUSD to convert
+            ? latestItem.close * TOTAL_SUPPLY * PROMPT_USD_RATE
+            : latestItem.close * PROMPT_USD_RATE; // ALWAYS in USD
           setCurrentPrice(latestPrice);
           onPriceUpdate?.(latestItem.close);
 
@@ -316,7 +325,9 @@ export const EnhancedTradingViewChart = ({
               const TOTAL_SUPPLY = 1_000_000_000;
               const sma20 = calculateSMA(result.data.map(item => ({
                 ...item,
-                close: viewMode === 'marketcap' ? item.close * TOTAL_SUPPLY : item.close,
+                close: viewMode === 'marketcap' 
+                  ? item.close * TOTAL_SUPPLY * PROMPT_USD_RATE 
+                  : item.close * PROMPT_USD_RATE,
               })), 20);
               
               const smaLine = chartRef.current!.addSeries(LineSeries, {
@@ -345,8 +356,8 @@ export const EnhancedTradingViewChart = ({
   const handleRealtimeUpdate = useCallback((newData: OHLCVData) => {
     const TOTAL_SUPPLY = 1_000_000_000;
     const processedPrice = viewMode === 'marketcap' 
-      ? newData.close * TOTAL_SUPPLY * PROMPT_USD_RATE // Convert PROMPT mcap to USD
-      : newData.close; // Keep in PROMPT for formatPriceUSD to convert
+      ? newData.close * TOTAL_SUPPLY * PROMPT_USD_RATE
+      : newData.close * PROMPT_USD_RATE; // ALWAYS in USD
     
     // Animate price changes
     const oldPrice = currentPrice;
@@ -364,9 +375,15 @@ export const EnhancedTradingViewChart = ({
         if (chartType === 'candlestick') {
           const candleData = {
             time: newData.time as Time,
-            open: viewMode === 'marketcap' ? newData.open * TOTAL_SUPPLY : newData.open,
-            high: viewMode === 'marketcap' ? newData.high * TOTAL_SUPPLY : newData.high,
-            low: viewMode === 'marketcap' ? newData.low * TOTAL_SUPPLY : newData.low,
+            open: viewMode === 'marketcap' 
+              ? newData.open * TOTAL_SUPPLY * PROMPT_USD_RATE 
+              : newData.open * PROMPT_USD_RATE,
+            high: viewMode === 'marketcap' 
+              ? newData.high * TOTAL_SUPPLY * PROMPT_USD_RATE 
+              : newData.high * PROMPT_USD_RATE,
+            low: viewMode === 'marketcap' 
+              ? newData.low * TOTAL_SUPPLY * PROMPT_USD_RATE 
+              : newData.low * PROMPT_USD_RATE,
             close: processedPrice,
           };
           mainSeriesRef.current.update(candleData);
@@ -393,8 +410,8 @@ export const EnhancedTradingViewChart = ({
   const handlePriceChange = useCallback((price: number) => {
     const TOTAL_SUPPLY = 1_000_000_000;
     const processedPrice = viewMode === 'marketcap' 
-      ? price * TOTAL_SUPPLY * PROMPT_USD_RATE // Convert PROMPT mcap to USD
-      : price; // Keep in PROMPT for formatPriceUSD to convert
+      ? price * TOTAL_SUPPLY * PROMPT_USD_RATE
+      : price * PROMPT_USD_RATE; // ALWAYS in USD
     
     // Animate price changes
     const oldPrice = currentPrice;
@@ -446,8 +463,8 @@ export const EnhancedTradingViewChart = ({
                       priceAnimation === 'down' ? 'text-red-500' : 'text-primary'
                     }`}>
                       {viewMode === 'marketcap' 
-                        ? formatMarketCapUSD(currentPrice)
-                        : formatPriceUSD(currentPrice)
+                        ? formatMarketCapUSD(currentPrice) // Already in USD
+                        : formatPriceUSD(currentPrice / PROMPT_USD_RATE) // Convert back for formatter
                       }
                     </div>
                     <div className="text-xs text-muted-foreground flex items-center gap-1">
