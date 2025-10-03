@@ -412,8 +412,10 @@ const TokenAgents = () => {
             and scale with purpose.
           </p>
           <div className="flex justify-center">
-            <Button size="lg" variant="secondary" className="bg-white text-black hover:bg-white/90">
-              Get Started
+            <Button size="lg" variant="secondary" className="bg-white text-black hover:bg-white/90" asChild>
+              <Link to="/create">
+                Get Started
+              </Link>
             </Button>
           </div>
         </div>
