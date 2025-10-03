@@ -296,9 +296,20 @@ export const EnhancedTradingViewChart = ({
 
           const latestItem = result.data[result.data.length - 1];
           const TOTAL_SUPPLY = 1_000_000_000;
+          
+          console.log('=== CHART DEBUG ===');
+          console.log('viewMode:', viewMode);
+          console.log('latestItem.close (PROMPT):', latestItem.close);
+          console.log('PROMPT_USD_RATE:', PROMPT_USD_RATE);
+          console.log('TOTAL_SUPPLY:', TOTAL_SUPPLY);
+          
           const latestPrice = viewMode === 'marketcap' 
             ? latestItem.close * TOTAL_SUPPLY * PROMPT_USD_RATE
             : latestItem.close * PROMPT_USD_RATE; // ALWAYS in USD
+            
+          console.log('Calculated latestPrice (USD):', latestPrice);
+          console.log('===================');
+          
           setCurrentPrice(latestPrice);
           onPriceUpdate?.(latestItem.close);
 
@@ -455,17 +466,20 @@ export const EnhancedTradingViewChart = ({
                   )}
                 </div>
               </div>
-              <div className="text-sm font-mono">
+               <div className="text-sm font-mono">
                 {currentPrice > 0 && (
                   <div className="text-right">
                     <div className={`text-lg font-bold transition-colors duration-1000 ${
                       priceAnimation === 'up' ? 'text-green-500' : 
                       priceAnimation === 'down' ? 'text-red-500' : 'text-primary'
                     }`}>
-                      {viewMode === 'marketcap' 
-                        ? formatMarketCapUSD(currentPrice) // Already in USD
-                        : formatPriceUSD(currentPrice / PROMPT_USD_RATE) // Convert back for formatter
-                      }
+                      {(() => {
+                        const formatted = viewMode === 'marketcap' 
+                          ? formatMarketCapUSD(currentPrice) // Already in USD
+                          : formatPriceUSD(currentPrice / PROMPT_USD_RATE); // Convert back for formatter
+                        console.log('Display formatted:', formatted, 'from currentPrice:', currentPrice);
+                        return formatted;
+                      })()}
                     </div>
                     <div className="text-xs text-muted-foreground flex items-center gap-1">
                       {viewMode === 'price' ? 'Price (USD)' : 'Market Cap'}
