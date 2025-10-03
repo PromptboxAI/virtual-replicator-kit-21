@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Card } from '@/components/ui/card';
 import { ChartDataService, OHLCVData } from '@/services/chartDataService';
-import { formatMarketCapUSD, formatPriceUSD } from '@/lib/formatters';
+import { formatMarketCapUSD, formatPriceUSD, PROMPT_USD_RATE } from '@/lib/formatters';
 import { useTheme } from 'next-themes';
 import { useChartRealtime } from '@/hooks/useChartRealtime';
 import { useChartDrawings } from '@/hooks/useChartDrawings';
@@ -288,8 +288,8 @@ export const EnhancedTradingViewChart = ({
           const latestItem = result.data[result.data.length - 1];
           const TOTAL_SUPPLY = 1_000_000_000;
           const latestPrice = viewMode === 'marketcap' 
-            ? latestItem.close * TOTAL_SUPPLY
-            : latestItem.close;
+            ? latestItem.close * TOTAL_SUPPLY * PROMPT_USD_RATE // Convert PROMPT mcap to USD
+            : latestItem.close; // Keep in PROMPT for formatPriceUSD to convert
           setCurrentPrice(latestPrice);
           onPriceUpdate?.(latestItem.close);
 
@@ -345,8 +345,8 @@ export const EnhancedTradingViewChart = ({
   const handleRealtimeUpdate = useCallback((newData: OHLCVData) => {
     const TOTAL_SUPPLY = 1_000_000_000;
     const processedPrice = viewMode === 'marketcap' 
-      ? newData.close * TOTAL_SUPPLY
-      : newData.close;
+      ? newData.close * TOTAL_SUPPLY * PROMPT_USD_RATE // Convert PROMPT mcap to USD
+      : newData.close; // Keep in PROMPT for formatPriceUSD to convert
     
     // Animate price changes
     const oldPrice = currentPrice;
@@ -393,8 +393,8 @@ export const EnhancedTradingViewChart = ({
   const handlePriceChange = useCallback((price: number) => {
     const TOTAL_SUPPLY = 1_000_000_000;
     const processedPrice = viewMode === 'marketcap' 
-      ? price * TOTAL_SUPPLY
-      : price;
+      ? price * TOTAL_SUPPLY * PROMPT_USD_RATE // Convert PROMPT mcap to USD
+      : price; // Keep in PROMPT for formatPriceUSD to convert
     
     // Animate price changes
     const oldPrice = currentPrice;
