@@ -11,6 +11,7 @@ import { useAgentRealtime } from '@/hooks/useAgentRealtime';
 import { formatPromptAmountV3, formatPriceV3, formatTokenAmountV3 } from '@/lib/bondingCurveV3';
 import { formatPriceUSD, formatMarketCapUSD } from '@/lib/formatters';
 import { useAgentFDV } from '@/hooks/useAgentFDV';
+import { PriceDisplay } from './PriceDisplay';
 import { AgentInformationSections } from './AgentInformationSections';
 import { useToast } from '@/hooks/use-toast';
 import { AgentMigrationStatus } from './AgentMigrationStatus';
@@ -31,6 +32,7 @@ interface Agent {
   token_graduated: boolean;
   graduation_threshold: number;
   token_address?: string;
+  pricing_model?: string;
 }
 
 interface ProfessionalTradingInterfaceProps {
@@ -82,11 +84,6 @@ export const ProfessionalTradingInterface = ({
   const progressPercentage = Math.min((agent.prompt_raised / agent.graduation_threshold) * 100, 100);
   const liquidityPool = agent.prompt_raised * 0.8; // 80% goes to liquidity
   const topHolders = Math.min(agent.token_holders * 0.1, 10); // Estimate top 10 holders percentage
-  
-  // USD conversion for display (1 PROMPT = $0.10)
-  const PROMPT_USD_RATE = 0.10;
-  const promptRaisedUSD = agent.prompt_raised * PROMPT_USD_RATE;
-  const graduationThresholdUSD = agent.graduation_threshold * PROMPT_USD_RATE;
 
   return (
     <div className="w-full space-y-6">
@@ -144,12 +141,11 @@ export const ProfessionalTradingInterface = ({
             </div>
           </div>
           <div className="text-right">
-            <div className="text-3xl font-bold text-foreground">
-              {formatPriceV3(currentPrice)}
-            </div>
-            <div className="text-sm text-muted-foreground">
-              PROMPT per token
-            </div>
+            <PriceDisplay 
+              agentId={agent.id}
+              variant="prompt-primary"
+              showBoth={true}
+            />
           </div>
         </div>
       </Card>
@@ -186,8 +182,8 @@ export const ProfessionalTradingInterface = ({
                   />
                 </div>
                 <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>${promptRaisedUSD.toFixed(2)} raised</span>
-                  <span>${graduationThresholdUSD.toFixed(2)} needed</span>
+                  <span>{agent.prompt_raised.toFixed(2)} PROMPT raised</span>
+                  <span>{agent.graduation_threshold.toLocaleString()} PROMPT needed</span>
                 </div>
               </div>
             </Card>

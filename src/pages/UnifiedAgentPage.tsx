@@ -25,7 +25,9 @@ const UnifiedAgentPage = () => {
       token_holders: agentData.token_holders,
       volume_24h: agentData.volume_24h,
       token_address: agentData.token_address
-    } : {})
+    } : {}),
+    // Ensure pricing_model is always included
+    pricing_model: agent.pricing_model
   } : null;
   
   // 🔍 DEBUG: Log states at UnifiedAgentPage level

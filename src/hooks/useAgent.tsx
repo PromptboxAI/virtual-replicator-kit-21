@@ -23,6 +23,8 @@ export interface Agent {
   token_graduated: boolean | null;
   graduation_threshold: number | null;
   token_holders: number | null;
+  token_address: string | null;
+  pricing_model: string | null;
 }
 
 export function useAgent(agentId: string | undefined) {
