@@ -116,6 +116,13 @@ export type Database = {
             foreignKeyName: "agent_activities_agent_id_fkey"
             columns: ["agent_id"]
             isOneToOne: false
+            referencedRelation: "agent_metrics_normalized"
+            referencedColumns: ["agent_id"]
+          },
+          {
+            foreignKeyName: "agent_activities_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
             referencedRelation: "agent_prices"
             referencedColumns: ["id"]
           },
@@ -167,6 +174,13 @@ export type Database = {
             foreignKeyName: "agent_chart_init_agent_id_fkey"
             columns: ["agent_id"]
             isOneToOne: false
+            referencedRelation: "agent_metrics_normalized"
+            referencedColumns: ["agent_id"]
+          },
+          {
+            foreignKeyName: "agent_chart_init_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
             referencedRelation: "agent_prices"
             referencedColumns: ["id"]
           },
@@ -205,6 +219,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "agent_configurations_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_metrics_normalized"
+            referencedColumns: ["agent_id"]
+          },
           {
             foreignKeyName: "agent_configurations_agent_id_fkey"
             columns: ["agent_id"]
@@ -268,6 +289,13 @@ export type Database = {
           v2_contract_address?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "agent_graduation_events_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_metrics_normalized"
+            referencedColumns: ["agent_id"]
+          },
           {
             foreignKeyName: "agent_graduation_events_agent_id_fkey"
             columns: ["agent_id"]
@@ -365,6 +393,13 @@ export type Database = {
             foreignKeyName: "agent_interactions_agent_id_fkey"
             columns: ["agent_id"]
             isOneToOne: false
+            referencedRelation: "agent_metrics_normalized"
+            referencedColumns: ["agent_id"]
+          },
+          {
+            foreignKeyName: "agent_interactions_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
             referencedRelation: "agent_prices"
             referencedColumns: ["id"]
           },
@@ -403,6 +438,13 @@ export type Database = {
           message?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "agent_logs_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_metrics_normalized"
+            referencedColumns: ["agent_id"]
+          },
           {
             foreignKeyName: "agent_logs_agent_id_fkey"
             columns: ["agent_id"]
@@ -518,6 +560,13 @@ export type Database = {
             foreignKeyName: "agent_migration_state_agent_id_fkey"
             columns: ["agent_id"]
             isOneToOne: false
+            referencedRelation: "agent_metrics_normalized"
+            referencedColumns: ["agent_id"]
+          },
+          {
+            foreignKeyName: "agent_migration_state_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
             referencedRelation: "agent_prices"
             referencedColumns: ["id"]
           },
@@ -556,6 +605,13 @@ export type Database = {
           volume?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "agent_price_history_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_metrics_normalized"
+            referencedColumns: ["agent_id"]
+          },
           {
             foreignKeyName: "agent_price_history_agent_id_fkey"
             columns: ["agent_id"]
@@ -611,6 +667,13 @@ export type Database = {
             foreignKeyName: "agent_price_snapshots_agent_id_fkey"
             columns: ["agent_id"]
             isOneToOne: false
+            referencedRelation: "agent_metrics_normalized"
+            referencedColumns: ["agent_id"]
+          },
+          {
+            foreignKeyName: "agent_price_snapshots_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
             referencedRelation: "agent_prices"
             referencedColumns: ["id"]
           },
@@ -652,6 +715,13 @@ export type Database = {
           processed_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "agent_realtime_updates_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_metrics_normalized"
+            referencedColumns: ["agent_id"]
+          },
           {
             foreignKeyName: "agent_realtime_updates_agent_id_fkey"
             columns: ["agent_id"]
@@ -710,6 +780,13 @@ export type Database = {
             foreignKeyName: "agent_runtime_status_agent_id_fkey"
             columns: ["agent_id"]
             isOneToOne: true
+            referencedRelation: "agent_metrics_normalized"
+            referencedColumns: ["agent_id"]
+          },
+          {
+            foreignKeyName: "agent_runtime_status_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: true
             referencedRelation: "agent_prices"
             referencedColumns: ["id"]
           },
@@ -754,6 +831,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "agent_safety_settings_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_metrics_normalized"
+            referencedColumns: ["agent_id"]
+          },
           {
             foreignKeyName: "agent_safety_settings_agent_id_fkey"
             columns: ["agent_id"]
@@ -847,6 +931,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "agent_token_holders_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_metrics_normalized"
+            referencedColumns: ["agent_id"]
+          },
           {
             foreignKeyName: "agent_token_holders_agent_id_fkey"
             columns: ["agent_id"]
@@ -985,6 +1076,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "agent_token_transactions_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_metrics_normalized"
+            referencedColumns: ["agent_id"]
+          },
           {
             foreignKeyName: "agent_token_transactions_agent_id_fkey"
             columns: ["agent_id"]
@@ -1330,6 +1428,13 @@ export type Database = {
             foreignKeyName: "automated_action_logs_agent_id_fkey"
             columns: ["agent_id"]
             isOneToOne: false
+            referencedRelation: "agent_metrics_normalized"
+            referencedColumns: ["agent_id"]
+          },
+          {
+            foreignKeyName: "automated_action_logs_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
             referencedRelation: "agent_prices"
             referencedColumns: ["id"]
           },
@@ -1462,6 +1567,13 @@ export type Database = {
             foreignKeyName: "deployed_contracts_agent_id_fkey"
             columns: ["agent_id"]
             isOneToOne: false
+            referencedRelation: "agent_metrics_normalized"
+            referencedColumns: ["agent_id"]
+          },
+          {
+            foreignKeyName: "deployed_contracts_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
             referencedRelation: "agent_prices"
             referencedColumns: ["id"]
           },
@@ -1563,6 +1675,13 @@ export type Database = {
           verified_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "deployed_contracts_audit_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_metrics_normalized"
+            referencedColumns: ["agent_id"]
+          },
           {
             foreignKeyName: "deployed_contracts_audit_agent_id_fkey"
             columns: ["agent_id"]
@@ -1728,6 +1847,13 @@ export type Database = {
             foreignKeyName: "dex_trades_agent_id_fkey"
             columns: ["agent_id"]
             isOneToOne: false
+            referencedRelation: "agent_metrics_normalized"
+            referencedColumns: ["agent_id"]
+          },
+          {
+            foreignKeyName: "dex_trades_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
             referencedRelation: "agent_prices"
             referencedColumns: ["id"]
           },
@@ -1817,6 +1943,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_graduation_analytics_agent"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_metrics_normalized"
+            referencedColumns: ["agent_id"]
+          },
           {
             foreignKeyName: "fk_graduation_analytics_agent"
             columns: ["agent_id"]
@@ -1946,6 +2079,13 @@ export type Database = {
             foreignKeyName: "pending_trades_agent_id_fkey"
             columns: ["agent_id"]
             isOneToOne: false
+            referencedRelation: "agent_metrics_normalized"
+            referencedColumns: ["agent_id"]
+          },
+          {
+            foreignKeyName: "pending_trades_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
             referencedRelation: "agent_prices"
             referencedColumns: ["id"]
           },
@@ -1996,6 +2136,13 @@ export type Database = {
           vault_address?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "platform_allocations_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_metrics_normalized"
+            referencedColumns: ["agent_id"]
+          },
           {
             foreignKeyName: "platform_allocations_agent_id_fkey"
             columns: ["agent_id"]
@@ -2068,6 +2215,13 @@ export type Database = {
           transaction_hash?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "platform_revenue_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_metrics_normalized"
+            referencedColumns: ["agent_id"]
+          },
           {
             foreignKeyName: "platform_revenue_agent_id_fkey"
             columns: ["agent_id"]
@@ -2156,6 +2310,21 @@ export type Database = {
         }
         Relationships: []
       }
+      prompt_fx: {
+        Row: {
+          asof: string
+          fx_rate_usd: number
+        }
+        Insert: {
+          asof: string
+          fx_rate_usd: number
+        }
+        Update: {
+          asof?: string
+          fx_rate_usd?: number
+        }
+        Relationships: []
+      }
       revenue_config: {
         Row: {
           agent_id: string
@@ -2191,6 +2360,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "revenue_config_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: true
+            referencedRelation: "agent_metrics_normalized"
+            referencedColumns: ["agent_id"]
+          },
           {
             foreignKeyName: "revenue_config_agent_id_fkey"
             columns: ["agent_id"]
@@ -2263,6 +2439,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "revenue_distributions_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_metrics_normalized"
+            referencedColumns: ["agent_id"]
+          },
           {
             foreignKeyName: "revenue_distributions_agent_id_fkey"
             columns: ["agent_id"]
@@ -2378,6 +2561,13 @@ export type Database = {
             foreignKeyName: "revenue_failures_agent_id_fkey"
             columns: ["agent_id"]
             isOneToOne: false
+            referencedRelation: "agent_metrics_normalized"
+            referencedColumns: ["agent_id"]
+          },
+          {
+            foreignKeyName: "revenue_failures_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
             referencedRelation: "agent_prices"
             referencedColumns: ["id"]
           },
@@ -2438,6 +2628,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "system_alerts_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_metrics_normalized"
+            referencedColumns: ["agent_id"]
+          },
           {
             foreignKeyName: "system_alerts_agent_id_fkey"
             columns: ["agent_id"]
@@ -2531,6 +2728,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "transactions_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_metrics_normalized"
+            referencedColumns: ["agent_id"]
+          },
           {
             foreignKeyName: "transactions_agent_id_fkey"
             columns: ["agent_id"]
@@ -2634,6 +2838,13 @@ export type Database = {
             foreignKeyName: "user_agent_holdings_agent_id_fkey"
             columns: ["agent_id"]
             isOneToOne: false
+            referencedRelation: "agent_metrics_normalized"
+            referencedColumns: ["agent_id"]
+          },
+          {
+            foreignKeyName: "user_agent_holdings_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
             referencedRelation: "agent_prices"
             referencedColumns: ["id"]
           },
@@ -2717,6 +2928,22 @@ export type Database = {
       }
     }
     Views: {
+      agent_metrics_normalized: {
+        Row: {
+          agent_id: string | null
+          circulating_supply: number | null
+          fdv_prompt: number | null
+          fdv_usd: number | null
+          mcirc_prompt: number | null
+          mcirc_usd: number | null
+          price_prompt: number | null
+          price_usd: number | null
+          prompt_usd_rate: number | null
+          total_supply: number | null
+          updated_at: string | null
+        }
+        Relationships: []
+      }
       agent_prices: {
         Row: {
           dynamic_price: number | null
