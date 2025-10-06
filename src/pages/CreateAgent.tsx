@@ -435,8 +435,24 @@ export default function CreateAgent() {
         creationExpiresAt = new Date(Date.now() + (formData.lock_duration_minutes * 60 * 1000));
       }
       
-      // ✅ V4 DYNAMIC PRICING: Use centralized config function
-      const currentPromptUsdRate = 0.10; // TODO: Get from price oracle or admin settings
+      // ✅ V4 DYNAMIC PRICING: Fetch live FX rate
+      const { data: fxData } = await supabase
+        .from('prompt_fx')
+        .select('fx_rate_usd')
+        .order('asof', { ascending: false })
+        .limit(1)
+        .single();
+      
+      if (!fxData?.fx_rate_usd) {
+        toast({
+          title: "Error",
+          description: "Unable to fetch current FX rate. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      const currentPromptUsdRate = fxData.fx_rate_usd;
       
       // Get graduation mode from admin settings
       const { data: graduationConfigData } = await supabase

@@ -11,7 +11,7 @@ interface ChartPriceImpactProps {
   tradeType: 'buy' | 'sell';
   promptAmount: number;
   visible: boolean;
-  fxRate?: number;
+  fxRate: number; // Required - no default
 }
 
 export const ChartPriceImpact: React.FC<ChartPriceImpactProps> = ({
@@ -20,7 +20,7 @@ export const ChartPriceImpact: React.FC<ChartPriceImpactProps> = ({
   tradeType,
   promptAmount,
   visible,
-  fxRate = 0.10
+  fxRate
 }) => {
   if (!visible || !impactData || promptAmount <= 0) {
     return null;

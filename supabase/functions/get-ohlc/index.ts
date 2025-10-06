@@ -49,13 +49,13 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`Retrieved ${data?.length || 0} OHLC candles`);
+    console.log(`Retrieved ${data?.length || 0} OHLC buckets`);
 
     return new Response(
       JSON.stringify({
         agentId,
         timeframe,
-        candles: data || [],
+        buckets: data || [],
         count: data?.length || 0
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
