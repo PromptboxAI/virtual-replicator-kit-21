@@ -16,9 +16,10 @@ interface TradingChartProps {
   agentSymbol: string;
   currentPrice: number;
   priceChange24h: number;
+  fxRate?: number; // Optional FX rate, defaults to 0.10 if not provided
 }
 
-export function TradingChart({ tokenAddress, agentSymbol, currentPrice, priceChange24h }: TradingChartProps) {
+export function TradingChart({ tokenAddress, agentSymbol, currentPrice, priceChange24h, fxRate = 0.10 }: TradingChartProps) {
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const [timeframe, setTimeframe] = useState('1D');
   const [loading, setLoading] = useState(true);
@@ -66,7 +67,7 @@ export function TradingChart({ tokenAddress, agentSymbol, currentPrice, priceCha
   };
 
   const formatPrice = (price: number) => {
-    return formatChartPrice(price);
+    return formatChartPrice(price, fxRate);
   };
 
   const formatTime = (timestamp: string) => {

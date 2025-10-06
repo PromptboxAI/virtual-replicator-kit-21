@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { EnhancedTradingViewChart } from './EnhancedTradingViewChart';
 import { formatPriceUSD, formatMarketCapUSD } from '@/lib/formatters';
+import { useAgentMetrics } from '@/hooks/useAgentMetrics';
 
 interface ProfessionalTradingChartProps {
   agentId: string;
@@ -36,6 +37,10 @@ export const ProfessionalTradingChart = ({
   const [loading, setLoading] = useState(false);
   const [viewMode, setViewMode] = useState<ChartViewMode>('price');
   const [chartType, setChartType] = useState<ChartType>('candlestick');
+  
+  // Get live FX rate from agent metrics
+  const { metrics } = useAgentMetrics(agentId);
+  const fxRate = metrics?.price.fx ? parseFloat(metrics.price.fx) : 0.10;
 
   // Load price impact simulation when prompt amount changes
   useEffect(() => {
@@ -148,11 +153,11 @@ export const ProfessionalTradingChart = ({
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <div className="text-sm text-muted-foreground">Current Price</div>
-                <div className="text-lg font-semibold">{formatPriceUSD(priceImpact.currentPrice)}</div>
+                <div className="text-lg font-semibold">{formatPriceUSD(priceImpact.currentPrice, fxRate)}</div>
               </div>
               <div>
                 <div className="text-sm text-muted-foreground">Impact Price</div>
-                <div className="text-lg font-semibold">{formatPriceUSD(priceImpact.impactPrice)}</div>
+                <div className="text-lg font-semibold">{formatPriceUSD(priceImpact.impactPrice, fxRate)}</div>
               </div>
               <div>
                 <span className="text-muted-foreground">Price Impact:</span>

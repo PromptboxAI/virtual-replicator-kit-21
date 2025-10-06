@@ -21,6 +21,7 @@ import { useChartRealtime } from '@/hooks/useChartRealtime';
 import { useChartDrawings } from '@/hooks/useChartDrawings';
 import { useMobileGestures } from '@/hooks/useMobileGestures';
 import { useAdvancedIndicators } from '@/hooks/useAdvancedIndicators';
+import { useAgentMetrics } from '@/hooks/useAgentMetrics';
 import { TechnicalIndicators } from '@/lib/technicalIndicators';
 import { ChartToolbar } from '@/components/ChartToolbar';
 import { ChartPriceImpact } from '@/components/ChartPriceImpact';
@@ -73,6 +74,10 @@ export const EnhancedTradingViewChart = ({
   const [showGraduationOverlay, setShowGraduationOverlay] = useState(true);
   const [showPriceImpact, setShowPriceImpact] = useState(true);
   const { theme } = useTheme();
+  
+  // Get live FX rate from agent metrics
+  const { metrics } = useAgentMetrics(agentId);
+  const fxRate = metrics?.price.fx ? parseFloat(metrics.price.fx) : 0.10; // Fallback to 0.10 only if metrics not loaded
 
   // Initialize chart drawing tools
   const {
@@ -272,24 +277,24 @@ export const EnhancedTradingViewChart = ({
               return {
                 time: item.time as Time,
                 open: viewMode === 'marketcap' 
-                  ? item.open * TOTAL_SUPPLY * PROMPT_USD_RATE 
-                  : item.open * PROMPT_USD_RATE,
+                  ? item.open * TOTAL_SUPPLY * fxRate 
+                  : item.open * fxRate,
                 high: viewMode === 'marketcap' 
-                  ? item.high * TOTAL_SUPPLY * PROMPT_USD_RATE 
-                  : item.high * PROMPT_USD_RATE,
+                  ? item.high * TOTAL_SUPPLY * fxRate 
+                  : item.high * fxRate,
                 low: viewMode === 'marketcap' 
-                  ? item.low * TOTAL_SUPPLY * PROMPT_USD_RATE 
-                  : item.low * PROMPT_USD_RATE,
+                  ? item.low * TOTAL_SUPPLY * fxRate 
+                  : item.low * fxRate,
                 close: viewMode === 'marketcap' 
-                  ? item.close * TOTAL_SUPPLY * PROMPT_USD_RATE 
-                  : item.close * PROMPT_USD_RATE,
+                  ? item.close * TOTAL_SUPPLY * fxRate 
+                  : item.close * fxRate,
               };
             } else {
               return {
                 time: item.time as Time,
                 value: viewMode === 'marketcap' 
-                  ? item.close * TOTAL_SUPPLY * PROMPT_USD_RATE 
-                  : item.close * PROMPT_USD_RATE,
+                  ? item.close * TOTAL_SUPPLY * fxRate 
+                  : item.close * fxRate,
               };
             }
           });
@@ -300,12 +305,12 @@ export const EnhancedTradingViewChart = ({
           console.log('=== CHART DEBUG ===');
           console.log('viewMode:', viewMode);
           console.log('latestItem.close (PROMPT):', latestItem.close);
-          console.log('PROMPT_USD_RATE:', PROMPT_USD_RATE);
+          console.log('fxRate:', fxRate);
           console.log('TOTAL_SUPPLY:', TOTAL_SUPPLY);
           
           const latestPrice = viewMode === 'marketcap' 
-            ? latestItem.close * TOTAL_SUPPLY * PROMPT_USD_RATE
-            : latestItem.close * PROMPT_USD_RATE; // ALWAYS in USD
+            ? latestItem.close * TOTAL_SUPPLY * fxRate
+            : latestItem.close * fxRate; // ALWAYS in USD
             
           console.log('Calculated latestPrice (USD):', latestPrice);
           console.log('===================');
@@ -337,8 +342,8 @@ export const EnhancedTradingViewChart = ({
               const sma20 = calculateSMA(result.data.map(item => ({
                 ...item,
                 close: viewMode === 'marketcap' 
-                  ? item.close * TOTAL_SUPPLY * PROMPT_USD_RATE 
-                  : item.close * PROMPT_USD_RATE,
+                  ? item.close * TOTAL_SUPPLY * fxRate 
+                  : item.close * fxRate,
               })), 20);
               
               const smaLine = chartRef.current!.addSeries(LineSeries, {
@@ -367,8 +372,8 @@ export const EnhancedTradingViewChart = ({
   const handleRealtimeUpdate = useCallback((newData: OHLCVData) => {
     const TOTAL_SUPPLY = 1_000_000_000;
     const processedPrice = viewMode === 'marketcap' 
-      ? newData.close * TOTAL_SUPPLY * PROMPT_USD_RATE
-      : newData.close * PROMPT_USD_RATE; // ALWAYS in USD
+      ? newData.close * TOTAL_SUPPLY * fxRate
+      : newData.close * fxRate; // ALWAYS in USD
     
     // Animate price changes
     const oldPrice = currentPrice;
@@ -387,14 +392,14 @@ export const EnhancedTradingViewChart = ({
           const candleData = {
             time: newData.time as Time,
             open: viewMode === 'marketcap' 
-              ? newData.open * TOTAL_SUPPLY * PROMPT_USD_RATE 
-              : newData.open * PROMPT_USD_RATE,
+              ? newData.open * TOTAL_SUPPLY * fxRate 
+              : newData.open * fxRate,
             high: viewMode === 'marketcap' 
-              ? newData.high * TOTAL_SUPPLY * PROMPT_USD_RATE 
-              : newData.high * PROMPT_USD_RATE,
+              ? newData.high * TOTAL_SUPPLY * fxRate 
+              : newData.high * fxRate,
             low: viewMode === 'marketcap' 
-              ? newData.low * TOTAL_SUPPLY * PROMPT_USD_RATE 
-              : newData.low * PROMPT_USD_RATE,
+              ? newData.low * TOTAL_SUPPLY * fxRate 
+              : newData.low * fxRate,
             close: processedPrice,
           };
           mainSeriesRef.current.update(candleData);
@@ -416,13 +421,13 @@ export const EnhancedTradingViewChart = ({
         console.warn('Error updating real-time data:', error);
       }
     }
-  }, [viewMode, currentPrice, onPriceUpdate, chartType, showVolume]);
+  }, [viewMode, currentPrice, onPriceUpdate, chartType, showVolume, fxRate]);
 
   const handlePriceChange = useCallback((price: number) => {
     const TOTAL_SUPPLY = 1_000_000_000;
     const processedPrice = viewMode === 'marketcap' 
-      ? price * TOTAL_SUPPLY * PROMPT_USD_RATE
-      : price * PROMPT_USD_RATE; // ALWAYS in USD
+      ? price * TOTAL_SUPPLY * fxRate
+      : price * fxRate; // ALWAYS in USD
     
     // Animate price changes
     const oldPrice = currentPrice;
@@ -433,7 +438,7 @@ export const EnhancedTradingViewChart = ({
     
     setCurrentPrice(processedPrice);
     onPriceUpdate?.(price);
-  }, [viewMode, currentPrice, onPriceUpdate]);
+  }, [viewMode, currentPrice, onPriceUpdate, fxRate]);
 
   const { isConnected } = useChartRealtime({
     agentId,
@@ -476,7 +481,7 @@ export const EnhancedTradingViewChart = ({
                       {(() => {
                         const formatted = viewMode === 'marketcap' 
                           ? formatMarketCapUSD(currentPrice) // Already in USD
-                          : formatPriceUSD(currentPrice, 0.10); // Use default FX rate (will be replaced with live rate)
+                          : formatPriceUSD(currentPrice, fxRate);
                         console.log('Display formatted:', formatted, 'from currentPrice:', currentPrice);
                         return formatted;
                       })()}
