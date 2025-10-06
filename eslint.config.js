@@ -24,6 +24,14 @@ export default tseslint.config(
         { allowConstantExport: true },
       ],
       "@typescript-eslint/no-unused-vars": "off",
+      // Phase 5: Prevent hardcoded PROMPT_USD_RATE usage
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "Identifier[name='PROMPT_USD_RATE']",
+          message: "Use Units.* or API FX rates instead of hardcoded PROMPT_USD_RATE"
+        }
+      ],
     },
   }
 );

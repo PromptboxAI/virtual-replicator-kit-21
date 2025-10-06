@@ -1,0 +1,16 @@
+name: Pricing Guards
+on: [push, pull_request]
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: No hardcoded FX
+        run: |
+          if grep -R "PROMPT_USD_RATE" src --include="*.ts" --include="*.tsx"; then
+            echo "❌ Found hardcoded PROMPT_USD_RATE usage. Use Units.* or API FX rates instead."
+            exit 1
+          fi
+          echo "✅ No hardcoded PROMPT_USD_RATE found"
