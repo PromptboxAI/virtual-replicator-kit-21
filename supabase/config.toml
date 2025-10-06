@@ -1,5 +1,8 @@
 project_id = "cjzazuuwapsliacmjxfg"
 
+[functions.get-agent-metrics]
+verify_jwt = false
+
 [functions.execute-bonding-curve-trade-v3]
 verify_jwt = false
 

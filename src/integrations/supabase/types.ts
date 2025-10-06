@@ -242,6 +242,65 @@ export type Database = {
           },
         ]
       }
+      agent_graduation: {
+        Row: {
+          agent_id: string
+          policy_id: string | null
+          reason: string | null
+          snapshot: Json | null
+          status: string
+          triggered_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          agent_id: string
+          policy_id?: string | null
+          reason?: string | null
+          snapshot?: Json | null
+          status: string
+          triggered_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          agent_id?: string
+          policy_id?: string | null
+          reason?: string | null
+          snapshot?: Json | null
+          status?: string
+          triggered_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_graduation_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: true
+            referencedRelation: "agent_metrics_normalized"
+            referencedColumns: ["agent_id"]
+          },
+          {
+            foreignKeyName: "agent_graduation_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: true
+            referencedRelation: "agent_prices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_graduation_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: true
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_graduation_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "graduation_policies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agent_graduation_events: {
         Row: {
           agent_id: string
@@ -1966,6 +2025,30 @@ export type Database = {
           },
         ]
       }
+      graduation_policies: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_default: boolean
+          name: string
+          rules: Json
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_default?: boolean
+          name: string
+          rules: Json
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_default?: boolean
+          name?: string
+          rules?: Json
+        }
+        Relationships: []
+      }
       graduation_transaction_logs: {
         Row: {
           block_number: number | null
@@ -2989,6 +3072,14 @@ export type Database = {
         }
         Relationships: []
       }
+      agent_usd_raised: {
+        Row: {
+          agent_id: string | null
+          prompt_raised_total: number | null
+          usd_raised_total: number | null
+        }
+        Relationships: []
+      }
       deployment_monitoring: {
         Row: {
           avg_execution_time_ms: number | null
@@ -3070,6 +3161,16 @@ export type Database = {
           price_change_percent: number
           validation_errors: string[]
           validation_passed: boolean
+        }[]
+      }
+      evaluate_graduation: {
+        Args: { p_agent_id: string }
+        Returns: {
+          met: Json
+          policy_id: string
+          policy_name: string
+          should_graduate: boolean
+          thresholds: Json
         }[]
       }
       execute_bonding_curve_trade: {
