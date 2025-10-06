@@ -1,5 +1,7 @@
 import { useAgentPrice } from "@/hooks/useAgentPrice";
-import { formatPriceUSD, PROMPT_USD_RATE } from "@/lib/formatters";
+import { formatPriceUSD } from "@/lib/formatters";
+import { useAgentMetrics } from "@/hooks/useAgentMetrics";
+import Big from "big.js";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
@@ -32,7 +34,9 @@ export function PriceDisplay({
   loading = false
 }: PriceDisplayProps) {
   const priceInPrompt = useAgentPrice(agentId);
-  const priceInUSD = priceInPrompt * PROMPT_USD_RATE;
+  const { metrics } = useAgentMetrics(agentId);
+  const fxRate = metrics ? Big(metrics.price.fx) : Big(0.10);
+  const priceInUSD = Big(priceInPrompt).times(fxRate).toNumber();
 
   if (loading || priceInPrompt === 0) {
     return <Skeleton className={cn("h-6 w-24", className)} />;
@@ -115,9 +119,11 @@ export function PriceComparison({
 }: {
   agentId: string;
   className?: string;
-}) {
+}): JSX.Element {
   const priceInPrompt = useAgentPrice(agentId);
-  const priceInUSD = priceInPrompt * PROMPT_USD_RATE;
+  const { metrics } = useAgentMetrics(agentId);
+  const fxRate = metrics ? Big(metrics.price.fx) : Big(0.10);
+  const priceInUSD = Big(priceInPrompt).times(fxRate).toNumber();
 
   if (priceInPrompt === 0) {
     return <Skeleton className={cn("h-20 w-48", className)} />;

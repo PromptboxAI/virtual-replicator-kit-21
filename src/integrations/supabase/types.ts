@@ -638,6 +638,61 @@ export type Database = {
           },
         ]
       }
+      agent_ohlcv: {
+        Row: {
+          agent_id: string
+          bucket_time: string
+          close_prompt: number
+          high_prompt: number
+          low_prompt: number
+          open_prompt: number
+          timeframe: string
+          volume_agent: number
+        }
+        Insert: {
+          agent_id: string
+          bucket_time: string
+          close_prompt: number
+          high_prompt: number
+          low_prompt: number
+          open_prompt: number
+          timeframe: string
+          volume_agent?: number
+        }
+        Update: {
+          agent_id?: string
+          bucket_time?: string
+          close_prompt?: number
+          high_prompt?: number
+          low_prompt?: number
+          open_prompt?: number
+          timeframe?: string
+          volume_agent?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_ohlcv_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_metrics_normalized"
+            referencedColumns: ["agent_id"]
+          },
+          {
+            foreignKeyName: "agent_ohlcv_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_prices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_ohlcv_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agent_price_history: {
         Row: {
           agent_id: string
@@ -3189,6 +3244,10 @@ export type Database = {
         Args: { p_agent_id: string }
         Returns: string
       }
+      get_24h_change: {
+        Args: { p_agent_id: string; p_timeframe?: string }
+        Returns: number
+      }
       get_admin_setting: {
         Args: { p_key: string }
         Returns: Json
@@ -3297,6 +3356,18 @@ export type Database = {
       get_current_user_id: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      get_ohlc_with_fx: {
+        Args: { p_agent_id: string; p_limit?: number; p_timeframe?: string }
+        Returns: {
+          bucket_time: string
+          close_prompt: number
+          fx_rate: number
+          high_prompt: number
+          low_prompt: number
+          open_prompt: number
+          volume_agent: number
+        }[]
       }
       get_price_from_prompt_v3: {
         Args: { p_prompt_raised: number }
