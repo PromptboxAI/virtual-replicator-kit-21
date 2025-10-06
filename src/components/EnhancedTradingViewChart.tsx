@@ -14,14 +14,15 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Card } from '@/components/ui/card';
-import { ChartDataService, OHLCVData } from '@/services/chartDataService';
-import { formatMarketCapUSD, formatPriceUSD } from '@/lib/formatters';
 import { useTheme } from 'next-themes';
 import { useChartRealtime } from '@/hooks/useChartRealtime';
 import { useChartDrawings } from '@/hooks/useChartDrawings';
 import { useMobileGestures } from '@/hooks/useMobileGestures';
 import { useAdvancedIndicators } from '@/hooks/useAdvancedIndicators';
 import { useAgentMetrics } from '@/hooks/useAgentMetrics';
+import { useOHLCData } from '@/hooks/useOHLCData';
+import { adaptBucketsForChart } from '@/lib/chartAdapter';
+import { Units } from '@/lib/units';
 import { TechnicalIndicators } from '@/lib/technicalIndicators';
 import { ChartToolbar } from '@/components/ChartToolbar';
 import { ChartPriceImpact } from '@/components/ChartPriceImpact';
@@ -64,10 +65,8 @@ export const EnhancedTradingViewChart = ({
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
   
   const [interval, setInterval] = useState<ChartInterval>('5');
-  const [isGraduated, setIsGraduated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [currentPrice, setCurrentPrice] = useState<number>(0);
-  const [chartData, setChartData] = useState<OHLCVData[]>([]);
   const [priceAnimation, setPriceAnimation] = useState<'up' | 'down' | null>(null);
   const [showVolume, setShowVolume] = useState(true);
   const [showTechnicalIndicators, setShowTechnicalIndicators] = useState(false);
@@ -75,9 +74,14 @@ export const EnhancedTradingViewChart = ({
   const [showPriceImpact, setShowPriceImpact] = useState(true);
   const { theme } = useTheme();
   
-  // Get live FX rate from agent metrics
+  // Get metrics for supply policy
   const { metrics } = useAgentMetrics(agentId);
-  const fxRate = metrics?.price.fx ? parseFloat(metrics.price.fx) : 0.10; // Fallback to 0.10 only if metrics not loaded
+  
+  // Get OHLC data with per-bucket FX
+  const intervalMap: Record<ChartInterval, string> = {
+    '1': '1m', '5': '5m', '15': '15m', '60': '1h', '240': '4h', '1D': '1d'
+  };
+  const { data: ohlcData, loading: ohlcLoading } = useOHLCData(agentId, intervalMap[interval]);
 
   // Initialize chart drawing tools
   const {
@@ -116,7 +120,7 @@ export const EnhancedTradingViewChart = ({
     clearAllIndicators,
   } = useAdvancedIndicators({
     chart: chartRef.current,
-    data: chartData,
+    data: ohlcData?.buckets || [],
     enabled: showTechnicalIndicators,
   });
 
@@ -255,190 +259,79 @@ export const EnhancedTradingViewChart = ({
     return smaData;
   }, []);
 
-  // Load and update chart data
+  // Process OHLC data with adapter
   useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      try {
-        const intervalMap: Record<ChartInterval, any> = {
-          '1': '1m', '5': '5m', '15': '15m', '60': '1h', '240': '4h', '1D': '1d'
-        };
-        
-        const result = await ChartDataService.getChartData(agentId, intervalMap[interval]);
-        setChartData(result.data);
-        setIsGraduated(result.isGraduated);
-        
-        if (result.data.length > 0 && chartRef.current && mainSeriesRef.current) {
-          const processedData = result.data.map(item => {
-            // ALWAYS convert to USD for display
-            const TOTAL_SUPPLY = 1_000_000_000;
-            
-            if (chartType === 'candlestick') {
-              return {
-                time: item.time as Time,
-                open: viewMode === 'marketcap' 
-                  ? item.open * TOTAL_SUPPLY * fxRate 
-                  : item.open * fxRate,
-                high: viewMode === 'marketcap' 
-                  ? item.high * TOTAL_SUPPLY * fxRate 
-                  : item.high * fxRate,
-                low: viewMode === 'marketcap' 
-                  ? item.low * TOTAL_SUPPLY * fxRate 
-                  : item.low * fxRate,
-                close: viewMode === 'marketcap' 
-                  ? item.close * TOTAL_SUPPLY * fxRate 
-                  : item.close * fxRate,
-              };
-            } else {
-              return {
-                time: item.time as Time,
-                value: viewMode === 'marketcap' 
-                  ? item.close * TOTAL_SUPPLY * fxRate 
-                  : item.close * fxRate,
-              };
-            }
-          });
-
-          const latestItem = result.data[result.data.length - 1];
-          const TOTAL_SUPPLY = 1_000_000_000;
-          
-          console.log('=== CHART DEBUG ===');
-          console.log('viewMode:', viewMode);
-          console.log('latestItem.close (PROMPT):', latestItem.close);
-          console.log('fxRate:', fxRate);
-          console.log('TOTAL_SUPPLY:', TOTAL_SUPPLY);
-          
-          const latestPrice = viewMode === 'marketcap' 
-            ? latestItem.close * TOTAL_SUPPLY * fxRate
-            : latestItem.close * fxRate; // ALWAYS in USD
-            
-          console.log('Calculated latestPrice (USD):', latestPrice);
-          console.log('===================');
-          
-          setCurrentPrice(latestPrice);
-          onPriceUpdate?.(latestItem.close);
-
-          // Update main series data
-          mainSeriesRef.current.setData(processedData);
-
-          // Update volume data if available
-          if (showVolume && volumeSeriesRef.current) {
-            try {
-              const volumeData = result.data.map(item => ({
-                time: item.time as Time,
-                value: item.volume,
-                color: item.close >= item.open ? '#10b981' : '#ef4444',
-              }));
-              volumeSeriesRef.current.setData(volumeData);
-            } catch (error) {
-              console.warn('Error setting volume data:', error);
-            }
-          }
-
-          // Add technical indicators if enabled
-          if (showTechnicalIndicators && result.data.length > 20) {
-            try {
-              const TOTAL_SUPPLY = 1_000_000_000;
-              const sma20 = calculateSMA(result.data.map(item => ({
-                ...item,
-                close: viewMode === 'marketcap' 
-                  ? item.close * TOTAL_SUPPLY * fxRate 
-                  : item.close * fxRate,
-              })), 20);
-              
-              const smaLine = chartRef.current!.addSeries(LineSeries, {
-                color: '#f59e0b',
-                lineWidth: 1,
-              });
-              smaLine.setData(sma20);
-            } catch (error) {
-              console.warn('Error adding technical indicators:', error);
-            }
-          }
-
-          // Fit chart to data
-          chartRef.current.timeScale().fitContent();
-        }
-      } catch (error) {
-        console.error('Failed to load chart data:', error);
-      }
-      setLoading(false);
-    };
-
-    loadData();
-  }, [agentId, interval, viewMode, chartType, showVolume, showTechnicalIndicators, calculateSMA, onPriceUpdate]);
-
-  // Enhanced real-time updates with price animation
-  const handleRealtimeUpdate = useCallback((newData: OHLCVData) => {
-    const TOTAL_SUPPLY = 1_000_000_000;
-    const processedPrice = viewMode === 'marketcap' 
-      ? newData.close * TOTAL_SUPPLY * fxRate
-      : newData.close * fxRate; // ALWAYS in USD
-    
-    // Animate price changes
-    const oldPrice = currentPrice;
-    if (oldPrice !== processedPrice) {
-      setPriceAnimation(processedPrice > oldPrice ? 'up' : 'down');
-      setTimeout(() => setPriceAnimation(null), 1000);
+    if (!ohlcData?.buckets || !metrics || !chartRef.current || !mainSeriesRef.current) {
+      setLoading(ohlcLoading);
+      return;
     }
-    
-    setCurrentPrice(processedPrice);
-    onPriceUpdate?.(newData.close);
-    
-    // Update chart with new data point
-    if (mainSeriesRef.current) {
-      try {
-        if (chartType === 'candlestick') {
-          const candleData = {
-            time: newData.time as Time,
-            open: viewMode === 'marketcap' 
-              ? newData.open * TOTAL_SUPPLY * fxRate 
-              : newData.open * fxRate,
-            high: viewMode === 'marketcap' 
-              ? newData.high * TOTAL_SUPPLY * fxRate 
-              : newData.high * fxRate,
-            low: viewMode === 'marketcap' 
-              ? newData.low * TOTAL_SUPPLY * fxRate 
-              : newData.low * fxRate,
-            close: processedPrice,
-          };
-          mainSeriesRef.current.update(candleData);
-        } else {
-          mainSeriesRef.current.update({
-            time: newData.time as Time,
-            value: processedPrice,
-          });
-        }
 
-        if (showVolume && volumeSeriesRef.current) {
-          volumeSeriesRef.current.update({
-            time: newData.time as Time,
-            value: newData.volume,
-            color: newData.close >= newData.open ? '#10b981' : '#ef4444',
-          });
+    setLoading(false);
+    
+    try {
+      const policy = metrics.supply.policy;
+      const supply = policy === 'FDV' ? metrics.supply.total : metrics.supply.circulating;
+      
+      if (!supply) return;
+
+      // Use adapter to convert PROMPT prices to USD with per-bucket FX
+      const adapted = adaptBucketsForChart(
+        ohlcData.buckets,
+        supply,
+        viewMode
+      );
+
+      if (adapted.length === 0) return;
+
+      // Update main series
+      mainSeriesRef.current.setData(adapted);
+
+      // Update current price from latest bucket
+      const latestPrice = adapted[adapted.length - 1].value;
+      setCurrentPrice(latestPrice);
+      
+      // Notify parent of raw PROMPT price
+      const latestBucket = ohlcData.buckets[ohlcData.buckets.length - 1];
+      onPriceUpdate?.(parseFloat(latestBucket.c));
+
+      // Update volume if enabled
+      if (showVolume && volumeSeriesRef.current) {
+        try {
+          const volumeData = ohlcData.buckets.map(b => ({
+            time: new Date(b.t).getTime() / 1000,
+            value: parseFloat(b.v),
+            color: parseFloat(b.c) >= parseFloat(b.o) ? '#10b981' : '#ef4444',
+          }));
+          volumeSeriesRef.current.setData(volumeData);
+        } catch (error) {
+          console.warn('Error setting volume data:', error);
         }
-      } catch (error) {
-        console.warn('Error updating real-time data:', error);
       }
+
+      // Fit chart to data
+      chartRef.current.timeScale().fitContent();
+    } catch (error) {
+      console.error('Failed to process chart data:', error);
     }
-  }, [viewMode, currentPrice, onPriceUpdate, chartType, showVolume, fxRate]);
+  }, [ohlcData, metrics, viewMode, chartType, showVolume, onPriceUpdate, ohlcLoading]);
+
+  // Real-time updates (disabled - we rely on OHLC polling for now)
+  const handleRealtimeUpdate = useCallback((newData: any) => {
+    // TODO: Re-enable when real-time uses per-bucket FX
+    console.log('Real-time update received but not applied:', newData);
+  }, []);
 
   const handlePriceChange = useCallback((price: number) => {
-    const TOTAL_SUPPLY = 1_000_000_000;
-    const processedPrice = viewMode === 'marketcap' 
-      ? price * TOTAL_SUPPLY * fxRate
-      : price * fxRate; // ALWAYS in USD
-    
     // Animate price changes
     const oldPrice = currentPrice;
-    if (oldPrice !== processedPrice) {
-      setPriceAnimation(processedPrice > oldPrice ? 'up' : 'down');
+    if (oldPrice !== price) {
+      setPriceAnimation(price > oldPrice ? 'up' : 'down');
       setTimeout(() => setPriceAnimation(null), 1000);
     }
     
-    setCurrentPrice(processedPrice);
+    setCurrentPrice(price);
     onPriceUpdate?.(price);
-  }, [viewMode, currentPrice, onPriceUpdate, fxRate]);
+  }, [currentPrice, onPriceUpdate]);
 
   const { isConnected } = useChartRealtime({
     agentId,
@@ -472,19 +365,15 @@ export const EnhancedTradingViewChart = ({
                 </div>
               </div>
                <div className="text-sm font-mono">
-                {currentPrice > 0 && (
+                {currentPrice > 0 && metrics && (
                   <div className="text-right">
                     <div className={`text-lg font-bold transition-colors duration-1000 ${
                       priceAnimation === 'up' ? 'text-green-500' : 
                       priceAnimation === 'down' ? 'text-red-500' : 'text-primary'
                     }`}>
-                      {(() => {
-                        const formatted = viewMode === 'marketcap' 
-                          ? formatMarketCapUSD(currentPrice) // Already in USD
-                          : formatPriceUSD(currentPrice, fxRate);
-                        console.log('Display formatted:', formatted, 'from currentPrice:', currentPrice);
-                        return formatted;
-                      })()}
+                      {viewMode === 'marketcap' 
+                        ? Units.formatCap(currentPrice.toString(), 'USD')
+                        : Units.formatPrice(currentPrice.toString(), 'USD')}
                     </div>
                     <div className="text-xs text-muted-foreground flex items-center gap-1">
                       {viewMode === 'price' ? 'Price (USD)' : 'Market Cap'}
@@ -547,16 +436,16 @@ export const EnhancedTradingViewChart = ({
               }
             }
           }}
-          onExportData={() => {
-            const dataStr = JSON.stringify(chartData, null, 2);
-            const dataBlob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `${agentName || 'chart'}-data-${Date.now()}.json`;
-            link.click();
-            URL.revokeObjectURL(url);
-          }}
+            onExportData={() => {
+              const dataStr = JSON.stringify(ohlcData?.buckets || [], null, 2);
+              const dataBlob = new Blob([dataStr], { type: 'application/json' });
+              const url = URL.createObjectURL(dataBlob);
+              const link = document.createElement('a');
+              link.href = url;
+              link.download = `${agentName || 'chart'}-data-${Date.now()}.json`;
+              link.click();
+              URL.revokeObjectURL(url);
+            }}
           
           // Overlay toggles  
           graduationVisible={showGraduationOverlay}
