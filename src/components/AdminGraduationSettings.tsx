@@ -21,10 +21,9 @@ export function AdminGraduationSettings() {
   
   const [graduationMode, setGraduationMode] = useState<'database' | 'smart_contract'>('database');
   const [targetMarketCapUsd, setTargetMarketCapUsd] = useState<number>(65000);
-  const [promptUsdRate, setPromptUsdRate] = useState<number>(0.10);
+  const [promptUsdRate, setPromptUsdRate] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
-  const [liveFxRate, setLiveFxRate] = useState<number | null>(null);
 
   // Load live FX rate from agent_metrics_normalized
   useEffect(() => {
@@ -36,7 +35,7 @@ export function AdminGraduationSettings() {
         .single();
       
       if (data?.fx) {
-        setLiveFxRate(Number(data.fx));
+        setPromptUsdRate(String(data.fx));
       }
     };
     
@@ -58,19 +57,13 @@ export function AdminGraduationSettings() {
         const config = data.value as any;
         setGraduationMode(config.graduation_mode || 'database');
         setTargetMarketCapUsd(config.target_market_cap_usd || 65000);
-        // Use live FX rate if available, otherwise fallback to saved value
-        if (liveFxRate !== null) {
-          setPromptUsdRate(liveFxRate);
-        } else {
-          setPromptUsdRate(config.prompt_usd_rate || 0.10);
-        }
       }
     };
     
     if (!isLoading) {
       loadGraduationConfig();
     }
-  }, [isLoading, liveFxRate]);
+  }, [isLoading]);
 
   // Validate production settings
   const validateSettings = (): boolean => {
@@ -83,13 +76,13 @@ export function AdminGraduationSettings() {
         return false;
       }
 
-      if (promptUsdRate <= 0) {
+      if (promptUsdRate == null || parseFloat(promptUsdRate) <= 0) {
         setValidationError('PROMPT USD rate must be greater than 0');
         return false;
       }
 
       // Calculate graduation threshold
-      const graduationThreshold = targetMarketCapUsd / promptUsdRate;
+      const graduationThreshold = targetMarketCapUsd / parseFloat(promptUsdRate);
       if (graduationThreshold < 50000 || graduationThreshold > 750000) {
         setValidationError(
           `Calculated graduation threshold (${graduationThreshold.toLocaleString()} PROMPT) is outside safe range (50K-750K PROMPT)`
@@ -139,11 +132,8 @@ export function AdminGraduationSettings() {
     }
   };
 
-  const calculatedGraduationThreshold = graduationMode === 'database' 
-    ? 42000 
-    : targetMarketCapUsd / promptUsdRate;
-
-  if (isLoading) {
+  // Show loading state if FX not loaded
+  if (isLoading || promptUsdRate == null) {
     return (
       <Card>
         <CardHeader>
@@ -153,11 +143,16 @@ export function AdminGraduationSettings() {
         <CardContent>
           <div className="flex items-center justify-center p-8">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <span className="ml-2 text-sm text-muted-foreground">Loading FX rate...</span>
           </div>
         </CardContent>
       </Card>
     );
   }
+
+  const calculatedGraduationThreshold = graduationMode === 'database' 
+    ? 42000 
+    : targetMarketCapUsd / parseFloat(promptUsdRate);
 
   return (
     <Card>
@@ -221,15 +216,11 @@ export function AdminGraduationSettings() {
                 id="promptUsdRate"
                 type="number"
                 value={promptUsdRate}
-                onChange={(e) => setPromptUsdRate(Number(e.target.value))}
-                min={0.01}
-                step={0.01}
+                readOnly
                 disabled
               />
               <p className="text-xs text-muted-foreground">
-                {liveFxRate !== null 
-                  ? `Live FX rate from database: $${liveFxRate} per PROMPT` 
-                  : 'Loading live FX rate from database...'}
+                Live FX rate from database: ${promptUsdRate} per PROMPT
               </p>
             </div>
           </div>
@@ -242,7 +233,7 @@ export function AdminGraduationSettings() {
             <div className="space-y-1">
               <p className="font-medium">Calculated Graduation Threshold</p>
               <p className="text-2xl font-bold">{calculatedGraduationThreshold.toLocaleString()} PROMPT</p>
-              {graduationMode === 'smart_contract' && (
+              {graduationMode === 'smart_contract' && promptUsdRate && (
                 <p className="text-sm text-muted-foreground">
                   = ${targetMarketCapUsd.toLocaleString()} USD / ${promptUsdRate} per PROMPT
                 </p>

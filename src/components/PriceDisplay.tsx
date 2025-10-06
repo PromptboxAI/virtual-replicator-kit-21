@@ -1,7 +1,5 @@
-import { useAgentPrice } from "@/hooks/useAgentPrice";
-import { formatPriceUSD } from "@/lib/formatters";
 import { useAgentMetrics } from "@/hooks/useAgentMetrics";
-import Big from "big.js";
+import { Units } from "@/lib/units";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
@@ -33,18 +31,17 @@ export function PriceDisplay({
   showBoth = true,
   loading = false
 }: PriceDisplayProps) {
-  const priceInPrompt = useAgentPrice(agentId);
   const { metrics } = useAgentMetrics(agentId);
-  const fxRate = metrics ? Big(metrics.price.fx) : Big(0.10);
-  const priceInUSD = Big(priceInPrompt).times(fxRate).toNumber();
-
-  if (loading || priceInPrompt === 0) {
-    return <Skeleton className={cn("h-6 w-24", className)} />;
+  
+  // Show skeleton until FX arrives
+  if (loading || !metrics?.price?.fx || !metrics?.price?.prompt) {
+    return <div className={cn("h-5 w-24 animate-pulse rounded bg-muted", className)} data-testid="price-skeleton" />;
   }
 
-  // Format prices based on variant
-  const formattedUSD = formatPriceUSD(priceInPrompt, fxRate.toNumber());
-  const formattedPROMPT = priceInPrompt.toFixed(8).replace(/\.?0+$/, '');
+  // Convert via Units only
+  const usdStr = Units.toDisplay(metrics.price.prompt, metrics.price.fx, 'USD');
+  const formattedUSD = Units.formatPrice(usdStr, 'USD');
+  const formattedPROMPT = Units.formatPrice(metrics.price.prompt, 'PROMPT');
 
   switch (variant) {
     case 'usd-primary':
@@ -120,17 +117,16 @@ export function PriceComparison({
   agentId: string;
   className?: string;
 }): JSX.Element {
-  const priceInPrompt = useAgentPrice(agentId);
   const { metrics } = useAgentMetrics(agentId);
-  const fxRate = metrics ? Big(metrics.price.fx) : Big(0.10);
-  const priceInUSD = Big(priceInPrompt).times(fxRate).toNumber();
 
-  if (priceInPrompt === 0) {
+  // Show skeleton until FX arrives
+  if (!metrics?.price?.fx || !metrics?.price?.prompt) {
     return <Skeleton className={cn("h-20 w-48", className)} />;
   }
 
-  const formattedUSD = formatPriceUSD(priceInPrompt, fxRate.toNumber());
-  const formattedPROMPT = priceInPrompt.toFixed(8).replace(/\.?0+$/, '');
+  const usdStr = Units.toDisplay(metrics.price.prompt, metrics.price.fx, 'USD');
+  const formattedUSD = Units.formatPrice(usdStr, 'USD');
+  const formattedPROMPT = Units.formatPrice(metrics.price.prompt, 'PROMPT');
 
   return (
     <div className={cn("grid grid-cols-2 gap-4", className)}>

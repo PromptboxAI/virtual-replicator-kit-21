@@ -38,9 +38,8 @@ export const ProfessionalTradingChart = ({
   const [viewMode, setViewMode] = useState<ChartViewMode>('price');
   const [chartType, setChartType] = useState<ChartType>('candlestick');
   
-  // Get live FX rate from agent metrics
+  // Get metrics for supply/policy (chart uses per-bucket FX via adapter)
   const { metrics } = useAgentMetrics(agentId);
-  const fxRate = metrics?.price.fx ? parseFloat(metrics.price.fx) : 0.10;
 
   // Load price impact simulation when prompt amount changes
   useEffect(() => {
@@ -141,7 +140,7 @@ export const ProfessionalTradingChart = ({
       </div>
       
       {/* Price Impact Display - Only show for buy/sell simulation */}
-      {priceImpact && promptAmount > 0 && (
+      {priceImpact && promptAmount > 0 && metrics?.price?.fx && (
         <Card className="p-4 mt-2">
           <div className="space-y-2">
             <h4 className="text-sm font-medium flex items-center gap-2">
@@ -153,11 +152,11 @@ export const ProfessionalTradingChart = ({
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <div className="text-sm text-muted-foreground">Current Price</div>
-                <div className="text-lg font-semibold">{formatPriceUSD(priceImpact.currentPrice, fxRate)}</div>
+                <div className="text-lg font-semibold">{formatPriceUSD(priceImpact.currentPrice, parseFloat(metrics.price.fx))}</div>
               </div>
               <div>
                 <div className="text-sm text-muted-foreground">Impact Price</div>
-                <div className="text-lg font-semibold">{formatPriceUSD(priceImpact.impactPrice, fxRate)}</div>
+                <div className="text-lg font-semibold">{formatPriceUSD(priceImpact.impactPrice, parseFloat(metrics.price.fx))}</div>
               </div>
               <div>
                 <span className="text-muted-foreground">Price Impact:</span>

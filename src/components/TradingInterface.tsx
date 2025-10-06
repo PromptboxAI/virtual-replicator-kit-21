@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAppMode } from '@/hooks/useAppMode';
 import { useAuth } from '@/hooks/useAuth';
 import { useAgentLockStatus } from '@/hooks/useAgentLockStatus';
+import { useAgentMetrics } from '@/hooks/useAgentMetrics';
 import { AgentLockStatus } from './AgentLockStatus';
 import { TradingChart } from './TradingChart';
 import { OKXDEXWidget } from './OKXDEXWidget';
@@ -78,6 +79,7 @@ export function TradingInterface({
   const { mode: appMode } = useAppMode(); // ✅ Move hook to top level
   const { user } = useAuth();
   const calculatedMarketCap = useAgentFDV(agentId);
+  const { metrics: agentMetrics } = useAgentMetrics(agentId);
   
   // 🛡️ MEV Protection: Check lock status
   const { isLocked, timeLeft, canTrade, isCreator, loading: lockLoading } = useAgentLockStatus(agentId);
@@ -345,12 +347,15 @@ export function TradingInterface({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
         {/* Chart Section - Takes up 2/3 of the width */}
         <div className="lg:col-span-2">
-          <TradingChart
-            tokenAddress={tokenAddress}
-            agentSymbol={agentSymbol}
-            currentPrice={metrics.currentPrice}
-            priceChange24h={metrics.priceChange24h}
-          />
+          {agentMetrics?.price?.fx && (
+            <TradingChart
+              tokenAddress={tokenAddress}
+              agentSymbol={agentSymbol}
+              currentPrice={metrics.currentPrice}
+              priceChange24h={metrics.priceChange24h}
+              fxRate={parseFloat(agentMetrics.price.fx)}
+            />
+          )}
         </div>
 
         {/* Trading Section - Takes up 1/3 of the width */}
