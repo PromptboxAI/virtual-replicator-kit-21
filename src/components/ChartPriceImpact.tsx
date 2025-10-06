@@ -11,6 +11,7 @@ interface ChartPriceImpactProps {
   tradeType: 'buy' | 'sell';
   promptAmount: number;
   visible: boolean;
+  fxRate?: number;
 }
 
 export const ChartPriceImpact: React.FC<ChartPriceImpactProps> = ({
@@ -18,7 +19,8 @@ export const ChartPriceImpact: React.FC<ChartPriceImpactProps> = ({
   viewMode,
   tradeType,
   promptAmount,
-  visible
+  visible,
+  fxRate = 0.10
 }) => {
   if (!visible || !impactData || promptAmount <= 0) {
     return null;
@@ -27,7 +29,7 @@ export const ChartPriceImpact: React.FC<ChartPriceImpactProps> = ({
   const formatPrice = (price: number) => {
     return viewMode === 'marketcap' 
       ? formatMarketCapUSD(price * 1000000000)
-      : formatPriceUSD(price);
+      : formatPriceUSD(price, fxRate);
   };
 
   const formatTokens = (tokens: number) => {

@@ -43,7 +43,7 @@ export function PriceDisplay({
   }
 
   // Format prices based on variant
-  const formattedUSD = formatPriceUSD(priceInPrompt);
+  const formattedUSD = formatPriceUSD(priceInPrompt, fxRate.toNumber());
   const formattedPROMPT = priceInPrompt.toFixed(8).replace(/\.?0+$/, '');
 
   switch (variant) {
@@ -129,7 +129,7 @@ export function PriceComparison({
     return <Skeleton className={cn("h-20 w-48", className)} />;
   }
 
-  const formattedUSD = formatPriceUSD(priceInPrompt);
+  const formattedUSD = formatPriceUSD(priceInPrompt, fxRate.toNumber());
   const formattedPROMPT = priceInPrompt.toFixed(8).replace(/\.?0+$/, '');
 
   return (

@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Card } from '@/components/ui/card';
 import { ChartDataService, OHLCVData } from '@/services/chartDataService';
-import { formatMarketCapUSD, formatPriceUSD, PROMPT_USD_RATE } from '@/lib/formatters';
+import { formatMarketCapUSD, formatPriceUSD } from '@/lib/formatters';
 import { useTheme } from 'next-themes';
 import { useChartRealtime } from '@/hooks/useChartRealtime';
 import { useChartDrawings } from '@/hooks/useChartDrawings';
@@ -476,7 +476,7 @@ export const EnhancedTradingViewChart = ({
                       {(() => {
                         const formatted = viewMode === 'marketcap' 
                           ? formatMarketCapUSD(currentPrice) // Already in USD
-                          : formatPriceUSD(currentPrice / PROMPT_USD_RATE); // Convert back for formatter
+                          : formatPriceUSD(currentPrice, 0.10); // Use default FX rate (will be replaced with live rate)
                         console.log('Display formatted:', formatted, 'from currentPrice:', currentPrice);
                         return formatted;
                       })()}

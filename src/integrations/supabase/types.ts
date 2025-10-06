@@ -3072,11 +3072,14 @@ export type Database = {
           circulating_supply: number | null
           fdv_prompt: number | null
           fdv_usd: number | null
+          fx: number | null
+          fx_staleness_seconds: number | null
           mcirc_prompt: number | null
           mcirc_usd: number | null
           price_prompt: number | null
           price_usd: number | null
           prompt_usd_rate: number | null
+          supply_policy: string | null
           total_supply: number | null
           updated_at: string | null
         }
@@ -3189,6 +3192,18 @@ export type Database = {
           difference_percent: number
           dynamic_price: number
           static_price: number
+        }[]
+      }
+      check_pricing_consistency: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          agent_id: string
+          calculated_price: number
+          fdv_diff_pct: number
+          ok: boolean
+          price_diff: number
+          pricing_model: string
+          stored_price: number
         }[]
       }
       check_trading_permission: {
@@ -3360,13 +3375,13 @@ export type Database = {
       get_ohlc_with_fx: {
         Args: { p_agent_id: string; p_limit?: number; p_timeframe: string }
         Returns: {
-          bucket_time: string
-          close_prompt: number
-          fx_rate: number
-          high_prompt: number
-          low_prompt: number
-          open_prompt: number
-          volume_agent: number
+          c: string
+          fx: string
+          h: string
+          l: string
+          o: string
+          t: string
+          v: string
         }[]
       }
       get_price_from_prompt_v3: {

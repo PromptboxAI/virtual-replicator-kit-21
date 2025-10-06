@@ -1,8 +1,11 @@
-// USD Conversion Infrastructure - Phase 1
-export const PROMPT_USD_RATE = 0.10; // Default: 1 PROMPT = $0.10
-
-export const formatPriceUSD = (priceInPrompt: number): string => {
-  const usdPrice = priceInPrompt * PROMPT_USD_RATE;
+// USD Conversion Infrastructure - Phase 1 (FX from DB)
+/**
+ * Format PROMPT price as USD using live FX rate
+ * @param priceInPrompt - Price in PROMPT tokens
+ * @param fxRate - Current PROMPT/USD exchange rate from agent_metrics_normalized
+ */
+export const formatPriceUSD = (priceInPrompt: number, fxRate: number): string => {
+  const usdPrice = priceInPrompt * fxRate;
 
   if (usdPrice === 0) return '$0.00';
 
@@ -55,12 +58,16 @@ export const formatPromptAmount = (amount: number): string => {
   return amount.toLocaleString(undefined, { maximumFractionDigits: 0 });
 };
 
-// Format chart Y-axis values for small V4 prices (USD display)
-export const formatChartPrice = (price: number): string => {
+/**
+ * Format chart Y-axis values for small V4 prices (USD display)
+ * @param price - Price in PROMPT
+ * @param fxRate - Current PROMPT/USD exchange rate
+ */
+export const formatChartPrice = (price: number, fxRate: number): string => {
   if (price === 0) return '$0.00';
   
   // Convert PROMPT to USD first
-  const usdPrice = price * PROMPT_USD_RATE;
+  const usdPrice = price * fxRate;
   
   // V4 pricing range handling (ultra-small values)
   if (usdPrice < 0.0000001) {

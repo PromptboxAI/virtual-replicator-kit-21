@@ -2,20 +2,20 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import Big from 'big.js';
 
-export interface OHLCCandle {
-  bucket_time: string;
-  open_prompt: string;
-  high_prompt: string;
-  low_prompt: string;
-  close_prompt: string;
-  volume_agent: string;
-  fx_rate: string;
+export interface OHLCBucket {
+  t: string;      // ISO-8601 timestamp
+  o: string;      // open price in PROMPT
+  h: string;      // high price in PROMPT
+  l: string;      // low price in PROMPT
+  c: string;      // close price in PROMPT
+  v: string;      // volume in agent tokens
+  fx: string;     // FX rate (PROMPT to USD) at bucket time
 }
 
 export interface OHLCData {
   agentId: string;
   timeframe: string;
-  candles: OHLCCandle[];
+  buckets: OHLCBucket[];
   count: number;
 }
 
@@ -77,28 +77,28 @@ export function useOHLCData(
   }, [agentId, timeframe, limit, pollingInterval]);
 
   /**
-   * Convert a candle from PROMPT to USD using its bucket's FX rate
+   * Convert a bucket from PROMPT to USD using its FX rate
    */
-  const convertToUSD = (candle: OHLCCandle) => {
-    const fx = Big(candle.fx_rate);
+  const convertToUSD = (bucket: OHLCBucket) => {
+    const fx = Big(bucket.fx);
     return {
-      time: candle.bucket_time,
-      open: Big(candle.open_prompt).times(fx).toNumber(),
-      high: Big(candle.high_prompt).times(fx).toNumber(),
-      low: Big(candle.low_prompt).times(fx).toNumber(),
-      close: Big(candle.close_prompt).times(fx).toNumber(),
-      volume: Big(candle.volume_agent).toNumber(),
+      time: bucket.t,
+      open: Big(bucket.o).times(fx).toNumber(),
+      high: Big(bucket.h).times(fx).toNumber(),
+      low: Big(bucket.l).times(fx).toNumber(),
+      close: Big(bucket.c).times(fx).toNumber(),
+      volume: Big(bucket.v).toNumber(),
     };
   };
 
   /**
-   * Get candles in USD (converted with per-bucket FX)
+   * Get buckets in USD (converted with per-bucket FX)
    */
-  const candlesUSD = data?.candles.map(convertToUSD) || [];
+  const bucketsUSD = data?.buckets.map(convertToUSD) || [];
 
   return {
     data,
-    candlesUSD,
+    bucketsUSD,
     loading,
     error,
     convertToUSD

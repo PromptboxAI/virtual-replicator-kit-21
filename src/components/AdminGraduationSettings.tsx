@@ -24,6 +24,26 @@ export function AdminGraduationSettings() {
   const [promptUsdRate, setPromptUsdRate] = useState<number>(0.10);
   const [isSaving, setIsSaving] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [liveFxRate, setLiveFxRate] = useState<number | null>(null);
+
+  // Load live FX rate from agent_metrics_normalized
+  useEffect(() => {
+    const loadLiveFxRate = async () => {
+      const { data } = await supabase
+        .from('agent_metrics_normalized')
+        .select('fx')
+        .limit(1)
+        .single();
+      
+      if (data?.fx) {
+        setLiveFxRate(Number(data.fx));
+      }
+    };
+    
+    if (!isLoading) {
+      loadLiveFxRate();
+    }
+  }, [isLoading]);
 
   // Load current settings from graduation_config
   useEffect(() => {
@@ -38,14 +58,19 @@ export function AdminGraduationSettings() {
         const config = data.value as any;
         setGraduationMode(config.graduation_mode || 'database');
         setTargetMarketCapUsd(config.target_market_cap_usd || 65000);
-        setPromptUsdRate(config.prompt_usd_rate || 0.10);
+        // Use live FX rate if available, otherwise fallback to saved value
+        if (liveFxRate !== null) {
+          setPromptUsdRate(liveFxRate);
+        } else {
+          setPromptUsdRate(config.prompt_usd_rate || 0.10);
+        }
       }
     };
     
     if (!isLoading) {
       loadGraduationConfig();
     }
-  }, [isLoading]);
+  }, [isLoading, liveFxRate]);
 
   // Validate production settings
   const validateSettings = (): boolean => {
@@ -199,9 +224,12 @@ export function AdminGraduationSettings() {
                 onChange={(e) => setPromptUsdRate(Number(e.target.value))}
                 min={0.01}
                 step={0.01}
+                disabled
               />
               <p className="text-xs text-muted-foreground">
-                Current PROMPT price in USD (e.g., 0.10 = $0.10 per PROMPT)
+                {liveFxRate !== null 
+                  ? `Live FX rate from database: $${liveFxRate} per PROMPT` 
+                  : 'Loading live FX rate from database...'}
               </p>
             </div>
           </div>
