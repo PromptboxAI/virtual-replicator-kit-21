@@ -49,6 +49,8 @@ export function useOHLCData(
           }
         );
 
+        console.log('OHLC fetch response:', { responseData, fetchError });
+
         if (fetchError) {
           console.error('Error fetching OHLC data:', fetchError);
           setError(fetchError.message);

@@ -3358,7 +3358,7 @@ export type Database = {
         Returns: string
       }
       get_ohlc_with_fx: {
-        Args: { p_agent_id: string; p_limit?: number; p_timeframe?: string }
+        Args: { p_agent_id: string; p_limit?: number; p_timeframe: string }
         Returns: {
           bucket_time: string
           close_prompt: number
