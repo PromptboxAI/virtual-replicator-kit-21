@@ -12,7 +12,6 @@ serve(async (req) => {
   }
 
   try {
-    // ✅ FIX: Read from JSON body (not path)
     const { agentId } = await req.json();
 
     const supabase = createClient(
@@ -20,7 +19,7 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Get metrics
+    // Phase B2: Read only from agent_metrics_normalized view
     const { data: m, error: metricsError } = await supabase
       .from("agent_metrics_normalized")
       .select("*")
@@ -76,7 +75,7 @@ serve(async (req) => {
       }
     }
 
-    // ✅ FIX: Persist graduation flip atomically
+    // Persist graduation flip atomically
     if ((gradStatus?.status ?? 'pre_grad') === 'pre_grad' && shouldGraduate) {
       const snapshot = {
         met: gradEval[0].met,
@@ -93,19 +92,19 @@ serve(async (req) => {
       }, { onConflict: 'agent_id' });
     }
 
-    // Build response (all numerics as strings)
+    // Phase B2: Stringify all numerics, map fx from view
     const payload = {
       agentId,
       price: {
         prompt: String(m.price_prompt),
         usd: m.price_usd == null ? null : String(m.price_usd),
-        fx: String(m.prompt_usd_rate),
+        fx: String(m.fx),  // ✅ Map from view's fx field
         fx_staleness_seconds: Number(m.fx_staleness_seconds ?? 0)
       },
       supply: {
         total: String(m.total_supply),
         circulating: String(m.circulating_supply ?? 0),
-        policy: gradStatus?.status === 'graduated' ? 'CIRCULATING' : 'FDV'
+        policy: m.supply_policy as 'FDV' | 'CIRCULATING'  // ✅ Use view's policy
       },
       fdv: {
         prompt: String(m.fdv_prompt),

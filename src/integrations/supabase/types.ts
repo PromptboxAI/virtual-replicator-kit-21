@@ -3074,6 +3074,7 @@ export type Database = {
           fdv_usd: number | null
           fx: number | null
           fx_staleness_seconds: number | null
+          market_cap_usd: number | null
           mcirc_prompt: number | null
           mcirc_usd: number | null
           price_prompt: number | null
