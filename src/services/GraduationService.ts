@@ -43,7 +43,7 @@ export async function getAgentGraduationThreshold(agentId: string): Promise<numb
     const config: GraduationConfig = {
       mode: (agent.graduation_mode as 'database' | 'smart_contract') || 'database',
       targetMarketCapUSD: agent.target_market_cap_usd || 65000,
-      promptUsdRate: agent.created_prompt_usd_rate || 0.10
+      promptUsdRate: agent.created_prompt_usd_rate || null
     };
 
     const threshold = getGraduationThreshold(config);

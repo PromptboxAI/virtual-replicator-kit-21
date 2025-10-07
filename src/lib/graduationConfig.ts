@@ -31,7 +31,7 @@ export const getGraduationThreshold = (config: GraduationConfig): number => {
 export const DEFAULT_GRADUATION_CONFIG: GraduationConfig = {
   mode: 'database', // Test mode by default
   targetMarketCapUSD: 65000, // $65K target (middle of $50K-$75K range)
-  promptUsdRate: 0.10 // $0.10 per PROMPT
+  promptUsdRate: null // Must be fetched from live FX (no default)
 };
 
 // Examples:

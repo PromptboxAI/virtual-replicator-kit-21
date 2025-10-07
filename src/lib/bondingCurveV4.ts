@@ -54,7 +54,7 @@ export type BondingCurveConfig = {
 
 // Create dynamic bonding curve configuration
 export function createDynamicBondingConfig(
-  promptUsdRate: number = 0.10,
+  promptUsdRate: number,
   mode: 'database' | 'smart_contract' = 'database'
 ): BondingCurveConfig {
   const config: DynamicBondingConfig = {
@@ -107,8 +107,14 @@ const BONDING_CURVE_V4_CONFIG_BASE = {
   LIQUIDITY_LOCK_YEARS: 10, // 10-year LP lock
 };
 
-// Export default configuration (for backwards compatibility)
-export const BONDING_CURVE_V4_CONFIG = createDynamicBondingConfig();
+// Export default configuration (legacy - requires FX for proper initialization)
+// Note: This should not be used directly. Always call createDynamicBondingConfig(fxRate) with live FX.
+export const BONDING_CURVE_V4_CONFIG: BondingCurveConfig = {
+  ...BONDING_CURVE_V4_CONFIG_BASE,
+  P0: 0.0000075, // Placeholder - should be calculated dynamically
+  P1: 0.00075,   // Placeholder - should be calculated dynamically
+  GRADUATION_PROMPT_AMOUNT: 750_000
+};
 
 /**
  * Get price slope for a given config (can be dynamic)
