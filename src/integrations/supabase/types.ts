@@ -3380,6 +3380,23 @@ export type Database = {
           fx: number
         }[]
       }
+      get_liquidity_summary: {
+        Args: { p_agent_id: string }
+        Returns: {
+          agent_id: string
+          asof: string
+          creation_mode: string
+          fx: string
+          graduation_mode: string
+          lp_pair_amount: string
+          lp_pair_symbol: string
+          lp_percent: string
+          lp_prompt: string
+          lp_usd: string
+          source: string
+          status: string
+        }[]
+      }
       get_ohlc_from_trades: {
         Args: { p_agent_id: string; p_limit?: number; p_tf: string }
         Returns: {

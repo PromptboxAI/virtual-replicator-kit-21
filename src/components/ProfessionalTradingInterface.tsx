@@ -17,6 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { AgentMigrationStatus } from './AgentMigrationStatus';
 import { MigrationBanner } from './MigrationBanner';
 import { useMigrationPolling } from '@/hooks/useMigrationPolling';
+import { useLiquiditySummary } from '@/hooks/useLiquiditySummary';
 
 interface Agent {
   id: string;
@@ -49,6 +50,7 @@ export const ProfessionalTradingInterface = ({
   const [chartPrice, setChartPrice] = useState<number | null>(null);
   const { toast } = useToast();
   const marketCap = useAgentFDV(agent.id);
+  const { liquidity: liquiditySummary, loading: liquidityLoading } = useLiquiditySummary(agent.id);
 
   const { isGraduated, agentData, isMigrating, checkMigration } = useAgentRealtime(agent.id, {
     id: agent.id,
@@ -84,8 +86,14 @@ export const ProfessionalTradingInterface = ({
   }, []);
 
   const progressPercentage = Math.min((agent.prompt_raised / agent.graduation_threshold) * 100, 100);
-  const liquidityPool = agent.prompt_raised * 0.70; // 70% goes to liquidity (from config)
   const topHolders = Math.min(agent.token_holders * 0.1, 10); // Estimate top 10 holders percentage
+  
+  // Get liquidity display values from summary
+  const lpPrompt = liquiditySummary ? parseFloat(liquiditySummary.lp_prompt) : agent.prompt_raised * 0.70;
+  const lpUsd = liquiditySummary ? parseFloat(liquiditySummary.lp_usd) : 0;
+  const liquidityLabel = liquiditySummary?.source === 'actual' 
+    ? 'Actual DEX Liquidity'
+    : `Projected LP (${liquiditySummary?.lp_percent || '70'}% allocation)`;
 
   return (
     <div className="w-full space-y-6">
@@ -223,9 +231,19 @@ export const ProfessionalTradingInterface = ({
 
             <Card className="p-4 text-center">
               <div className="text-lg font-bold text-foreground">
-                {liquidityPool.toFixed(2)} PROMPT
+                {lpPrompt.toFixed(2)} PROMPT
+                {lpUsd > 0 && (
+                  <span className="ml-2 text-sm text-muted-foreground">
+                    (${lpUsd.toFixed(2)})
+                  </span>
+                )}
               </div>
-              <div className="text-sm text-muted-foreground">Liquidity Pool</div>
+              <div className="text-sm text-muted-foreground">{liquidityLabel}</div>
+              {liquiditySummary?.source === 'actual' && liquiditySummary.lp_pair_symbol && (
+                <div className="text-xs text-muted-foreground mt-1">
+                  Pair: {liquiditySummary.lp_pair_amount} {liquiditySummary.lp_pair_symbol}
+                </div>
+              )}
             </Card>
 
             <Card className="p-4 text-center">
@@ -263,9 +281,19 @@ export const ProfessionalTradingInterface = ({
 
             <Card className="p-4 text-center">
               <div className="text-lg font-bold text-foreground">
-                {liquidityPool.toFixed(2)} PROMPT
+                {lpPrompt.toFixed(2)} PROMPT
+                {lpUsd > 0 && (
+                  <span className="ml-2 text-sm text-muted-foreground">
+                    (${lpUsd.toFixed(2)})
+                  </span>
+                )}
               </div>
-              <div className="text-sm text-muted-foreground">DEX Liquidity</div>
+              <div className="text-sm text-muted-foreground">{liquidityLabel}</div>
+              {liquiditySummary?.source === 'actual' && liquiditySummary.lp_pair_symbol && (
+                <div className="text-xs text-muted-foreground mt-1">
+                  Pair: {liquiditySummary.lp_pair_amount} {liquiditySummary.lp_pair_symbol}
+                </div>
+              )}
             </Card>
 
             <Card className="p-4 text-center">
