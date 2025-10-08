@@ -9,7 +9,7 @@ interface PriceDisplayProps {
   className?: string;
   showBoth?: boolean;
   loading?: boolean;
-  overridePrice?: number; // Override price in PROMPT (e.g., from chart)
+  overridePrice?: number; // Override price in USD (e.g., from chart with historical FX)
 }
 
 /**
@@ -40,17 +40,31 @@ export function PriceDisplay({
     return <div className={cn("h-5 w-24 animate-pulse rounded bg-muted", className)} data-testid="price-skeleton" />;
   }
 
-  // Use override price (from chart) if provided, otherwise use metrics
-  const promptPrice = overridePrice !== undefined ? String(overridePrice) : metrics.price.prompt;
+  // Use override price if provided (already in USD from chart)
+  // Otherwise calculate from metrics
+  let usdStr: string;
+  let formattedPROMPT: string;
   
-  if (!promptPrice) {
-    return <div className={cn("h-5 w-24 animate-pulse rounded bg-muted", className)} data-testid="price-skeleton" />;
+  if (overridePrice !== undefined) {
+    // Chart provides USD price with historical FX - use it directly
+    usdStr = String(overridePrice);
+    // Calculate PROMPT equivalent using current FX for display only
+    const inverseFx = 1 / parseFloat(metrics.price.fx);
+    formattedPROMPT = Units.formatPrice(
+      Units.toDisplay(usdStr, String(inverseFx), 'PROMPT'),
+      'PROMPT'
+    );
+  } else {
+    // No override - use metrics price and convert
+    const promptPrice = metrics.price.prompt;
+    if (!promptPrice) {
+      return <div className={cn("h-5 w-24 animate-pulse rounded bg-muted", className)} data-testid="price-skeleton" />;
+    }
+    usdStr = Units.toDisplay(promptPrice, metrics.price.fx, 'USD');
+    formattedPROMPT = Units.formatPrice(promptPrice, 'PROMPT');
   }
-
-  // Convert via Units only
-  const usdStr = Units.toDisplay(promptPrice, metrics.price.fx, 'USD');
+  
   const formattedUSD = Units.formatPrice(usdStr, 'USD');
-  const formattedPROMPT = Units.formatPrice(promptPrice, 'PROMPT');
 
   switch (variant) {
     case 'usd-primary':

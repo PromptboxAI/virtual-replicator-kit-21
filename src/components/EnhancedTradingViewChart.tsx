@@ -196,11 +196,11 @@ export const EnhancedTradingViewChart = ({
           borderDownColor: '#ef4444',
           wickUpColor: '#10b981',
           wickDownColor: '#ef4444',
-          priceFormat: {
-            type: 'price',
-            precision: 8,
-            minMove: 0.00000001,
-          },
+      priceFormat: {
+        type: 'price',
+        precision: 10,
+        minMove: 0.0000000001,
+      },
         });
         mainSeriesRef.current = candleSeries;
       } else if (chartType === 'line') {
@@ -209,8 +209,8 @@ export const EnhancedTradingViewChart = ({
           lineWidth: 2,
           priceFormat: {
             type: 'price',
-            precision: 8,
-            minMove: 0.00000001,
+            precision: 10,
+            minMove: 0.0000000001,
           },
         });
         mainSeriesRef.current = line;
@@ -222,8 +222,8 @@ export const EnhancedTradingViewChart = ({
           lineWidth: 2,
           priceFormat: {
             type: 'price',
-            precision: 8,
-            minMove: 0.00000001,
+            precision: 10,
+            minMove: 0.0000000001,
           },
         });
         mainSeriesRef.current = area;
@@ -330,9 +330,10 @@ export const EnhancedTradingViewChart = ({
         setCurrentPrice(adapted[adapted.length - 1].value);
       }
       
-      // Notify parent of raw PROMPT price
+      // Notify parent of USD price using the bucket's FX rate (not current FX)
       const latestBucket = ohlcData.buckets[ohlcData.buckets.length - 1];
-      onPriceUpdate?.(parseFloat(latestBucket.c));
+      const latestPriceUSD = parseFloat(latestBucket.c) * parseFloat(latestBucket.fx);
+      onPriceUpdate?.(latestPriceUSD);
 
       // Update volume if enabled
       if (showVolume && volumeSeriesRef.current) {

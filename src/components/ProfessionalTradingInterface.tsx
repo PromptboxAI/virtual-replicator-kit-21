@@ -66,9 +66,9 @@ export const ProfessionalTradingInterface = ({
   const currentPrice = chartPrice ?? agentData?.current_price ?? agent.current_price;
 
   const handlePriceUpdate = useCallback((price: number) => {
-    // Store the PROMPT price from the chart's latest bucket
+    // Store the USD price from the chart (already converted with bucket's FX)
     setChartPrice(price);
-    console.log('Chart price update:', price);
+    console.log('Chart price update (USD):', price);
   }, []);
 
   const handleCopyAddress = useCallback(() => {
