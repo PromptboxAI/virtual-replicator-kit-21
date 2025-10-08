@@ -28,12 +28,14 @@ import {
   calculateGraduationProgressV3,
   tokensSoldFromPromptRaisedV3
 } from "@/lib/bondingCurveV3";
+import { formatPriceUSD } from "@/lib/formatters";
 import { useAgentRealtime } from '@/hooks/useAgentRealtime';
 import { useMigrationPolling } from '@/hooks/useMigrationPolling';
 import { MigrationBanner } from './MigrationBanner';
 import { LiveTokenPriceDisplay } from './LiveTokenPriceDisplay';
 import { useAgentLockStatus } from '@/hooks/useAgentLockStatus';
 import { AgentLockStatus } from './AgentLockStatus';
+import { useAgentMetrics } from '@/hooks/useAgentMetrics';
 
 
 
@@ -68,6 +70,7 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
   const [tokenAmount, setTokenAmount] = useState("");
   const [isCalculating, setIsCalculating] = useState(false);
   const [slippage, setSlippage] = useState("0.5");
+  const [showSlippageInput, setShowSlippageInput] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const { user, authenticated } = useAuth();
@@ -75,6 +78,9 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
   const { balance: promptBalance, loading: balanceLoading } = useTokenBalance(user?.id);
   const { buyAgentTokens, sellAgentTokens } = useAgentTokens(agent.token_address);
   const { toast } = useToast();
+  
+  // Get FX rate for USD conversion
+  const { metrics } = useAgentMetrics(agent.id);
   
   // MEV Protection - Agent Lock Status
   const { isLocked, canTrade, timeLeft, isCreator } = useAgentLockStatus(agent.id);
@@ -235,6 +241,9 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
   const priceImpact = promptAmount 
     ? ((priceAfterTrade - currentPrice) / currentPrice * 100) 
     : 0;
+  
+  // Get FX rate for USD conversion
+  const fxRate = metrics ? parseFloat(metrics.price.fx) : 0.10;
 
   const handleTrade = async () => {
     console.log('🎯 TokenTradingInterface: Calling buyAgentTokens');
@@ -281,11 +290,11 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
       if (tradeType === "buy") {
         console.log('🚀 Calling buyAgentTokens with:', {
           promptAmount,
-          slippage: "2",
+          slippage,
           agent: agent.name
         });
         
-        await buyAgentTokens(promptAmount, "2", agent);
+        await buyAgentTokens(promptAmount, slippage, agent);
         
         // Calculate fee information for display
         const feeAmount = parseFloat(promptAmount) * feeConfig.feePercent;
@@ -341,9 +350,6 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
     }
   };
 
-  const formatPrice = (price: number) => {
-    return price < 0.01 ? price.toExponential(4) : price.toFixed(6);
-  };
 
   return (
     <div className="space-y-6">
@@ -477,12 +483,47 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Price After Trade</span>
-                    <span>${formatPrice(priceAfterTrade)}</span>
+                    <span>{formatPriceUSD(priceAfterTrade, fxRate)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span>Slippage Tolerance</span>
+                    <button
+                      type="button"
+                      onClick={() => setShowSlippageInput(!showSlippageInput)}
+                      className="text-primary hover:underline flex items-center gap-1"
+                    >
+                      Slippage Tolerance
+                    </button>
                     <span>{slippage}%</span>
                   </div>
+                  {showSlippageInput && (
+                    <div className="space-y-2 pt-2 border-t border-border">
+                      <Label htmlFor="slippage" className="text-xs">Custom Slippage (%)</Label>
+                      <div className="flex gap-2">
+                        <Input
+                          id="slippage"
+                          type="number"
+                          min="0.1"
+                          max="50"
+                          step="0.1"
+                          value={slippage}
+                          onChange={(e) => setSlippage(e.target.value)}
+                          className="h-8"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSlippage("0.5")}
+                          className="whitespace-nowrap"
+                        >
+                          Reset
+                        </Button>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Higher slippage = more likely to succeed but potentially worse price
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
 

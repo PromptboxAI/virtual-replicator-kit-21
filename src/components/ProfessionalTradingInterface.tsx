@@ -50,7 +50,7 @@ export const ProfessionalTradingInterface = ({
   const [chartPrice, setChartPrice] = useState<number | null>(null);
   const { toast } = useToast();
   const marketCap = useAgentFDV(agent.id);
-  const { liquidity: liquiditySummary, loading: liquidityLoading } = useLiquiditySummary(agent.id);
+  const { liquidity: liquiditySummary, loading: liquidityLoading, refetch: refetchLiquidity } = useLiquiditySummary(agent.id);
 
   const { isGraduated, agentData, isMigrating, checkMigration } = useAgentRealtime(agent.id, {
     id: agent.id,
@@ -209,7 +209,10 @@ export const ProfessionalTradingInterface = ({
           >
             <TokenTradingInterface
               agent={agent}
-              onTradeComplete={onTradeComplete}
+              onTradeComplete={() => {
+                onTradeComplete?.();
+                refetchLiquidity(); // Refresh liquidity after trade
+              }}
             />
           </TradingModeGuard>
         </div>

@@ -20,39 +20,39 @@ export function useLiquiditySummary(agentId: string | undefined) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchLiquidity = async () => {
     if (!agentId) {
       setLiquidity(null);
       setLoading(false);
       return;
     }
 
-    const fetchLiquidity = async () => {
-      try {
-        setLoading(true);
-        const { data, error: fetchError } = await supabase.functions.invoke(
-          'get-liquidity',
-          { body: { agentId } }
-        );
+    try {
+      setLoading(true);
+      const { data, error: fetchError } = await supabase.functions.invoke(
+        'get-liquidity',
+        { body: { agentId } }
+      );
 
-        if (fetchError) {
-          console.error('Error fetching liquidity summary:', fetchError);
-          setError(fetchError.message);
-          return;
-        }
-
-        setLiquidity(data.liquidity);
-        setError(null);
-      } catch (err: any) {
-        console.error('Failed to fetch liquidity summary:', err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
+      if (fetchError) {
+        console.error('Error fetching liquidity summary:', fetchError);
+        setError(fetchError.message);
+        return;
       }
-    };
 
+      setLiquidity(data.liquidity);
+      setError(null);
+    } catch (err: any) {
+      console.error('Failed to fetch liquidity summary:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchLiquidity();
   }, [agentId]);
 
-  return { liquidity, loading, error };
+  return { liquidity, loading, error, refetch: fetchLiquidity };
 }
