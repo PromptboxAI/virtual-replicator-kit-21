@@ -560,8 +560,8 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
         </TradingModeGuard>
       </div>
 
-      {/* Debug Panel - Only visible to admins */}
-      {isAdmin && <TradingDebugPanel agentId={agent.id} />}
+      {/* Debug Panel - Hidden */}
+      {/* {isAdmin && <TradingDebugPanel agentId={agent.id} />} */}
     </div>
   );
 };
