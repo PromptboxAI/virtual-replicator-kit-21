@@ -173,12 +173,21 @@ export const EnhancedTradingViewChart = ({
         const volumeSeries = chart.addSeries(HistogramSeries, {
           color: isDark ? '#6b7280' : '#9ca3af',
           priceFormat: { type: 'volume' },
-          priceScaleId: 'volume',
+          priceScaleId: 'left',
+          lastValueVisible: false,
+          priceLineVisible: false,
         });
         
-        chart.priceScale('volume').applyOptions({
-          scaleMargins: { top: 0.8, bottom: 0 },
-          visible: false,
+        chart.applyOptions({
+          leftPriceScale: { 
+            visible: false, 
+            borderVisible: false,
+            scaleMargins: { top: 0.8, bottom: 0 },
+          },
+          rightPriceScale: { 
+            visible: true, 
+            borderVisible: false,
+          },
         });
         
         volumeSeriesRef.current = volumeSeries;
