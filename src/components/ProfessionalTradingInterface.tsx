@@ -214,7 +214,7 @@ export const ProfessionalTradingInterface = ({
                 {formatMarketCapUSD(marketCap)}
               </div>
               <div className="text-sm text-muted-foreground">
-                {isGraduated ? 'FDV' : 'Market Cap'}
+                FDV (USD)
               </div>
             </Card>
 
@@ -254,7 +254,7 @@ export const ProfessionalTradingInterface = ({
                 {formatMarketCapUSD(marketCap)}
               </div>
               <div className="text-sm text-muted-foreground">
-                FDV
+                Market Cap (Circulating, USD)
               </div>
             </Card>
 

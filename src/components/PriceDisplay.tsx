@@ -50,7 +50,7 @@ export function PriceDisplay({
           <span className="text-2xl font-bold">{formattedUSD}</span>
           {showBoth && (
             <span className="text-sm text-muted-foreground">
-              {formattedPROMPT} PROMPT
+              {formattedPROMPT}
             </span>
           )}
         </div>
@@ -59,7 +59,7 @@ export function PriceDisplay({
     case 'prompt-primary':
       return (
         <div className={cn("flex flex-col", className)}>
-          <span className="text-2xl font-bold">{formattedPROMPT} PROMPT</span>
+          <span className="text-2xl font-bold">{formattedPROMPT}</span>
           {showBoth && (
             <span className="text-sm text-muted-foreground">{formattedUSD}</span>
           )}
@@ -71,7 +71,7 @@ export function PriceDisplay({
         <div className={cn("flex items-baseline gap-2", className)}>
           <span className="text-xl font-bold">{formattedUSD}</span>
           <span className="text-lg text-muted-foreground">
-            ({formattedPROMPT} PROMPT)
+            ({formattedPROMPT})
           </span>
         </div>
       );
@@ -83,7 +83,7 @@ export function PriceDisplay({
           <div className="font-semibold">{formattedUSD}</div>
           {showBoth && (
             <div className="text-xs text-muted-foreground">
-              {formattedPROMPT} PROMPT
+              {formattedPROMPT}
             </div>
           )}
         </div>
@@ -96,7 +96,7 @@ export function PriceDisplay({
           {formattedUSD}
           {showBoth && (
             <span className="text-muted-foreground ml-1">
-              ({formattedPROMPT} PROMPT)
+              ({formattedPROMPT})
             </span>
           )}
         </span>
