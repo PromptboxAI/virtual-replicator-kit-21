@@ -9,6 +9,7 @@ interface PriceDisplayProps {
   className?: string;
   showBoth?: boolean;
   loading?: boolean;
+  overridePrice?: number; // Override price in PROMPT (e.g., from chart)
 }
 
 /**
@@ -29,19 +30,27 @@ export function PriceDisplay({
   variant = 'usd-primary',
   className,
   showBoth = true,
-  loading = false
+  loading = false,
+  overridePrice
 }: PriceDisplayProps) {
   const { metrics } = useAgentMetrics(agentId);
   
   // Show skeleton until FX arrives
-  if (loading || !metrics?.price?.fx || !metrics?.price?.prompt) {
+  if (loading || !metrics?.price?.fx) {
+    return <div className={cn("h-5 w-24 animate-pulse rounded bg-muted", className)} data-testid="price-skeleton" />;
+  }
+
+  // Use override price (from chart) if provided, otherwise use metrics
+  const promptPrice = overridePrice !== undefined ? String(overridePrice) : metrics.price.prompt;
+  
+  if (!promptPrice) {
     return <div className={cn("h-5 w-24 animate-pulse rounded bg-muted", className)} data-testid="price-skeleton" />;
   }
 
   // Convert via Units only
-  const usdStr = Units.toDisplay(metrics.price.prompt, metrics.price.fx, 'USD');
+  const usdStr = Units.toDisplay(promptPrice, metrics.price.fx, 'USD');
   const formattedUSD = Units.formatPrice(usdStr, 'USD');
-  const formattedPROMPT = Units.formatPrice(metrics.price.prompt, 'PROMPT');
+  const formattedPROMPT = Units.formatPrice(promptPrice, 'PROMPT');
 
   switch (variant) {
     case 'usd-primary':

@@ -46,6 +46,7 @@ export const ProfessionalTradingInterface = ({
 }: ProfessionalTradingInterfaceProps) => {
   const [promptAmount, setPromptAmount] = useState<number>(0);
   const [tradeType, setTradeType] = useState<'buy' | 'sell'>('buy');
+  const [chartPrice, setChartPrice] = useState<number | null>(null);
   const { toast } = useToast();
   const marketCap = useAgentFDV(agent.id);
 
@@ -59,12 +60,13 @@ export const ProfessionalTradingInterface = ({
     token_address: null
   });
 
-  // Use real-time price if available, otherwise fall back to agent prop
-  const currentPrice = agentData?.current_price ?? agent.current_price;
+  // Use chart price if available, otherwise fall back to real-time or agent prop
+  const currentPrice = chartPrice ?? agentData?.current_price ?? agent.current_price;
 
   const handlePriceUpdate = useCallback((price: number) => {
-    // Price updates are now handled via real-time data
-    console.log('Price update received:', price);
+    // Store the PROMPT price from the chart's latest bucket
+    setChartPrice(price);
+    console.log('Chart price update:', price);
   }, []);
 
   const handleCopyAddress = useCallback(() => {
@@ -145,6 +147,7 @@ export const ProfessionalTradingInterface = ({
               agentId={agent.id}
               variant="usd-primary"
               showBoth={true}
+              overridePrice={chartPrice ?? undefined}
             />
           </div>
         </div>
