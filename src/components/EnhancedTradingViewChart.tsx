@@ -196,12 +196,22 @@ export const EnhancedTradingViewChart = ({
           borderDownColor: '#ef4444',
           wickUpColor: '#10b981',
           wickDownColor: '#ef4444',
+          priceFormat: {
+            type: 'price',
+            precision: 8,
+            minMove: 0.00000001,
+          },
         });
         mainSeriesRef.current = candleSeries;
       } else if (chartType === 'line') {
         const line = chart.addSeries(LineSeries, {
           color: '#8b5cf6',
           lineWidth: 2,
+          priceFormat: {
+            type: 'price',
+            precision: 8,
+            minMove: 0.00000001,
+          },
         });
         mainSeriesRef.current = line;
       } else if (chartType === 'area') {
@@ -210,6 +220,11 @@ export const EnhancedTradingViewChart = ({
           bottomColor: 'rgba(139, 92, 246, 0.04)',
           lineColor: '#8b5cf6',
           lineWidth: 2,
+          priceFormat: {
+            type: 'price',
+            precision: 8,
+            minMove: 0.00000001,
+          },
         });
         mainSeriesRef.current = area;
       }
@@ -322,14 +337,37 @@ export const EnhancedTradingViewChart = ({
       // Update volume if enabled
       if (showVolume && volumeSeriesRef.current) {
         try {
-          const volumeData = ohlcData.buckets.map(b => ({
+          const TOKEN_DECIMALS = 9; // Standard token decimals
+          const volumeData = ohlcData.buckets.map((b, i) => ({
             time: new Date(b.t).getTime() / 1000,
-            value: parseFloat(b.v),
-            color: parseFloat(b.c) >= parseFloat(b.o) ? '#10b981' : '#ef4444',
+            value: parseFloat(b.v) / 10**TOKEN_DECIMALS,
+            color: i > 0 && parseFloat(b.c) >= parseFloat(ohlcData.buckets[i-1].c) 
+              ? '#10b98155' 
+              : '#ef444455',
           }));
           volumeSeriesRef.current.setData(volumeData);
         } catch (error) {
           console.warn('Error setting volume data:', error);
+        }
+      }
+      
+      // Price parity check
+      if (chartType === 'candlestick' && metrics?.price?.usd) {
+        const lastBucket = ohlcData.buckets[ohlcData.buckets.length - 1];
+        const chartPriceUSD = parseFloat(lastBucket.c) * parseFloat(lastBucket.fx);
+        const metricsPriceUSD = typeof metrics.price.usd === 'number' 
+          ? metrics.price.usd 
+          : parseFloat(metrics.price.usd);
+        
+        if (Number.isFinite(chartPriceUSD) && Number.isFinite(metricsPriceUSD) && metricsPriceUSD > 0) {
+          const diff = Math.abs(chartPriceUSD - metricsPriceUSD) / Math.max(1e-12, metricsPriceUSD);
+          if (diff > 0.05) {
+            console.warn('Price mismatch >5%', { 
+              chartPriceUSD, 
+              metricsPriceUSD, 
+              diff: `${(diff*100).toFixed(2)}%` 
+            });
+          }
         }
       }
 

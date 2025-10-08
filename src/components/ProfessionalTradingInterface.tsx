@@ -143,7 +143,7 @@ export const ProfessionalTradingInterface = ({
           <div className="text-right">
             <PriceDisplay 
               agentId={agent.id}
-              variant="prompt-primary"
+              variant="usd-primary"
               showBoth={true}
             />
           </div>
