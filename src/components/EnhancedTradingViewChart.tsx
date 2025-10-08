@@ -272,23 +272,48 @@ export const EnhancedTradingViewChart = ({
       const policy = metrics.supply.policy;
       const supply = policy === 'FDV' ? metrics.supply.total : metrics.supply.circulating;
       
-      if (!supply) return;
+      if (!supply || ohlcData.buckets.length === 0) return;
 
-      // Use adapter to convert PROMPT prices to USD with per-bucket FX
-      const adapted = adaptBucketsForChart(
-        ohlcData.buckets,
-        supply,
-        viewMode
-      );
-
-      if (adapted.length === 0) return;
-
-      // Update main series
-      mainSeriesRef.current.setData(adapted);
-
-      // Update current price from latest bucket
-      const latestPrice = adapted[adapted.length - 1].value;
-      setCurrentPrice(latestPrice);
+      // Convert OHLC data based on chart type
+      if (chartType === 'candlestick') {
+        // Candlestick needs { time, open, high, low, close }
+        const candleData = ohlcData.buckets.map(b => {
+          const timeSeconds = new Date(b.t).getTime() / 1000;
+          const fx = parseFloat(b.fx);
+          const supplyNum = parseFloat(supply);
+          
+          // Convert PROMPT to USD, then apply mode transformation
+          const open = parseFloat(b.o) * fx;
+          const high = parseFloat(b.h) * fx;
+          const low = parseFloat(b.l) * fx;
+          const close = parseFloat(b.c) * fx;
+          
+          if (viewMode === 'marketcap') {
+            return {
+              time: timeSeconds,
+              open: open * supplyNum,
+              high: high * supplyNum,
+              low: low * supplyNum,
+              close: close * supplyNum,
+            };
+          }
+          
+          return { time: timeSeconds, open, high, low, close };
+        });
+        
+        mainSeriesRef.current.setData(candleData);
+        setCurrentPrice(candleData[candleData.length - 1].close);
+      } else {
+        // Line/Area needs { time, value }
+        const adapted = adaptBucketsForChart(
+          ohlcData.buckets,
+          supply,
+          viewMode
+        );
+        
+        mainSeriesRef.current.setData(adapted);
+        setCurrentPrice(adapted[adapted.length - 1].value);
+      }
       
       // Notify parent of raw PROMPT price
       const latestBucket = ohlcData.buckets[ohlcData.buckets.length - 1];
