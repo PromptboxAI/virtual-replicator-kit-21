@@ -157,8 +157,6 @@ export const EnhancedTradingViewChart = ({
           top: 0.1,
           bottom: showVolume ? 0.2 : 0.1,
         },
-        mode: 0, // Normal price scale mode
-        autoScale: true,
       },
       timeScale: {
         borderColor: isDark ? '#4b5563' : '#d1d5db',
@@ -198,22 +196,11 @@ export const EnhancedTradingViewChart = ({
           borderDownColor: '#ef4444',
           wickUpColor: '#10b981',
           wickDownColor: '#ef4444',
-          priceFormat: {
-            type: 'custom',
-            minMove: 0.0000000001,
-            formatter: (price: number) => {
-              // Format tiny prices in scientific notation or with proper decimals
-              if (price === 0) return '0';
-              if (Math.abs(price) < 0.000001) {
-                return price.toExponential(2); // e.g., 8.35e-7
-              }
-              // For slightly larger small numbers, use fixed decimals
-              if (Math.abs(price) < 0.01) {
-                return price.toFixed(8);
-              }
-              return price.toFixed(4);
-            },
-          },
+      priceFormat: {
+        type: 'price',
+        precision: 10,
+        minMove: 0.0000000001,
+      },
         });
         mainSeriesRef.current = candleSeries;
       } else if (chartType === 'line') {
