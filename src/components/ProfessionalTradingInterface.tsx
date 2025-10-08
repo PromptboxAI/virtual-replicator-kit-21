@@ -84,7 +84,7 @@ export const ProfessionalTradingInterface = ({
   }, []);
 
   const progressPercentage = Math.min((agent.prompt_raised / agent.graduation_threshold) * 100, 100);
-  const liquidityPool = agent.prompt_raised * 0.8; // 80% goes to liquidity
+  const liquidityPool = agent.prompt_raised * 0.70; // 70% goes to liquidity (from config)
   const topHolders = Math.min(agent.token_holders * 0.1, 10); // Estimate top 10 holders percentage
 
   return (
@@ -223,9 +223,9 @@ export const ProfessionalTradingInterface = ({
 
             <Card className="p-4 text-center">
               <div className="text-lg font-bold text-foreground">
-                ${((agent.prompt_raised * 30) / 1000).toFixed(2)}k
+                {liquidityPool.toFixed(2)} PROMPT
               </div>
-              <div className="text-sm text-muted-foreground">Liquidity</div>
+              <div className="text-sm text-muted-foreground">Liquidity Pool</div>
             </Card>
 
             <Card className="p-4 text-center">
@@ -263,7 +263,7 @@ export const ProfessionalTradingInterface = ({
 
             <Card className="p-4 text-center">
               <div className="text-lg font-bold text-foreground">
-                ${(liquidityPool * 1000).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {liquidityPool.toFixed(2)} PROMPT
               </div>
               <div className="text-sm text-muted-foreground">DEX Liquidity</div>
             </Card>
