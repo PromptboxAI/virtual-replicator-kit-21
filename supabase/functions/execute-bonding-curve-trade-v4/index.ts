@@ -125,12 +125,16 @@ serve(async (req) => {
     const graduationMode = agent.graduation_mode || 'database';
     const targetMarketCapUSD = agent.target_market_cap_usd || 65000;
     
-    // Require creation-time FX rate (no fallback)
-    if (!agent.created_prompt_usd_rate) {
-      throw new Error('Agent missing created_prompt_usd_rate - cannot calculate graduation threshold');
+    // Fetch live FX rate as-of trade time (no fallback)
+    const nowIso = new Date().toISOString();
+    const { data: fxRows, error: fxErr } = await supabase.rpc('get_fx_asof', { p_ts: nowIso });
+
+    if (fxErr || !fxRows || !fxRows[0]?.fx) {
+      console.error('❌ FX lookup failed:', fxErr);
+      throw new Error('FX unavailable - cannot execute trade safely');
     }
-    
-    const createdPromptUsdRate = agent.created_prompt_usd_rate;
+
+    const createdPromptUsdRate = Number(fxRows[0].fx);
     const createdP0 = agent.created_p0 || 0.00004;
     const createdP1 = agent.created_p1 || 0.0001;
 

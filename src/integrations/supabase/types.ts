@@ -3373,6 +3373,13 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_fx_asof: {
+        Args: { p_ts: string }
+        Returns: {
+          asof: string
+          fx: number
+        }[]
+      }
       get_ohlc_with_fx: {
         Args: { p_agent_id: string; p_limit?: number; p_timeframe: string }
         Returns: {
