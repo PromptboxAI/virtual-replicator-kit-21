@@ -124,7 +124,13 @@ serve(async (req) => {
     // Calculate dynamic graduation threshold using agent's creation-time pricing
     const graduationMode = agent.graduation_mode || 'database';
     const targetMarketCapUSD = agent.target_market_cap_usd || 65000;
-    const createdPromptUsdRate = agent.created_prompt_usd_rate || 0.10;
+    
+    // Require creation-time FX rate (no fallback)
+    if (!agent.created_prompt_usd_rate) {
+      throw new Error('Agent missing created_prompt_usd_rate - cannot calculate graduation threshold');
+    }
+    
+    const createdPromptUsdRate = agent.created_prompt_usd_rate;
     const createdP0 = agent.created_p0 || 0.00004;
     const createdP1 = agent.created_p1 || 0.0001;
 
