@@ -15,9 +15,8 @@ export interface DynamicBondingConfig {
 
 // Calculate dynamic P0 based on PROMPT price (CORRECTED: inverse relationship)
 export function calculateDynamicP0(config: DynamicBondingConfig): number {
-  // P0 = Target USD per token / PROMPT USD rate
-  // Example: $0.000004 / $0.10 = 0.00004 PROMPT per token
-  // Example: $0.000004 / $1.00 = 0.000004 PROMPT per token (10x less PROMPT = 10x more tokens)
+  // P0 = Target USD per token / Live PROMPT USD rate
+  // Example: $0.000004 / live_fx = P0 PROMPT per token (dynamically adjusted)
   return config.targetUsdPerToken / config.promptUsdRate;
 }
 

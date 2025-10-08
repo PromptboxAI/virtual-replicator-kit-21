@@ -20,8 +20,7 @@ export const getGraduationThreshold = (config: GraduationConfig): number => {
     const dynamicThreshold = TARGET_USD / promptUsdRate;
 
     // Apply bounds (50K-750K PROMPT to allow proper scaling)
-    // At $0.10: 650K PROMPT = $65K (within 500K-750K range)
-    // At $0.50: 130K PROMPT = $65K (within 100K-150K range)  
+    // Dynamically calculated based on live FX rate
     // At $1.00: 65K PROMPT = $65K (within 50K-75K range)
     return Math.max(50000, Math.min(750000, dynamicThreshold));
   }
@@ -36,7 +35,6 @@ export const DEFAULT_GRADUATION_CONFIG: GraduationConfig = {
 
 // Examples:
 // Database mode: Always 42,000 PROMPT (fixed test amount, no USD dependency)
-// Smart contract mode at $0.10 PROMPT: 650,000 PROMPT = $65K
-// Smart contract mode at $0.50 PROMPT: 130,000 PROMPT = $65K  
+// Smart contract mode: Dynamically calculated based on live FX rate and target USD market cap
 // Smart contract mode at $1.00 PROMPT: 65,000 PROMPT = $65K
 // Smart contract mode at $2.00 PROMPT: 50,000 PROMPT (min threshold = $100K)
