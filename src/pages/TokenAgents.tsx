@@ -6,10 +6,8 @@ import { ArrowRight, Bot, Coins, TrendingUp, Users, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-
 const TokenAgents = () => {
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       <Header />
       
 
@@ -45,15 +43,11 @@ const TokenAgents = () => {
               <h1 className="text-5xl font-bold text-foreground leading-tight">
                 Launch first<br />
                 Build fast<br />
-                <span className="bg-gradient-primary bg-clip-text text-transparent">
-                  Tokenized AI Agents
-                </span>
+                <span className="bg-gradient-primary bg-clip-text text-transparent">Tokenized AI Agents</span>
               </h1>
-              <p className="text-lg text-muted-foreground max-w-lg">
-                Launch tokens first to build community and generate immediate value.
-                Then deploy AI agents that grow your ecosystem.
-                Loved by Web3 and DeFi teams.
-              </p>
+              <p className="text-lg text-muted-foreground max-w-lg">Launch tokens first to build community
+and generate immediate value.
+Then deploy AI agents that grow your ecosystem.</p>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
@@ -93,11 +87,7 @@ const TokenAgents = () => {
           {/* Hero Image */}
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-primary opacity-20 blur-3xl"></div>
-            <img
-              src="/lovable-uploads/be05442f-d979-41f4-8395-57aba376cb60.png"
-              alt="Token-First AI Agent Platform"
-              className="relative z-10 w-full h-auto rounded-2xl shadow-2xl"
-            />
+            <img src="/lovable-uploads/be05442f-d979-41f4-8395-57aba376cb60.png" alt="Token-First AI Agent Platform" className="relative z-10 w-full h-auto rounded-2xl shadow-2xl" />
           </div>
         </div>
       </section>
@@ -393,13 +383,10 @@ const TokenAgents = () => {
       {/* CTA Section */}
       <section className="bg-gradient-primary py-20 relative overflow-hidden">
         {/* Dot pattern overlay */}
-        <div 
-          className="absolute inset-0 opacity-40"
-          style={{
-            backgroundImage: `radial-gradient(circle, rgba(100,100,100,0.6) 1px, transparent 1px)`,
-            backgroundSize: '8px 8px'
-          }}
-        ></div>
+        <div className="absolute inset-0 opacity-40" style={{
+        backgroundImage: `radial-gradient(circle, rgba(100,100,100,0.6) 1px, transparent 1px)`,
+        backgroundSize: '8px 8px'
+      }}></div>
         <div className="container mx-auto px-4 text-center relative z-10">
           <div className="text-sm text-white/60 tracking-widest uppercase mb-4">
             GET STARTED
@@ -422,8 +409,6 @@ const TokenAgents = () => {
       </section>
 
       <Footer />
-    </div>
-  );
+    </div>;
 };
-
 export default TokenAgents;
