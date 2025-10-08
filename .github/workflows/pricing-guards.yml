@@ -9,8 +9,12 @@ jobs:
       
       - name: No hardcoded FX
         run: |
-          if grep -R "PROMPT_USD_RATE" src --include="*.ts" --include="*.tsx"; then
+          if grep -R "PROMPT_USD_RATE" src supabase/functions --include="*.ts" --include="*.tsx"; then
             echo "❌ Found hardcoded PROMPT_USD_RATE usage. Use Units.* or API FX rates instead."
             exit 1
           fi
-          echo "✅ No hardcoded PROMPT_USD_RATE found"
+          if grep -rE "[^0-9]0\.10[^0-9]" src supabase/functions --include="*.ts" --include="*.tsx" | grep -v "//"; then
+            echo "❌ Found hardcoded 0.10 FX rate. Use live FX from metrics.price.fx or prompt_fx table."
+            exit 1
+          fi
+          echo "✅ No hardcoded FX rates found"
