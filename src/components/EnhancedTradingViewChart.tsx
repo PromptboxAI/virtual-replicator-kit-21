@@ -362,21 +362,27 @@ export const EnhancedTradingViewChart = ({
         }
       }
       
-      // Price parity check
-      if (chartType === 'candlestick' && metrics?.price?.usd) {
+      // Enhanced price parity check (dev only)
+      if (process.env.NODE_ENV === 'development' && chartType === 'candlestick' && metrics?.price?.usd) {
         const lastBucket = ohlcData.buckets[ohlcData.buckets.length - 1];
         const chartPriceUSD = parseFloat(lastBucket.c) * parseFloat(lastBucket.fx);
         const metricsPriceUSD = typeof metrics.price.usd === 'number' 
           ? metrics.price.usd 
           : parseFloat(metrics.price.usd);
         
+        console.info('Chart price update (USD):', chartPriceUSD);
+        
         if (Number.isFinite(chartPriceUSD) && Number.isFinite(metricsPriceUSD) && metricsPriceUSD > 0) {
           const diff = Math.abs(chartPriceUSD - metricsPriceUSD) / Math.max(1e-12, metricsPriceUSD);
           if (diff > 0.05) {
-            console.warn('Price mismatch >5%', { 
-              chartPriceUSD, 
-              metricsPriceUSD, 
-              diff: `${(diff*100).toFixed(2)}%` 
+            console.warn('⚠️ Price Parity Alert', { 
+              agentId,
+              chartPriceUSD: chartPriceUSD.toFixed(10), 
+              metricsPriceUSD: metricsPriceUSD.toFixed(10), 
+              diff: `${(diff*100).toFixed(2)}%`,
+              lastBucketFX: lastBucket.fx,
+              metricsFX: metrics.price.fx,
+              lastBucketTime: lastBucket.t
             });
           }
         }

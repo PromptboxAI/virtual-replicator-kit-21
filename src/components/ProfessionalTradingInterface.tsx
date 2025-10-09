@@ -156,6 +156,7 @@ export const ProfessionalTradingInterface = ({
               variant="usd-primary"
               showBoth={true}
               overridePrice={chartPrice ?? undefined}
+              loading={chartPrice === null}
             />
           </div>
         </div>

@@ -1,6 +1,7 @@
 import { useAgentMetrics } from "@/hooks/useAgentMetrics";
 import { Units } from "@/lib/units";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 interface PriceDisplayProps {
@@ -35,15 +36,19 @@ export function PriceDisplay({
 }: PriceDisplayProps) {
   const { metrics } = useAgentMetrics(agentId);
   
-  // Show skeleton until FX arrives
-  if (loading || !metrics?.price?.fx) {
-    return <div className={cn("h-5 w-24 animate-pulse rounded bg-muted", className)} data-testid="price-skeleton" />;
+  // Show skeleton until chart price arrives OR metrics load
+  if (loading || !metrics?.price?.fx || (overridePrice === undefined && !metrics?.price?.prompt)) {
+    return <Skeleton className={cn("h-8 w-32 rounded", className)} />;
   }
 
   // Use override price if provided (already in USD from chart)
   // Otherwise calculate from metrics
   let usdStr: string;
   let formattedPROMPT: string;
+  
+  // FX staleness warning (over 24 hours)
+  const showFXWarning = metrics?.price?.fx_staleness_seconds && 
+    metrics.price.fx_staleness_seconds > 86400;
   
   if (overridePrice !== undefined) {
     // Chart provides USD price with historical FX - use it directly
@@ -72,9 +77,16 @@ export function PriceDisplay({
         <div className={cn("flex flex-col", className)}>
           <span className="text-2xl font-bold">{formattedUSD}</span>
           {showBoth && (
-            <span className="text-sm text-muted-foreground">
-              {formattedPROMPT}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">
+                {formattedPROMPT}
+              </span>
+              {showFXWarning && (
+                <Badge variant="outline" className="text-xs text-yellow-600 border-yellow-600">
+                  FX old ({Math.floor(metrics.price.fx_staleness_seconds / 3600)}h)
+                </Badge>
+              )}
+            </div>
           )}
         </div>
       );
