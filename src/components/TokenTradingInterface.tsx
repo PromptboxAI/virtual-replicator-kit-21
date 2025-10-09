@@ -73,6 +73,12 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
   const [showSlippageInput, setShowSlippageInput] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // Clear opposite field when switching tabs
+  useEffect(() => {
+    setPromptAmount("");
+    setTokenAmount("");
+  }, [tradeType]);
+
   const { user, authenticated } = useAuth();
   const { isAdmin } = useUserRole();
   const { balance: promptBalance, loading: balanceLoading } = useTokenBalance(user?.id);
@@ -193,10 +199,10 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
       const amount = parseFloat(promptAmount);
       if (amount > 0) {
         try {
-          // Use tokens sold derived from PROMPT raised to calculate
           const tokensSold = tokensSoldFromPromptRaisedV3(agent.prompt_raised);
           const result = calculateTokensFromPromptV3(tokensSold, amount);
-          setTokenAmount(result.tokenAmount.toFixed(6));
+          // Use 2 decimal places for cleaner display
+          setTokenAmount(result.tokenAmount.toFixed(2));
         } catch (error) {
           console.error("Price calculation error:", error);
           setTokenAmount("0");
@@ -206,18 +212,19 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
       }
       setIsCalculating(false);
     }
-  }, [promptAmount, agent.prompt_raised, tradeType]);
+  }, [promptAmount, agent.prompt_raised, tradeType, isCalculating]);
 
+  // Real-time price calculation for SELL
   useEffect(() => {
     if (tokenAmount && !isCalculating && tradeType === "sell") {
       setIsCalculating(true);
       const amount = parseFloat(tokenAmount);
       if (amount > 0) {
         try {
-          // Use sell return calculation with tokensSold derived from PROMPT raised
           const tokensSold = tokensSoldFromPromptRaisedV3(agent.prompt_raised);
           const result = calculateSellReturnV3(tokensSold, amount);
-          setPromptAmount(result.return.toFixed(6));
+          // Use 2 decimal places for cleaner display
+          setPromptAmount(result.return.toFixed(2));
         } catch (error) {
           console.error("Price calculation error:", error);
           setPromptAmount("0");
@@ -227,7 +234,7 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
       }
       setIsCalculating(false);
     }
-  }, [tokenAmount, agent.prompt_raised, tradeType]);
+  }, [tokenAmount, agent.prompt_raised, tradeType, isCalculating]);
 
 // Derive tokens sold from PROMPT raised for price calculation
   const tokensSold = tokensSoldFromPromptRaisedV3(agent.prompt_raised);
