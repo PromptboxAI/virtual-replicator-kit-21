@@ -194,7 +194,12 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
 
   // Real-time price calculation for BUY
   useEffect(() => {
-    if (promptAmount && !isCalculating && tradeType === "buy") {
+    // Skip if not in buy mode or if clearing fields
+    if (tradeType !== "buy" || !promptAmount) {
+      return;
+    }
+    
+    if (!isCalculating) {
       setIsCalculating(true);
       const amount = parseFloat(promptAmount);
       if (amount > 0) {
@@ -216,7 +221,12 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
 
   // Real-time price calculation for SELL
   useEffect(() => {
-    if (tokenAmount && !isCalculating && tradeType === "sell") {
+    // Skip if not in sell mode or if clearing fields
+    if (tradeType !== "sell" || !tokenAmount) {
+      return;
+    }
+    
+    if (!isCalculating) {
       setIsCalculating(true);
       const amount = parseFloat(tokenAmount);
       if (amount > 0) {
