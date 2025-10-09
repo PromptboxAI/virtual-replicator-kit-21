@@ -27,7 +27,7 @@ export const Units = {
     if (unit === 'USD') {
       return n.gte(0.01) 
         ? `$${n.toFixed(2)}` 
-        : `$${n.toFixed(n.lt(1e-6) ? 8 : 6)}`;
+        : `$${n.toFixed(n.lt(1e-6) ? 10 : 6)}`;
     }
     return n.lt(0.0001) 
       ? `${n.toFixed(8)} PROMPT` 

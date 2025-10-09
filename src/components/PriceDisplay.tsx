@@ -46,10 +46,6 @@ export function PriceDisplay({
   let usdStr: string;
   let formattedPROMPT: string;
   
-  // FX staleness warning (over 24 hours)
-  const showFXWarning = metrics?.price?.fx_staleness_seconds && 
-    metrics.price.fx_staleness_seconds > 86400;
-  
   if (overridePrice !== undefined) {
     // Chart provides USD price with historical FX - use it directly
     usdStr = String(overridePrice);
@@ -77,16 +73,9 @@ export function PriceDisplay({
         <div className={cn("flex flex-col", className)}>
           <span className="text-2xl font-bold">{formattedUSD}</span>
           {showBoth && (
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">
-                {formattedPROMPT}
-              </span>
-              {showFXWarning && (
-                <Badge variant="outline" className="text-xs text-yellow-600 border-yellow-600">
-                  FX old ({Math.floor(metrics.price.fx_staleness_seconds / 3600)}h)
-                </Badge>
-              )}
-            </div>
+            <span className="text-sm text-muted-foreground">
+              {formattedPROMPT}
+            </span>
           )}
         </div>
       );
