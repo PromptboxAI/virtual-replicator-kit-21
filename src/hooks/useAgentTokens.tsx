@@ -153,9 +153,12 @@ export function useAgentTokens(tokenAddress?: string) {
     }
   };
 
-  const sellAgentTokens = async (tokenAmount: string) => {
+  const sellAgentTokens = async (tokenAmount: string, slippage: string, agent: any) => {
     console.log('🔍 sellAgentTokens called with:', {
       tokenAmount,
+      slippage,
+      agent: agent.name,
+      agentId: agent.id,
       userId: user?.id
     });
 
@@ -163,28 +166,32 @@ export function useAgentTokens(tokenAddress?: string) {
       throw new Error('User not authenticated');
     }
 
+    if (!agent?.id) {
+      throw new Error('Agent ID not provided');
+    }
+
     const tokenAmountNum = parseFloat(tokenAmount);
     if (isNaN(tokenAmountNum) || tokenAmountNum <= 0) {
       throw new Error('Invalid token amount');
     }
 
-    // For sell trades, we need the agent information
-    // This should be passed from the component or derived from context
     console.log('🚀 Calling execute-trade for sell with:', {
+      agentId: agent.id,
       userId: user.id,
       tokenAmount: tokenAmountNum,
-      tradeType: 'sell'
+      tradeType: 'sell',
+      slippage: parseFloat(slippage)
     });
 
     try {
       // Use V4 trading engine with dynamic pricing
       const { data, error } = await supabase.functions.invoke('execute-bonding-curve-trade-v4', {
         body: {
-          // Note: Agent ID should be passed here - this needs to be fixed
+          agentId: agent.id,
           userId: user.id,
           tokenAmount: tokenAmountNum,
           tradeType: 'sell',
-          slippage: 2
+          slippage: parseFloat(slippage)
         }
       });
 

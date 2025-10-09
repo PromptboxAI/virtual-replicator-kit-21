@@ -290,7 +290,7 @@ export function TradingInterface({
         }
         
         // Use smart contract for graduated tokens
-        await sellAgentTokens(sellAmount);
+        await sellAgentTokens(sellAmount, "0.5", { id: agentId, name: agentName, symbol: agentSymbol });
       } else {
         // Use bonding curve calculation for non-graduated tokens
         const tokenAmount = parseFloat(sellAmount);

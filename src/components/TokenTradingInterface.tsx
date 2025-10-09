@@ -317,12 +317,28 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
           ),
         });
       } else {
-        console.log('🚀 Calling sellAgentTokens with:', { tokenAmount });
-        await sellAgentTokens(tokenAmount);
+        console.log('🚀 Calling sellAgentTokens with:', { tokenAmount, slippage });
+        await sellAgentTokens(tokenAmount, slippage, agent);
+        
+        // Calculate fee information for display
+        const promptReturn = parseFloat(promptAmount);
+        const feeAmount = promptReturn * feeConfig.feePercent;
+        const creatorFee = feeAmount * feeConfig.creatorSplit;
+        const platformFee = feeAmount * feeConfig.platformSplit;
+        
         console.log('📊 Sell trade completed successfully');
         toast({
           title: "Sale Successful",
-          description: `Successfully sold ${tokenAmount} ${agent.symbol} tokens!`,
+          description: (
+            <div className="space-y-2">
+              <p>Successfully sold {tokenAmount} {agent.symbol} tokens!</p>
+              <div className="text-xs text-muted-foreground">
+                <p>Trading fee: {feeAmount.toFixed(4)} PROMPT ({(feeConfig.feePercent * 100).toFixed(1)}%)</p>
+                <p>• Creator: {creatorFee.toFixed(4)} PROMPT</p>
+                <p>• Platform: {platformFee.toFixed(4)} PROMPT</p>
+              </div>
+            </div>
+          ),
         });
       }
       
