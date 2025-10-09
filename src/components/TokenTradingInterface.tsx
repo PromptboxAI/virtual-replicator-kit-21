@@ -73,11 +73,13 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
   const [showSlippageInput, setShowSlippageInput] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Clear opposite field when switching tabs
-  useEffect(() => {
+  // Handle tab switching - clear ALL fields and reset calculating state
+  const handleTabChange = (newTab: "buy" | "sell") => {
+    setTradeType(newTab);
     setPromptAmount("");
     setTokenAmount("");
-  }, [tradeType]);
+    setIsCalculating(false);
+  };
 
   const { user, authenticated } = useAuth();
   const { isAdmin } = useUserRole();
@@ -412,7 +414,7 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
                 </CardTitle>
               </CardHeader>
             <CardContent className="space-y-6">
-              <Tabs value={tradeType} onValueChange={(value) => setTradeType(value as "buy" | "sell")}>
+              <Tabs value={tradeType} onValueChange={(value) => handleTabChange(value as "buy" | "sell")}>
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="buy" className="text-green-600">Buy</TabsTrigger>
                   <TabsTrigger value="sell" className="text-red-600">Sell</TabsTrigger>
