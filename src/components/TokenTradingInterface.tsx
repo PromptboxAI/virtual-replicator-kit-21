@@ -186,9 +186,9 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
   const graduationProgress = calculateGraduationProgressV3(currentPromptRaised);
   const remainingToGraduation = graduationProgress.remaining;
 
-  // Real-time price calculation
+  // Real-time price calculation for BUY
   useEffect(() => {
-    if (promptAmount && !isCalculating) {
+    if (promptAmount && !isCalculating && tradeType === "buy") {
       setIsCalculating(true);
       const amount = parseFloat(promptAmount);
       if (amount > 0) {
@@ -206,7 +206,7 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
       }
       setIsCalculating(false);
     }
-  }, [promptAmount, agent.prompt_raised]);
+  }, [promptAmount, agent.prompt_raised, tradeType]);
 
   useEffect(() => {
     if (tokenAmount && !isCalculating && tradeType === "sell") {
@@ -390,11 +390,18 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
                     <Label htmlFor="prompt-amount">PROMPT Amount</Label>
                     <Input
                       id="prompt-amount"
-                      type="number"
+                      type="text"
+                      inputMode="decimal"
                       placeholder="0.0"
                       value={promptAmount}
-                      onChange={(e) => setPromptAmount(e.target.value)}
-                      disabled={loading || isMigrating || (promptBalance || 0) <= 0} // Disable if no balance
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        // Only allow numbers and one decimal point
+                        if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                          setPromptAmount(value);
+                        }
+                      }}
+                      disabled={loading || isMigrating || (promptBalance || 0) <= 0}
                     />
                     <div className="text-xs text-muted-foreground">
                       Balance: {balanceLoading ? "..." : `${promptBalance?.toFixed(2) || "0"} PROMPT`}
@@ -427,11 +434,18 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
                     <Label htmlFor="sell-token-amount">{agent.symbol} Amount</Label>
                     <Input
                       id="sell-token-amount"
-                      type="number"
+                      type="text"
+                      inputMode="decimal"
                       placeholder="0.0"
                       value={tokenAmount}
-                      onChange={(e) => setTokenAmount(e.target.value)}
-                      disabled={loading || isMigrating || agentTokenBalance <= 0} // Disable if no tokens to sell
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        // Only allow numbers and one decimal point
+                        if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                          setTokenAmount(value);
+                        }
+                      }}
+                      disabled={loading || isMigrating || agentTokenBalance <= 0}
                     />
                     <div className="text-xs text-muted-foreground">
                       Balance: {agentTokenBalance.toFixed(2)} {agent.symbol}
