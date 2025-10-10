@@ -57,46 +57,55 @@ export function useOHLCData(
           return;
         }
 
-        // ✅ FALLBACK: If no OHLC buckets, synthesize one from last trade
-        if (responseData?.buckets?.length === 0) {
-          console.log('⚠️ Empty OHLC window - attempting to synthesize bar from last trade');
+        // ✅ FALLBACK: If no OHLC buckets or stale data, add current price bar
+        const now = new Date();
+        const lastBucketTime = responseData?.buckets?.length > 0 
+          ? new Date(responseData.buckets[responseData.buckets.length - 1].t)
+          : null;
+        
+        const isStale = lastBucketTime && (now.getTime() - lastBucketTime.getTime()) > 3600000; // >1 hour
+        
+        if (responseData?.buckets?.length === 0 || isStale) {
+          console.log(isStale ? '⚠️ Stale OHLC data detected - appending current price bar' : '⚠️ Empty OHLC window - synthesizing bar from current price');
           
-          const { data: lastTrade } = await supabase
-            .from('agent_token_buy_trades')
-            .select('created_at, token_amount, prompt_amount')
-            .eq('agent_id', agentId)
-            .order('created_at', { ascending: false })
-            .limit(1)
+          // Fetch current agent data for live price
+          const { data: agentData } = await supabase
+            .from('agents')
+            .select('current_price, prompt_raised')
+            .eq('id', agentId)
             .single();
           
-          if (lastTrade) {
-            // ✅ FIX: Normalize token_amount by 1e9 (token decimals)
-            const execPricePrompt = Big(lastTrade.prompt_amount)
-              .div(Big(lastTrade.token_amount).div(1e9));
+          if (agentData) {
+            const currentPrice = agentData.current_price?.toString() || '0';
             
             const { data: fxData } = await supabase.rpc('get_fx_asof', {
-              p_ts: lastTrade.created_at
+              p_ts: now.toISOString()
             });
             
             const fx = fxData?.[0]?.fx || '0.10';
-            const timestamp = new Date(lastTrade.created_at).toISOString();
             
-            // ✅ Create synthetic bar with debug flag
-            responseData.buckets = [{
-              t: timestamp,
-              o: execPricePrompt.toString(),
-              h: execPricePrompt.toString(),
-              l: execPricePrompt.toString(),
-              c: execPricePrompt.toString(),
-              v: lastTrade.token_amount.toString(),  // Keep raw units
+            // Create live bar at current time
+            const liveBar = {
+              t: now.toISOString(),
+              o: currentPrice,
+              h: currentPrice,
+              l: currentPrice,
+              c: currentPrice,
+              v: '0',  // No volume for synthetic bar
               fx: fx.toString(),
-            }];
+            };
             
-            console.log('✅ SYNTHESIZED BAR (from last trade):', responseData.buckets[0]);
+            if (responseData?.buckets?.length === 0) {
+              responseData.buckets = [liveBar];
+              console.log('✅ SYNTHESIZED LIVE BAR (no trades):', liveBar);
+            } else {
+              // Append to existing buckets
+              responseData.buckets.push(liveBar);
+              console.log('✅ APPENDED LIVE BAR (stale data):', liveBar);
+            }
           } else {
-            // ✅ No trades exist at all - return empty (chart will show "No trades yet")
-            console.log('ℹ️ No trades exist for this agent yet');
-            responseData.buckets = [];
+            console.log('ℹ️ No agent data found');
+            responseData.buckets = responseData?.buckets || [];
           }
         }
 
