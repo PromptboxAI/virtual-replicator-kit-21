@@ -3,6 +3,7 @@ import { Units } from "@/lib/units";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import Big from "big.js";
 
 interface PriceDisplayProps {
   agentId: string;
@@ -49,12 +50,9 @@ export function PriceDisplay({
   if (overridePrice !== undefined) {
     // Chart provides USD price with historical FX - use it directly
     usdStr = String(overridePrice);
-    // Calculate PROMPT equivalent using current FX for display only
-    const inverseFx = 1 / parseFloat(metrics.price.fx);
-    formattedPROMPT = Units.formatPrice(
-      Units.toDisplay(usdStr, String(inverseFx), 'PROMPT'),
-      'PROMPT'
-    );
+    // Calculate PROMPT equivalent: USD price ÷ FX rate
+    const promptEquivalent = Big(overridePrice).div(metrics.price.fx).toString();
+    formattedPROMPT = Units.formatPrice(promptEquivalent, 'PROMPT');
   } else {
     // No override - use metrics price and convert
     const promptPrice = metrics.price.prompt;
