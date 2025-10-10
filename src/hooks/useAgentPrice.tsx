@@ -28,14 +28,14 @@ export function useAgentPrice(agentId: string | undefined) {
 
         // Use the appropriate pricing function based on pricing_model
         if (agent?.pricing_model === 'linear_v4') {
-          // Always use RPC for V4 agents
+          // ✅ RPC now returns TEXT - convert to number
           const { data: calculatedPrice, error: priceError } = await supabase.rpc(
             'get_agent_current_price_v4',
             { p_agent_id: agentId }
           );
 
           if (priceError) throw priceError;
-          setPrice(calculatedPrice || 0);
+          setPrice(calculatedPrice ? parseFloat(calculatedPrice) : 0);
         } else {
           // For legacy agents (V3 and earlier), use the stored current_price
           setPrice(agent?.current_price || 0);

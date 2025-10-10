@@ -21,6 +21,7 @@ export const Units = {
 
   /**
    * Format price with correct decimals
+   * ✅ Updated for micro-price precision (8 decimals for small values)
    */
   formatPrice(numStr: string, unit: Unit): string {
     const n = Big(numStr);
@@ -29,6 +30,7 @@ export const Units = {
         ? `$${n.toFixed(2)}` 
         : `$${n.toFixed(n.lt(1e-6) ? 10 : 6)}`;
     }
+    // ✅ FIX: Use 8 decimals for tiny prices (< 0.0001 PROMPT)
     return n.lt(0.0001) 
       ? `${n.toFixed(8)} PROMPT` 
       : `${n.toFixed(4)} PROMPT`;

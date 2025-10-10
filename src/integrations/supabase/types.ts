@@ -3270,7 +3270,7 @@ export type Database = {
       }
       get_agent_current_price_v4: {
         Args: { p_agent_id: string }
-        Returns: number
+        Returns: string
       }
       get_agent_ohlcv_data: {
         Args: {
@@ -3372,6 +3372,10 @@ export type Database = {
       get_current_user_id: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      get_curve_supply_now: {
+        Args: { p_agent_id: string }
+        Returns: number
       }
       get_fx_asof: {
         Args: { p_ts: string }

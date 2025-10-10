@@ -57,6 +57,49 @@ export function useOHLCData(
           return;
         }
 
+        // ✅ FALLBACK: If no OHLC buckets, synthesize one from last trade
+        if (responseData?.buckets?.length === 0) {
+          console.log('⚠️ Empty OHLC window - attempting to synthesize bar from last trade');
+          
+          const { data: lastTrade } = await supabase
+            .from('agent_token_buy_trades')
+            .select('created_at, token_amount, prompt_amount')
+            .eq('agent_id', agentId)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
+          
+          if (lastTrade) {
+            // ✅ FIX: Normalize token_amount by 1e9 (token decimals)
+            const execPricePrompt = Big(lastTrade.prompt_amount)
+              .div(Big(lastTrade.token_amount).div(1e9));
+            
+            const { data: fxData } = await supabase.rpc('get_fx_asof', {
+              p_ts: lastTrade.created_at
+            });
+            
+            const fx = fxData?.[0]?.fx || '0.10';
+            const timestamp = new Date(lastTrade.created_at).toISOString();
+            
+            // ✅ Create synthetic bar with debug flag
+            responseData.buckets = [{
+              t: timestamp,
+              o: execPricePrompt.toString(),
+              h: execPricePrompt.toString(),
+              l: execPricePrompt.toString(),
+              c: execPricePrompt.toString(),
+              v: lastTrade.token_amount.toString(),  // Keep raw units
+              fx: fx.toString(),
+            }];
+            
+            console.log('✅ SYNTHESIZED BAR (from last trade):', responseData.buckets[0]);
+          } else {
+            // ✅ No trades exist at all - return empty (chart will show "No trades yet")
+            console.log('ℹ️ No trades exist for this agent yet');
+            responseData.buckets = [];
+          }
+        }
+
         setData(responseData);
         setError(null);
       } catch (err: any) {

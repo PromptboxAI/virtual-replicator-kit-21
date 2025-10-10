@@ -420,6 +420,19 @@ export const EnhancedTradingViewChart = ({
     enabled: !loading
   });
 
+  // ✅ Show empty state if no trades exist
+  if (!ohlcLoading && (!ohlcData?.buckets || ohlcData.buckets.length === 0)) {
+    return (
+      <Card className="flex h-full bg-background border border-border rounded-lg overflow-hidden">
+        <div className="flex flex-col items-center justify-center h-[600px] text-muted-foreground p-8">
+          <Activity className="h-12 w-12 mb-4 opacity-50" />
+          <p className="text-lg font-medium">No trades yet</p>
+          <p className="text-sm">Chart will appear after the first trade</p>
+        </div>
+      </Card>
+    );
+  }
+
   return (
     <Card className="flex h-full bg-background border border-border rounded-lg overflow-hidden">
       <div className="flex-1 flex flex-col">

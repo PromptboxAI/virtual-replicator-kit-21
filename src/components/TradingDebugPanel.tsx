@@ -66,7 +66,8 @@ export const TradingDebugPanel = ({ agentId }: DebugPanelProps) => {
         });
         
         if (error) throw error;
-        setDynamicPrice(data);
+        // ✅ RPC now returns TEXT - convert to number
+        setDynamicPrice(data ? parseFloat(data) : 0);
       } else {
         // Legacy V3 pricing for older agents
         const { data: agent } = await supabase
