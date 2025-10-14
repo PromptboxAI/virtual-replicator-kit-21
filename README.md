@@ -1,3 +1,26 @@
+# Promptbox Trade MFE
+
+Trading interface for Promptbox AI agents.
+
+## ⚠️ Highcharts Stock License
+
+**Important:** This project uses Highcharts Stock, which requires a commercial license for production use.
+
+**Current Status:** Private repository, development only.
+
+**Before Production Launch (Phase 3):**
+- Purchase Highcharts Stock license at https://shop.highsoft.com/
+- Add license key to chart configuration
+- Remove this notice from README
+
+**Free Alternative (if needed):**
+- Switch to Lightweight Charts (limited features)
+- Use TradingView widget (requires TradingView account)
+
+Reference: https://www.highcharts.com/products/highcharts/
+
+---
+
 # Welcome to your Lovable project
 
 ## Project info

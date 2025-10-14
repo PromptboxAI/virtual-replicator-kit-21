@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { WagmiProvider } from 'wagmi';
 import { config } from './lib/wagmi';
 import { PrivyProvider, usePrivy } from '@privy-io/react-auth';
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import About from "./pages/About";
@@ -55,7 +56,8 @@ const AdminProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 const App = () => (
-  <PrivyProvider
+  <ErrorBoundary>
+    <PrivyProvider
     appId="cmcv2r72202fqld0lnr5kgq3k"
     config={{
       appearance: {
@@ -165,6 +167,7 @@ const App = () => (
       </QueryClientProvider>
     </WagmiProvider>
   </PrivyProvider>
+  </ErrorBoundary>
 );
 
 export default App;
