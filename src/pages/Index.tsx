@@ -199,19 +199,24 @@ const Index = () => {
             <AnimatedBackground />
           </div>
           <div className="flex items-center justify-center gap-2 mb-4 relative z-10">
-            <h1 className="text-6xl font-bold text-black leading-tight">
-              Launch first<br />
-              Build fast<br />
-              Tokenized AI Agents
+            <h1 className="text-6xl font-bold text-foreground leading-tight">
+              Promptbox Trade
             </h1>
           </div>
-          <p className="text-base font-normal tracking-normal max-w-2xl mx-auto mb-6 relative z-10" style={{ color: '#000000' }}>
-            Discover, create and trade autonomous AI Agents.<br />
-            Powered by Base Network.<br />
-            Loved by Web3 and DeSci Teams.
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-6 relative z-10">
+            Phase 1: Mock Trading Interface
           </p>
-          <div className="flex justify-center mb-8 relative z-10">
-            <Button asChild size="lg" className="bg-black text-white hover:bg-black/90">
+          <p className="text-base text-muted-foreground max-w-2xl mx-auto mb-6 relative z-10">
+            This is a development preview with mock data.<br />
+            No real contracts deployed yet.
+          </p>
+          <div className="flex justify-center gap-4 mb-8 relative z-10">
+            <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
+              <Link to="/trade/base/0xDEMO">
+                View Demo Agent →
+              </Link>
+            </Button>
+            <Button asChild size="lg" variant="outline">
               <Link to="/agents">
                 Explore All Agents
               </Link>

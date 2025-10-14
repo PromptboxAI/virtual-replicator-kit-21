@@ -80,46 +80,57 @@
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    /* Trading MFE Dark Theme - Optimized for charts */
+    --background: 220 15% 6%;
+    --foreground: 210 40% 92%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 220 20% 10%;
+    --card-foreground: 210 40% 92%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 220 20% 10%;
+    --popover-foreground: 210 40% 92%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 217 91% 70%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 220 17% 18%;
+    --secondary-foreground: 210 40% 92%;
+    --secondary-glow: 220 17% 28%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 220 17% 24%;
+    --muted-foreground: 215 20% 65%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 142 76% 46%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --success: 142 76% 46%;
+    --success-foreground: 0 0% 100%;
+
+    --border: 220 17% 24%;
+    --input: 220 17% 18%;
+    --ring: 217 91% 60%;
 
     /* Chart-specific colors for dark mode */
-    --chart-background: 222.2 84% 4.9%;
-    --chart-grid: 217.2 32.6% 17.5%;
-    --chart-text: 210 40% 98%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --chart-background: 220 15% 6%;
+    --chart-grid: 220 17% 18%;
+    --chart-text: 210 40% 80%;
+    
+    --sidebar-background: 220 20% 10%;
+    --sidebar-foreground: 210 40% 92%;
+    --sidebar-primary: 217 91% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 220 17% 18%;
+    --sidebar-accent-foreground: 210 40% 92%;
+    --sidebar-border: 220 17% 24%;
+    --sidebar-ring: 217 91% 60%;
+
+    /* Trading-specific gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%), hsl(217 91% 70%));
+    --gradient-hero: linear-gradient(135deg, hsl(220 15% 6%), hsl(220 20% 10%));
   }
 }
 

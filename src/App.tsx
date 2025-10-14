@@ -26,6 +26,7 @@ import TestLab from "./pages/TestLab";
 import GraduationTest from "./pages/GraduationTest";
 import { FeeTest } from "./pages/FeeTest";
 import PriceAuditDashboard from "./pages/PriceAuditDashboard";
+import HealthCheck from "./pages/HealthCheck";
 import { LegacyTradeRedirect } from "./components/LegacyRedirect";
 import { useUserRole } from "./hooks/useUserRole";
 import { Header } from "./components/Header";
@@ -151,6 +152,7 @@ const App = () => (
               <Route path="/price-audit" element={<AdminProtectedRoute><PriceAuditDashboard /></AdminProtectedRoute>} />
               <Route path="/token-agents" element={<TokenAgents />} />
               <Route path="/fee-test/:agentId" element={<AdminProtectedRoute><FeeTest /></AdminProtectedRoute>} />
+              <Route path="/healthz" element={<HealthCheck />} />
               {/* Legacy redirect for old trade routes */}
               <Route path="/trade/:agentId" element={<LegacyTradeRedirect />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
