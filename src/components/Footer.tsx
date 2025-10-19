@@ -50,8 +50,6 @@ const Footer = () => {
               <div>Referral Terms</div>
               <div>OpenAI DPA</div>
               <div>Anthropic DPA</div>
-              <div>SOC 2 Report</div>
-              <div>Sign BAA With Us</div>
             </div>
           </div>
         </div>
