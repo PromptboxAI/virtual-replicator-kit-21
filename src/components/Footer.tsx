@@ -2,7 +2,7 @@ const Footer = () => {
   return (
     <footer className="py-12 px-4 border-t border-border bg-white" style={{ backgroundColor: '#ffffff' }}>
       <div className="container mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
           <div>
             <div className="mb-4">
               <img 
@@ -40,6 +40,18 @@ const Footer = () => {
               <div>Twitter</div>
               <div>GitHub</div>
               <div>Blog</div>
+            </div>
+          </div>
+          <div>
+            <h4 className="font-semibold text-foreground mb-4">Legal</h4>
+            <div className="space-y-2 text-sm text-muted-foreground">
+              <div>Privacy</div>
+              <div>Terms</div>
+              <div>Referral Terms</div>
+              <div>OpenAI DPA</div>
+              <div>Anthropic DPA</div>
+              <div>SOC 2 Report</div>
+              <div>Sign BAA With Us</div>
             </div>
           </div>
         </div>
