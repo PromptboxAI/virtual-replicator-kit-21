@@ -16,7 +16,7 @@ const Footer = () => {
                 placeholder="Your email address"
                 className="flex-1"
               />
-              <Button variant="default">Subscribe</Button>
+              <Button className="bg-black text-white hover:bg-black/90">Subscribe</Button>
             </div>
             
             <div className="flex items-center gap-3">
