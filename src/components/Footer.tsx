@@ -12,17 +12,17 @@ const Footer = () => {
               />
               <div className="flex items-center gap-3 mt-4">
                 <img 
-                  src="/badges/gdpr-badge.png" 
+                  src="/badges/gdpr-badge.webp" 
                   alt="GDPR Compliant" 
                   className="h-12 w-auto"
                 />
                 <img 
-                  src="/badges/soc2-badge.png" 
+                  src="/badges/soc2-badge.webp" 
                   alt="SOC 2 Compliant" 
                   className="h-12 w-auto"
                 />
                 <img 
-                  src="/badges/hipaa-badge.png" 
+                  src="/badges/hipaa-badge.webp" 
                   alt="HIPAA Compliant" 
                   className="h-12 w-auto"
                 />
