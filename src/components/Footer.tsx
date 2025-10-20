@@ -1,5 +1,3 @@
-import { Shield, FileCheck, Cross } from 'lucide-react';
-
 const Footer = () => {
   return (
     <footer className="py-12 px-4 border-t border-border bg-white" style={{ backgroundColor: '#ffffff' }}>
@@ -13,15 +11,21 @@ const Footer = () => {
                 className="h-12 w-auto mb-2"
               />
               <div className="flex items-center gap-3 mt-4">
-                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-muted">
-                  <Shield className="w-5 h-5 text-muted-foreground" />
-                </div>
-                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-muted">
-                  <FileCheck className="w-5 h-5 text-muted-foreground" />
-                </div>
-                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-muted">
-                  <Cross className="w-5 h-5 text-muted-foreground" />
-                </div>
+                <img 
+                  src="/badges/gdpr-badge.png" 
+                  alt="GDPR Compliant" 
+                  className="h-12 w-auto"
+                />
+                <img 
+                  src="/badges/soc2-badge.png" 
+                  alt="SOC 2 Compliant" 
+                  className="h-12 w-auto"
+                />
+                <img 
+                  src="/badges/hipaa-badge.png" 
+                  alt="HIPAA Compliant" 
+                  className="h-12 w-auto"
+                />
               </div>
             </div>
             <p className="text-sm font-normal tracking-normal" style={{ color: '#000000' }}>
