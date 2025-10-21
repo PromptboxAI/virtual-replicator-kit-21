@@ -155,3 +155,16 @@ verify_jwt = false
 
 [functions.unlock-expired-agents]
 verify_jwt = false
+
+# Phase 2.5: Public API Functions
+[functions.get-token-metadata]
+verify_jwt = false
+
+[functions.list-tokens]
+verify_jwt = false
+
+[functions.refresh-token-cache]
+verify_jwt = false
+
+[functions.get-liquidity]
+verify_jwt = false
