@@ -25,6 +25,9 @@ serve(async (req) => {
     const category = url.searchParams.get('category');
     const graduated = url.searchParams.get('graduated'); // 'true', 'false', or null (both)
     const chainId = url.searchParams.get('chainId');
+    const deploymentStatus = url.searchParams.get('deploymentStatus'); // 'deployed', 'not_deployed', etc.
+    const networkEnvironment = url.searchParams.get('networkEnvironment'); // 'testnet', 'mainnet'
+    const hasContract = url.searchParams.get('hasContract'); // 'true' to only show agents with token_address
 
     // Sort parameters
     const sortBy = url.searchParams.get('sortBy') || 'created_at'; // created_at, market_cap, volume_24h, token_holders
@@ -37,6 +40,9 @@ serve(async (req) => {
       category, 
       graduated,
       chainId,
+      deploymentStatus,
+      networkEnvironment,
+      hasContract,
       sortBy, 
       sortOrder 
     });
@@ -66,6 +72,18 @@ serve(async (req) => {
 
     if (chainId) {
       query = query.eq('chain_id', parseInt(chainId));
+    }
+
+    if (deploymentStatus) {
+      query = query.eq('deployment_status', deploymentStatus);
+    }
+
+    if (networkEnvironment) {
+      query = query.eq('network_environment', networkEnvironment);
+    }
+
+    if (hasContract === 'true') {
+      query = query.not('token_address', 'is', null);
     }
 
     // Apply sorting
@@ -109,7 +127,10 @@ serve(async (req) => {
           testMode: testMode ? testMode === 'true' : null,
           category: category || null,
           graduated: graduated ? graduated === 'true' : null,
-          chainId: chainId ? parseInt(chainId) : null
+          chainId: chainId ? parseInt(chainId) : null,
+          deploymentStatus: deploymentStatus || null,
+          networkEnvironment: networkEnvironment || null,
+          hasContract: hasContract === 'true' || null
         },
         sort: {
           by: sortField,

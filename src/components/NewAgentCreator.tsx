@@ -120,7 +120,9 @@ export function NewAgentCreator() {
           category: agentData.category,
           creator_id: address,
           framework: 'G.A.M.E.',
-          test_mode: false, // Real contract mode
+          deployment_status: 'deploying', // Mark as deploying
+          network_environment: 'testnet', // Base Sepolia
+          chain_id: 84532, // Base Sepolia
           status: 'ACTIVATING'
         })
         .select()
@@ -173,11 +175,14 @@ export function NewAgentCreator() {
       // Step 5: Finalize
       updateStepStatus('finalize', 'loading');
 
-      // Update agent status to ACTIVE
+      // Update agent status to ACTIVE and mark as deployed
       const { error: updateError } = await supabase
         .from('agents')
         .update({
           status: 'ACTIVE',
+          deployment_status: 'deployed',
+          deployed_at: new Date().toISOString(),
+          token_address: deployment.contractAddress,
           updated_at: new Date().toISOString()
         })
         .eq('id', agent.id);

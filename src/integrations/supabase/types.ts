@@ -1347,7 +1347,9 @@ export type Database = {
           creator_prebuy_amount: number | null
           creator_wallet_address: string | null
           current_price: number
+          deployed_at: string | null
           deployment_method: string | null
+          deployment_status: string | null
           deployment_tx_hash: string | null
           deployment_verified: boolean | null
           description: string | null
@@ -1363,6 +1365,7 @@ export type Database = {
           migration_completed_at: string | null
           migration_validated: boolean | null
           name: string
+          network_environment: string | null
           price_change_24h: number | null
           pricing_model: string | null
           prompt_raised: number | null
@@ -1405,7 +1408,9 @@ export type Database = {
           creator_prebuy_amount?: number | null
           creator_wallet_address?: string | null
           current_price?: number
+          deployed_at?: string | null
           deployment_method?: string | null
+          deployment_status?: string | null
           deployment_tx_hash?: string | null
           deployment_verified?: boolean | null
           description?: string | null
@@ -1421,6 +1426,7 @@ export type Database = {
           migration_completed_at?: string | null
           migration_validated?: boolean | null
           name: string
+          network_environment?: string | null
           price_change_24h?: number | null
           pricing_model?: string | null
           prompt_raised?: number | null
@@ -1463,7 +1469,9 @@ export type Database = {
           creator_prebuy_amount?: number | null
           creator_wallet_address?: string | null
           current_price?: number
+          deployed_at?: string | null
           deployment_method?: string | null
+          deployment_status?: string | null
           deployment_tx_hash?: string | null
           deployment_verified?: boolean | null
           description?: string | null
@@ -1479,6 +1487,7 @@ export type Database = {
           migration_completed_at?: string | null
           migration_validated?: boolean | null
           name?: string
+          network_environment?: string | null
           price_change_24h?: number | null
           pricing_model?: string | null
           prompt_raised?: number | null
@@ -3469,7 +3478,7 @@ export type Database = {
         Returns: boolean
       }
       check_price_consistency: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           agent_id: string
           agent_name: string
@@ -3479,7 +3488,7 @@ export type Database = {
         }[]
       }
       check_pricing_consistency: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           agent_id: string
           calculated_price: number
@@ -3547,10 +3556,7 @@ export type Database = {
         Args: { p_agent_id: string; p_timeframe?: string }
         Returns: number
       }
-      get_admin_setting: {
-        Args: { p_key: string }
-        Returns: Json
-      }
+      get_admin_setting: { Args: { p_key: string }; Returns: Json }
       get_agent_current_price_v4: {
         Args: { p_agent_id: string }
         Returns: string
@@ -3582,7 +3588,7 @@ export type Database = {
         }[]
       }
       get_bonding_curve_config: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           graduation_threshold: number
           initial_prompt_reserve: number
@@ -3592,7 +3598,7 @@ export type Database = {
         }[]
       }
       get_bonding_curve_config_v3: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           curve_supply: number
           graduation_threshold: number
@@ -3611,7 +3617,7 @@ export type Database = {
         }[]
       }
       get_bonding_curve_config_v4: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           curve_supply: number
           graduation_threshold: number
@@ -3629,10 +3635,7 @@ export type Database = {
           trading_fee_percent: number
         }[]
       }
-      get_bonding_curve_invariant: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
+      get_bonding_curve_invariant: { Args: never; Returns: number }
       get_current_bonding_curve_price: {
         Args: { tokens_sold: number }
         Returns: number
@@ -3652,14 +3655,8 @@ export type Database = {
           token_reserve: number
         }[]
       }
-      get_current_user_id: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      get_curve_supply_now: {
-        Args: { p_agent_id: string }
-        Returns: number
-      }
+      get_current_user_id: { Args: never; Returns: string }
+      get_curve_supply_now: { Args: { p_agent_id: string }; Returns: number }
       get_fx_asof: {
         Args: { p_ts: string }
         Returns: {
@@ -3722,26 +3719,11 @@ export type Database = {
         }
         Returns: boolean
       }
-      pg_try_advisory_xact_lock: {
-        Args: { key: number }
-        Returns: boolean
-      }
-      refresh_token_metadata_cache: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
-      rollback_agent_migration: {
-        Args: { p_agent_id: string }
-        Returns: Json
-      }
-      set_admin_by_email: {
-        Args: { _email: string }
-        Returns: undefined
-      }
-      set_user_as_admin: {
-        Args: { _user_id: string }
-        Returns: undefined
-      }
+      pg_try_advisory_xact_lock: { Args: { key: number }; Returns: boolean }
+      refresh_token_metadata_cache: { Args: never; Returns: number }
+      rollback_agent_migration: { Args: { p_agent_id: string }; Returns: Json }
+      set_admin_by_email: { Args: { _email: string }; Returns: undefined }
+      set_user_as_admin: { Args: { _user_id: string }; Returns: undefined }
       simulate_price_impact: {
         Args: {
           p_agent_id: string
@@ -3755,10 +3737,7 @@ export type Database = {
           price_impact_percent: number
         }[]
       }
-      tf_step_minutes: {
-        Args: { tf: string }
-        Returns: number
-      }
+      tf_step_minutes: { Args: { tf: string }; Returns: number }
       tokens_sold_from_prompt_v3: {
         Args: { p_prompt_raised: number }
         Returns: number
@@ -3767,10 +3746,7 @@ export type Database = {
         Args: { p_prompt_raised: number }
         Returns: number
       }
-      unlock_expired_agents: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
+      unlock_expired_agents: { Args: never; Returns: number }
       update_admin_setting: {
         Args: {
           p_changed_by: string
@@ -3799,10 +3775,7 @@ export type Database = {
           rejection_reason: string
         }[]
       }
-      verify_pending_deployments: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
+      verify_pending_deployments: { Args: never; Returns: number }
     }
     Enums: {
       app_role: "admin" | "user"
