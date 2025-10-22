@@ -3395,7 +3395,9 @@ export type Database = {
           creator_wallet_address: string | null
           current_price: number | null
           demo_videos: Json | null
+          deployed_at: string | null
           deployment_method: string | null
+          deployment_status: string | null
           deployment_tx_hash: string | null
           deployment_verified: boolean | null
           description: string | null
@@ -3411,6 +3413,7 @@ export type Database = {
           marketing_description: string | null
           max_trade_amount: number | null
           name: string | null
+          network_environment: string | null
           price_change_24h: number | null
           pricing_model: string | null
           prompt_raised: number | null
