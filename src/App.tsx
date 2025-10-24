@@ -22,6 +22,7 @@ import Market from "./pages/Market";
 import AllAgents from "./pages/AllAgents";
 import NotFound from "./pages/NotFound";
 import TokenAgents from "./pages/TokenAgents";
+import Faucet from "./pages/Faucet";
 import TestLab from "./pages/TestLab";
 import GraduationTest from "./pages/GraduationTest";
 import { FeeTest } from "./pages/FeeTest";
@@ -118,6 +119,7 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/about" element={<About />} />
               <Route path="/learn" element={<Learn />} />
+              <Route path="/faucet" element={<Faucet />} />
               <Route path="/create" element={<CreateAgent />} />
               <Route path="/my-agents" element={<MyAgents />} />
               <Route path="/my-agents/:agentId" element={<CreatorAgentDashboard />} />

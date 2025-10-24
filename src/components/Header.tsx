@@ -48,6 +48,9 @@ export function Header() {
                 <Link to="/learn" className="text-foreground hover:text-primary transition-colors font-medium">
                   Learn
                 </Link>
+                <Link to="/faucet" className="text-foreground hover:text-primary transition-colors font-medium">
+                  Faucet
+                </Link>
                 <Link to="/about" className="text-foreground hover:text-primary transition-colors font-medium">
                   About
                 </Link>
