@@ -4,7 +4,8 @@ import { baseSepolia } from 'wagmi/chains';
 import { Coins, Clock, FileCode2, Droplet, Copy, CheckCircle2, ExternalLink, Loader2, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useNetworkMode } from '@/hooks/useNetworkMode';
-import { PROMPT_TOKEN_ADDRESS, PROMPT_TOKEN_ABI } from '@/lib/contracts';
+import { useActivePromptContract } from '@/hooks/useActivePromptContract';
+import { PROMPT_TOKEN_ABI } from '@/lib/contracts';
 import { formatUnits } from 'viem';
 import { toast } from 'sonner';
 
@@ -17,6 +18,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { AnimatedBackground } from '@/components/AnimatedBackground';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
+import { PromptTokenDeployer } from '@/components/PromptTokenDeployer';
 
 const FAUCET_AMOUNT = "1,000";
 const COOLDOWN_SECONDS = 3600; // 1 hour
@@ -26,22 +28,26 @@ export default function Faucet() {
   const { address, chain } = useAccount();
   const { switchChain } = useSwitchChain();
   const { targetChainId } = useNetworkMode();
+  const { address: contractAddress, isLoading: contractLoading } = useActivePromptContract();
   
   const [copied, setCopied] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
 
   // Read user's PROMPT balance
   const { data: balance, refetch: refetchBalance } = useReadContract({
-    address: PROMPT_TOKEN_ADDRESS as `0x${string}`,
+    address: contractAddress as `0x${string}` | undefined,
     abi: PROMPT_TOKEN_ABI,
     functionName: 'balanceOf',
     args: address ? [address] : undefined,
     chainId: baseSepolia.id,
+    query: {
+      enabled: !!contractAddress && !!address,
+    }
   });
 
   // Read last faucet claim time
   const { data: lastClaimTime, refetch: refetchLastClaim } = useReadContract({
-    address: PROMPT_TOKEN_ADDRESS as `0x${string}`,
+    address: contractAddress as `0x${string}` | undefined,
     abi: [
       {
         inputs: [{ internalType: "address", name: "", type: "address" }],
@@ -54,6 +60,9 @@ export default function Faucet() {
     functionName: 'lastFaucetClaim',
     args: address ? [address] : undefined,
     chainId: baseSepolia.id,
+    query: {
+      enabled: !!contractAddress && !!address,
+    }
   });
 
   // Write contract for claiming
@@ -122,13 +131,18 @@ export default function Faucet() {
       return;
     }
 
-    console.log('Attempting to claim from contract:', PROMPT_TOKEN_ADDRESS);
+    if (!contractAddress) {
+      toast.error('Contract not deployed. Please contact admin.');
+      return;
+    }
+
+    console.log('Attempting to claim from contract:', contractAddress);
     console.log('User address:', address);
     console.log('Chain:', chain);
     
     try {
       const tx = await writeContractAsync({
-        address: PROMPT_TOKEN_ADDRESS as `0x${string}`,
+        address: contractAddress as `0x${string}`,
         abi: PROMPT_TOKEN_ABI,
         functionName: 'faucet',
         account: address,
@@ -153,20 +167,22 @@ export default function Faucet() {
   };
 
   const copyAddress = () => {
-    navigator.clipboard.writeText(PROMPT_TOKEN_ADDRESS);
+    if (!contractAddress) return;
+    navigator.clipboard.writeText(contractAddress);
     setCopied(true);
     toast.success('Contract address copied!');
     setTimeout(() => setCopied(false), 2000);
   };
 
   const addToMetaMask = async () => {
+    if (!contractAddress) return;
     try {
       const wasAdded = await (window as any).ethereum?.request({
         method: 'wallet_watchAsset',
         params: {
           type: 'ERC20',
           options: {
-            address: PROMPT_TOKEN_ADDRESS,
+            address: contractAddress,
             symbol: 'PROMPTTEST',
             decimals: 18,
           },
@@ -190,6 +206,52 @@ export default function Faucet() {
   const formattedBalance = balance ? formatUnits(balance as bigint, 18) : '0';
   const isWrongNetwork = chain && chain.id !== baseSepolia.id;
   const canClaim = address && !isWrongNetwork && timeRemaining === 0 && !isPending && !isConfirming;
+
+  // Loading state
+  if (contractLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <AnimatedBackground />
+        <main className="flex-1 container mx-auto px-4 py-8 relative z-10 flex items-center justify-center">
+          <Card className="w-full max-w-md">
+            <CardContent className="pt-6">
+              <div className="flex flex-col items-center gap-4">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                <p className="text-muted-foreground">Loading PROMPT token contract...</p>
+              </div>
+            </CardContent>
+          </Card>
+        </main>
+      </div>
+    );
+  }
+
+  // No contract deployed
+  if (!contractAddress) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <AnimatedBackground />
+        <main className="flex-1 container mx-auto px-4 py-8 relative z-10">
+          <div className="max-w-2xl mx-auto space-y-6">
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                <div className="font-semibold mb-2">PROMPT Token Not Deployed</div>
+                <p className="text-sm">
+                  The PROMPT test token contract has not been deployed to Base Sepolia yet. 
+                  Please contact an administrator to deploy the contract.
+                </p>
+              </AlertDescription>
+            </Alert>
+            
+            <PromptTokenDeployer />
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -343,7 +405,7 @@ export default function Faucet() {
                 <div className="text-xs text-muted-foreground mb-1">Contract Address</div>
                 <div className="flex items-center gap-2">
                   <code className="text-xs bg-muted px-2 py-1 rounded flex-1 truncate">
-                    {PROMPT_TOKEN_ADDRESS}
+                    {contractAddress}
                   </code>
                   <Button
                     onClick={copyAddress}
@@ -370,7 +432,7 @@ export default function Faucet() {
                 </div>
               </div>
               <Button
-                onClick={() => window.open(`https://sepolia.basescan.org/address/${PROMPT_TOKEN_ADDRESS}`, '_blank')}
+                onClick={() => window.open(`https://sepolia.basescan.org/address/${contractAddress}`, '_blank')}
                 variant="outline"
                 size="sm"
                 className="w-full"
@@ -454,7 +516,7 @@ export default function Faucet() {
               <AccordionItem value="item-2">
                 <AccordionTrigger>How do I add PROMPT to MetaMask?</AccordionTrigger>
                 <AccordionContent className="text-muted-foreground">
-                  Click the "Add PROMPT to MetaMask" button above, or manually add the token using the contract address: {PROMPT_TOKEN_ADDRESS}. Set the symbol as "PROMPTTEST" and decimals as "18".
+                  Click the "Add PROMPT to MetaMask" button above, or manually add the token using the contract address: {contractAddress}. Set the symbol as "PROMPTTEST" and decimals as "18".
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-3">
