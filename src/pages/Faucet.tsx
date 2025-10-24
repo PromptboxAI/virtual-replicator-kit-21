@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAccount, useReadContract, useWriteContract, useSwitchChain } from 'wagmi';
+import { useAccount, useReadContract, useWriteContract, useSwitchChain, useWaitForTransactionReceipt } from 'wagmi';
 import { baseSepolia } from 'wagmi/chains';
 import { Coins, Clock, FileCode2, Droplet, Copy, CheckCircle2, ExternalLink, Loader2, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
@@ -57,7 +57,12 @@ export default function Faucet() {
   });
 
   // Write contract for claiming
-  const { writeContractAsync, isPending, isSuccess, data: txHash, error: txError } = useWriteContract();
+  const { writeContractAsync, isPending, data: txHash, error: txError } = useWriteContract();
+
+  // Wait for transaction receipt
+  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+    hash: txHash,
+  });
 
   // Calculate cooldown timer
   useEffect(() => {
@@ -84,17 +89,22 @@ export default function Faucet() {
     }
   }, [txError]);
 
-  // Show transaction success and refetch data
+  // Show transaction confirmation status
   useEffect(() => {
-    if (isSuccess && txHash) {
-      console.log('Transaction successful:', txHash);
-      toast.success('Tokens claimed successfully! Refreshing balance...');
-      setTimeout(() => {
-        refetchBalance();
-        refetchLastClaim();
-      }, 3000);
+    if (isConfirming) {
+      toast.loading('Waiting for confirmation...', { id: 'tx-confirm' });
     }
-  }, [isSuccess, txHash, refetchBalance, refetchLastClaim]);
+  }, [isConfirming]);
+
+  // Refetch balance when transaction is confirmed
+  useEffect(() => {
+    if (isConfirmed) {
+      toast.success('Tokens claimed successfully!', { id: 'tx-confirm' });
+      console.log('Transaction confirmed, refetching balance...');
+      refetchBalance();
+      refetchLastClaim();
+    }
+  }, [isConfirmed, refetchBalance, refetchLastClaim]);
 
   const handleClaim = async () => {
     if (!address) {
@@ -179,7 +189,7 @@ export default function Faucet() {
 
   const formattedBalance = balance ? formatUnits(balance as bigint, 18) : '0';
   const isWrongNetwork = chain && chain.id !== baseSepolia.id;
-  const canClaim = address && !isWrongNetwork && timeRemaining === 0 && !isPending;
+  const canClaim = address && !isWrongNetwork && timeRemaining === 0 && !isPending && !isConfirming;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -258,10 +268,10 @@ export default function Faucet() {
                   size="lg"
                   className="w-full h-14 text-lg"
                 >
-                  {isPending ? (
+                  {isPending || isConfirming ? (
                     <>
                       <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      Claiming...
+                      {isPending ? 'Submitting...' : 'Confirming...'}
                     </>
                   ) : timeRemaining > 0 ? (
                     <>
