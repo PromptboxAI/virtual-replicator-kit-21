@@ -57,7 +57,7 @@ export default function Faucet() {
   });
 
   // Write contract for claiming
-  const { writeContract, isPending, isSuccess } = useWriteContract();
+  const { writeContractAsync, isPending, isSuccess, data: txHash, error: txError } = useWriteContract();
 
   // Calculate cooldown timer
   useEffect(() => {
@@ -76,15 +76,25 @@ export default function Faucet() {
     return () => clearInterval(interval);
   }, [lastClaimTime]);
 
-  // Refetch data on success
+  // Show transaction errors
   useEffect(() => {
-    if (isSuccess) {
+    if (txError) {
+      console.error('Transaction error:', txError);
+      toast.error(`Transaction failed: ${txError.message}`);
+    }
+  }, [txError]);
+
+  // Show transaction success and refetch data
+  useEffect(() => {
+    if (isSuccess && txHash) {
+      console.log('Transaction successful:', txHash);
+      toast.success('Tokens claimed successfully! Refreshing balance...');
       setTimeout(() => {
         refetchBalance();
         refetchLastClaim();
-      }, 2000);
+      }, 3000);
     }
-  }, [isSuccess, refetchBalance, refetchLastClaim]);
+  }, [isSuccess, txHash, refetchBalance, refetchLastClaim]);
 
   const handleClaim = async () => {
     if (!address) {
@@ -102,18 +112,29 @@ export default function Faucet() {
       return;
     }
 
+    console.log('Attempting to claim from contract:', PROMPT_TOKEN_ADDRESS);
+    console.log('User address:', address);
+    console.log('Chain:', chain);
+    
     try {
-      writeContract({
+      const tx = await writeContractAsync({
         address: PROMPT_TOKEN_ADDRESS as `0x${string}`,
         abi: PROMPT_TOKEN_ABI,
         functionName: 'faucet',
         account: address,
-        chain: baseSepolia,
+        chain
       });
-      toast.success('Transaction submitted! Waiting for confirmation...');
+      console.log('Transaction hash:', tx);
+      toast.success(`Transaction submitted! Hash: ${tx.slice(0, 10)}...`);
     } catch (error: any) {
       console.error('Claim error:', error);
-      toast.error(error.message || 'Failed to claim tokens');
+      if (error.message?.includes('User rejected')) {
+        toast.error('Transaction rejected');
+      } else if (error.message?.includes('Faucet cooldown')) {
+        toast.error('Please wait for cooldown to end');
+      } else {
+        toast.error(error.shortMessage || error.message || 'Failed to submit transaction');
+      }
     }
   };
 
