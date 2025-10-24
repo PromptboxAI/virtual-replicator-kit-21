@@ -238,9 +238,12 @@ Deno.serve(async (req) => {
         token_address: contractAddress,
         deployment_tx_hash: hash,
         deployment_method: deploymentMethod,
+        deployment_status: 'deployed',
         deployment_verified: true,
+        network_environment: 'testnet',
         chain_id: baseSepolia.id,
         block_number: Number(receipt.blockNumber),
+        deployed_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })
       .eq('id', body.agent_id);

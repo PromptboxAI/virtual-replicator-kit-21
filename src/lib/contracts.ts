@@ -1,12 +1,12 @@
 // Contract addresses and ABIs for blockchain integration
 
 export const PROMPT_TOKEN_ADDRESS = typeof window !== 'undefined' 
-  ? (localStorage.getItem('promptTokenAddress') || "0x62fa50ce04dd11d2be35f1dee04063e63118c727")
-  : "0x62fa50ce04dd11d2be35f1dee04063e63118c727";
+  ? (localStorage.getItem('promptTokenAddress') || "0x3ecfc3181fa4054f1cad103973a50cf7c998eec0")
+  : "0x3ecfc3181fa4054f1cad103973a50cf7c998eec0";
 
 export const FACTORY_ADDRESS = typeof window !== 'undefined'
-  ? (localStorage.getItem('factoryAddress') || "0x1234567890123456789012345678901234567890")
-  : "0x1234567890123456789012345678901234567890";
+  ? (localStorage.getItem('factoryAddress') || "0x09cbe197c98070eba3707be52f552f3a50aae749")
+  : "0x09cbe197c98070eba3707be52f552f3a50aae749";
 
 export const PROMPT_TOKEN_ABI = [
   {
