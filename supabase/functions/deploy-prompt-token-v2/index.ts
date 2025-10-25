@@ -223,8 +223,13 @@ Deno.serve(async (req) => {
       }
       
       // Add 50% buffer to fees to ensure transaction success
-      const maxFeePerGas = (feeData.maxFeePerGas || 1000000000n) * 150n / 100n;
-      const maxPriorityFeePerGas = (feeData.maxPriorityFeePerGas || 1000000000n) * 150n / 100n;
+      let maxFeePerGas = (feeData.maxFeePerGas || 1000000000n) * 150n / 100n;
+      let maxPriorityFeePerGas = (feeData.maxPriorityFeePerGas || 1000000000n) * 150n / 100n;
+      
+      // Enforce minimum gas prices (0.1 gwei = 100000000 wei) to prevent RPC corruption
+      const MIN_GAS_PRICE = 100000000n;
+      maxFeePerGas = maxFeePerGas < MIN_GAS_PRICE ? MIN_GAS_PRICE : maxFeePerGas;
+      maxPriorityFeePerGas = maxPriorityFeePerGas < MIN_GAS_PRICE ? MIN_GAS_PRICE : maxPriorityFeePerGas;
       
       console.log(`⛽ Using buffered fees:`, {
         maxFeePerGas: maxFeePerGas.toString(),
