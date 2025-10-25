@@ -20,49 +20,10 @@ export function useAuth() {
   const [hasAcceptedTerms, setHasAcceptedTerms] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
 
-  // Handle authentication state changes and close modals
+  // Log authentication state changes (removed aggressive modal closing that caused infinite loops)
   useEffect(() => {
-    console.log('Privy state:', { ready, authenticated, user });
-    if (ready && authenticated && user) {
-      // Multiple attempts to close Privy modals with different selectors
-      const closeModals = () => {
-        const modalSelectors = [
-          '[data-privy-modal]',
-          '[data-privy-overlay]',
-          '.privy-modal',
-          '.privy-overlay',
-          '[role="dialog"]',
-          '.ReactModal__Overlay',
-          '[data-testid="privy-modal"]'
-        ];
-        
-        modalSelectors.forEach(selector => {
-          const elements = document.querySelectorAll(selector);
-          elements.forEach(el => {
-            try {
-              // Check if element still exists and has a parent before removing
-              if (el && el.parentNode && document.body.contains(el)) {
-                el.parentNode.removeChild(el);
-              }
-            } catch (error) {
-              // Safely ignore DOM manipulation errors
-              console.warn('Failed to remove modal element:', error);
-            }
-          });
-        });
-
-        // Also try to remove any backdrop/overlay elements
-        document.body.style.overflow = 'unset';
-        document.documentElement.style.overflow = 'unset';
-      };
-
-      // Try multiple times with different delays
-      setTimeout(closeModals, 50);
-      setTimeout(closeModals, 200);
-      setTimeout(closeModals, 500);
-      setTimeout(closeModals, 1000);
-    }
-  }, [ready, authenticated, user?.id]); // Only depend on user.id, not entire user object
+    console.log('Privy state:', { ready, authenticated, user: user?.id });
+  }, [ready, authenticated, user?.id]);
 
   // Sync Privy user with Supabase profiles (optimized with localStorage cache)
   useEffect(() => {
