@@ -190,9 +190,15 @@ Deno.serve(async (req) => {
     console.log('🚀 Deploying...');
     let hash;
     try {
+      // Get current gas price
+      const gasPrice = await publicClient.getGasPrice();
+      console.log(`⛽ Gas price: ${gasPrice} wei`);
+      
       hash = await walletClient.deployContract({
         abi: PROMPT_TOKEN_ABI,
         bytecode: PROMPT_TOKEN_BYTECODE as `0x${string}`,
+        account,
+        gas: 2000000n, // Explicit gas limit
       });
       console.log('📝 TX:', hash);
     } catch (deployError: any) {
