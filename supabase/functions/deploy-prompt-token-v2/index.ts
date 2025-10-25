@@ -236,11 +236,11 @@ Deno.serve(async (req) => {
         maxPriorityFeePerGas: maxPriorityFeePerGas.toString()
       });
       
-      // Prepare the deployment transaction
+      // Prepare the deployment transaction with higher gas limit
       const request = await publicClient.prepareTransactionRequest({
         account,
         data: PROMPT_TOKEN_BYTECODE as `0x${string}`,
-        gas: 2000000n,
+        gas: 3000000n, // Increased from 2M to 3M
         maxFeePerGas,
         maxPriorityFeePerGas,
       });
@@ -281,8 +281,26 @@ Deno.serve(async (req) => {
       confirmations: 1
     });
     
+    console.log('📋 Receipt:', JSON.stringify({
+      status: receipt.status,
+      contractAddress: receipt.contractAddress,
+      gasUsed: receipt.gasUsed?.toString(),
+      blockNumber: receipt.blockNumber?.toString()
+    }));
+    
     if (!receipt?.contractAddress || receipt.status !== 'success') {
-      throw new Error(`Failed: ${hash}`);
+      // Try to get revert reason
+      let revertReason = 'Unknown';
+      try {
+        await publicClient.call({
+          data: PROMPT_TOKEN_BYTECODE as `0x${string}`,
+          account: account.address
+        });
+      } catch (e: any) {
+        revertReason = e.message || e.toString();
+      }
+      
+      throw new Error(`Transaction reverted: ${hash}\nReason: ${revertReason}\nGas used: ${receipt.gasUsed?.toString()}`);
     }
     
     const contractAddress = getAddress(receipt.contractAddress);
