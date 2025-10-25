@@ -135,7 +135,7 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/about" element={<About />} />
               <Route path="/learn" element={<Learn />} />
-              <Route path="/faucet" element={<AuthProtectedRoute><Faucet /></AuthProtectedRoute>} />
+              <Route path="/faucet" element={<Faucet />} />
               <Route path="/create" element={<CreateAgent />} />
               <Route path="/my-agents" element={<MyAgents />} />
               <Route path="/my-agents/:agentId" element={<CreatorAgentDashboard />} />
