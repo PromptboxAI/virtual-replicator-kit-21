@@ -190,15 +190,29 @@ Deno.serve(async (req) => {
     console.log('🚀 Deploying...');
     let hash;
     try {
-      // Get current gas price
-      const gasPrice = await publicClient.getGasPrice();
-      console.log(`⛽ Gas price: ${gasPrice} wei`);
+      // Get current fee data for EIP-1559 transaction
+      const feeData = await publicClient.estimateFeesPerGas();
+      console.log(`⛽ Fee data:`, {
+        maxFeePerGas: feeData.maxFeePerGas?.toString(),
+        maxPriorityFeePerGas: feeData.maxPriorityFeePerGas?.toString()
+      });
+      
+      // Add 20% buffer to fees to ensure transaction success
+      const maxFeePerGas = (feeData.maxFeePerGas || 0n) * 120n / 100n;
+      const maxPriorityFeePerGas = (feeData.maxPriorityFeePerGas || 0n) * 120n / 100n;
+      
+      console.log(`⛽ Using buffered fees:`, {
+        maxFeePerGas: maxFeePerGas.toString(),
+        maxPriorityFeePerGas: maxPriorityFeePerGas.toString()
+      });
       
       hash = await walletClient.deployContract({
         abi: PROMPT_TOKEN_ABI,
         bytecode: PROMPT_TOKEN_BYTECODE as `0x${string}`,
-        account,
-        gas: 2000000n, // Explicit gas limit
+        account: account.address,
+        gas: 2000000n,
+        maxFeePerGas,
+        maxPriorityFeePerGas,
       });
       console.log('📝 TX:', hash);
     } catch (deployError: any) {
