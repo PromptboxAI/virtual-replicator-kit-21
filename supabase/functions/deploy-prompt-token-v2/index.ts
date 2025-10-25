@@ -231,14 +231,23 @@ Deno.serve(async (req) => {
         maxPriorityFeePerGas: maxPriorityFeePerGas.toString()
       });
       
-      hash = await walletClient.deployContract({
-        abi: PROMPT_TOKEN_ABI,
-        bytecode: PROMPT_TOKEN_BYTECODE as `0x${string}`,
-        account: account.address,
+      // Prepare the deployment transaction
+      const request = await publicClient.prepareTransactionRequest({
+        account,
+        data: PROMPT_TOKEN_BYTECODE as `0x${string}`,
         gas: 2000000n,
         maxFeePerGas,
         maxPriorityFeePerGas,
       });
+
+      // Sign the transaction locally
+      const serializedTransaction = await walletClient.signTransaction(request);
+      
+      // Send the raw signed transaction
+      hash = await publicClient.sendRawTransaction({ 
+        serializedTransaction 
+      });
+      
       console.log('📝 TX:', hash);
     } catch (deployError: any) {
       console.error('❌ Deployment transaction failed:', deployError);
