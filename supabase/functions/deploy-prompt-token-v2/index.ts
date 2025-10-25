@@ -9,11 +9,12 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Primary and fallback RPC endpoints
+// Primary and fallback RPC endpoints (using more reliable public RPCs)
 const RPC_URLS = [
+  'https://base-sepolia-rpc.publicnode.com',
+  'https://rpc.ankr.com/base_sepolia',
   'https://base-sepolia.blockpi.network/v1/rpc/public',
-  'https://sepolia.base.org',
-  'https://base-sepolia-rpc.publicnode.com'
+  'https://api.developer.coinbase.com/rpc/v1/base-sepolia/yw4xIyRCrN5qMXDDULUJE8oqXPHJk0S6'
 ];
 
 // PROMPT Token bytecode (basic ERC20 with faucet)
@@ -190,16 +191,40 @@ Deno.serve(async (req) => {
     console.log('🚀 Deploying...');
     let hash;
     try {
-      // Get current fee data for EIP-1559 transaction
-      const feeData = await publicClient.estimateFeesPerGas();
-      console.log(`⛽ Fee data:`, {
-        maxFeePerGas: feeData.maxFeePerGas?.toString(),
-        maxPriorityFeePerGas: feeData.maxPriorityFeePerGas?.toString()
-      });
+      // Get current fee data for EIP-1559 transaction with retry logic
+      let feeData;
+      let estimateAttempts = 0;
+      const maxEstimateAttempts = 3;
       
-      // Add 20% buffer to fees to ensure transaction success
-      const maxFeePerGas = (feeData.maxFeePerGas || 0n) * 120n / 100n;
-      const maxPriorityFeePerGas = (feeData.maxPriorityFeePerGas || 0n) * 120n / 100n;
+      while (estimateAttempts < maxEstimateAttempts) {
+        try {
+          feeData = await publicClient.estimateFeesPerGas();
+          console.log(`⛽ Fee data (attempt ${estimateAttempts + 1}):`, {
+            maxFeePerGas: feeData.maxFeePerGas?.toString(),
+            maxPriorityFeePerGas: feeData.maxPriorityFeePerGas?.toString()
+          });
+          break;
+        } catch (estimateError: any) {
+          estimateAttempts++;
+          console.warn(`⚠️ Gas estimation attempt ${estimateAttempts} failed:`, estimateError.message);
+          
+          if (estimateAttempts >= maxEstimateAttempts) {
+            // Use fallback gas prices if estimation fails
+            console.log('⚠️ Using fallback gas prices');
+            feeData = {
+              maxFeePerGas: 1000000000n, // 1 gwei
+              maxPriorityFeePerGas: 1000000000n // 1 gwei
+            };
+          } else {
+            // Wait before retry
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+        }
+      }
+      
+      // Add 50% buffer to fees to ensure transaction success
+      const maxFeePerGas = (feeData.maxFeePerGas || 1000000000n) * 150n / 100n;
+      const maxPriorityFeePerGas = (feeData.maxPriorityFeePerGas || 1000000000n) * 150n / 100n;
       
       console.log(`⛽ Using buffered fees:`, {
         maxFeePerGas: maxFeePerGas.toString(),
