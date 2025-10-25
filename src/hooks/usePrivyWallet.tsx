@@ -230,9 +230,11 @@ export function usePrivyWallet() {
   // Auto-fetch balances when external wallet connects
   useEffect(() => {
     if (authenticated && effectiveAddress && ready) {
-      refreshBalances();
+      fetchBalance();
+      fetchPromptBalance();
     }
-  }, [authenticated, effectiveAddress, ready, refreshBalances]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authenticated, effectiveAddress, ready]);
 
   return {
     // Wallet info
