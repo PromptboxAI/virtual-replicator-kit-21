@@ -287,18 +287,11 @@ export default function Faucet() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {!user ? (
+            {!address ? (
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
                   Please connect your wallet to claim tokens
-                </AlertDescription>
-              </Alert>
-            ) : !address ? (
-              <Alert>
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  Wallet connected but no address found
                 </AlertDescription>
               </Alert>
             ) : isWrongNetwork ? (
@@ -357,12 +350,6 @@ export default function Faucet() {
                   Add PROMPT to MetaMask
                 </Button>
               </div>
-            )}
-
-            {!user && (
-              <Button onClick={signIn} size="lg" className="w-full h-14 text-lg">
-                Connect Wallet
-              </Button>
             )}
           </CardContent>
         </Card>

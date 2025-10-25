@@ -66,11 +66,18 @@ Deno.serve(async (req) => {
   try {
     // Parse request
     let agentId = null;
+    let userId = null;
     try {
       const body = await req.json();
       agentId = body?.agentId || null;
+      userId = body?.userId || null;
     } catch {
       // No body
+    }
+
+    // Verify user is provided
+    if (!userId) {
+      throw new Error('Unauthorized: User ID required');
     }
 
     // Get env vars
@@ -82,11 +89,30 @@ Deno.serve(async (req) => {
       throw new Error('Missing environment variables');
     }
 
+    // Create Supabase client with service role key
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Check if user has admin role
+    console.log(`🔐 Verifying admin role for user: ${userId}`);
+    const { data: hasAdminRole, error: roleError } = await supabase.rpc('has_role', {
+      _user_id: userId,
+      _role: 'admin'
+    });
+
+    if (roleError) {
+      console.error('❌ Role check error:', roleError);
+      throw new Error('Failed to verify user permissions');
+    }
+
+    if (!hasAdminRole) {
+      console.warn(`⛔ Unauthorized deployment attempt by user: ${userId}`);
+      throw new Error('Unauthorized: Admin access required');
+    }
+
+    console.log(`✅ Admin verified: ${userId}`);
     console.log('🚀 Starting PROMPT deployment');
 
-    // Create clients
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    
+    // Create blockchain clients
     const account = privateKeyToAccount(deployerPrivateKey as `0x${string}`);
     const transport = http(RPC_URL, { timeout: 30000 });
     

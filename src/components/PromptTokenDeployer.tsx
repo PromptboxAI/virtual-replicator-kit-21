@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserRole } from '@/hooks/useUserRole';
+import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { Loader2, Rocket, CheckCircle2, ExternalLink } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,10 +12,16 @@ export const PromptTokenDeployer = () => {
   const [isDeploying, setIsDeploying] = useState(false);
   const [deploymentResult, setDeploymentResult] = useState<any>(null);
   const { isAdmin } = useUserRole();
+  const { user } = useAuth();
   
   if (!isAdmin) return null;
   
   const handleDeploy = async () => {
+    if (!user) {
+      toast.error('Please log in first');
+      return;
+    }
+
     setIsDeploying(true);
     setDeploymentResult(null);
     
@@ -22,7 +29,10 @@ export const PromptTokenDeployer = () => {
       console.log('Deploying PROMPT test token...');
       
       const { data, error } = await supabase.functions.invoke('deploy-prompt-token-v2', {
-        body: { agentId: null }
+        body: { 
+          agentId: null,
+          userId: user.id
+        }
       });
       
       if (error) throw error;

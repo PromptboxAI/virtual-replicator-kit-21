@@ -35,6 +35,22 @@ import { ContractDeploymentTest } from "./components/ContractDeploymentTest";
 
 const queryClient = new QueryClient();
 
+const AuthProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { authenticated, ready, login } = usePrivy();
+  
+  if (!ready) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
+  
+  if (!authenticated) {
+    sessionStorage.setItem('auth_return_url', window.location.pathname);
+    login();
+    return null;
+  }
+  
+  return <>{children}</>;
+};
+
 const AdminProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAdmin, isLoading } = useUserRole();
   const { ready } = usePrivy();
@@ -119,7 +135,7 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/about" element={<About />} />
               <Route path="/learn" element={<Learn />} />
-              <Route path="/faucet" element={<Faucet />} />
+              <Route path="/faucet" element={<AuthProtectedRoute><Faucet /></AuthProtectedRoute>} />
               <Route path="/create" element={<CreateAgent />} />
               <Route path="/my-agents" element={<MyAgents />} />
               <Route path="/my-agents/:agentId" element={<CreatorAgentDashboard />} />
