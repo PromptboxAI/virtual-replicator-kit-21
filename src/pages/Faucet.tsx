@@ -183,7 +183,7 @@ export default function Faucet() {
           type: 'ERC20',
           options: {
             address: contractAddress,
-            symbol: 'PROMPTTEST',
+            symbol: 'PROMPT',
             decimals: 18,
           },
         },
@@ -407,7 +407,7 @@ export default function Faucet() {
               <div className="space-y-1 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Symbol:</span>
-                  <span className="font-medium">PROMPTTEST</span>
+                  <span className="font-medium">PROMPT</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Decimals:</span>

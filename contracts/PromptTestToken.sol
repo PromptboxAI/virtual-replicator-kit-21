@@ -11,7 +11,7 @@ contract PromptTestToken is ERC20, Ownable {
     mapping(address => uint256) public lastFaucetClaim;
     uint256 public constant FAUCET_COOLDOWN = 1 hours;
     
-    constructor() ERC20("Prompt Test Token", "PROMPTTEST") Ownable(msg.sender) {
+    constructor() ERC20("Prompt Test Token", "PROMPT") Ownable(msg.sender) {
         _mint(msg.sender, INITIAL_SUPPLY);
     }
     
