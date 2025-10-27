@@ -1,8 +1,9 @@
-// PROMPT token deployment with clean Remix bytecode
+// PROMPT token deployment with embedded contract data
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.3';
 import { createPublicClient, createWalletClient, http, getAddress } from 'https://esm.sh/viem@2.31.7';
 import { privateKeyToAccount } from 'https://esm.sh/viem@2.31.7/accounts';
 import { baseSepolia } from 'https://esm.sh/viem@2.31.7/chains';
+import { PROMPT_TOKEN_ABI, PROMPT_TOKEN_BYTECODE } from './prompt-contract.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -17,28 +18,20 @@ const RPC_URLS = [
   'https://api.developer.coinbase.com/rpc/v1/base-sepolia/yw4xIyRCrN5qMXDDULUJE8oqXPHJk0S6'
 ];
 
-// Load contract artifact
-async function loadContractArtifact() {
-  try {
-    const artifactPath = new URL('./artifacts/PromptTestToken_compData.json', import.meta.url).pathname;
-    const artifactText = await Deno.readTextFile(artifactPath);
-    const comp = JSON.parse(artifactText);
-    const metadata = JSON.parse(comp.metadata);
-    
-    const abi = metadata.output.abi;
-    const bytecode = (metadata.output?.evm?.bytecode?.object || comp.data?.bytecode?.object) as `0x${string}`;
-    
-    if (!bytecode || !bytecode.startsWith('0x') || bytecode.length < 4000) {
-      throw new Error(`Invalid bytecode: ${bytecode?.length || 0} chars`);
-    }
-    
-    console.log('✅ Bytecode loaded:', bytecode.length, 'chars');
-    return { abi, bytecode };
-  } catch (error) {
-    console.error('❌ Failed to load artifact:', error);
-    throw new Error(`Artifact load failed: ${error.message}`);
-  }
+// Validate bytecode on module load
+if (!PROMPT_TOKEN_BYTECODE || PROMPT_TOKEN_BYTECODE.length < 4000) {
+  throw new Error(`Invalid bytecode: too short (${PROMPT_TOKEN_BYTECODE?.length || 0} chars)`);
 }
+
+if (!PROMPT_TOKEN_BYTECODE.startsWith('0x')) {
+  throw new Error('Invalid bytecode: missing 0x prefix');
+}
+
+console.log('✅ Bytecode validated:', {
+  length: PROMPT_TOKEN_BYTECODE.length,
+  prefix: PROMPT_TOKEN_BYTECODE.slice(0, 10),
+  abiLength: PROMPT_TOKEN_ABI.length
+});
 
 Deno.serve(async (req) => {
   // Handle CORS
@@ -98,11 +91,19 @@ Deno.serve(async (req) => {
     console.log(`✅ Admin verified: ${userId}`);
     console.log('🚀 Starting PROMPT deployment');
     
-    // Load contract artifact
-    const { abi: PROMPT_TOKEN_ABI, bytecode: PROMPT_TOKEN_BYTECODE } = await loadContractArtifact();
+    // --- HARD GUARD DEBUG START ---
+    console.log('🔔 deploy-prompt-token-v2 invoked');
 
     // Create blockchain clients with fallback RPC support
     const account = privateKeyToAccount(deployerPrivateKey as `0x${string}`);
+    console.log('👛 Deployer address:', account.address);
+    
+    // Check bytecode and ABI
+    console.log('📦 Bytecode prefix:', PROMPT_TOKEN_BYTECODE.slice(0, 10), 'length:', PROMPT_TOKEN_BYTECODE.length);
+    console.log('📐 ABI length:', PROMPT_TOKEN_ABI.length);
+    
+    const ctor = PROMPT_TOKEN_ABI.find((x: any) => x.type === 'constructor');
+    console.log('🧩 Constructor inputs:', JSON.stringify(ctor?.inputs || []));
     
     let publicClient;
     let walletClient;
@@ -131,6 +132,15 @@ Deno.serve(async (req) => {
         
         workingRpcUrl = rpcUrl;
         console.log(`✅ Connected to RPC: ${rpcUrl}`);
+        
+        // Log chain ID immediately
+        const chainId = await testClient.getChainId();
+        console.log('⛓️  Chain ID:', chainId, '(expected 84532 for Base Sepolia)');
+        
+        if (chainId !== 84532) {
+          throw new Error(`Wrong chain! Got ${chainId}, expected 84532 (Base Sepolia)`);
+        }
+        
         break;
       } catch (error) {
         console.warn(`❌ RPC failed: ${rpcUrl} - ${error.message}`);
@@ -171,41 +181,26 @@ Deno.serve(async (req) => {
       .eq('contract_type', 'PROMPT')
       .eq('network', 'base_sepolia');
 
-    // Get current fee data for EIP-1559 transaction
+    // Estimate gas fees with buffer
     console.log('⛽ Estimating gas...');
-    let feeData;
+    let maxFeePerGas = 110_000_000n; // 0.11 gwei minimum
+    let maxPriorityFeePerGas = 110_000_000n;
+    
     try {
-      feeData = await publicClient.estimateFeesPerGas();
-      console.log(`⛽ Fee data:`, {
-        maxFeePerGas: feeData.maxFeePerGas?.toString(),
-        maxPriorityFeePerGas: feeData.maxPriorityFeePerGas?.toString()
-      });
-    } catch (estimateError: any) {
-      console.warn(`⚠️ Gas estimation failed, using fallbacks:`, estimateError.message);
-      feeData = {
-        maxFeePerGas: 1000000000n, // 1 gwei fallback
-        maxPriorityFeePerGas: 1000000000n
-      };
+      const feeData = await publicClient.estimateFeesPerGas();
+      if (feeData.maxFeePerGas && feeData.maxPriorityFeePerGas) {
+        maxFeePerGas = (feeData.maxFeePerGas * 120n) / 100n;
+        maxPriorityFeePerGas = (feeData.maxPriorityFeePerGas * 120n) / 100n;
+        
+        // Ensure minimum fees
+        maxFeePerGas = maxFeePerGas < 110_000_000n ? 110_000_000n : maxFeePerGas;
+        maxPriorityFeePerGas = maxPriorityFeePerGas < 110_000_000n ? 110_000_000n : maxPriorityFeePerGas;
+      }
+    } catch (e) {
+      console.log('⚠️ Could not estimate fees, using defaults:', e);
     }
     
-    // Apply 20% buffer and enforce minimum of 0.11 gwei
-    let maxFeePerGas = feeData.maxFeePerGas 
-      ? (feeData.maxFeePerGas * 120n) / 100n 
-      : 110_000_000n; // ≥0.11 gwei fallback
-
-    let maxPriorityFeePerGas = feeData.maxPriorityFeePerGas 
-      ? (feeData.maxPriorityFeePerGas * 120n) / 100n 
-      : 110_000_000n;
-
-    // Enforce absolute minimums (0.11 gwei)
-    const MIN_GAS = 110_000_000n;
-    if (maxFeePerGas < MIN_GAS) maxFeePerGas = MIN_GAS;
-    if (maxPriorityFeePerGas < MIN_GAS) maxPriorityFeePerGas = MIN_GAS;
-
-    console.log('⛽ Gas prices (with buffer):', {
-      maxFeePerGas: `${Number(maxFeePerGas) / 1e9} gwei`,
-      maxPriorityFeePerGas: `${Number(maxPriorityFeePerGas) / 1e9} gwei`
-    });
+    console.log('⛽ Gas fees (gwei):', Number(maxFeePerGas) / 1e9, Number(maxPriorityFeePerGas) / 1e9);
 
     // Constructor arguments - REQUIRED by the contract ABI
     const NAME = 'Prompt Test Token';
