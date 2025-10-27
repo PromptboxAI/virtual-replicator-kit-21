@@ -4,9 +4,6 @@ import { createPublicClient, createWalletClient, http, getAddress } from 'https:
 import { privateKeyToAccount } from 'https://esm.sh/viem@2.31.7/accounts';
 import { baseSepolia } from 'https://esm.sh/viem@2.31.7/chains';
 
-// Import the Remix compilation artifact
-import comp from './artifacts/PromptTestToken_compData.json' assert { type: 'json' };
-
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -20,32 +17,45 @@ const RPC_URLS = [
   'https://api.developer.coinbase.com/rpc/v1/base-sepolia/yw4xIyRCrN5qMXDDULUJE8oqXPHJk0S6'
 ];
 
-// Extract ABI and bytecode from Remix artifact
-// Remix "Compilation Details" packs ABI inside stringified metadata
-const metadata = JSON.parse(comp.metadata);
+// Load and extract ABI and bytecode from Remix artifact using dynamic import
+let PROMPT_TOKEN_ABI: any[];
+let PROMPT_TOKEN_BYTECODE: `0x${string}`;
 
-// Extract ABI from metadata.output.abi
-const PROMPT_TOKEN_ABI = metadata.output.abi as any[];
-
-// Extract creation bytecode from metadata.output.evm.bytecode.object
-const PROMPT_TOKEN_BYTECODE = metadata.output?.evm?.bytecode?.object?.startsWith('0x')
-  ? (metadata.output.evm.bytecode.object as `0x${string}`)
-  : ((comp as any).bytecode?.object as `0x${string}`);
-
-// Validate bytecode on startup
-if (!PROMPT_TOKEN_BYTECODE || PROMPT_TOKEN_BYTECODE.length < 4000) {
-  throw new Error(`Invalid bytecode: too short (${PROMPT_TOKEN_BYTECODE?.length || 0} chars) - artifact corrupt`);
+try {
+  // Use dynamic import for JSON in Deno
+  const artifactPath = new URL('./artifacts/PromptTestToken_compData.json', import.meta.url).pathname;
+  const artifactText = await Deno.readTextFile(artifactPath);
+  const comp = JSON.parse(artifactText);
+  
+  // Remix "Compilation Details" packs ABI inside stringified metadata
+  const metadata = JSON.parse(comp.metadata);
+  
+  // Extract ABI from metadata.output.abi
+  PROMPT_TOKEN_ABI = metadata.output.abi as any[];
+  
+  // Extract creation bytecode from metadata.output.evm.bytecode.object
+  PROMPT_TOKEN_BYTECODE = metadata.output?.evm?.bytecode?.object?.startsWith('0x')
+    ? (metadata.output.evm.bytecode.object as `0x${string}`)
+    : ((comp as any).bytecode?.object as `0x${string}`);
+  
+  // Validate bytecode on startup
+  if (!PROMPT_TOKEN_BYTECODE || PROMPT_TOKEN_BYTECODE.length < 4000) {
+    throw new Error(`Invalid bytecode: too short (${PROMPT_TOKEN_BYTECODE?.length || 0} chars) - artifact corrupt`);
+  }
+  
+  if (!PROMPT_TOKEN_BYTECODE.startsWith('0x')) {
+    throw new Error('Invalid bytecode: missing 0x prefix');
+  }
+  
+  console.log('✅ Bytecode loaded from artifact:', {
+    length: PROMPT_TOKEN_BYTECODE.length,
+    prefix: PROMPT_TOKEN_BYTECODE.slice(0, 10),
+    suffix: PROMPT_TOKEN_BYTECODE.slice(-10)
+  });
+} catch (error) {
+  console.error('❌ Failed to load artifact:', error);
+  throw new Error(`Failed to load compilation artifact: ${error.message}`);
 }
-
-if (!PROMPT_TOKEN_BYTECODE.startsWith('0x')) {
-  throw new Error('Invalid bytecode: missing 0x prefix');
-}
-
-console.log('✅ Bytecode loaded from artifact:', {
-  length: PROMPT_TOKEN_BYTECODE.length,
-  prefix: PROMPT_TOKEN_BYTECODE.slice(0, 10),
-  suffix: PROMPT_TOKEN_BYTECODE.slice(-10)
-});
 
 Deno.serve(async (req) => {
   // Handle CORS
