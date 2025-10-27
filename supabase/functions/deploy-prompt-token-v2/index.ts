@@ -3,7 +3,6 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.3';
 import { createPublicClient, createWalletClient, http, getAddress } from 'https://esm.sh/viem@2.31.7';
 import { privateKeyToAccount } from 'https://esm.sh/viem@2.31.7/accounts';
 import { baseSepolia } from 'https://esm.sh/viem@2.31.7/chains';
-import { PROMPT_TOKEN_ABI, PROMPT_TOKEN_BYTECODE } from './contract-data.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -18,20 +17,28 @@ const RPC_URLS = [
   'https://api.developer.coinbase.com/rpc/v1/base-sepolia/yw4xIyRCrN5qMXDDULUJE8oqXPHJk0S6'
 ];
 
-// Validate bytecode on module load
-if (!PROMPT_TOKEN_BYTECODE || PROMPT_TOKEN_BYTECODE.length < 4000) {
-  throw new Error(`Invalid bytecode: too short (${PROMPT_TOKEN_BYTECODE?.length || 0} chars)`);
+// Load contract artifact
+async function loadContractArtifact() {
+  try {
+    const artifactPath = new URL('./artifacts/PromptTestToken_compData.json', import.meta.url).pathname;
+    const artifactText = await Deno.readTextFile(artifactPath);
+    const comp = JSON.parse(artifactText);
+    const metadata = JSON.parse(comp.metadata);
+    
+    const abi = metadata.output.abi;
+    const bytecode = (metadata.output?.evm?.bytecode?.object || comp.data?.bytecode?.object) as `0x${string}`;
+    
+    if (!bytecode || !bytecode.startsWith('0x') || bytecode.length < 4000) {
+      throw new Error(`Invalid bytecode: ${bytecode?.length || 0} chars`);
+    }
+    
+    console.log('✅ Bytecode loaded:', bytecode.length, 'chars');
+    return { abi, bytecode };
+  } catch (error) {
+    console.error('❌ Failed to load artifact:', error);
+    throw new Error(`Artifact load failed: ${error.message}`);
+  }
 }
-
-if (!PROMPT_TOKEN_BYTECODE.startsWith('0x')) {
-  throw new Error('Invalid bytecode: missing 0x prefix');
-}
-
-console.log('✅ Bytecode validated:', {
-  length: PROMPT_TOKEN_BYTECODE.length,
-  prefix: PROMPT_TOKEN_BYTECODE.slice(0, 10),
-  suffix: PROMPT_TOKEN_BYTECODE.slice(-10)
-});
 
 Deno.serve(async (req) => {
   // Handle CORS
@@ -90,6 +97,9 @@ Deno.serve(async (req) => {
 
     console.log(`✅ Admin verified: ${userId}`);
     console.log('🚀 Starting PROMPT deployment');
+    
+    // Load contract artifact
+    const { abi: PROMPT_TOKEN_ABI, bytecode: PROMPT_TOKEN_BYTECODE } = await loadContractArtifact();
 
     // Create blockchain clients with fallback RPC support
     const account = privateKeyToAccount(deployerPrivateKey as `0x${string}`);
