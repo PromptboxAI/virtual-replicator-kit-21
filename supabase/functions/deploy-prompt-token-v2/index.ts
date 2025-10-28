@@ -258,29 +258,6 @@ Deno.serve(async (req) => {
     console.log('Chain ID:', chainId);
     console.log('Balance:', `${Number(balance) / 1e18} ETH`);
 
-    // Pre-flight simulation to catch issues before spending gas
-    console.log('🧪 Running pre-flight gas simulation...');
-    try {
-      const gasEstimate = await publicClient.estimateContractGas({
-        abi: PROMPT_TOKEN_ABI,
-        bytecode: PROMPT_TOKEN_BYTECODE,
-        account: account.address,
-        args: [], // No constructor args per ABI
-      });
-      
-      console.log('✅ Gas estimate:', gasEstimate.toString(), 'gas (~1.1-1.7M expected for ERC20)');
-      
-      if (gasEstimate > 3_000_000n) {
-        console.warn('⚠️ Unusually high gas estimate. Contract may have issues.');
-      }
-      
-      debugBag.gasEstimate = gasEstimate.toString();
-      
-    } catch (simulateError: any) {
-      console.error('❌ Pre-flight simulation failed:', simulateError);
-      throw new Error(`Contract simulation failed: ${simulateError.message}. This means the contract would revert on-chain. Fix: ${simulateError.shortMessage || 'Check contract code and constructor args'}`);
-    }
-
     // Deploy contract
     let hash: `0x${string}`;
     try {
