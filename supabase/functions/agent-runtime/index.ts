@@ -616,8 +616,23 @@ async function processUserInteraction(agentId: string, userId: string, message: 
 }
 
 Deno.serve(async (req) => {
+  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Kill switch for disabling agent runtime
+  const enabled = Deno.env.get('AGENT_RUNTIME_ENABLED') === 'true';
+  if (!enabled) {
+    console.log('⏸️ Agent runtime is disabled via AGENT_RUNTIME_ENABLED env var');
+    return new Response(JSON.stringify({ 
+      ok: false, 
+      disabled: true,
+      message: 'Agent runtime is currently disabled'
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200  // Return 200 (not 500) so schedulers don't retry
+    });
   }
 
   try {
@@ -708,14 +723,18 @@ Deno.serve(async (req) => {
         throw new Error('Invalid action');
     }
 
-  } catch (error) {
-    console.error('Agent runtime error:', error);
+  } catch (error: any) {
+    console.error('❌ agent-runtime error:', String(error));
+    console.error('Stack:', error?.stack);
+    
     return new Response(JSON.stringify({ 
-      success: false, 
-      error: error.message 
+      ok: false, 
+      error: String(error),
+      message: error?.message || 'Unknown error in agent runtime',
+      stack: error?.stack?.split('\n')?.slice(0, 5) // First 5 lines of stack
     }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200  // Return 200 to prevent scheduler retries
     });
   }
 });

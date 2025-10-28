@@ -17,8 +17,23 @@ const corsHeaders = {
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 Deno.serve(async (req) => {
+  // Handle CORS
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response('ok', { headers: corsHeaders });
+  }
+
+  // Kill switch for disabling scheduler
+  const schedulerEnabled = Deno.env.get('AGENT_SCHEDULER_ENABLED') === 'true';
+  if (!schedulerEnabled) {
+    console.log('⏸️ Agent scheduler is disabled via AGENT_SCHEDULER_ENABLED env var');
+    return new Response(JSON.stringify({ 
+      success: true,
+      disabled: true,
+      message: 'Agent scheduler is currently disabled',
+      processed: 0
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
   }
 
   try {

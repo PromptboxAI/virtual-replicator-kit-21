@@ -59,14 +59,28 @@ Deno.serve(async (req) => {
       throw new Error('Unauthorized: User ID required');
     }
 
-    // Get env vars
+    // Strict env validation (fail fast)
     const deployerPrivateKey = Deno.env.get('DEPLOYER_PRIVATE_KEY');
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-
-    if (!deployerPrivateKey || !supabaseUrl || !supabaseServiceKey) {
-      throw new Error('Missing environment variables');
+    
+    if (!deployerPrivateKey) {
+      throw new Error('DEPLOYER_PRIVATE_KEY environment variable is missing');
     }
+    
+    if (!deployerPrivateKey.startsWith('0x')) {
+      throw new Error('DEPLOYER_PRIVATE_KEY must start with 0x');
+    }
+    
+    if (deployerPrivateKey.length !== 66) { // 0x + 64 hex chars
+      throw new Error(`DEPLOYER_PRIVATE_KEY has invalid length: ${deployerPrivateKey.length} (expected 66)`);
+    }
+    
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error('Missing Supabase environment variables');
+    }
+    
+    console.log('✅ Environment variables validated');
 
     // Create Supabase client with service role key
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -181,48 +195,94 @@ Deno.serve(async (req) => {
       .eq('contract_type', 'PROMPT')
       .eq('network', 'base_sepolia');
 
-    // Estimate gas fees with buffer
-    console.log('⛽ Estimating gas...');
-    let maxFeePerGas = 110_000_000n; // 0.11 gwei minimum
-    let maxPriorityFeePerGas = 110_000_000n;
+    // EIP-1559 gas fees with higher minimums and buffer
+    console.log('⛽ Estimating gas fees...');
+    let maxFeePerGas = 1_500_000_000n; // 1.5 gwei fallback
+    let maxPriorityFeePerGas = 1_000_000_000n; // 1.0 gwei fallback
     
     try {
       const feeData = await publicClient.estimateFeesPerGas();
       if (feeData.maxFeePerGas && feeData.maxPriorityFeePerGas) {
+        // Apply 120% buffer
         maxFeePerGas = (feeData.maxFeePerGas * 120n) / 100n;
         maxPriorityFeePerGas = (feeData.maxPriorityFeePerGas * 120n) / 100n;
-        
-        // Ensure minimum fees
-        maxFeePerGas = maxFeePerGas < 110_000_000n ? 110_000_000n : maxFeePerGas;
-        maxPriorityFeePerGas = maxPriorityFeePerGas < 110_000_000n ? 110_000_000n : maxPriorityFeePerGas;
       }
     } catch (e) {
-      console.log('⚠️ Could not estimate fees, using defaults:', e);
+      console.warn('⚠️ Could not estimate fees from network, using fallbacks:', e.message);
     }
     
-    console.log('⛽ Gas fees (gwei):', Number(maxFeePerGas) / 1e9, Number(maxPriorityFeePerGas) / 1e9);
+    // Enforce absolute minimums
+    if (maxFeePerGas < 1_000_000_000n) maxFeePerGas = 1_000_000_000n; // 1.0 gwei min
+    if (maxPriorityFeePerGas < 750_000_000n) maxPriorityFeePerGas = 750_000_000n; // 0.75 gwei min
+    
+    console.log('⛽ Gas fees (gwei):', {
+      maxFeePerGas: Number(maxFeePerGas) / 1e9,
+      maxPriorityFeePerGas: Number(maxPriorityFeePerGas) / 1e9
+    });
 
-    // Build debug bag for diagnostics
+    // Store comprehensive debug info for error reporting
+    const chainId = await publicClient.getChainId();
+    const ctor = (PROMPT_TOKEN_ABI as any[]).find((x: any) => x.type === 'constructor');
+    
     debugBag = {
       rpcUrl: workingRpcUrl,
-      chainId: baseSepolia.id,
+      chainId,
+      expectedChainId: 84532,
       deployerAddress: account.address,
       deployerBalance: `${Number(balance) / 1e18} ETH`,
+      deployerBalanceWei: balance.toString(),
+      
+      // Bytecode checks
       bytecodeLength: PROMPT_TOKEN_BYTECODE.length,
+      bytecodePrefix: PROMPT_TOKEN_BYTECODE.slice(0, 20),
+      bytecodeValid: PROMPT_TOKEN_BYTECODE.startsWith('0x') && PROMPT_TOKEN_BYTECODE.length > 10000,
+      
+      // Constructor checks
+      constructorInputs: ctor?.inputs?.length || 0,
       constructorArgs: [],
+      
+      // Gas settings
       gasSettings: {
         maxFeePerGas: `${Number(maxFeePerGas) / 1e9} gwei`,
         maxPriorityFeePerGas: `${Number(maxPriorityFeePerGas) / 1e9} gwei`,
         gasLimit: '2000000'
-      }
+      },
+      
+      // ABI validation
+      abiLength: PROMPT_TOKEN_ABI.length,
+      abiValid: Array.isArray(PROMPT_TOKEN_ABI) && PROMPT_TOKEN_ABI.length > 0
     };
 
-    console.log('🔍 Debug info:', debugBag);
+    console.log('🚀 Deploying PROMPT token contract to Base Sepolia...');
+    console.log('Deployer address:', account.address);
+    console.log('Chain ID:', chainId);
+    console.log('Balance:', `${Number(balance) / 1e18} ETH`);
 
-    // Deploy contract using deployContract method with constructor args
-    console.log('🚀 Deploying contract...');
+    // Pre-flight simulation to catch issues before spending gas
+    console.log('🧪 Running pre-flight gas simulation...');
+    try {
+      const gasEstimate = await publicClient.estimateContractGas({
+        abi: PROMPT_TOKEN_ABI,
+        bytecode: PROMPT_TOKEN_BYTECODE,
+        account: account.address,
+        args: [], // No constructor args per ABI
+      });
+      
+      console.log('✅ Gas estimate:', gasEstimate.toString(), 'gas (~1.1-1.7M expected for ERC20)');
+      
+      if (gasEstimate > 3_000_000n) {
+        console.warn('⚠️ Unusually high gas estimate. Contract may have issues.');
+      }
+      
+      debugBag.gasEstimate = gasEstimate.toString();
+      
+    } catch (simulateError: any) {
+      console.error('❌ Pre-flight simulation failed:', simulateError);
+      throw new Error(`Contract simulation failed: ${simulateError.message}. This means the contract would revert on-chain. Fix: ${simulateError.shortMessage || 'Check contract code and constructor args'}`);
+    }
+
+    // Deploy contract
     let hash: `0x${string}`;
-    
     try {
       hash = await walletClient.deployContract({
         abi: PROMPT_TOKEN_ABI,
@@ -343,18 +403,44 @@ Deno.serve(async (req) => {
     );
 
   } catch (error: any) {
-    console.error('❌ Error:', error);
+    console.error('❌ Deployment error:', error);
+    console.error('Stack:', error?.stack);
+    
+    // Build comprehensive debug data
+    const errorDebug = {
+      ...debugBag,
+      errorType: error?.name || 'UnknownError',
+      errorMessage: error?.message || String(error),
+      errorShortMessage: error?.shortMessage,
+      errorStack: error?.stack?.split('\n')?.slice(0, 10),
+      timestamp: new Date().toISOString(),
+      
+      // Include environment info
+      environment: {
+        hasPrivateKey: !!Deno.env.get('DEPLOYER_PRIVATE_KEY'),
+        privateKeyValid: Deno.env.get('DEPLOYER_PRIVATE_KEY')?.startsWith('0x'),
+        rpcConfigured: RPC_URLS.length > 0
+      }
+    };
     
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message,
-        details: error.toString(),
-        debugBag: debugBag  // Include diagnostics
+        error: error?.message || String(error),
+        shortMessage: error?.shortMessage || 'Deployment failed',
+        debug: errorDebug,
+        
+        // Helpful suggestions based on error type
+        suggestions: [
+          error?.message?.includes('insufficient') ? 'Fund deployer wallet at: https://www.alchemy.com/faucets/base-sepolia' : null,
+          error?.message?.includes('nonce') ? 'Wait for pending transactions to complete' : null,
+          error?.message?.includes('gas') ? 'Base Sepolia may be congested. Try again in a few minutes.' : null,
+          error?.message?.includes('simulation') ? 'Contract code or constructor args are invalid' : null,
+        ].filter(Boolean)
       }),
-      {
+      { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500
+        status: 500 
       }
     );
   }
