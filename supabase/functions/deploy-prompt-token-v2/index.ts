@@ -202,10 +202,6 @@ Deno.serve(async (req) => {
     
     console.log('⛽ Gas fees (gwei):', Number(maxFeePerGas) / 1e9, Number(maxPriorityFeePerGas) / 1e9);
 
-    // Constructor arguments - REQUIRED by the contract ABI
-    const NAME = 'Prompt Test Token';
-    const SYMBOL = 'PROMPT';
-
     // Build debug bag for diagnostics
     debugBag = {
       rpcUrl: workingRpcUrl,
@@ -213,7 +209,7 @@ Deno.serve(async (req) => {
       deployerAddress: account.address,
       deployerBalance: `${Number(balance) / 1e18} ETH`,
       bytecodeLength: PROMPT_TOKEN_BYTECODE.length,
-      constructorArgs: [NAME, SYMBOL],
+      constructorArgs: [],
       gasSettings: {
         maxFeePerGas: `${Number(maxFeePerGas) / 1e9} gwei`,
         maxPriorityFeePerGas: `${Number(maxPriorityFeePerGas) / 1e9} gwei`,
@@ -231,8 +227,7 @@ Deno.serve(async (req) => {
       hash = await walletClient.deployContract({
         abi: PROMPT_TOKEN_ABI,
         bytecode: PROMPT_TOKEN_BYTECODE,
-        account: account.address,  // Pass address, not account object
-        args: [NAME, SYMBOL],       // Constructor args
+        account: account.address,
         gas: 2_000_000n,
         maxFeePerGas,
         maxPriorityFeePerGas,
