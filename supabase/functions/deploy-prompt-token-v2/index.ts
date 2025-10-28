@@ -222,7 +222,7 @@ Deno.serve(async (req) => {
 
     // Store comprehensive debug info for error reporting
     const chainId = await publicClient.getChainId();
-    const ctor = (PROMPT_TOKEN_ABI as any[]).find((x: any) => x.type === 'constructor');
+    // ctor already declared at line 119 - reuse it here
     
     debugBag = {
       rpcUrl: workingRpcUrl,
