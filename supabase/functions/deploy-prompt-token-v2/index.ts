@@ -245,7 +245,7 @@ Deno.serve(async (req) => {
       gasSettings: {
         maxFeePerGas: `${Number(maxFeePerGas) / 1e9} gwei`,
         maxPriorityFeePerGas: `${Number(maxPriorityFeePerGas) / 1e9} gwei`,
-        gasLimit: '2000000'
+        gasLimit: 'auto-estimated by viem'
       },
       
       // ABI validation
@@ -265,7 +265,7 @@ Deno.serve(async (req) => {
         abi: PROMPT_TOKEN_ABI,
         bytecode: PROMPT_TOKEN_BYTECODE,
         account,
-        gas: 2_000_000n,
+        // Let viem estimate gas (ERC20 deployments typically need 2-4M gas)
         maxFeePerGas,
         maxPriorityFeePerGas,
       });
