@@ -227,7 +227,7 @@ Deno.serve(async (req) => {
       hash = await walletClient.deployContract({
         abi: PROMPT_TOKEN_ABI,
         bytecode: PROMPT_TOKEN_BYTECODE,
-        account: account.address,
+        account,
         gas: 2_000_000n,
         maxFeePerGas,
         maxPriorityFeePerGas,
