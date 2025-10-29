@@ -282,6 +282,7 @@ Deno.serve(async (req) => {
         account,
         args: [], // Constructor has no inputs
         nonce, // Explicit nonce
+        gas: 3_000_000n, // Manual gas limit to skip RPC estimation
         maxFeePerGas,
         maxPriorityFeePerGas,
       });
@@ -310,6 +311,7 @@ Deno.serve(async (req) => {
           account,
           args: [],
           nonce: freshNonce,
+          gas: 3_000_000n, // Manual gas limit
           maxFeePerGas,
           maxPriorityFeePerGas,
         });
