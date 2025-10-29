@@ -264,7 +264,31 @@ Deno.serve(async (req) => {
     console.log('Chain ID:', chainId);
     console.log('Balance:', `${Number(balance) / 1e18} ETH`);
 
-    // Fetch explicit nonce
+    // Phase 1: Estimate gas WITHOUT nonce
+    console.log('⛽ Estimating deployment gas...');
+    let gasEstimate: bigint;
+    try {
+      gasEstimate = await publicClient.estimateContractGas({
+        account: account.address,  // String address only, NOT account object
+        abi: PROMPT_TOKEN_ABI,
+        bytecode: PROMPT_TOKEN_BYTECODE,
+        args: [],
+      });
+      console.log('✅ Base gas estimate:', gasEstimate.toString());
+      debugBag.gasEstimate = gasEstimate.toString(); // Serialize to string for JSON
+    } catch (estimateError: any) {
+      console.error('❌ Gas estimation failed:', estimateError.message);
+      gasEstimate = 2_500_000n; // Safe fallback
+      debugBag.gasEstimateFallback = true;
+      console.log('⚠️ Using fallback gas estimate:', gasEstimate.toString());
+    }
+
+    // Add 20% buffer
+    const gasLimit = (gasEstimate * 120n) / 100n;
+    debugBag.gasLimit = gasLimit.toString(); // Serialize to string for JSON
+    console.log('✅ Gas limit with 20% buffer:', gasLimit.toString());
+
+    // Phase 2: Fetch explicit nonce
     console.log('🔢 Fetching current nonce...');
     const nonce = await publicClient.getTransactionCount({
       address: account.address,
@@ -282,7 +306,7 @@ Deno.serve(async (req) => {
         account,
         args: [], // Constructor has no inputs
         nonce, // Explicit nonce
-        gas: 3_000_000n, // Manual gas limit to skip RPC estimation
+        gas: gasLimit, // From Phase 1 estimation with buffer
         maxFeePerGas,
         maxPriorityFeePerGas,
       });
@@ -311,7 +335,7 @@ Deno.serve(async (req) => {
           account,
           args: [],
           nonce: freshNonce,
-          gas: 3_000_000n, // Manual gas limit
+          gas: gasLimit, // Same estimated limit
           maxFeePerGas,
           maxPriorityFeePerGas,
         });
@@ -319,22 +343,38 @@ Deno.serve(async (req) => {
         console.log('📝 Retry TX:', hash);
         debugBag.transactionHash = hash;
       } else {
-        // Re-throw if not a nonce race
-        console.error('❌ Deployment transaction failed:', deployError);
-        // Provide helpful error messages
-        if (deployError.message?.includes('insufficient funds')) {
-          throw new Error(`Insufficient ETH in deployer wallet (${account.address}). Fund it at: https://www.alchemy.com/faucets/base-sepolia`);
+        // Try raw CREATE transaction as last resort
+        console.warn('⚠️ deployContract failed, attempting raw transaction...');
+        try {
+          hash = await walletClient.sendTransaction({
+            account,
+            data: PROMPT_TOKEN_BYTECODE as `0x${string}`,
+            nonce,
+            gas: gasLimit,
+            maxFeePerGas,
+            maxPriorityFeePerGas,
+          });
+          console.log('✅ Raw transaction sent:', hash);
+          debugBag.transactionHash = hash;
+          debugBag.usedRawTransaction = true;
+        } catch (rawTxError: any) {
+          console.error('❌ Raw transaction also failed:', rawTxError);
+          // Fall through to original error handling
+          
+          if (deployError.message?.includes('insufficient funds')) {
+            throw new Error(`Insufficient ETH in deployer wallet (${account.address}). Fund it at: https://www.alchemy.com/faucets/base-sepolia`);
+          }
+          
+          if (deployError.message?.includes('nonce')) {
+            throw new Error('Nonce error. The deployer wallet may have pending transactions. Please wait and try again.');
+          }
+          
+          if (deployError.message?.includes('gas')) {
+            throw new Error('Gas estimation failed. The Base Sepolia network may be congested. Try again in a few minutes.');
+          }
+          
+          throw new Error(`Deployment failed: ${deployError.message || 'Unknown error'}. Check Base Sepolia network status.`);
         }
-        
-        if (deployError.message?.includes('nonce')) {
-          throw new Error('Nonce error. The deployer wallet may have pending transactions. Please wait and try again.');
-        }
-        
-        if (deployError.message?.includes('gas')) {
-          throw new Error('Gas estimation failed. The Base Sepolia network may be congested. Try again in a few minutes.');
-        }
-        
-        throw new Error(`Deployment failed: ${deployError.message || 'Unknown error'}. Check Base Sepolia network status.`);
       }
     }
 
