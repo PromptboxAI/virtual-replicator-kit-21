@@ -241,11 +241,11 @@ Deno.serve(async (req) => {
       // Bytecode checks
       bytecodeLength: PROMPT_TOKEN_BYTECODE.length,
       bytecodePrefix: PROMPT_TOKEN_BYTECODE.slice(0, 20),
-      bytecodeValid: PROMPT_TOKEN_BYTECODE.startsWith('0x') && PROMPT_TOKEN_BYTECODE.length > 10000,
+      bytecodeValid: PROMPT_TOKEN_BYTECODE.startsWith('0x') && PROMPT_TOKEN_BYTECODE.length > 4000,
       
       // Constructor checks
       constructorInputs: ctor?.inputs?.length || 0,
-      constructorArgs: ["Prompt Test Token", "PROMPT"],
+      constructorArgs: [],  // No constructor arguments
       
       // Gas settings
       gasSettings: {
