@@ -245,7 +245,7 @@ Deno.serve(async (req) => {
       
       // Constructor checks
       constructorInputs: ctor?.inputs?.length || 0,
-      constructorArgs: [],
+      constructorArgs: ["Prompt Test Token", "PROMPT"],
       
       // Gas settings
       gasSettings: {
@@ -272,7 +272,7 @@ Deno.serve(async (req) => {
         account: account.address,  // String address only, NOT account object
         abi: PROMPT_TOKEN_ABI,
         bytecode: PROMPT_TOKEN_BYTECODE,
-        args: [],
+        args: ["Prompt Test Token", "PROMPT"], // Constructor expects (string name, string symbol)
       });
       console.log('✅ Base gas estimate:', gasEstimate.toString());
       debugBag.gasEstimate = gasEstimate.toString(); // Serialize to string for JSON
@@ -304,7 +304,7 @@ Deno.serve(async (req) => {
         abi: PROMPT_TOKEN_ABI,
         bytecode: PROMPT_TOKEN_BYTECODE,
         account,
-        args: [], // Constructor has no inputs
+        args: ["Prompt Test Token", "PROMPT"], // Constructor expects (string name, string symbol)
         nonce, // Explicit nonce
         gas: gasLimit, // From Phase 1 estimation with buffer
         maxFeePerGas,
@@ -333,7 +333,7 @@ Deno.serve(async (req) => {
           abi: PROMPT_TOKEN_ABI,
           bytecode: PROMPT_TOKEN_BYTECODE,
           account,
-          args: [],
+          args: ["Prompt Test Token", "PROMPT"], // Constructor expects (string name, string symbol)
           nonce: freshNonce,
           gas: gasLimit, // Same estimated limit
           maxFeePerGas,
