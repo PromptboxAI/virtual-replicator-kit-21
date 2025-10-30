@@ -269,10 +269,10 @@ Deno.serve(async (req) => {
     let gasEstimate: bigint;
     try {
       gasEstimate = await publicClient.estimateContractGas({
-        account: account.address,  // String address only, NOT account object
+        account: account.address,
         abi: PROMPT_TOKEN_ABI,
         bytecode: PROMPT_TOKEN_BYTECODE,
-        args: ["Prompt Test Token", "PROMPT"], // Constructor expects (string name, string symbol)
+        args: [], // No constructor args
       });
       console.log('✅ Base gas estimate:', gasEstimate.toString());
       debugBag.gasEstimate = gasEstimate.toString(); // Serialize to string for JSON
