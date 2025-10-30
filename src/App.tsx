@@ -154,12 +154,7 @@ const App = () => (
                   </div>
                 </div>
               } />
-              <Route path="/test-lab" element={
-                <div>
-                  <h1>Test Lab Route Reached</h1>
-                  <AdminProtectedRoute><TestLab /></AdminProtectedRoute>
-                </div>
-              } />
+              <Route path="/test-lab" element={<AdminProtectedRoute><TestLab /></AdminProtectedRoute>} />
               <Route path="/graduation-test" element={
                 <div>
                   <h1>Graduation Test Route Reached</h1>

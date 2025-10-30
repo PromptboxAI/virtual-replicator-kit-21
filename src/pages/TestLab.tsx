@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Header } from '@/components/Header';
 import { V2ContractTester } from '@/components/V2ContractTester';
 import { AgentMigrationManager } from '@/components/AgentMigrationManager';
 import { NewAgentCreator } from '@/components/NewAgentCreator';
@@ -56,7 +57,9 @@ export default function TestLab() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-8">
+    <>
+      <Header />
+      <div className="container mx-auto px-4 py-8 space-y-8">
       <div className="text-center space-y-4">
         <div className="flex items-center justify-center gap-2">
           <TestTube className="w-8 h-8 text-purple-600" />
@@ -247,5 +250,6 @@ export default function TestLab() {
         </CardContent>
       </Card>
     </div>
+    </>
   );
 }
