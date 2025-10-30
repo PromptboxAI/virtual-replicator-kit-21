@@ -264,29 +264,11 @@ Deno.serve(async (req) => {
     console.log('Chain ID:', chainId);
     console.log('Balance:', `${Number(balance) / 1e18} ETH`);
 
-    // Phase 1: Estimate gas WITHOUT nonce
-    console.log('⛽ Estimating deployment gas...');
-    let gasEstimate: bigint;
-    try {
-      gasEstimate = await publicClient.estimateContractGas({
-        account: account.address,
-        abi: PROMPT_TOKEN_ABI,
-        bytecode: PROMPT_TOKEN_BYTECODE,
-        args: [], // No constructor args
-      });
-      console.log('✅ Base gas estimate:', gasEstimate.toString());
-      debugBag.gasEstimate = gasEstimate.toString(); // Serialize to string for JSON
-    } catch (estimateError: any) {
-      console.error('❌ Gas estimation failed:', estimateError.message);
-      gasEstimate = 2_500_000n; // Safe fallback
-      debugBag.gasEstimateFallback = true;
-      console.log('⚠️ Using fallback gas estimate:', gasEstimate.toString());
-    }
-
-    // Add 20% buffer
-    const gasLimit = (gasEstimate * 120n) / 100n;
-    debugBag.gasLimit = gasLimit.toString(); // Serialize to string for JSON
-    console.log('✅ Gas limit with 20% buffer:', gasLimit.toString());
+    // Skip gas estimation - use hardcoded value for Base Sepolia
+    console.log('⛽ Using hardcoded gas limit (3M) to avoid estimation issues');
+    const gasLimit = 3_000_000n;
+    debugBag.gasLimit = gasLimit.toString();
+    debugBag.gasEstimateFallback = 'hardcoded for Base Sepolia';
 
     // Phase 2: Fetch explicit nonce
     console.log('🔢 Fetching current nonce...');
@@ -304,9 +286,9 @@ Deno.serve(async (req) => {
         abi: PROMPT_TOKEN_ABI,
         bytecode: PROMPT_TOKEN_BYTECODE,
         account,
-        args: [], // No constructor args - contract uses hardcoded values
-        nonce, // Explicit nonce
-        gas: gasLimit, // From Phase 1 estimation with buffer
+        args: [],                 // ✅ NO constructor args
+        nonce,
+        gas: 3_000_000n,          // ✅ Hardcoded gas limit
         maxFeePerGas,
         maxPriorityFeePerGas,
       });
@@ -333,9 +315,9 @@ Deno.serve(async (req) => {
           abi: PROMPT_TOKEN_ABI,
           bytecode: PROMPT_TOKEN_BYTECODE,
           account,
-          args: [], // No constructor args - contract uses hardcoded values
+          args: [],                 // ✅ NO constructor args
           nonce: freshNonce,
-          gas: gasLimit, // Same estimated limit
+          gas: 3_000_000n,          // ✅ Hardcoded gas limit
           maxFeePerGas,
           maxPriorityFeePerGas,
         });
