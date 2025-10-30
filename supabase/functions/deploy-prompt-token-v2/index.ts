@@ -304,7 +304,7 @@ Deno.serve(async (req) => {
         abi: PROMPT_TOKEN_ABI,
         bytecode: PROMPT_TOKEN_BYTECODE,
         account,
-        args: ["Prompt Test Token", "PROMPT"], // Constructor expects (string name, string symbol)
+        args: [], // No constructor args - contract uses hardcoded values
         nonce, // Explicit nonce
         gas: gasLimit, // From Phase 1 estimation with buffer
         maxFeePerGas,
@@ -333,7 +333,7 @@ Deno.serve(async (req) => {
           abi: PROMPT_TOKEN_ABI,
           bytecode: PROMPT_TOKEN_BYTECODE,
           account,
-          args: ["Prompt Test Token", "PROMPT"], // Constructor expects (string name, string symbol)
+          args: [], // No constructor args - contract uses hardcoded values
           nonce: freshNonce,
           gas: gasLimit, // Same estimated limit
           maxFeePerGas,
