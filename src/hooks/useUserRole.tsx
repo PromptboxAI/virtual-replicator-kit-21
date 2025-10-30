@@ -17,6 +17,8 @@ export const useUserRole = () => {
         return;
       }
 
+      // Reset loading state when user appears
+      setIsLoading(true);
       console.log('useUserRole - fetching role for user:', user.id);
 
       try {
