@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { V2ContractTester } from '@/components/V2ContractTester';
 import { AgentMigrationManager } from '@/components/AgentMigrationManager';
 import { NewAgentCreator } from '@/components/NewAgentCreator';
+import { BytecodeExtractor } from '@/components/BytecodeExtractor';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -164,6 +165,22 @@ export default function TestLab() {
                   </AlertDescription>
                 </Alert>
               )}
+          </CardContent>
+          </Card>
+
+          {/* Bytecode Extractor Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Zap className="w-5 h-5 text-yellow-600" />
+                Bytecode Extractor
+              </CardTitle>
+              <CardDescription>
+                Extract complete bytecode from compilation artifacts
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <BytecodeExtractor />
             </CardContent>
           </Card>
 
