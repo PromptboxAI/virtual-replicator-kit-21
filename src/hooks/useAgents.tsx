@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAppMode } from './useAppMode';
+import { useAdminSettings } from './useAdminSettings';
 
 export interface Agent {
   id: string;
@@ -18,6 +19,7 @@ export interface Agent {
   status: string | null;
   test_mode: boolean | null;
   token_holders: number | null;
+  creation_mode: string | null;
   // Bonding curve fields
   prompt_raised: number | null;
   token_graduated: boolean | null;
@@ -29,20 +31,25 @@ export function useAgents() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { isTestMode, isLoading: appModeLoading } = useAppMode();
+  const { settings, isLoading: settingsLoading } = useAdminSettings();
 
   useEffect(() => {
-    // Don't fetch until app mode is determined
-    if (appModeLoading) return;
+    // Don't fetch until app mode and settings are determined
+    if (appModeLoading || settingsLoading) return;
+    
+    const deploymentMode = settings?.deployment_mode || 'database';
+    
     async function fetchAgents() {
       try {
-        console.log('Fetching agents with isTestMode:', isTestMode);
-        console.log('Query params: is_active=true, test_mode=', isTestMode);
+        console.log('Fetching agents with isTestMode:', isTestMode, 'deploymentMode:', deploymentMode);
+        console.log('Query params: is_active=true, test_mode=', isTestMode, 'creation_mode=', deploymentMode);
         
         const { data, error } = await supabase
           .from('agents')
           .select('*')
           .eq('is_active', true)
           .eq('test_mode', isTestMode)
+          .eq('creation_mode', deploymentMode)
           .order('market_cap', { ascending: false });
 
         console.log('Agents query result - isTestMode:', isTestMode, 'data count:', data?.length || 0);
@@ -88,7 +95,7 @@ export function useAgents() {
     }
 
     fetchAgents();
-  }, [isTestMode, appModeLoading]);
+  }, [isTestMode, appModeLoading, settingsLoading, settings?.deployment_mode]);
 
   return { agents, loading, error };
 }
