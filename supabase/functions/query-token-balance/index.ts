@@ -48,12 +48,12 @@ async function getPromptTokenAddress(): Promise<string | null> {
     // Fall back to database lookup for deployed contracts
     // This would contain actual deployed addresses
     const { data: contracts } = await supabase
-      .from('deployed_contracts') // This table would need to exist
+      .from('deployed_contracts')
       .select('contract_address')
-      .eq('contract_type', 'prompt_token')
+      .eq('contract_type', 'PROMPT')
       .eq('network', 'base_sepolia')
       .eq('is_active', true)
-      .single();
+      .maybeSingle();
 
     return contracts?.contract_address || null;
   } catch (error) {
