@@ -905,7 +905,7 @@ export default function CreateAgent() {
                    </span>
                   <span>•</span>
                   <span>Creation Cost: <strong>{CREATION_COST} tokens</strong></span>
-                  {appIsTestMode && !balanceLoading && balance < CREATION_COST && (
+                  {appIsTestMode && !balanceLoading && balance > 0 && balance < CREATION_COST && (
                     <span className="text-destructive">• Insufficient tokens!</span>
                   )}
                 </div>
@@ -914,7 +914,7 @@ export default function CreateAgent() {
           </div>
           
           {/* Test Token Button */}
-          {appIsTestMode && !balanceLoading && balance < CREATION_COST && (
+          {appIsTestMode && !balanceLoading && balance > 0 && balance < CREATION_COST && (
             <div className="mb-8 flex justify-center">
               <Button 
                 onClick={() => addTestTokens(5000)}
