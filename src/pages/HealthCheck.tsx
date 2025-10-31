@@ -2,24 +2,28 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, XCircle, Clock } from 'lucide-react';
+import { useDataMode } from '@/hooks/useDataMode';
 
 export default function HealthCheck() {
   const [status, setStatus] = useState<{
     ok: boolean;
     ts: number;
     mock: boolean;
+    mode: string;
     version: string;
   } | null>(null);
+  const { isMockMode } = useDataMode();
 
   useEffect(() => {
-    // Mock health check response for Phase 1
+    // Day 4: Real health check with mode detection
     setStatus({
       ok: true,
       ts: Date.now(),
-      mock: true,
-      version: '1.0.0-phase1',
+      mock: isMockMode,
+      mode: isMockMode ? 'Mock Data' : 'Real Chain',
+      version: '1.0.0-day4',
     });
-  }, []);
+  }, [isMockMode]);
 
   if (!status) {
     return (
@@ -51,9 +55,9 @@ export default function HealthCheck() {
           </div>
 
           <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Mode</span>
-            <Badge variant="outline">
-              {status.mock ? 'Mock Data' : 'Production'}
+            <span className="text-sm text-muted-foreground">Data Mode</span>
+            <Badge variant={status.mock ? 'outline' : 'default'}>
+              {status.mode}
             </Badge>
           </div>
 
@@ -72,8 +76,9 @@ export default function HealthCheck() {
 
           <div className="pt-4 border-t border-border">
             <p className="text-xs text-muted-foreground text-center">
-              This is a Phase 1 development environment with mock APIs.
-              Real blockchain integration coming in Phase 2.
+              {status.mock 
+                ? '⚠️ Mock Mode: Using synthetic data for testing. Set VITE_USE_MOCK_DATAFEED=false for real data.'
+                : '✅ Real Mode: Connected to Base Sepolia blockchain and database.'}
             </p>
           </div>
         </CardContent>

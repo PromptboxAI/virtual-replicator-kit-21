@@ -1,5 +1,46 @@
 # Phases 4-7 Implementation & Verification
 
+## ✅ Day 4 Implementation — COMPLETE
+
+All 5 requirements successfully implemented and validated.
+
+### Implementation Summary:
+
+#### ✅ Requirement 1: Lock Mock/Real Toggle
+- Created `src/hooks/useDataMode.tsx` hook
+- Updated `src/services/chartDataService.ts` with mock data generation
+- Updated `src/pages/HealthCheck.tsx` to show real-time mode
+- **Validation:** `/healthz` correctly shows "Mock Data" or "Real Chain" based on `VITE_USE_MOCK_DATAFEED`
+
+#### ✅ Requirement 2: Real TX Builder Edge Function  
+- Created `supabase/functions/build-trade-tx/index.ts`
+- Returns valid EVM transaction params: `{ to, data, value, gasLimit, from }`
+- Fetches contract address from `deployed_contracts` table
+- Uses frozen ABI from `contracts/PromptTestToken.json`
+- **Validation:** Edge function deployed and returns properly encoded calldata
+
+#### ✅ Requirement 3: Read Contract Address from DB Only
+- Already implemented (no changes needed)
+- All functions query `deployed_contracts` table
+- No runtime address generation
+- **Validation:** Confirmed database-first approach throughout codebase
+
+#### ✅ Requirement 4: Add /test-sepolia-token Page
+- Created `src/pages/TestSepoliaToken.tsx` 
+- Hardcoded PROMPT token address for testing
+- Displays balance, price, price impact calculator
+- Calls `build-trade-tx` and displays transaction parameters
+- Added route in `src/App.tsx` (admin-protected)
+- **Validation:** Page loads at `/test-sepolia-token` and shows all required info
+
+#### ✅ Requirement 5: Freeze ABI/Bytecode in Repo
+- Created `contracts/PromptTestToken.json` with full ABI and bytecode
+- Created `contracts/README.md` with documentation
+- Updated edge functions to import from frozen file
+- **Validation:** JSON tracked in git, no runtime compilation
+
+---
+
 ## Phase 4 — Chart Parity & Labels ✅
 
 ### Implemented:

@@ -23,6 +23,28 @@ export type ChartInterval = '1m' | '5m' | '15m' | '1h' | '4h' | '1d';
 
 export class ChartDataService {
   
+  // Generate mock OHLCV data for testing
+  private static generateMockData(interval: ChartInterval): OHLCVData[] {
+    console.log('📊 Generating MOCK data for interval:', interval);
+    const now = Math.floor(Date.now() / 1000);
+    const bars = 100;
+    const basePrice = 0.0000075;
+    
+    return Array.from({ length: bars }, (_, i) => {
+      const time = now - (bars - i) * 300; // 5min intervals
+      const random = Math.random();
+      return {
+        time,
+        open: basePrice + random * 0.000005,
+        high: basePrice + random * 0.000006,
+        low: basePrice + random * 0.000004,
+        close: basePrice + random * 0.000005,
+        volume: Math.random() * 10000,
+        tradeCount: Math.floor(Math.random() * 50)
+      };
+    });
+  }
+  
   static async getOHLCVData(
     agentId: string,
     interval: ChartInterval = '5m', // Default to 5m instead of 1m
@@ -111,6 +133,19 @@ export class ChartDataService {
     endTime?: Date
   ): Promise<{ data: OHLCVData[]; isGraduated: boolean }> {
     try {
+      // Check if we should use mock data
+      const envMode = import.meta.env.VITE_USE_MOCK_DATAFEED;
+      const isMockMode = envMode === 'true';
+      
+      if (isMockMode) {
+        console.log('📊 Using MOCK data (VITE_USE_MOCK_DATAFEED=true)');
+        return {
+          data: this.generateMockData(interval),
+          isGraduated: false
+        };
+      }
+      
+      console.log('📊 Using REAL data (VITE_USE_MOCK_DATAFEED=false)');
       // Get agent data to check graduation status and ensure token address exists
       const { data: agent, error: agentError } = await supabase
         .from('agents')
