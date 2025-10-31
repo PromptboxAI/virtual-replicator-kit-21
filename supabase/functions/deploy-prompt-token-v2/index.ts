@@ -245,7 +245,7 @@ Deno.serve(async (req) => {
       
       // Constructor checks
       constructorInputs: ctor?.inputs?.length || 0,
-      constructorArgs: [],  // No constructor arguments
+      constructorArgs: ["Prompt Test Token", "PROMPT"]
       
       // Gas settings
       gasSettings: {
