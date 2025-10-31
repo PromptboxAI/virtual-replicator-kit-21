@@ -273,14 +273,15 @@ Deno.serve(async (req) => {
 
     // Deploy contract with retry logic
     let hash: `0x${string}`;
+    const constructorArgs = ["Prompt Test Token", "PROMPT"];
     try {
       hash = await walletClient.deployContract({
         abi: PROMPT_TOKEN_ABI,
         bytecode: PROMPT_TOKEN_BYTECODE,
         account,
-        args: [],                 // ✅ NO constructor args
+        args: constructorArgs,
         nonce,
-        gas: 3_000_000n,          // ✅ Hardcoded gas limit
+        gas: 3_000_000n,
         maxFeePerGas,
         maxPriorityFeePerGas,
       });
@@ -307,9 +308,9 @@ Deno.serve(async (req) => {
           abi: PROMPT_TOKEN_ABI,
           bytecode: PROMPT_TOKEN_BYTECODE,
           account,
-          args: [],                 // ✅ NO constructor args
+          args: constructorArgs,
           nonce: freshNonce,
-          gas: 3_000_000n,          // ✅ Hardcoded gas limit
+          gas: 3_000_000n,
           maxFeePerGas,
           maxPriorityFeePerGas,
         });
