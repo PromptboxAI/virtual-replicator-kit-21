@@ -39,9 +39,9 @@ export function Header() {
               
               {/* Navigation */}
               <nav className="hidden md:flex items-center space-x-8">
-                <Link to="/ai-agents" className="text-foreground hover:text-primary transition-colors font-medium">
+                <a href="https://trade.promptbox.com" className="text-foreground hover:text-primary transition-colors font-medium" target="_blank" rel="noopener noreferrer">
                   AI Agents
-                </Link>
+                </a>
                 <Link to="/create" className="text-foreground hover:text-primary transition-colors font-medium">
                   Create Agent
                 </Link>
@@ -123,6 +123,11 @@ export function Header() {
                           <DropdownMenuItem asChild className="cursor-pointer">
                             <Link to="/admin" className="flex items-center">
                               Admin Dashboard
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild className="cursor-pointer">
+                            <Link to="/ai-agents" className="flex items-center">
+                              Internal Agents List
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild className="cursor-pointer">
