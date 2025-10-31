@@ -519,7 +519,7 @@ export default function Faucet() {
               <AccordionItem value="item-5">
                 <AccordionTrigger>What if the faucet is empty?</AccordionTrigger>
                 <AccordionContent className="text-muted-foreground">
-                  The faucet contract has sufficient tokens for testing. If you encounter issues, please reach out to our support team at kevin@promptbox.com or check our Discord community for assistance.
+                  The faucet contract has sufficient tokens for testing. If you encounter issues, please reach out to our support team at <a href="mailto:kevin@promptbox.com" className="text-primary hover:underline">kevin@promptbox.com</a> or check our Discord community for assistance.
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
