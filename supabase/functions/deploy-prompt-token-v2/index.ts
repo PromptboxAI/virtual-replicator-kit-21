@@ -412,9 +412,7 @@ Deno.serve(async (req) => {
         symbol: 'PROMPT',
         is_active: true,
         agent_id: agentId,
-        deployer_address: account.address,
-        block_number: receipt.blockNumber?.toString(),
-        gas_used: receipt.gasUsed?.toString()
+        deployer_address: account.address
       });
 
     if (dbError) {
