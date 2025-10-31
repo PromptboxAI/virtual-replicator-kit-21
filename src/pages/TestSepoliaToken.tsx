@@ -34,27 +34,52 @@ export default function TestSepoliaToken() {
         .select('agent_id')
         .eq('contract_address', PROMPT_TOKEN_ADDRESS)
         .eq('is_active', true)
-        .single();
+        .maybeSingle();
       
       if (contractError) {
-        console.error('Contract not found:', contractError);
+        console.error('Database error fetching contract:', contractError);
+        toast({
+          title: 'Database Error',
+          description: contractError.message,
+          variant: 'destructive'
+        });
         return;
       }
 
-      if (contractData?.agent_id) {
+      if (!contractData) {
+        console.log('Contract not found in database:', PROMPT_TOKEN_ADDRESS);
+        toast({
+          title: 'Contract Not Found',
+          description: 'This contract address is not registered in the database. Deploy a token first.',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      if (contractData.agent_id) {
         setAgentId(contractData.agent_id);
+        console.log('Found agent ID:', contractData.agent_id);
         
         // Fetch agent price
-        const { data: agent } = await supabase
+        const { data: agent, error: agentError } = await supabase
           .from('agents')
           .select('current_price')
           .eq('id', contractData.agent_id)
-          .single();
+          .maybeSingle();
         
-        if (agent) setCurrentPrice(agent.current_price?.toString() || '0.0000075');
+        if (agentError) {
+          console.error('Error fetching agent price:', agentError);
+        } else if (agent) {
+          setCurrentPrice(agent.current_price?.toString() || '0.0000075');
+        }
       }
     } catch (error) {
       console.error('Error fetching contract data:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch contract data',
+        variant: 'destructive'
+      });
     }
   };
 
