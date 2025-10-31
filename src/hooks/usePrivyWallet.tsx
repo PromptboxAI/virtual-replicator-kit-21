@@ -10,8 +10,8 @@ export function usePrivyWallet() {
   const { isTestMode, canChangeMode } = useAppMode();
   const { authMethod, isWalletAuth } = useAuthMethod();
   const [balance, setBalance] = useState<string>('0');
-  const [promptBalance, setPromptBalance] = useState<string>('1000');
-  const [isLoading, setIsLoading] = useState(false);
+  const [promptBalance, setPromptBalance] = useState<string>('0');
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
   // Regular users always use production mode, only admins can switch to test mode
