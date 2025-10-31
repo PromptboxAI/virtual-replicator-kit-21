@@ -4,7 +4,10 @@
 
 export const PROMPT_TOKEN_ABI = [
   {
-    "inputs": [],
+    "inputs": [
+      {"internalType": "string", "name": "name_", "type": "string"},
+      {"internalType": "string", "name": "symbol_", "type": "string"}
+    ],
     "stateMutability": "nonpayable",
     "type": "constructor"
   },

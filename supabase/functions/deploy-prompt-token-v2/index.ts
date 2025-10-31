@@ -237,24 +237,16 @@ Deno.serve(async (req) => {
       deployerAddress: account.address,
       deployerBalance: `${Number(balance) / 1e18} ETH`,
       deployerBalanceWei: balance.toString(),
-      
-      // Bytecode checks
       bytecodeLength: PROMPT_TOKEN_BYTECODE.length,
       bytecodePrefix: PROMPT_TOKEN_BYTECODE.slice(0, 20),
       bytecodeValid: PROMPT_TOKEN_BYTECODE.startsWith('0x') && PROMPT_TOKEN_BYTECODE.length > 4000,
-      
-      // Constructor checks
       constructorInputs: ctor?.inputs?.length || 0,
-      constructorArgs: ["Prompt Test Token", "PROMPT"]
-      
-      // Gas settings
+      constructorArgs: ["Prompt Test Token", "PROMPT"],
       gasSettings: {
         maxFeePerGas: `${Number(maxFeePerGas) / 1e9} gwei`,
         maxPriorityFeePerGas: `${Number(maxPriorityFeePerGas) / 1e9} gwei`,
         gasLimit: 'auto-estimated by viem'
       },
-      
-      // ABI validation
       abiLength: PROMPT_TOKEN_ABI.length,
       abiValid: Array.isArray(PROMPT_TOKEN_ABI) && PROMPT_TOKEN_ABI.length > 0
     };
