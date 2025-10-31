@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, User, LogOut, Wallet } from "lucide-react";
+import { Search, User, LogOut, Wallet, ChevronDown } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -42,14 +42,26 @@ export function Header() {
                 <a href="https://trade.promptbox.com" className="text-foreground hover:text-primary transition-colors font-medium" target="_blank" rel="noopener noreferrer">
                   AI Agents
                 </a>
-                <Link to="/create" className="text-foreground hover:text-primary transition-colors font-medium">
-                  Create Agent
-                </Link>
+                <DropdownMenu>
+                  <DropdownMenuTrigger className="flex items-center text-foreground hover:text-primary transition-colors font-medium focus:outline-none">
+                    Create Agent
+                    <ChevronDown className="ml-1 h-4 w-4" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-48 bg-background">
+                    <DropdownMenuItem asChild className="cursor-pointer">
+                      <Link to="/create" className="flex items-center w-full">
+                        Create Agent
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild className="cursor-pointer">
+                      <Link to="/faucet" className="flex items-center w-full">
+                        Faucet
+                      </Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <Link to="/learn" className="text-foreground hover:text-primary transition-colors font-medium">
                   Learn
-                </Link>
-                <Link to="/faucet" className="text-foreground hover:text-primary transition-colors font-medium">
-                  Faucet
                 </Link>
                 <Link to="/about" className="text-foreground hover:text-primary transition-colors font-medium">
                   About
