@@ -406,13 +406,11 @@ Deno.serve(async (req) => {
       .insert({
         contract_type: 'PROMPT',
         contract_address: contractAddress,
-        transaction_hash: hash,
         network: 'base_sepolia',
         name: 'Prompt Test Token',
         symbol: 'PROMPT',
         is_active: true,
-        agent_id: agentId,
-        deployer_address: account.address
+        agent_id: agentId
       });
 
     if (dbError) {
