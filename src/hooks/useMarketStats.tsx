@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAppMode } from './useAppMode';
+import { useAdminSettings } from './useAdminSettings';
 
 export interface MarketStats {
   totalMarketCap: number;
@@ -11,6 +12,7 @@ export interface MarketStats {
 
 export function useMarketStats() {
   const { isTestMode, isLoading: appModeLoading } = useAppMode();
+  const { settings, isLoading: settingsLoading } = useAdminSettings();
   const [stats, setStats] = useState<MarketStats>({
     totalMarketCap: 0,
     activeAgents: 0,
@@ -21,18 +23,21 @@ export function useMarketStats() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Don't fetch until app mode is determined
-    if (appModeLoading) return;
+    // Don't fetch until app mode and settings are determined
+    if (appModeLoading || settingsLoading) return;
+    
+    const deploymentMode = settings?.deployment_mode || 'database';
     async function fetchMarketStats() {
       try {
-        console.log('fetchMarketStats - isTestMode:', isTestMode);
+        console.log('fetchMarketStats - isTestMode:', isTestMode, 'deploymentMode:', deploymentMode);
         
         // Get market stats from agents
         const { data: marketData, error: marketError } = await supabase
           .from('agents')
           .select('id, market_cap, volume_24h')
           .eq('is_active', true)
-          .eq('test_mode', isTestMode);
+          .eq('test_mode', isTestMode)
+          .eq('creation_mode', deploymentMode);
 
         console.log('marketData result:', marketData?.length, 'agents found');
         if (marketError) throw marketError;
@@ -42,7 +47,8 @@ export function useMarketStats() {
           .from('agents')
           .select('*', { count: 'exact', head: true })
           .eq('is_active', true)
-          .eq('test_mode', isTestMode);
+          .eq('test_mode', isTestMode)
+          .eq('creation_mode', deploymentMode);
 
         if (countError) throw countError;
 
@@ -89,7 +95,7 @@ export function useMarketStats() {
     }
 
     fetchMarketStats();
-  }, [isTestMode, appModeLoading]);
+  }, [isTestMode, appModeLoading, settingsLoading, settings?.deployment_mode]);
 
   return { stats, loading, error };
 }
