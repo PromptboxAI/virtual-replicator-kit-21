@@ -5,15 +5,23 @@ import { useAuth } from './useAuth';
 export type UserRole = 'admin' | 'user';
 
 export const useUserRole = () => {
-  const { user } = useAuth();
+  const { user, ready } = useAuth();
   const [role, setRole] = useState<UserRole>('user');
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchUserRole = async () => {
+      // Wait for auth to be ready before deciding on role
+      if (!ready) {
+        console.log('useUserRole - auth not ready yet');
+        setIsLoading(true);
+        return;
+      }
+
       if (!user) {
         console.log('useUserRole - no user, setting loading false');
         setIsLoading(false);
+        setRole('user');
         return;
       }
 
@@ -50,7 +58,7 @@ export const useUserRole = () => {
     };
 
     fetchUserRole();
-  }, [user?.id]); // Fix: Only depend on user.id which is stable, not the entire user object
+  }, [user?.id, ready]); // Depend on both user.id and ready state
 
   const isAdmin = role === 'admin';
 
