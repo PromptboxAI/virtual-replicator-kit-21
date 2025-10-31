@@ -125,6 +125,11 @@ export function Header() {
                               Admin Dashboard
                             </Link>
                           </DropdownMenuItem>
+                          <DropdownMenuItem asChild className="cursor-pointer">
+                            <Link to="/test-sepolia-token" className="flex items-center">
+                              Test Sepolia Token
+                            </Link>
+                          </DropdownMenuItem>
                           <DropdownMenuSeparator />
                         </>
                       )}
