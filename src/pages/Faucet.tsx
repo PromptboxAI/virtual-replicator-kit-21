@@ -261,12 +261,9 @@ export default function Faucet() {
       <main className="flex-1 container mx-auto px-4 py-8 relative z-10">
         {/* Hero Section */}
         <div className="text-center mb-12 space-y-4">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Droplet className="w-12 h-12 text-primary" />
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              PROMPT Token Faucet
-            </h1>
-          </div>
+          <h1 className="text-5xl font-bold text-foreground mb-4">
+            PROMPT Token Faucet
+          </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Get free testnet tokens for Base Sepolia network
           </p>
