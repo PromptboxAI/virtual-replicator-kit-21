@@ -110,16 +110,18 @@ serve(async (req) => {
       throw new Error('Trading is temporarily locked for this agent. Only the creator can trade during the MEV protection period.');
     }
 
-    // Get agent data with V4 pricing fields
+    // Get agent data with V4 pricing fields + creation_mode
     const { data: agent, error: agentError } = await supabase
       .from('agents')
-      .select('*, created_prompt_usd_rate, created_p0, created_p1, graduation_mode, target_market_cap_usd')
+      .select('*, created_prompt_usd_rate, created_p0, created_p1, graduation_mode, target_market_cap_usd, creation_mode, token_address')
       .eq('id', agentId)
       .single();
 
     if (agentError || !agent) {
       throw new Error(`Agent not found: ${agentError?.message}`);
     }
+
+    console.log(`🔍 Agent ${agent.name} creation_mode: ${agent.creation_mode}, has token_address: ${!!agent.token_address}`);
 
     // Calculate dynamic graduation threshold using agent's creation-time pricing
     const graduationMode = agent.graduation_mode || 'database';
@@ -157,9 +159,25 @@ serve(async (req) => {
       createdP1
     });
 
-    // 🔀 ROUTE TO DEX IF GRADUATED
+    // 🚫 BLOCK DATABASE TRADING FOR SMART CONTRACT MODE AGENTS
+    const creationMode = agent.creation_mode || 'database';
+    if (creationMode === 'smart_contract' && !agent.token_address) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Smart contract not deployed yet',
+          message: 'This agent requires smart contract deployment before trading. Database trading is disabled in smart contract mode.'
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400
+        }
+      );
+    }
+
+    // 🔀 ROUTE TO DEX IF GRADUATED OR SMART CONTRACT MODE
     const currentPromptRaised = agent.prompt_raised || 0;
-    const hasGraduated = currentPromptRaised >= graduationThreshold || agent.token_graduated;
+    const hasGraduated = currentPromptRaised >= graduationThreshold || agent.token_graduated || (creationMode === 'smart_contract' && agent.token_address);
     
     if (hasGraduated) {
       console.log(`🔄 Agent ${agent.name} has graduated (${currentPromptRaised} >= ${graduationThreshold}) - routing to DEX trade`);

@@ -67,6 +67,13 @@ const Admin = () => {
   const { updateSetting, isUpdating } = useUpdateAdminSettings();
   const [activeSection, setActiveSection] = useState<AdminSection>('system-settings');
 
+  // Log settings changes for debugging
+  useEffect(() => {
+    if (settings) {
+      console.log('🔍 AdminSettings deployment_mode:', settings.deployment_mode);
+    }
+  }, [settings?.deployment_mode]);
+
   // AdminProtectedRoute already handles authentication/authorization
   // No need for duplicate checks here
 

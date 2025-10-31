@@ -471,7 +471,12 @@ export default function CreateAgent() {
       const P1 = bondingConfig.P1;
       const graduationThreshold = bondingConfig.GRADUATION_PROMPT_AMOUNT;
       
-      // Create basic agent/token record in database first
+      // Get deployment mode early
+      const deploymentMode = adminSettings?.deployment_mode || 'database';
+      
+      // Create agent metadata record (required for both modes)
+      // In smart_contract mode: metadata only, trading blocked until contract deployed
+      // In database mode: full simulated token with database trading
       const { data, error } = await supabase
         .from('agents')
         .insert([{
@@ -484,16 +489,16 @@ export default function CreateAgent() {
           twitter_url: formData.twitter_url || null,
           avatar_url: finalAvatarUrl,
           total_supply: formData.total_supply,
-          current_price: initialPrice, // Use actual bonding curve price
-          market_cap: 0, // Will be calculated based on trading
+          current_price: initialPrice,
+          market_cap: 0,
           creation_cost: CREATION_COST,
-          prompt_raised: 0, // Start with 0 PROMPT raised
+          prompt_raised: 0,
           is_active: false, // Not active until AI is configured
           creator_id: user.id,
-          status: 'ACTIVATING', // Agent is being set up
-          test_mode: appIsTestMode, // Set based on current app mode
+          status: deploymentMode === 'smart_contract' ? 'DEPLOYING_CONTRACT' : 'ACTIVATING',
+          test_mode: appIsTestMode,
           
-          // ✅ V4 DYNAMIC PRICING FIELDS (stored at creation time)
+          // ✅ V4 DYNAMIC PRICING FIELDS
           created_prompt_usd_rate: currentPromptUsdRate,
           created_p0: P0,
           created_p1: P1,
@@ -501,15 +506,18 @@ export default function CreateAgent() {
           target_market_cap_usd: targetMarketCapUsd,
           
           // ✅ V4 BONDING CURVE FIELDS
-          pricing_model: 'linear_v4',           // Use V4 dynamic linear bonding curve
-          bonding_curve_supply: 0,              // Initialize token supply at 0
-          migration_validated: true,            // No migration needed - native V3
+          pricing_model: 'linear_v4',
+          bonding_curve_supply: 0,
+          migration_validated: true,
           
-          // 🔒 MEV PROTECTION FIELDS
+          // 🔒 MEV PROTECTION & DEPLOYMENT
           creation_locked: formData.creation_locked,
           creation_expires_at: creationExpiresAt,
           creator_prebuy_amount: formData.creator_prebuy_amount,
-          creation_mode: adminSettings?.deployment_mode || 'database',
+          creation_mode: deploymentMode,
+          
+          // 🚫 Block database trading in smart_contract mode
+          token_graduated: deploymentMode === 'smart_contract', // Treat as "graduated" to block DB trades
         }])
         .select()
         .single();
@@ -541,9 +549,8 @@ export default function CreateAgent() {
       const agentId = data.id;
 
       // 📈 PHASE 3.2: Smart Contract Integration
-      // Handle deployment based on admin-controlled mode
-      const deploymentMode = adminSettings?.deployment_mode || 'database';
       if (deploymentMode === 'smart_contract') {
+        console.log('🔗 Smart Contract Mode: Deploying on-chain token...');
         try {
           if (deployMethod === 'atomic') {
             // 🚀 TRUE ATOMIC DEPLOYMENT - Client-side wallet interaction
