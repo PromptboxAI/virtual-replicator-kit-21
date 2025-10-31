@@ -344,7 +344,7 @@ export default function Faucet() {
                   variant="outline"
                   className="w-full"
                 >
-                  Add PROMPT to MetaMask
+                  Add PROMPT to MetaMask (Display Tokens)
                 </Button>
               </div>
             )}
@@ -469,9 +469,10 @@ export default function Faucet() {
               {[
                 { step: 1, text: "Connect your wallet (MetaMask, WalletConnect, etc.)" },
                 { step: 2, text: "Switch to Base Sepolia network if needed" },
-                { step: 3, text: "Click 'Claim PROMPT Tokens' button" },
+                { step: 3, text: "Click 'Claim 1,000 PROMPT' button to receive tokens" },
                 { step: 4, text: "Confirm the transaction in your wallet" },
-                { step: 5, text: "Wait ~10 seconds for confirmation" },
+                { step: 5, text: "Wait ~10 seconds for confirmation - tokens are now in your wallet" },
+                { step: 6, text: "Click 'Add PROMPT to MetaMask' to display them in your token list" },
               ].map((item) => (
                 <div key={item.step} className="flex items-start gap-4">
                   <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold flex-shrink-0">
@@ -500,7 +501,7 @@ export default function Faucet() {
               <AccordionItem value="item-2">
                 <AccordionTrigger>How do I add PROMPT to MetaMask?</AccordionTrigger>
                 <AccordionContent className="text-muted-foreground">
-                  Click the "Add PROMPT to MetaMask" button above, or manually add the token using the contract address: {contractAddress}. Set the symbol as "PROMPTTEST" and decimals as "18".
+                  After claiming tokens, click the "Add PROMPT to MetaMask" button to make them visible in your MetaMask token list. This doesn't send tokens - it just tells MetaMask to display the tokens you already own. You can also manually add using contract address: {contractAddress}, symbol "PROMPT", and decimals "18".
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-3">
