@@ -86,6 +86,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true,
+        apiVersion: 'v1',
         token: data,
         cached_at: new Date().toISOString()
       }),

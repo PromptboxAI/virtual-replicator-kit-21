@@ -40,7 +40,11 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ liquidity: data?.[0] ?? null }),
+      JSON.stringify({ 
+        success: true,
+        apiVersion: 'v1',
+        liquidity: data?.[0] ?? null 
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {

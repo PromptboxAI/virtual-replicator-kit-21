@@ -14,6 +14,7 @@ trade.promptbox.com is a **consumer** of the Promptbox Public API. This document
 ## ✅ What's Available Now
 
 ### API Endpoints (All Live & Ready)
+- ✅ `GET /healthz` - System mode and health status
 - ✅ `GET /list-tokens` - Paginated token list with advanced filtering
 - ✅ `GET /get-token-metadata` - Detailed token info by address
 - ✅ `POST /get-liquidity` - Liquidity pool data for graduated agents
@@ -40,6 +41,37 @@ Create `src/lib/promptboxApi.ts`:
 ```typescript
 const PROMPTBOX_API_BASE = import.meta.env.VITE_PROMPTBOX_API_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+// Health check interface
+export interface HealthCheckResponse {
+  ok: boolean;
+  ts: number;
+  mode: 'mock' | 'sepolia' | 'mainnet';
+  apiVersion: string;
+  settings?: {
+    testMode: boolean;
+    deploymentMode: 'database' | 'smart_contract';
+  };
+}
+
+// Check system health and mode
+export async function checkHealth(): Promise<HealthCheckResponse> {
+  const response = await fetch(
+    `${PROMPTBOX_API_BASE}/healthz`,
+    {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json'
+      }
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Health check failed: ${response.statusText}`);
+  }
+
+  return response.json();
+}
 
 export interface ListTokensParams {
   // Pagination
@@ -238,12 +270,16 @@ export interface PromptboxToken {
 }
 
 export interface PromptboxTokenListResponse {
+  success: boolean;
+  apiVersion: 'v1';
   tokens: PromptboxToken[];
   pagination: {
     page: number;
     limit: number;
     total: number;
     totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
   };
   filters: {
     testMode?: boolean;
@@ -254,14 +290,18 @@ export interface PromptboxTokenListResponse {
     networkEnvironment?: string;
     hasContract?: boolean;
   };
-  sortBy: string;
-  sortOrder: string;
-  cacheTimestamp: string;
+  sort: {
+    by: string;
+    order: string;
+  };
+  cached_at: string;
 }
 
 export interface PromptboxTokenMetadataResponse {
+  success: boolean;
+  apiVersion: 'v1';
   token: PromptboxToken;
-  cacheTimestamp: string;
+  cached_at: string;
 }
 
 export interface OHLCCandle {
@@ -274,19 +314,30 @@ export interface OHLCCandle {
 }
 
 export interface PromptboxOHLCResponse {
-  candles: OHLCCandle[];
+  success: boolean;
+  apiVersion: 'v1';
   agentId: string;
   timeframe: string;
+  buckets: OHLCCandle[];
   count: number;
 }
 
 export interface PromptboxLiquidityResponse {
-  agentId: string;
-  poolAddress: string | null;
-  totalLiquidity: number;
-  baseTokenLiquidity: number;
-  quoteTokenLiquidity: number;
-  lastUpdated: string;
+  success: boolean;
+  apiVersion: 'v1';
+  liquidity: {
+    creation_mode: 'database' | 'smart_contract';
+    graduation_mode: 'database' | 'smart_contract';
+    status: 'pre_grad' | 'post_grad';
+    lp_percent: string;
+    source: 'actual' | 'projected';
+    lp_prompt: string;
+    lp_usd: string;
+    lp_pair_symbol: string | null;
+    lp_pair_amount: string | null;
+    asof: string;
+    fx: string;
+  } | null;
 }
 ```
 

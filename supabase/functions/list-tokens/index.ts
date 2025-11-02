@@ -114,6 +114,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true,
+        apiVersion: 'v1',
         tokens: data || [],
         pagination: {
           page,

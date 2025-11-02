@@ -53,6 +53,8 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify({
+        success: true,
+        apiVersion: 'v1',
         agentId,
         timeframe,
         buckets: data || [],

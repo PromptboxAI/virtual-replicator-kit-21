@@ -80,6 +80,9 @@ s3_secret_access_key = "env(S3_SECRET_ACCESS_KEY)"
 [functions.get-agent-metrics]
 verify_jwt = false
 
+[functions.healthz]
+verify_jwt = false
+
 [functions.get-ohlc]
 verify_jwt = false
 
