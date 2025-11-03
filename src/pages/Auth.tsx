@@ -152,7 +152,7 @@ export default function Auth() {
             </TabsList>
             
             <TabsContent value="signin">
-              <Card>
+              <Card className="bg-black border-white/10">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <LogIn className="h-5 w-5" />
@@ -199,7 +199,7 @@ export default function Auth() {
             </TabsContent>
             
             <TabsContent value="signup">
-              <Card>
+              <Card className="bg-black border-white/10">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <UserPlus className="h-5 w-5" />
@@ -255,7 +255,7 @@ export default function Auth() {
                     </Button>
                   </form>
                   
-                  <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+                  <div className="mt-4 p-3 bg-white/5 rounded-lg">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Sparkles className="h-4 w-4" />
                       <span>New users start with 1,000 tokens!</span>
