@@ -789,7 +789,7 @@ export default function CreateAgent() {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-8 pb-32">
           <div className="max-w-2xl mx-auto space-y-6">
             <div className="text-center">
               <h1 className="text-3xl font-bold mb-4">Create AI Agent</h1>
