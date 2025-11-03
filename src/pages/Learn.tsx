@@ -201,17 +201,18 @@ const Learn = () => {
 
 
       {/* CTA Section */}
-      <section className="py-16 px-4">
+      <section className="py-20 px-4 bg-gray-900">
         <div className="container mx-auto text-center">
-          <h2 className="text-4xl font-bold mb-6 text-foreground">Ready to Build the Future?</h2>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+          <p className="text-sm text-gray-400 uppercase tracking-wider mb-6">CREATE AGENT</p>
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">Ready to Build the Future?</h2>
+          <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
             Join thousands of developers and investors shaping the autonomous AI economy
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-black text-white hover:bg-gray-800 font-semibold">
+            <Button size="lg" className="bg-white text-black hover:bg-gray-100 font-semibold">
               Start Building
             </Button>
-            <Button size="lg" variant="outline" className="border-black text-black hover:bg-black hover:text-white font-semibold">
+            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-black font-semibold">
               Explore Documentation
             </Button>
           </div>
