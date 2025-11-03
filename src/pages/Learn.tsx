@@ -30,7 +30,7 @@ const Learn = () => {
             <Button 
               size="lg" 
               className="bg-black text-white hover:bg-gray-800 font-semibold text-lg px-8 py-6"
-              onClick={() => navigate('/create-agent')}
+              onClick={() => navigate('/create')}
             >
               Get Started with AI Agents
               <ArrowRight className="w-5 h-5 ml-2" />
