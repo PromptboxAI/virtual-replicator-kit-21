@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowRight, Cpu, Shield, Zap, Bot, MessageSquare, TrendingUp, Activity, Brain, Network } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { OnboardingGuide } from "@/components/OnboardingGuide";
+
 
 const Learn = () => {
   const navigate = useNavigate();
@@ -198,21 +198,6 @@ const Learn = () => {
         </div>
       </section>
 
-      {/* Getting Started Section */}
-      <section className="py-16 px-4 pb-32 bg-gray-50">
-        <div className="container mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4 text-foreground">Start Your AI Agent Journey</h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Get started with creating and trading AI agents
-            </p>
-          </div>
-          
-          <div className="max-w-2xl mx-auto">
-            <OnboardingGuide />
-          </div>
-        </div>
-      </section>
 
 
       {/* CTA Section */}
