@@ -201,15 +201,23 @@ const Learn = () => {
 
 
       {/* CTA Section */}
-      <section className="py-20 px-4 bg-gray-900">
-        <div className="container mx-auto text-center">
-          <p className="text-sm text-gray-400 uppercase tracking-wider mb-6">CREATE AGENT</p>
+      <section className="bg-gradient-primary py-20 relative overflow-hidden">
+        {/* Dot pattern overlay */}
+        <div 
+          className="absolute inset-0 opacity-40"
+          style={{
+            backgroundImage: `radial-gradient(circle, rgba(100,100,100,0.6) 1px, transparent 1px)`,
+            backgroundSize: '8px 8px'
+          }}
+        ></div>
+        <div className="container mx-auto px-4 text-center relative z-10">
+          <p className="text-sm text-white/60 tracking-widest uppercase mb-6">CREATE AGENT</p>
           <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">Ready to Build the Future?</h2>
-          <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+          <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
             Join thousands of developers and investors shaping the autonomous AI economy
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-white text-black hover:bg-gray-100 font-semibold">
+            <Button size="lg" variant="secondary" className="bg-white text-black hover:bg-white/90 font-semibold">
               Start Building
             </Button>
             <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-black font-semibold">
