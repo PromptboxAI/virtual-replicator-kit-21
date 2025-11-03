@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { ArrowRight, Target, Shield, Zap, Users, Globe, TrendingUp } from "lucide-react";
-import { OnboardingGuide } from "@/components/OnboardingGuide";
 
 const About = () => {
   return (
@@ -86,9 +85,6 @@ const About = () => {
             </p>
           </div>
           
-          <div className="max-w-2xl mx-auto">
-            <OnboardingGuide />
-          </div>
         </div>
       </section>
 
