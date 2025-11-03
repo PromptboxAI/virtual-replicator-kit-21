@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowRight, Cpu, Shield, Zap, Bot, MessageSquare, TrendingUp, Activity, Brain, Network } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { OnboardingGuide } from "@/components/OnboardingGuide";
 
 const Learn = () => {
   const navigate = useNavigate();
@@ -198,75 +199,17 @@ const Learn = () => {
       </section>
 
       {/* Getting Started Section */}
-      <section className="py-16 px-4 bg-gray-50">
+      <section className="py-16 px-4 pb-32 bg-gray-50">
         <div className="container mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold mb-4 text-foreground">Start Your AI Agent Journey</h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Learn the fundamentals of AI agents, blockchain integration, and tokenized intelligence
+              Get started with creating and trading AI agents
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <Card className="p-6 bg-white border border-gray-100 shadow-lg hover:shadow-xl transition-shadow">
-              <h3 className="text-xl font-semibold mb-3 text-foreground">AI Agents 101</h3>
-              <p className="text-muted-foreground mb-4">
-                Understanding autonomous AI agents and their capabilities in the digital economy.
-              </p>
-              <Button variant="outline" size="sm">
-                Learn More
-              </Button>
-            </Card>
-            
-            <Card className="p-6 bg-white border border-gray-100 shadow-lg hover:shadow-xl transition-shadow">
-              <h3 className="text-xl font-semibold mb-3 text-foreground">Tokenization Basics</h3>
-              <p className="text-muted-foreground mb-4">
-                How AI agents become tradeable assets through blockchain tokenization.
-              </p>
-              <Button variant="outline" size="sm">
-                Learn More
-              </Button>
-            </Card>
-            
-            <Card className="p-6 bg-white border border-gray-100 shadow-lg hover:shadow-xl transition-shadow">
-              <h3 className="text-xl font-semibold mb-3 text-foreground">Trading Guide</h3>
-              <p className="text-muted-foreground mb-4">
-                Step-by-step guide to trading and investing in AI agent tokens.
-              </p>
-              <Button variant="outline" size="sm">
-                Learn More
-              </Button>
-            </Card>
-            
-            <Card className="p-6 bg-white border border-gray-100 shadow-lg hover:shadow-xl transition-shadow">
-              <h3 className="text-xl font-semibold mb-3 text-foreground">Developer Resources</h3>
-              <p className="text-muted-foreground mb-4">
-                Technical documentation for building on the PromptBox platform.
-              </p>
-              <Button variant="outline" size="sm">
-                Learn More
-              </Button>
-            </Card>
-            
-            <Card className="p-6 bg-white border border-gray-100 shadow-lg hover:shadow-xl transition-shadow">
-              <h3 className="text-xl font-semibold mb-3 text-foreground">Community Hub</h3>
-              <p className="text-muted-foreground mb-4">
-                Connect with other AI agent creators and investors in our community.
-              </p>
-              <Button variant="outline" size="sm">
-                Learn More
-              </Button>
-            </Card>
-            
-            <Card className="p-6 bg-white border border-gray-100 shadow-lg hover:shadow-xl transition-shadow">
-              <h3 className="text-xl font-semibold mb-3 text-foreground">Advanced Concepts</h3>
-              <p className="text-muted-foreground mb-4">
-                Deep dive into advanced AI agent mechanics and protocol features.
-              </p>
-              <Button variant="outline" size="sm">
-                Learn More
-              </Button>
-            </Card>
+          <div className="max-w-2xl mx-auto">
+            <OnboardingGuide />
           </div>
         </div>
       </section>

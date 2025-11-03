@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { ArrowRight, Target, Shield, Zap, Users, Globe, TrendingUp } from "lucide-react";
+import { OnboardingGuide } from "@/components/OnboardingGuide";
 
 const About = () => {
   return (
@@ -76,45 +77,17 @@ const About = () => {
       </section>
 
       {/* Get Started Section */}
-      <section className="py-16 px-4 bg-gray-50">
+      <section className="py-16 px-4 pb-32 bg-gray-50">
         <div className="container mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold mb-4 text-foreground">Get Started On PromptBox</h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Join the future of AI agent ownership in three simple steps
+              Join the future of AI agent ownership
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="p-8 bg-white border border-gray-100 shadow-lg hover:shadow-xl transition-shadow text-center">
-              <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-white font-bold text-xl">1</span>
-              </div>
-              <h3 className="text-xl font-semibold mb-3 text-foreground">Pick a wallet</h3>
-              <p className="text-muted-foreground">
-                Connect your Web3 wallet to get started with PromptBox
-              </p>
-            </Card>
-            
-            <Card className="p-8 bg-white border border-gray-100 shadow-lg hover:shadow-xl transition-shadow text-center">
-              <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-white font-bold text-xl">2</span>
-              </div>
-              <h3 className="text-xl font-semibold mb-3 text-foreground">Fund Account</h3>
-              <p className="text-muted-foreground">
-                Add funds to your wallet to start trading AI agents
-              </p>
-            </Card>
-            
-            <Card className="p-8 bg-white border border-gray-100 shadow-lg hover:shadow-xl transition-shadow text-center">
-              <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-white font-bold text-xl">3</span>
-              </div>
-              <h3 className="text-xl font-semibold mb-3 text-foreground">Explore Agents</h3>
-              <p className="text-muted-foreground">
-                Discover and invest in the next generation of AI agents
-              </p>
-            </Card>
+          <div className="max-w-2xl mx-auto">
+            <OnboardingGuide />
           </div>
         </div>
       </section>
