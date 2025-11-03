@@ -123,6 +123,7 @@ export function OnboardingGuide() {
                       {step.action && (
                         <Button 
                           size="sm" 
+                          variant="outline"
                           onClick={step.action}
                           disabled={step.disabled}
                         >
