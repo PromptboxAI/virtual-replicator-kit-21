@@ -220,7 +220,7 @@ const Learn = () => {
             <Button size="lg" variant="secondary" className="bg-white text-black hover:bg-white/90 font-semibold">
               Start Building
             </Button>
-            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-black font-semibold">
+            <Button size="lg" variant="outline" className="bg-white border-gray-200 text-black hover:bg-gray-100 font-semibold">
               Explore Documentation
             </Button>
           </div>
