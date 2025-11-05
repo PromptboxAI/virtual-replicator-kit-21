@@ -171,3 +171,6 @@ verify_jwt = false
 
 [functions.get-liquidity]
 verify_jwt = false
+
+[functions.resolve-token]
+verify_jwt = false

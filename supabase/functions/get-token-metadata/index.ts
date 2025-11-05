@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, getClientIdentifier, getRateLimitHeaders } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,6 +14,25 @@ serve(async (req) => {
   }
 
   try {
+    // Rate limiting
+    const clientId = getClientIdentifier(req);
+    const rateLimit = checkRateLimit(clientId, 100, 60000);
+    const rateLimitHeaders = getRateLimitHeaders(100, rateLimit.remaining, rateLimit.resetAt);
+
+    if (!rateLimit.allowed) {
+      return new Response(
+        JSON.stringify({
+          ok: false,
+          apiVersion: 'v1',
+          error: 'Rate limit exceeded',
+          code: 'RATE_LIMIT_EXCEEDED',
+        }),
+        {
+          status: 429,
+          headers: { ...corsHeaders, ...rateLimitHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
     const url = new URL(req.url);
     const id = url.searchParams.get('id');
     const address = url.searchParams.get('address');
@@ -24,12 +44,15 @@ serve(async (req) => {
     if (!id && !address) {
       return new Response(
         JSON.stringify({ 
+          ok: false,
+          apiVersion: 'v1',
           error: 'Either id or address parameter is required',
-          usage: 'GET /get-token-metadata?id=uuid OR GET /get-token-metadata?address=0x...&chainId=84532'
+          code: 'BAD_REQUEST',
+          details: { usage: 'GET /get-token-metadata?id=uuid OR GET /get-token-metadata?address=0x...&chainId=84532' }
         }),
         { 
           status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          headers: { ...corsHeaders, ...rateLimitHeaders, 'Content-Type': 'application/json' } 
         }
       );
     }
@@ -58,10 +81,16 @@ serve(async (req) => {
     if (error) {
       console.error('❌ Database error:', error);
       return new Response(
-        JSON.stringify({ error: error.message }),
+        JSON.stringify({ 
+          ok: false,
+          apiVersion: 'v1',
+          error: 'Database error',
+          code: 'INTERNAL',
+          details: { message: error.message }
+        }),
         { 
           status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          headers: { ...corsHeaders, ...rateLimitHeaders, 'Content-Type': 'application/json' } 
         }
       );
     }
@@ -70,31 +99,41 @@ serve(async (req) => {
       console.log('⚠️ Token not found');
       return new Response(
         JSON.stringify({ 
+          ok: false,
+          apiVersion: 'v1',
           error: 'Token not found',
-          searched_by: id ? 'id' : 'address',
-          value: id || address
+          code: 'TOKEN_NOT_FOUND',
+          details: {
+            searched_by: id ? 'id' : 'address',
+            value: id || address
+          }
         }),
         { 
           status: 404, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          headers: { ...corsHeaders, ...rateLimitHeaders, 'Content-Type': 'application/json' } 
         }
       );
     }
 
     console.log('✅ Token found:', data.name, data.symbol);
 
+    const timestamp = Date.now();
+    const etag = `"${data.id || data.agent_id}-${timestamp}"`;
+
     return new Response(
       JSON.stringify({ 
-        success: true,
+        ok: true,
         apiVersion: 'v1',
-        token: data,
+        data: data,
         cached_at: new Date().toISOString()
       }),
       { 
         headers: { 
-          ...corsHeaders, 
+          ...corsHeaders,
+          ...rateLimitHeaders,
           'Content-Type': 'application/json',
-          'Cache-Control': 'public, max-age=60' // Cache for 1 minute
+          'Cache-Control': 'public, max-age=30, stale-while-revalidate=60',
+          'ETag': etag
         } 
       }
     );
@@ -102,7 +141,13 @@ serve(async (req) => {
   } catch (error) {
     console.error('❌ Unexpected error:', error);
     return new Response(
-      JSON.stringify({ error: 'Internal server error', details: error.message }),
+      JSON.stringify({ 
+        ok: false,
+        apiVersion: 'v1',
+        error: 'Internal server error',
+        code: 'INTERNAL',
+        details: { message: error.message }
+      }),
       { 
         status: 500, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

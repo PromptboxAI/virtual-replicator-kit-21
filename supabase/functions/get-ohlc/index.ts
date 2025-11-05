@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.3';
+import { checkRateLimit, getClientIdentifier, getRateLimitHeaders } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -17,6 +18,26 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Rate limiting
+    const clientId = getClientIdentifier(req);
+    const rateLimit = checkRateLimit(clientId, 100, 60000);
+    const rateLimitHeaders = getRateLimitHeaders(100, rateLimit.remaining, rateLimit.resetAt);
+
+    if (!rateLimit.allowed) {
+      return new Response(
+        JSON.stringify({
+          ok: false,
+          apiVersion: 'v1',
+          error: 'Rate limit exceeded',
+          code: 'RATE_LIMIT_EXCEEDED',
+        }),
+        {
+          status: 429,
+          headers: { ...corsHeaders, ...rateLimitHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
     // Use service role key to bypass RLS
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -27,8 +48,13 @@ Deno.serve(async (req) => {
 
     if (!agentId) {
       return new Response(
-        JSON.stringify({ error: 'agentId is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ 
+          ok: false,
+          apiVersion: 'v1',
+          error: 'agentId is required',
+          code: 'BAD_REQUEST'
+        }),
+        { status: 400, headers: { ...corsHeaders, ...rateLimitHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -44,28 +70,54 @@ Deno.serve(async (req) => {
     if (error) {
       console.error('RPC error:', error);
       return new Response(
-        JSON.stringify({ error: error.message }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ 
+          ok: false,
+          apiVersion: 'v1',
+          error: 'Database error',
+          code: 'INTERNAL',
+          details: { message: error.message }
+        }),
+        { status: 500, headers: { ...corsHeaders, ...rateLimitHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     console.log(`Retrieved ${data?.length || 0} OHLC buckets`);
 
+    const timestamp = Date.now();
+    const etag = `"${agentId}-${timeframe}-${timestamp}"`;
+
     return new Response(
       JSON.stringify({
-        success: true,
+        ok: true,
         apiVersion: 'v1',
-        agentId,
-        timeframe,
-        buckets: data || [],
-        count: data?.length || 0
+        data: {
+          agentId,
+          timeframe,
+          buckets: data || [],
+          count: data?.length || 0
+        }
       }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { 
+        status: 200, 
+        headers: { 
+          ...corsHeaders, 
+          ...rateLimitHeaders,
+          'Content-Type': 'application/json',
+          'Cache-Control': 'public, max-age=30, stale-while-revalidate=60',
+          'ETag': etag
+        } 
+      }
     );
   } catch (err: any) {
     console.error('Unexpected error:', err);
     return new Response(
-      JSON.stringify({ error: err.message }),
+      JSON.stringify({ 
+        ok: false,
+        apiVersion: 'v1',
+        error: 'Internal server error',
+        code: 'INTERNAL',
+        details: { message: err.message }
+      }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

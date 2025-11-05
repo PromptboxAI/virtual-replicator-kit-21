@@ -141,11 +141,14 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify({
-        success: true,
-        transaction: txParams,
-        tokenAddress,
-        tradeType,
-        amount
+        ok: true,
+        apiVersion: 'v1',
+        data: {
+          transaction: txParams,
+          tokenAddress,
+          tradeType,
+          amount
+        }
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -158,9 +161,11 @@ Deno.serve(async (req) => {
     
     return new Response(
       JSON.stringify({
-        success: false,
-        error: error.message,
-        details: error.stack
+        ok: false,
+        apiVersion: 'v1',
+        error: error.message || 'Failed to build transaction',
+        code: 'TRANSACTION_BUILD_FAILED',
+        details: { stack: error.stack }
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
