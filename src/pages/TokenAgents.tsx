@@ -12,235 +12,143 @@ const TokenAgents = () => {
       
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-20">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+      <section className="container mx-auto px-4 py-32">
+        <div className="max-w-5xl mx-auto text-center space-y-12">
           <div className="space-y-8">
-            {/* Workflow Visual */}
-            <div className="flex items-center gap-4 mb-8">
-              <Card className="p-4 border-blue-200 bg-blue-50/50">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                  <span className="text-xs font-medium text-blue-700">Token</span>
-                </div>
-              </Card>
-              <ArrowRight className="h-4 w-4 text-muted-foreground" />
-              <Card className="p-4 border-yellow-200 bg-yellow-50/50">
-                <div className="flex items-center gap-2">
-                  <Bot className="h-4 w-4 text-yellow-700" />
-                  <span className="text-xs font-medium text-yellow-700">Agent</span>
-                </div>
-              </Card>
-              <ArrowRight className="h-4 w-4 text-muted-foreground" />
-              <Card className="p-4 border-green-200 bg-green-50/50">
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-green-700" />
-                  <span className="text-xs font-medium text-green-700">Value</span>
-                </div>
-              </Card>
-            </div>
-
-            <div className="space-y-4">
-              <h1 className="text-5xl font-bold text-foreground leading-tight">
-                Launch first<br />
-                Build fast<br />
-                <span className="bg-gradient-primary bg-clip-text text-transparent">Tokenized AI Agents</span>
-              </h1>
-              <p className="text-lg text-muted-foreground max-w-lg">Turns agents into investable, cash-flowing micro-SaaS with proof of demand and verifiable revenue.</p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" className="bg-gradient-primary hover:opacity-90" asChild>
-                <Link to="/create">
-                  <Zap className="mr-2 h-4 w-4" />
-                  Launch Your Token
-                </Link>
-              </Button>
-              <Button variant="outline" size="lg" asChild>
-                <Link to="/learn">
-                  Watch Demo
-                </Link>
-              </Button>
-            </div>
-
-            {/* Company Logos */}
-            <div className="pt-8">
-              <p className="text-sm text-muted-foreground mb-4">Trusted by leading Web3 projects</p>
-              <div className="flex items-center gap-8 opacity-60">
-                <div className="h-8 bg-muted rounded px-4 flex items-center text-xs font-medium">
-                  Ethereum
-                </div>
-                <div className="h-8 bg-muted rounded px-4 flex items-center text-xs font-medium">
-                  Polygon
-                </div>
-                <div className="h-8 bg-muted rounded px-4 flex items-center text-xs font-medium">
-                  Solana
-                </div>
-                <div className="h-8 bg-muted rounded px-4 flex items-center text-xs font-medium">
-                  Base
-                </div>
-              </div>
-            </div>
+            <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold text-foreground leading-[1.1] tracking-tight">
+              The Agent Graduation Protocol
+            </h1>
+            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto font-light leading-relaxed">
+              Turns agents into investable, cash-flowing micro-SaaS with proof of demand and verifiable revenue.
+            </p>
           </div>
 
-          {/* Hero Image */}
-          <div className="relative">
-            <div className="absolute inset-0 bg-gradient-primary opacity-20 blur-3xl"></div>
-            <img src="/lovable-uploads/be05442f-d979-41f4-8395-57aba376cb60.png" alt="Token-First AI Agent Platform" className="relative z-10 w-full h-auto rounded-2xl shadow-2xl" />
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button size="lg" className="bg-foreground text-background hover:bg-foreground/90 h-14 px-8 text-base" asChild>
+              <Link to="/create">
+                Launch Your Agent
+              </Link>
+            </Button>
+            <Button variant="outline" size="lg" className="h-14 px-8 text-base" asChild>
+              <Link to="/learn">
+                Learn More
+              </Link>
+            </Button>
+          </div>
+
+          {/* Trust Indicator */}
+          <div className="pt-8">
+            <p className="text-sm text-muted-foreground/60">Built on Base • Powered by Verifiable Output Receipts</p>
           </div>
         </div>
       </section>
 
       {/* Platform Section */}
-      <section className="bg-muted/30 py-20">
+      <section className="py-32">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <Badge variant="outline" className="mb-4">PLATFORM</Badge>
-            <h2 className="text-4xl font-bold text-foreground mb-4">
-              A Powerful Interface to Deploy Token-First AI Agents
+          <div className="max-w-4xl mx-auto text-center mb-24">
+            <h2 className="text-5xl md:text-6xl font-bold text-foreground mb-8 leading-tight">
+              Proof of Demand Meets Verifiable Revenue
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Build, deploy, and monetize AI agents while creating sustainable token economies 
-              that benefit your entire community.
+            <p className="text-xl text-muted-foreground font-light leading-relaxed">
+              Every agent must prove real demand before graduation. Every revenue event is cryptographically 
+              verified and transparently shared with creators, platform, and token holders.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            <Card className="p-8 text-center hover:shadow-lg transition-shadow">
-              <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <Coins className="h-8 w-8 text-blue-600" />
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            <Card className="p-10 border-border/50 hover:border-border transition-colors">
+              <div className="w-12 h-12 bg-foreground/5 rounded-xl flex items-center justify-center mb-6">
+                <Coins className="h-6 w-6 text-foreground" />
               </div>
-              <h3 className="text-xl font-semibold mb-4">Token Launch</h3>
-              <p className="text-muted-foreground">
-                Launch your token with built-in bonding curves and community incentives. 
-                Generate immediate value and funding for your AI agent development.
+              <h3 className="text-2xl font-semibold mb-4">Bonding Curve Launch</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                Agents launch via transparent bonding curves. Only those reaching the graduation 
+                threshold unlock full capabilities and DEX liquidity.
               </p>
             </Card>
 
-            <Card className="p-8 text-center hover:shadow-lg transition-shadow">
-              <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <Bot className="h-8 w-8 text-purple-600" />
+            <Card className="p-10 border-border/50 hover:border-border transition-colors">
+              <div className="w-12 h-12 bg-foreground/5 rounded-xl flex items-center justify-center mb-6">
+                <Bot className="h-6 w-6 text-foreground" />
               </div>
-              <h3 className="text-xl font-semibold mb-4">Agent Deployment</h3>
-              <p className="text-muted-foreground">
-                Deploy sophisticated AI agents that serve your community while generating 
-                revenue that flows back to token holders automatically.
+              <h3 className="text-2xl font-semibold mb-4">Verifiable Receipts</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                Every agent action generates cryptographic receipts. Revenue and usage are 
+                auditable, tamper-evident, and anchored on-chain.
               </p>
             </Card>
 
-            <Card className="p-8 text-center hover:shadow-lg transition-shadow">
-              <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <Users className="h-8 w-8 text-green-600" />
+            <Card className="p-10 border-border/50 hover:border-border transition-colors">
+              <div className="w-12 h-12 bg-foreground/5 rounded-xl flex items-center justify-center mb-6">
+                <TrendingUp className="h-6 w-6 text-foreground" />
               </div>
-              <h3 className="text-xl font-semibold mb-4">Community Growth</h3>
-              <p className="text-muted-foreground">
-                Build engaged communities around your agents. Token holders share in success 
-                and have governance rights over agent development.
+              <h3 className="text-2xl font-semibold mb-4">Revenue Sharing</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                Revenue automatically splits between platform, creator, and token holders 
+                according to on-chain policies. No trust required.
               </p>
             </Card>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-20">
+      {/* How It Works Section */}
+      <section className="bg-muted/30 py-32">
         <div className="container mx-auto px-4">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div className="space-y-8">
-              <div>
-                <Badge variant="outline" className="mb-4">WHY TOKEN-FIRST?</Badge>
-                <h2 className="text-4xl font-bold text-foreground mb-6">
-                  Start with Value, Scale with Purpose
-                </h2>
-                <p className="text-lg text-muted-foreground">
-                  Traditional AI agents struggle with funding and adoption. Our token-first approach 
-                  solves both by creating immediate value and aligned incentives.
-                </p>
+          <div className="max-w-4xl mx-auto text-center mb-24">
+            <h2 className="text-5xl md:text-6xl font-bold text-foreground mb-8 leading-tight">
+              How It Works
+            </h2>
+            <p className="text-xl text-muted-foreground font-light leading-relaxed">
+              A systematic approach to launching and scaling AI agents with verifiable economics.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-12 max-w-5xl mx-auto">
+            <div className="space-y-4">
+              <div className="w-14 h-14 bg-foreground text-background rounded-2xl flex items-center justify-center text-2xl font-bold mb-6">
+                1
               </div>
-
-              <div className="space-y-6">
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <Zap className="h-6 w-6 text-blue-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-2">Instant Funding</h3>
-                    <p className="text-muted-foreground">
-                      Generate capital through token sales before building. No need for traditional funding rounds.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <Users className="h-6 w-6 text-purple-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-2">Built-in Community</h3>
-                    <p className="text-muted-foreground">
-                      Token holders become your first users and advocates, ensuring product-market fit.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <TrendingUp className="h-6 w-6 text-green-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-2">Aligned Incentives</h3>
-                    <p className="text-muted-foreground">
-                      Revenue sharing creates sustainable growth where everyone benefits from agent success.
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <h3 className="text-2xl font-semibold">Launch on Bonding Curve</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                Create your agent concept and launch on a transparent bonding curve. Early supporters 
+                get better pricing and help prove demand.
+              </p>
             </div>
 
-            <div className="relative">
-              <Card className="p-8">
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Agent Revenue</span>
-                    <Badge variant="secondary">+127% this month</Badge>
-                  </div>
-                  <div className="text-3xl font-bold">$2.4M</div>
-                  <div className="text-sm text-muted-foreground">
-                    Distributed to 12,847 token holders
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Community Pool</span>
-                      <span>40%</span>
-                    </div>
-                    <div className="w-full bg-muted rounded-full h-2">
-                      <div className="bg-gradient-primary h-2 rounded-full w-2/5"></div>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span>Token Holders</span>
-                      <span>60%</span>
-                    </div>
-                    <div className="w-full bg-muted rounded-full h-2">
-                      <div className="bg-gradient-primary h-2 rounded-full w-3/5"></div>
-                    </div>
-                  </div>
-                </div>
-              </Card>
+            <div className="space-y-4">
+              <div className="w-14 h-14 bg-foreground text-background rounded-2xl flex items-center justify-center text-2xl font-bold mb-6">
+                2
+              </div>
+              <h3 className="text-2xl font-semibold">Graduate to DEX</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                Once the threshold is reached, your agent graduates with automatic liquidity pool 
+                creation on Uniswap V3. Fully liquid and tradeable.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div className="w-14 h-14 bg-foreground text-background rounded-2xl flex items-center justify-center text-2xl font-bold mb-6">
+                3
+              </div>
+              <h3 className="text-2xl font-semibold">Generate & Share Revenue</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                Your agent generates verifiable revenue. Every action creates a cryptographic 
+                receipt. Revenue splits automatically to all stakeholders.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
       {/* FAQ Section */}
-      <section className="py-20 bg-muted/30">
+      <section className="py-32">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <Badge variant="outline" className="mb-4">FAQ</Badge>
-            <h2 className="text-4xl font-bold text-foreground mb-4">
+          <div className="max-w-4xl mx-auto text-center mb-20">
+            <h2 className="text-5xl md:text-6xl font-bold text-foreground mb-8 leading-tight">
               Frequently Asked Questions
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Everything you need to know about PromptBox and token-first AI agents
-            </p>
           </div>
 
           <div className="max-w-4xl mx-auto">
@@ -379,30 +287,20 @@ const TokenAgents = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-gradient-primary py-20 relative overflow-hidden">
-        {/* Dot pattern overlay */}
-        <div className="absolute inset-0 opacity-40" style={{
-        backgroundImage: `radial-gradient(circle, rgba(100,100,100,0.6) 1px, transparent 1px)`,
-        backgroundSize: '8px 8px'
-      }}></div>
+      <section className="py-32 bg-foreground text-background relative overflow-hidden">
         <div className="container mx-auto px-4 text-center relative z-10">
-          <div className="text-sm text-white/60 tracking-widest uppercase mb-4">
-            GET STARTED
-          </div>
-          <h2 className="text-4xl font-bold text-white mb-6">
-            Ready to Launch<br />Your Token-First AI Agent?
+          <h2 className="text-5xl md:text-6xl font-bold mb-8 leading-tight max-w-4xl mx-auto">
+            Ready to Launch Your Agent?
           </h2>
-          <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
-            Join the future of AI agent economics. Create value, build community, 
-            and scale with purpose.
+          <p className="text-xl mb-12 opacity-80 max-w-2xl mx-auto font-light">
+            Join the Agent Graduation Protocol. Prove demand, generate revenue, share success.
           </p>
-          <div className="flex justify-center">
-            <Button size="lg" variant="secondary" className="bg-white text-black hover:bg-white/90" asChild>
-              <Link to="/create">
-                Get Started
-              </Link>
-            </Button>
-          </div>
+          <Button size="lg" className="bg-background text-foreground hover:bg-background/90 h-14 px-8 text-base" asChild>
+            <Link to="/create">
+              Get Started
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Link>
+          </Button>
         </div>
       </section>
 
