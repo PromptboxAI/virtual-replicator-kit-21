@@ -45,9 +45,7 @@ const TokenAgents = () => {
                 Build fast<br />
                 <span className="bg-gradient-primary bg-clip-text text-transparent">Tokenized AI Agents</span>
               </h1>
-              <p className="text-lg text-muted-foreground max-w-lg">Launch tokens first to build community
-and generate immediate value.
-Then deploy AI agents that grow your ecosystem.</p>
+              <p className="text-lg text-muted-foreground max-w-lg">Turns agents into investable, cash-flowing micro-SaaS with proof of demand and verifiable revenue.</p>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
