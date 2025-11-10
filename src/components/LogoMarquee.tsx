@@ -3,12 +3,13 @@ import privyLogo from '@/assets/privy-logo.png';
 import openaiLogo from '@/assets/openai-logo.png';
 import mitLogo from '@/assets/mit-logo.png';
 import geminiLogo from '@/assets/gemini-logo.png';
+import supabaseLogo from '@/assets/supabase-logo.png';
 
 const logos = [
   { name: 'Github', text: 'GITHUB' },
   { name: 'OpenAI', image: openaiLogo },
   { name: 'Privy', image: privyLogo },
-  { name: 'Supabase', text: 'SUPABASE' },
+  { name: 'Supabase', image: supabaseLogo },
   { name: 'MIT License', image: mitLogo },
   { name: 'Gemini', image: geminiLogo },
   { name: 'Claude', text: 'CLAUDE' },
