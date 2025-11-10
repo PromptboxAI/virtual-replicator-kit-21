@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { LogoMarquee } from "@/components/LogoMarquee";
+import baseLogo from "@/assets/base-logo.png";
 const TokenAgents = () => {
   return <div className="min-h-screen bg-background">
       <Header />
@@ -36,11 +37,6 @@ const TokenAgents = () => {
               </Link>
             </Button>
           </div>
-
-          {/* Trust Indicator */}
-          <div className="pt-8">
-            <p className="text-sm text-muted-foreground/60">Built on Base • Powered by Verifiable Output Receipts</p>
-          </div>
         </div>
       </section>
 
@@ -65,6 +61,13 @@ const TokenAgents = () => {
           </div>
         </div>
       </section>
+
+      {/* Built on Badge */}
+      <div className="text-center pb-4">
+        <p className="text-sm text-muted-foreground/60 flex items-center justify-center gap-2">
+          Built on <img src={baseLogo} alt="Base" className="h-4 w-4 inline-block" /> • Powered by:
+        </p>
+      </div>
 
       {/* Logo Marquee */}
       <LogoMarquee />
