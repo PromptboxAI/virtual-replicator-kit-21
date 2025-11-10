@@ -1,14 +1,13 @@
 import React from 'react';
 
 const logos = [
-  { name: 'Base', text: 'BASE' },
-  { name: 'Coinbase', text: 'COINBASE' },
-  { name: 'Uniswap', text: 'UNISWAP' },
+  { name: 'Github', text: 'GITHUB' },
   { name: 'OpenAI', text: 'OPENAI' },
-  { name: 'Anthropic', text: 'ANTHROPIC' },
   { name: 'Privy', text: 'PRIVY' },
-  { name: 'Vercel', text: 'VERCEL' },
   { name: 'Supabase', text: 'SUPABASE' },
+  { name: 'MIT License', text: 'MIT LICENSE' },
+  { name: 'Google', text: 'GOOGLE' },
+  { name: 'Claude', text: 'CLAUDE' },
 ];
 
 export function LogoMarquee() {
