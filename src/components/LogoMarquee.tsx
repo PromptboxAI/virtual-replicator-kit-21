@@ -1,9 +1,10 @@
 import React from 'react';
+import privyLogo from '@/assets/privy-logo.png';
 
 const logos = [
   { name: 'Github', text: 'GITHUB' },
   { name: 'OpenAI', text: 'OPENAI' },
-  { name: 'Privy', text: 'PRIVY' },
+  { name: 'Privy', image: privyLogo },
   { name: 'Supabase', text: 'SUPABASE' },
   { name: 'MIT License', text: 'MIT LICENSE' },
   { name: 'Google', text: 'GOOGLE' },
@@ -21,9 +22,13 @@ export function LogoMarquee() {
               key={`${logo.name}-1-${index}`}
               className="flex items-center justify-center min-w-[140px] grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-300"
             >
-              <span className="text-2xl font-bold tracking-tight text-foreground">
-                {logo.text}
-              </span>
+              {'image' in logo ? (
+                <img src={logo.image} alt={logo.name} className="h-8 object-contain" />
+              ) : (
+                <span className="text-2xl font-bold tracking-tight text-foreground">
+                  {logo.text}
+                </span>
+              )}
             </div>
           ))}
         </div>
@@ -35,9 +40,13 @@ export function LogoMarquee() {
               key={`${logo.name}-2-${index}`}
               className="flex items-center justify-center min-w-[140px] grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-300"
             >
-              <span className="text-2xl font-bold tracking-tight text-foreground">
-                {logo.text}
-              </span>
+              {'image' in logo ? (
+                <img src={logo.image} alt={logo.name} className="h-8 object-contain" />
+              ) : (
+                <span className="text-2xl font-bold tracking-tight text-foreground">
+                  {logo.text}
+                </span>
+              )}
             </div>
           ))}
         </div>
