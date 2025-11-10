@@ -4,6 +4,7 @@ import openaiLogo from '@/assets/openai-logo.png';
 import mitLogo from '@/assets/mit-logo.png';
 import geminiLogo from '@/assets/gemini-logo.png';
 import supabaseLogo from '@/assets/supabase-logo.png';
+import claudeLogo from '@/assets/claude-logo.png';
 
 const logos = [
   { name: 'Github', text: 'GITHUB' },
@@ -12,7 +13,7 @@ const logos = [
   { name: 'Supabase', image: supabaseLogo, height: 'h-25' },
   { name: 'MIT License', image: mitLogo },
   { name: 'Gemini', image: geminiLogo, height: 'h-17' },
-  { name: 'Claude', text: 'CLAUDE' },
+  { name: 'Claude', image: claudeLogo },
 ];
 
 export function LogoMarquee() {
