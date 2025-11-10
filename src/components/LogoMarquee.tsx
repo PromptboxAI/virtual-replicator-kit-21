@@ -23,7 +23,7 @@ export function LogoMarquee() {
               className="flex items-center justify-center min-w-[140px] grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-300"
             >
               {'image' in logo ? (
-                <img src={logo.image} alt={logo.name} className="h-8 object-contain" />
+                <img src={logo.image} alt={logo.name} className="h-10 object-contain" />
               ) : (
                 <span className="text-2xl font-bold tracking-tight text-foreground">
                   {logo.text}
@@ -41,7 +41,7 @@ export function LogoMarquee() {
               className="flex items-center justify-center min-w-[140px] grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-300"
             >
               {'image' in logo ? (
-                <img src={logo.image} alt={logo.name} className="h-8 object-contain" />
+                <img src={logo.image} alt={logo.name} className="h-10 object-contain" />
               ) : (
                 <span className="text-2xl font-bold tracking-tight text-foreground">
                   {logo.text}
