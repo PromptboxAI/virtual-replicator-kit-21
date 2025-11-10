@@ -13,7 +13,7 @@ const logos = [
   { name: 'Supabase', image: supabaseLogo, height: 'h-25' },
   { name: 'MIT License', image: mitLogo },
   { name: 'Gemini', image: geminiLogo, height: 'h-17' },
-  { name: 'Claude', image: claudeLogo },
+  { name: 'Claude', image: claudeLogo, height: 'h-28' },
 ];
 
 export function LogoMarquee() {
