@@ -1,13 +1,14 @@
 import React from 'react';
 import privyLogo from '@/assets/privy-logo.png';
 import openaiLogo from '@/assets/openai-logo.png';
+import mitLogo from '@/assets/mit-logo.png';
 
 const logos = [
   { name: 'Github', text: 'GITHUB' },
   { name: 'OpenAI', image: openaiLogo },
   { name: 'Privy', image: privyLogo },
   { name: 'Supabase', text: 'SUPABASE' },
-  { name: 'MIT License', text: 'MIT LICENSE' },
+  { name: 'MIT License', image: mitLogo },
   { name: 'Google', text: 'GOOGLE' },
   { name: 'Claude', text: 'CLAUDE' },
 ];
