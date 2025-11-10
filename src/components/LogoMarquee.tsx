@@ -5,9 +5,10 @@ import mitLogo from '@/assets/mit-logo.png';
 import geminiLogo from '@/assets/gemini-logo.png';
 import supabaseLogo from '@/assets/supabase-logo.png';
 import claudeLogo from '@/assets/claude-logo.png';
+import githubLogo from '@/assets/github-logo.png';
 
 const logos = [
-  { name: 'Github', text: 'GITHUB' },
+  { name: 'Github', image: githubLogo },
   { name: 'OpenAI', image: openaiLogo },
   { name: 'Privy', image: privyLogo },
   { name: 'Supabase', image: supabaseLogo, height: 'h-25' },
@@ -27,13 +28,7 @@ export function LogoMarquee() {
               key={`${logo.name}-1-${index}`}
               className="flex items-center justify-center min-w-[140px] grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-300"
             >
-              {'image' in logo ? (
-                <img src={logo.image} alt={logo.name} className={`${'height' in logo ? logo.height : 'h-20'} object-contain`} />
-              ) : (
-                <span className="text-2xl font-bold tracking-tight text-foreground">
-                  {logo.text}
-                </span>
-              )}
+              <img src={logo.image} alt={logo.name} className={`${'height' in logo ? logo.height : 'h-20'} object-contain`} />
             </div>
           ))}
         </div>
@@ -45,13 +40,7 @@ export function LogoMarquee() {
               key={`${logo.name}-2-${index}`}
               className="flex items-center justify-center min-w-[140px] grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-300"
             >
-              {'image' in logo ? (
-                <img src={logo.image} alt={logo.name} className={`${'height' in logo ? logo.height : 'h-20'} object-contain`} />
-              ) : (
-                <span className="text-2xl font-bold tracking-tight text-foreground">
-                  {logo.text}
-                </span>
-              )}
+              <img src={logo.image} alt={logo.name} className={`${'height' in logo ? logo.height : 'h-20'} object-contain`} />
             </div>
           ))}
         </div>
