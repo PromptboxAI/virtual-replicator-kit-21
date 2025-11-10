@@ -64,7 +64,7 @@ const TokenAgents = () => {
 
       {/* Built on Badge */}
       <div className="text-center pb-4">
-        <p className="text-sm text-muted-foreground/60 flex items-center justify-center gap-2">
+        <p className="text-sm text-muted-foreground/60 flex items-center justify-center gap-1">
           Built on <img src={baseLogo} alt="Base" className="h-4 w-4 inline-block" /> • Powered by:
         </p>
       </div>
