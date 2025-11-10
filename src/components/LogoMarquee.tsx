@@ -11,7 +11,7 @@ const logos = [
   { name: 'Privy', image: privyLogo },
   { name: 'Supabase', image: supabaseLogo, height: 'h-25' },
   { name: 'MIT License', image: mitLogo },
-  { name: 'Gemini', image: geminiLogo },
+  { name: 'Gemini', image: geminiLogo, height: 'h-17' },
   { name: 'Claude', text: 'CLAUDE' },
 ];
 
