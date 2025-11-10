@@ -6,6 +6,7 @@ import { ArrowRight, Bot, Coins, TrendingUp, Users, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { LogoMarquee } from "@/components/LogoMarquee";
 const TokenAgents = () => {
   return <div className="min-h-screen bg-background">
       <Header />
@@ -64,6 +65,9 @@ const TokenAgents = () => {
           </div>
         </div>
       </section>
+
+      {/* Logo Marquee */}
+      <LogoMarquee />
 
       {/* Core Protocol Features */}
       <section className="py-32">
