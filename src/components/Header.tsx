@@ -40,7 +40,7 @@ export function Header() {
                 <img 
                   src="/lovable-uploads/2e7ad5f9-215d-4361-bcc3-b84d6328849c.png" 
                   alt="PROMPTBOX" 
-                  className="h-12 w-auto"
+                  className="h-8 md:h-12 w-auto"
                 />
               </Link>
               
@@ -81,83 +81,7 @@ export function Header() {
               </nav>
             </div>
 
-            {/* Mobile Menu Button */}
-            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-              <SheetTrigger asChild className="md:hidden">
-                <Button variant="ghost" size="icon">
-                  <Menu className="h-6 w-6" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-[280px] sm:w-[350px]">
-                <nav className="flex flex-col space-y-6 mt-8">
-                  <a 
-                    href="https://trade.promptbox.com" 
-                    className="text-lg font-medium text-foreground hover:text-primary transition-colors"
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    AI Agents
-                  </a>
-                  
-                  <div className="flex flex-col space-y-3">
-                    <p className="text-sm font-semibold text-muted-foreground">Create Agent</p>
-                    <Link 
-                      to="/create" 
-                      className="text-lg font-medium text-foreground hover:text-primary transition-colors pl-4"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Create Agent
-                    </Link>
-                    <Link 
-                      to="/faucet" 
-                      className="text-lg font-medium text-foreground hover:text-primary transition-colors pl-4"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Faucet
-                    </Link>
-                  </div>
-                  
-                  <Link 
-                    to="/learn" 
-                    className="text-lg font-medium text-foreground hover:text-primary transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Learn
-                  </Link>
-                  
-                  <Link 
-                    to="/about" 
-                    className="text-lg font-medium text-foreground hover:text-primary transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    About
-                  </Link>
-                  
-                  {isAdmin && (
-                    <Link 
-                      to="/admin" 
-                      className="text-lg font-medium text-red-500 hover:text-red-600 transition-colors"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      ADMIN
-                    </Link>
-                  )}
-                  
-                  {user && (
-                    <Link 
-                      to="/my-agents" 
-                      className="text-lg font-medium text-foreground hover:text-primary transition-colors"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Dashboard
-                    </Link>
-                  )}
-                </nav>
-              </SheetContent>
-            </Sheet>
-
-            {/* Actions */}
+            {/* Actions - Desktop and Mobile */}
             <div className="flex items-center space-x-2 md:space-x-4">
               <div className="hidden md:block">
                 <SystemStatusIndicator />
@@ -176,7 +100,7 @@ export function Header() {
               {/* Auth Section - Always visible */}
               {user ? (
                 <div className="flex items-center space-x-2">
-                  <Button asChild variant="dashboard">
+                  <Button asChild variant="dashboard" className="hidden md:flex">
                     <Link to="/my-agents">Dashboard</Link>
                   </Button>
                   <DropdownMenu>
@@ -243,16 +167,114 @@ export function Header() {
                   </DropdownMenu>
                 </div>
               ) : (
-                <Button onClick={signIn} variant="outline">
+                <Button onClick={signIn} variant="outline" className="hidden md:flex">
                   Sign In
                 </Button>
               )}
               
               {isAboutPage && (
-                <Button className="bg-white border border-gray-300 text-foreground hover:bg-gray-50 font-medium">
+                <Button className="hidden md:flex bg-white border border-gray-300 text-foreground hover:bg-gray-50 font-medium">
                   Whitepaper
                 </Button>
               )}
+              
+              {/* Mobile Menu Button */}
+              <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+                <SheetTrigger asChild className="md:hidden">
+                  <Button variant="ghost" size="icon">
+                    <Menu className="h-6 w-6" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-[280px] sm:w-[350px]">
+                  <nav className="flex flex-col space-y-6 mt-8">
+                    <a 
+                      href="https://trade.promptbox.com" 
+                      className="text-lg font-medium text-foreground hover:text-primary transition-colors"
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      AI Agents
+                    </a>
+                    
+                    <div className="flex flex-col space-y-3">
+                      <p className="text-sm font-semibold text-muted-foreground">Create Agent</p>
+                      <Link 
+                        to="/create" 
+                        className="text-lg font-medium text-foreground hover:text-primary transition-colors pl-4"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Create Agent
+                      </Link>
+                      <Link 
+                        to="/faucet" 
+                        className="text-lg font-medium text-foreground hover:text-primary transition-colors pl-4"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Faucet
+                      </Link>
+                    </div>
+                    
+                    <Link 
+                      to="/learn" 
+                      className="text-lg font-medium text-foreground hover:text-primary transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Learn
+                    </Link>
+                    
+                    <Link 
+                      to="/about" 
+                      className="text-lg font-medium text-foreground hover:text-primary transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      About
+                    </Link>
+                    
+                    {isAdmin && (
+                      <Link 
+                        to="/admin" 
+                        className="text-lg font-medium text-red-500 hover:text-red-600 transition-colors"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        ADMIN
+                      </Link>
+                    )}
+                    
+                    {user ? (
+                      <>
+                        <Link 
+                          to="/my-agents" 
+                          className="text-lg font-medium text-foreground hover:text-primary transition-colors"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          Dashboard
+                        </Link>
+                        
+                        <button
+                          onClick={() => {
+                            signOut();
+                            setMobileMenuOpen(false);
+                          }}
+                          className="text-lg font-medium text-destructive hover:text-destructive/90 transition-colors text-left"
+                        >
+                          Sign Out
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          signIn();
+                          setMobileMenuOpen(false);
+                        }}
+                        className="text-lg font-medium text-foreground hover:text-primary transition-colors text-left"
+                      >
+                        Sign In
+                      </button>
+                    )}
+                  </nav>
+                </SheetContent>
+              </Sheet>
             </div>
           </div>
         </div>
