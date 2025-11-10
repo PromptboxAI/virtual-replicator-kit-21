@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, User, LogOut, Wallet, ChevronDown } from "lucide-react";
+import { Search, User, LogOut, Wallet, ChevronDown, Menu, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useState } from "react";
 
 import TestnetOnlyBanner from "./TestnetOnlyBanner";
 import { SystemStatusIndicator } from "./SystemStatusIndicator";
@@ -14,12 +15,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 export function Header() {
   const location = useLocation();
   const isAboutPage = location.pathname === '/about';
   const { user, signOut, signIn, linkWallet, unlinkWallet } = useAuth();
   const { isAdmin } = useUserRole();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-50">
@@ -74,9 +81,87 @@ export function Header() {
               </nav>
             </div>
 
+            {/* Mobile Menu Button */}
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild className="md:hidden">
+                <Button variant="ghost" size="icon">
+                  <Menu className="h-6 w-6" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[280px] sm:w-[350px]">
+                <nav className="flex flex-col space-y-6 mt-8">
+                  <a 
+                    href="https://trade.promptbox.com" 
+                    className="text-lg font-medium text-foreground hover:text-primary transition-colors"
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    AI Agents
+                  </a>
+                  
+                  <div className="flex flex-col space-y-3">
+                    <p className="text-sm font-semibold text-muted-foreground">Create Agent</p>
+                    <Link 
+                      to="/create" 
+                      className="text-lg font-medium text-foreground hover:text-primary transition-colors pl-4"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Create Agent
+                    </Link>
+                    <Link 
+                      to="/faucet" 
+                      className="text-lg font-medium text-foreground hover:text-primary transition-colors pl-4"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Faucet
+                    </Link>
+                  </div>
+                  
+                  <Link 
+                    to="/learn" 
+                    className="text-lg font-medium text-foreground hover:text-primary transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Learn
+                  </Link>
+                  
+                  <Link 
+                    to="/about" 
+                    className="text-lg font-medium text-foreground hover:text-primary transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    About
+                  </Link>
+                  
+                  {isAdmin && (
+                    <Link 
+                      to="/admin" 
+                      className="text-lg font-medium text-red-500 hover:text-red-600 transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      ADMIN
+                    </Link>
+                  )}
+                  
+                  {user && (
+                    <Link 
+                      to="/my-agents" 
+                      className="text-lg font-medium text-foreground hover:text-primary transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Dashboard
+                    </Link>
+                  )}
+                </nav>
+              </SheetContent>
+            </Sheet>
+
             {/* Actions */}
-            <div className="flex items-center space-x-4">
-              <SystemStatusIndicator />
+            <div className="flex items-center space-x-2 md:space-x-4">
+              <div className="hidden md:block">
+                <SystemStatusIndicator />
+              </div>
               
               {!isAboutPage && (
                 <div className="relative hidden md:block">
