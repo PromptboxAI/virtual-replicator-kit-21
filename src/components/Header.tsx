@@ -198,8 +198,26 @@ export function Header() {
                     <Menu className="h-6 w-6" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right" className="w-[280px] sm:w-[350px]">
-                  <nav className="flex flex-col space-y-6 mt-8">
+                <SheetContent side="right" className="w-full h-full max-w-full p-0">
+                  <div className="flex flex-col h-full bg-background">
+                    {/* Header with close button */}
+                    <div className="flex items-center justify-between p-4 border-b">
+                      <img 
+                        src="/lovable-uploads/2e7ad5f9-215d-4361-bcc3-b84d6328849c.png" 
+                        alt="PROMPTBOX" 
+                        className="h-8 w-auto"
+                      />
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <X className="h-6 w-6" />
+                      </Button>
+                    </div>
+                    
+                    {/* Navigation Links */}
+                    <nav className="flex flex-col flex-1 p-6 space-y-6 overflow-y-auto">
                     <a 
                       href="https://trade.promptbox.com" 
                       className="text-lg font-medium text-foreground hover:text-primary transition-colors"
@@ -285,7 +303,17 @@ export function Header() {
                         Sign In
                       </button>
                     )}
-                  </nav>
+                    </nav>
+                    
+                    {/* Bottom Action Buttons */}
+                    {isAboutPage && (
+                      <div className="p-6 border-t">
+                        <Button className="w-full bg-white border border-gray-300 text-foreground hover:bg-gray-50 font-medium">
+                          Whitepaper
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 </SheetContent>
               </Sheet>
             </div>
