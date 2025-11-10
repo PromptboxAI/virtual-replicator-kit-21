@@ -9,7 +9,7 @@ const logos = [
   { name: 'Github', text: 'GITHUB' },
   { name: 'OpenAI', image: openaiLogo },
   { name: 'Privy', image: privyLogo },
-  { name: 'Supabase', image: supabaseLogo },
+  { name: 'Supabase', image: supabaseLogo, height: 'h-25' },
   { name: 'MIT License', image: mitLogo },
   { name: 'Gemini', image: geminiLogo },
   { name: 'Claude', text: 'CLAUDE' },
@@ -27,7 +27,7 @@ export function LogoMarquee() {
               className="flex items-center justify-center min-w-[140px] grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-300"
             >
               {'image' in logo ? (
-                <img src={logo.image} alt={logo.name} className="h-20 object-contain" />
+                <img src={logo.image} alt={logo.name} className={`${'height' in logo ? logo.height : 'h-20'} object-contain`} />
               ) : (
                 <span className="text-2xl font-bold tracking-tight text-foreground">
                   {logo.text}
@@ -45,7 +45,7 @@ export function LogoMarquee() {
               className="flex items-center justify-center min-w-[140px] grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-300"
             >
               {'image' in logo ? (
-                <img src={logo.image} alt={logo.name} className="h-20 object-contain" />
+                <img src={logo.image} alt={logo.name} className={`${'height' in logo ? logo.height : 'h-20'} object-contain`} />
               ) : (
                 <span className="text-2xl font-bold tracking-tight text-foreground">
                   {logo.text}
