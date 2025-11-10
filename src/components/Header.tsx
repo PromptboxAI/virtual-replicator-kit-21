@@ -127,6 +127,19 @@ export function Header() {
                         </div>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild className="cursor-pointer md:hidden">
+                        <Link to="/my-agents" className="flex items-center">
+                          {isAdmin ? 'Agent Dashboard' : 'Dashboard'}
+                        </Link>
+                      </DropdownMenuItem>
+                      {isAdmin && (
+                        <DropdownMenuItem asChild className="cursor-pointer md:hidden">
+                          <Link to="/admin" className="flex items-center">
+                            Admin Dashboard
+                          </Link>
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuSeparator className="md:hidden" />
                       {!user.wallet || user.wallet.walletClientType === 'privy' ? (
                         <DropdownMenuItem onClick={linkWallet} className="cursor-pointer">
                           <Wallet className="mr-2 h-4 w-4" />
@@ -141,22 +154,22 @@ export function Header() {
                       <DropdownMenuSeparator />
                       {isAdmin && (
                         <>
-                          <DropdownMenuItem asChild className="cursor-pointer">
+                          <DropdownMenuItem asChild className="cursor-pointer hidden md:flex">
                             <Link to="/admin" className="flex items-center">
                               Admin Dashboard
                             </Link>
                           </DropdownMenuItem>
-                          <DropdownMenuItem asChild className="cursor-pointer">
+                          <DropdownMenuItem asChild className="cursor-pointer hidden md:flex">
                             <Link to="/ai-agents" className="flex items-center">
                               Internal Agents List
                             </Link>
                           </DropdownMenuItem>
-                          <DropdownMenuItem asChild className="cursor-pointer">
+                          <DropdownMenuItem asChild className="cursor-pointer hidden md:flex">
                             <Link to="/test-sepolia-token" className="flex items-center">
                               Test Sepolia Token
                             </Link>
                           </DropdownMenuItem>
-                          <DropdownMenuSeparator />
+                          <DropdownMenuSeparator className="hidden md:block" />
                         </>
                       )}
                       <DropdownMenuItem onClick={signOut} className="cursor-pointer text-destructive">
