@@ -2,6 +2,7 @@ import React from 'react';
 import privyLogo from '@/assets/privy-logo.png';
 import openaiLogo from '@/assets/openai-logo.png';
 import mitLogo from '@/assets/mit-logo.png';
+import geminiLogo from '@/assets/gemini-logo.png';
 
 const logos = [
   { name: 'Github', text: 'GITHUB' },
@@ -9,7 +10,7 @@ const logos = [
   { name: 'Privy', image: privyLogo },
   { name: 'Supabase', text: 'SUPABASE' },
   { name: 'MIT License', image: mitLogo },
-  { name: 'Google', text: 'GOOGLE' },
+  { name: 'Gemini', image: geminiLogo },
   { name: 'Claude', text: 'CLAUDE' },
 ];
 
