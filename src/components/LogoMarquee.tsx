@@ -14,7 +14,7 @@ const logos = [
 
 export function LogoMarquee() {
   return (
-    <div className="w-full overflow-hidden bg-muted/20 py-12 border-y border-border/50">
+    <div className="w-full overflow-hidden bg-muted/20 py-6 border-y border-border/50">
       <div className="relative flex">
         {/* First set of logos */}
         <div className="flex animate-marquee gap-16 pr-16">
