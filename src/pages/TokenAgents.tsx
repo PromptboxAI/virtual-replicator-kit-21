@@ -24,7 +24,7 @@ const TokenAgents = () => {
               The Agent Graduation Protocol
             </h1>
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto font-light leading-relaxed">
-              Turn agents into investable, cash-flowing micro-SaaS with proof of demand and verifiable revenue.
+              Turn AI agents into investable, cash-flowing micro-SaaS with proof of demand and verifiable revenue.
             </p>
           </div>
 
