@@ -28,6 +28,7 @@ serve(async (req) => {
     const deploymentStatus = url.searchParams.get('deploymentStatus'); // 'deployed', 'not_deployed', etc.
     const networkEnvironment = url.searchParams.get('networkEnvironment'); // 'testnet', 'mainnet'
     const hasContract = url.searchParams.get('hasContract'); // 'true' to only show agents with token_address
+    const creatorId = url.searchParams.get('creatorId');
 
     // Sort parameters
     const sortBy = url.searchParams.get('sortBy') || 'created_at'; // created_at, market_cap, volume_24h, token_holders
@@ -43,6 +44,7 @@ serve(async (req) => {
       deploymentStatus,
       networkEnvironment,
       hasContract,
+      creatorId,
       sortBy, 
       sortOrder 
     });
@@ -84,6 +86,10 @@ serve(async (req) => {
 
     if (hasContract === 'true') {
       query = query.not('token_address', 'is', null);
+    }
+
+    if (creatorId) {
+      query = query.eq('creator_id', creatorId);
     }
 
     // Apply sorting
@@ -131,7 +137,8 @@ serve(async (req) => {
           chainId: chainId ? parseInt(chainId) : null,
           deploymentStatus: deploymentStatus || null,
           networkEnvironment: networkEnvironment || null,
-          hasContract: hasContract === 'true' || null
+          hasContract: hasContract === 'true' || null,
+          creatorId: creatorId || null
         },
         sort: {
           by: sortField,
