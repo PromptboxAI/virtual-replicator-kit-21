@@ -198,6 +198,9 @@ const Index = () => {
           <div className="absolute inset-0 -mx-4 -my-8 overflow-hidden">
             <AnimatedBackground />
           </div>
+          <div className="text-sm text-muted-foreground tracking-widest uppercase mb-3 relative z-10">
+            Funded. Liquid. Verifiable.
+          </div>
           <div className="flex items-center justify-center gap-2 mb-4 relative z-10">
             <h1 className="text-6xl font-bold text-foreground leading-tight">
               Promptbox Trade
