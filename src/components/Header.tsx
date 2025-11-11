@@ -40,7 +40,7 @@ export function Header() {
                 <img 
                   src="/lovable-uploads/2e7ad5f9-215d-4361-bcc3-b84d6328849c.png" 
                   alt="PROMPTBOX" 
-                  className="h-8 md:h-12 w-auto"
+                  className="h-10 md:h-12 w-auto"
                 />
               </Link>
               
@@ -200,7 +200,7 @@ export function Header() {
                       <img 
                         src="/lovable-uploads/2e7ad5f9-215d-4361-bcc3-b84d6328849c.png" 
                         alt="PROMPTBOX" 
-                        className="h-8 w-auto"
+                        className="h-10 w-auto"
                       />
                       <Button 
                         variant="ghost" 
