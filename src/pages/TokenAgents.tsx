@@ -14,7 +14,7 @@ const TokenAgents = () => {
       
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-32">
+      <section className="container mx-auto px-4 py-24">
         <div className="max-w-5xl mx-auto text-center space-y-12 animate-fade-in">
           <div className="space-y-8">
             <div className="text-sm text-muted-foreground tracking-widest uppercase mb-4">
