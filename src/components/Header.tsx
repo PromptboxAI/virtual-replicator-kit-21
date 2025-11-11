@@ -73,11 +73,6 @@ export function Header() {
                 <Link to="/about" className="text-foreground hover:text-primary transition-colors font-medium">
                   About
                 </Link>
-                {isAdmin && (
-                  <Link to="/admin" className="text-red-500 hover:text-red-600 transition-colors font-medium">
-                    ADMIN
-                  </Link>
-                )}
               </nav>
             </div>
 
@@ -261,16 +256,6 @@ export function Header() {
                     >
                       About
                     </Link>
-                    
-                    {isAdmin && (
-                      <Link 
-                        to="/admin" 
-                        className="text-lg font-medium text-red-500 hover:text-red-600 transition-colors"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        ADMIN
-                      </Link>
-                    )}
                     
                     {user ? (
                       <>
