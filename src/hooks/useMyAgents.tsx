@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { Agent } from './useAgents';
+
+const PROMPTBOX_API_BASE = 'https://cjzazuuwapsliacmjxfg.supabase.co/functions/v1';
 
 export function useMyAgents(userId: string | undefined) {
   const [myAgents, setMyAgents] = useState<Agent[]>([]);
@@ -16,14 +17,24 @@ export function useMyAgents(userId: string | undefined) {
 
     async function fetchMyAgents() {
       try {
-        const { data, error } = await supabase
-          .from('agents')
-          .select('*')
-          .eq('creator_id', userId)
-          .order('created_at', { ascending: false });
+        // Use Promptbox API to fetch only successfully deployed agents
+        const params = new URLSearchParams({
+          testMode: 'false', // Only production agents
+          hasContract: 'true', // Only agents with deployed contracts
+          deploymentStatus: 'deployed', // Only successfully deployed
+          creatorId: userId, // Filter by creator
+          sortBy: 'created_at',
+          sortOrder: 'desc'
+        });
 
-        if (error) throw error;
-        setMyAgents(data || []);
+        const response = await fetch(`${PROMPTBOX_API_BASE}/list-tokens?${params}`);
+        
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
+
+        const result = await response.json();
+        setMyAgents(result.data || []);
       } catch (err: any) {
         console.error('Error fetching my agents:', err);
         setError(err.message);
@@ -40,14 +51,23 @@ export function useMyAgents(userId: string | undefined) {
     
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('agents')
-        .select('*')
-        .eq('creator_id', userId)
-        .order('created_at', { ascending: false });
+      const params = new URLSearchParams({
+        testMode: 'false',
+        hasContract: 'true',
+        deploymentStatus: 'deployed',
+        creatorId: userId,
+        sortBy: 'created_at',
+        sortOrder: 'desc'
+      });
 
-      if (error) throw error;
-      setMyAgents(data || []);
+      const response = await fetch(`${PROMPTBOX_API_BASE}/list-tokens?${params}`);
+      
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+
+      const result = await response.json();
+      setMyAgents(result.data || []);
     } catch (err: any) {
       console.error('Error refetching my agents:', err);
       setError(err.message);

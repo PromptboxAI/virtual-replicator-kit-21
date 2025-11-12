@@ -174,3 +174,6 @@ verify_jwt = false
 
 [functions.resolve-token]
 verify_jwt = false
+
+[functions.cleanup-failed-agents]
+verify_jwt = false

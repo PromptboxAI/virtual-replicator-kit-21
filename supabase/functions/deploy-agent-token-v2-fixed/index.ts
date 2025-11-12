@@ -133,10 +133,10 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Validate agent exists
+    // Validate agent exists and check deployment status
     const { data: agent, error: agentError } = await supabase
       .from('agents')
-      .select('id, token_address')
+      .select('id, token_address, status, deployment_tx_hash')
       .eq('id', agentId)
       .maybeSingle();
 
@@ -145,7 +145,32 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ success: false, error: `Agent not found: ${agentError.message}` }), { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    console.log('Agent current token_address:', agent?.token_address, '(will be updated)');
+    if (!agent) {
+      return new Response(JSON.stringify({ success: false, error: 'Agent not found' }), { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    // Check if already successfully deployed
+    if (agent.deployment_tx_hash && agent.token_address) {
+      console.log('⚠️ Agent already deployed:', agent.token_address);
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          contractAddress: agent.token_address, 
+          transactionHash: agent.deployment_tx_hash,
+          message: 'Agent already deployed',
+          isRetry: false
+        }), 
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Check if this is a retry (FAILED or ACTIVATING without tx_hash)
+    const isRetry = agent.status === 'FAILED' || (agent.status === 'ACTIVATING' && !agent.deployment_tx_hash);
+    if (isRetry) {
+      console.log('♻️ Retry detected for agent:', agentId, '- Status:', agent.status);
+    }
+
+    console.log('Agent current state - token_address:', agent?.token_address, 'status:', agent?.status);
 
     // Deploy token
     const deploymentResult = await deployERC20(name, symbol, agentId, creatorAddress || 'system');

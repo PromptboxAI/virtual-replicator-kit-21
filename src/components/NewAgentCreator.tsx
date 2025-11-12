@@ -29,6 +29,7 @@ export function NewAgentCreator() {
   const [deploymentProgress, setDeploymentProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState<string>('');
   const [contractAddress, setContractAddress] = useState<string>('');
+  const [failedAgentId, setFailedAgentId] = useState<string | null>(null);
   const [agentData, setAgentData] = useState({
     name: '',
     symbol: '',
@@ -56,7 +57,7 @@ export function NewAgentCreator() {
   };
 
   // 🔒 DEBOUNCED DEPLOYMENT FUNCTION to prevent double-clicks
-  const createAgentV2 = useCallback(async () => {
+  const createAgentV2 = useCallback(async (retryAgentId?: string) => {
     if (!address) {
       toast({
         title: "Wallet Not Connected",
@@ -108,27 +109,52 @@ export function NewAgentCreator() {
       updateStepStatus('validate', 'completed');
       setDeploymentProgress(20);
 
-      // Step 2: Create agent record
+      // Step 2: Create or update agent record
       updateStepStatus('database', 'loading');
       
-      const { data: agent, error: agentError } = await supabase
-        .from('agents')
-        .insert({
-          name: agentData.name,
-          symbol: agentData.symbol.toUpperCase(),
-          description: agentData.description,
-          category: agentData.category,
-          creator_id: address,
-          framework: 'G.A.M.E.',
-          deployment_status: 'deploying', // Mark as deploying
-          network_environment: 'testnet', // Base Sepolia
-          chain_id: 84532, // Base Sepolia
-          status: 'ACTIVATING'
-        })
-        .select()
-        .single();
+      let agent;
+      
+      if (retryAgentId) {
+        // RETRY: Update existing failed agent
+        const { data: retryAgent, error: updateError } = await supabase
+          .from('agents')
+          .update({
+            status: 'ACTIVATING',
+            deployment_status: 'deploying',
+            is_active: false,
+            failed_at: null,
+            failure_reason: null,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', retryAgentId)
+          .select()
+          .single();
 
-      if (agentError) throw agentError;
+        if (updateError) throw new Error(`Retry failed: ${updateError.message}`);
+        agent = retryAgent;
+        console.log('♻️ Retrying deployment for agent:', agent.id);
+      } else {
+        // NEW: Create new agent record
+        const { data: newAgent, error: agentError } = await supabase
+          .from('agents')
+          .insert({
+            name: agentData.name,
+            symbol: agentData.symbol.toUpperCase(),
+            description: agentData.description,
+            category: agentData.category,
+            creator_id: address,
+            framework: 'G.A.M.E.',
+            deployment_status: 'deploying',
+            network_environment: 'testnet',
+            chain_id: 84532,
+            status: 'ACTIVATING'
+          })
+          .select()
+          .single();
+
+        if (agentError) throw agentError;
+        agent = newAgent;
+      }
 
       updateStepStatus('database', 'completed');
       setDeploymentProgress(40);
@@ -212,6 +238,15 @@ export function NewAgentCreator() {
       if (currentStep) {
         updateStepStatus(currentStep, 'error', error.message);
       }
+
+      // Store failed agent ID for retry
+      const failedId = deploymentSteps.find(s => s.status === 'completed' && s.id === 'database')
+        ? contractAddress // If we got to contract deployment, we have the ID
+        : null;
+      
+      if (failedId) {
+        setFailedAgentId(failedId);
+      }
       
       toast({
         title: "Deployment Failed",
@@ -221,7 +256,16 @@ export function NewAgentCreator() {
     } finally {
       setIsCreating(false);
     }
-  }, [address, agentData, currentStep, navigate, toast]); // Dependencies for useCallback
+  }, [address, agentData, currentStep, navigate, toast, contractAddress, deploymentSteps]);
+
+  const handleRetry = () => {
+    if (failedAgentId) {
+      createAgentV2(failedAgentId);
+    } else {
+      // No failed agent ID means we failed before DB insert, just retry from scratch
+      createAgentV2();
+    }
+  };
 
   const agentCategories = [
     "DeFi", "Gaming", "Social", "Trading", "Content", "Analytics", "NFTs", "Education"
@@ -408,8 +452,28 @@ export function NewAgentCreator() {
             </div>
           )}
 
+          {/* Show retry button if deployment failed */}
+          {deploymentSteps.some(s => s.status === 'error') && !isCreating && (
+            <Alert className="border-red-200 bg-red-50 dark:bg-red-950">
+              <AlertCircle className="w-4 h-4 text-red-600" />
+              <AlertDescription className="text-red-900 dark:text-red-100">
+                <div className="flex items-center justify-between">
+                  <span>Deployment failed. You can retry with the same name and symbol.</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleRetry}
+                    className="ml-4"
+                  >
+                    Retry Deployment
+                  </Button>
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
+
           <Button
-            onClick={createAgentV2}
+            onClick={() => createAgentV2()}
             disabled={isCreating || !address || !agentData.name || !agentData.symbol}
             className="w-full"
             size="lg"

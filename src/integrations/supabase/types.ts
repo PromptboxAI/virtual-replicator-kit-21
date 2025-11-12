@@ -1353,6 +1353,8 @@ export type Database = {
           deployment_tx_hash: string | null
           deployment_verified: boolean | null
           description: string | null
+          failed_at: string | null
+          failure_reason: string | null
           framework: string | null
           graduation_event_id: string | null
           graduation_mode: string | null
@@ -1414,6 +1416,8 @@ export type Database = {
           deployment_tx_hash?: string | null
           deployment_verified?: boolean | null
           description?: string | null
+          failed_at?: string | null
+          failure_reason?: string | null
           framework?: string | null
           graduation_event_id?: string | null
           graduation_mode?: string | null
@@ -1475,6 +1479,8 @@ export type Database = {
           deployment_tx_hash?: string | null
           deployment_verified?: boolean | null
           description?: string | null
+          failed_at?: string | null
+          failure_reason?: string | null
           framework?: string | null
           graduation_event_id?: string | null
           graduation_mode?: string | null
@@ -3374,62 +3380,38 @@ export type Database = {
       }
       token_metadata_cache: {
         Row: {
-          allow_automated_trading: boolean | null
           avatar_url: string | null
-          block_number: number | null
           bonding_curve_supply: number | null
           category: string | null
           chain_id: number | null
-          circulating_supply: number | null
           created_at: string | null
-          created_p0: number | null
-          created_p1: number | null
-          created_prompt_usd_rate: number | null
-          creation_cost: number | null
-          creation_expires_at: string | null
-          creation_locked: boolean | null
-          creation_mode: string | null
           creator_ens_name: string | null
           creator_id: string | null
-          creator_prebuy_amount: number | null
           creator_wallet_address: string | null
           current_price: number | null
           demo_videos: Json | null
           deployed_at: string | null
-          deployment_method: string | null
           deployment_status: string | null
           deployment_tx_hash: string | null
           deployment_verified: boolean | null
           description: string | null
           discord_url: string | null
           framework: string | null
-          graduation_event_id: string | null
-          graduation_mode: string | null
-          graduation_threshold: number | null
           id: string | null
           is_active: boolean | null
           market_cap: number | null
-          market_cap_usd: number | null
-          marketing_description: string | null
-          max_trade_amount: number | null
           name: string | null
           network_environment: string | null
           price_change_24h: number | null
-          pricing_model: string | null
           prompt_raised: number | null
-          prompt_usd_rate: number | null
           screenshots: Json | null
           status: string | null
           symbol: string | null
-          target_market_cap_usd: number | null
           telegram_url: string | null
           test_mode: boolean | null
           token_address: string | null
-          token_address_normalized: string | null
           token_graduated: boolean | null
           token_holders: number | null
-          total_supply: number | null
-          trading_wallet_address: string | null
           twitter_url: string | null
           twitter_username: string | null
           updated_at: string | null
@@ -3438,15 +3420,7 @@ export type Database = {
           whitepaper_url: string | null
           youtube_url: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "agents_graduation_event_id_fkey"
-            columns: ["graduation_event_id"]
-            isOneToOne: false
-            referencedRelation: "agent_graduation_events"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Functions: {
