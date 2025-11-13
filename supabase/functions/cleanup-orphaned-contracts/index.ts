@@ -18,23 +18,40 @@ Deno.serve(async (req) => {
 
     console.log('🧹 Cleaning up orphaned deployed_contracts...');
 
-    // Find orphaned contracts (contracts without corresponding agents)
-    const { data: orphanedContracts, error: findError } = await supabase
-      .from('deployed_contracts')
-      .select('id, agent_id, contract_address')
-      .is('agent_id', null)
-      .or('agent_id.not.in.(select id from agents)');
+    // Get all agent IDs
+    const { data: agents } = await supabase
+      .from('agents')
+      .select('id');
+    
+    const validAgentIds = agents?.map(a => a.id) || [];
+    console.log(`📋 Found ${validAgentIds.length} valid agents`);
 
-    if (findError) {
-      console.error('❌ Error finding orphaned contracts:', findError);
-    }
-
-    // Delete using RPC or direct query with service role
-    const { data: deletedContracts, error: deleteError } = await supabase
+    // Get all deployed contracts
+    const { data: allContracts } = await supabase
       .from('deployed_contracts')
-      .delete()
-      .is('agent_id', null)
       .select('id, agent_id, contract_address');
+
+    // Find orphaned contracts (those with agent_ids not in the valid list)
+    const orphanedContracts = allContracts?.filter(
+      contract => contract.agent_id && !validAgentIds.includes(contract.agent_id)
+    ) || [];
+
+    const orphanedIds = orphanedContracts.map(c => c.id);
+    console.log(`🗑️ Found ${orphanedIds.length} orphaned contracts to delete`);
+
+    let deletedContracts = [];
+    let deleteError = null;
+
+    if (orphanedIds.length > 0) {
+      const result = await supabase
+        .from('deployed_contracts')
+        .delete()
+        .in('id', orphanedIds)
+        .select('id, agent_id, contract_address');
+      
+      deletedContracts = result.data || [];
+      deleteError = result.error;
+    }
 
     if (deleteError) {
       console.error('❌ Error deleting orphaned contracts:', deleteError);
