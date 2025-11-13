@@ -46,20 +46,35 @@ Deno.serve(async (req) => {
     console.log(`✅ Marked ${markedCount} stuck agents as FAILED`);
 
     // ============================================================
-    // Step 2: Deactivate deployed_contracts for FAILED agents
+    // Step 2: Fetch all FAILED agent IDs
+    // ============================================================
+    const { data: failedAgents } = await supabase
+      .from('agents')
+      .select('id')
+      .eq('status', 'FAILED');
+
+    const failedAgentIds = failedAgents?.map(a => a.id) || [];
+    console.log(`📋 Found ${failedAgentIds.length} FAILED agents to clean up`);
+
+    // ============================================================
+    // Step 3: Deactivate deployed_contracts for FAILED agents
     // This prevents foreign key constraint violations
     // ============================================================
-    const { error: deactivateError } = await supabase
-      .from('deployed_contracts')
-      .update({ is_active: false })
-      .in('agent_id', (await supabase.from('agents').select('id').eq('status', 'FAILED')).data?.map(a => a.id) || []);
+    if (failedAgentIds.length > 0) {
+      const { error: deactivateError } = await supabase
+        .from('deployed_contracts')
+        .update({ is_active: false })
+        .in('agent_id', failedAgentIds);
 
-    if (deactivateError) {
-      console.warn('⚠️ Error deactivating deployed contracts:', deactivateError);
+      if (deactivateError) {
+        console.warn('⚠️ Error deactivating deployed contracts:', deactivateError);
+      } else {
+        console.log(`✅ Deactivated deployed_contracts for ${failedAgentIds.length} agents`);
+      }
     }
 
     // ============================================================
-    // Step 3: Delete ALL FAILED agents
+    // Step 4: Delete ALL FAILED agents
     // Name/symbol now available for retry
     // ============================================================
     const { data: deletedAgents, error: deleteError } = await supabase
@@ -77,7 +92,7 @@ Deno.serve(async (req) => {
     console.log(`🗑️ Deleted ${deletedCount} FAILED agents`);
 
     // ============================================================
-    // Step 4: Log cleanup actions to system_alerts
+    // Step 5: Log cleanup actions to system_alerts
     // ============================================================
     if (markedCount > 0 || deletedCount > 0) {
       const alertData = {
@@ -103,7 +118,7 @@ Deno.serve(async (req) => {
     }
 
     // ============================================================
-    // Step 5: Return summary
+    // Step 6: Return summary
     // ============================================================
     const summary = {
       success: true,
