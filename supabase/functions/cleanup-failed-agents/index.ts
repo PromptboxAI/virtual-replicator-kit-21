@@ -46,8 +46,21 @@ Deno.serve(async (req) => {
     console.log(`✅ Marked ${markedCount} stuck agents as FAILED`);
 
     // ============================================================
-    // Step 2: Immediately delete ALL FAILED agents
-    // This makes name/symbol available for retry right away
+    // Step 2: Deactivate deployed_contracts for FAILED agents
+    // This prevents foreign key constraint violations
+    // ============================================================
+    const { error: deactivateError } = await supabase
+      .from('deployed_contracts')
+      .update({ is_active: false })
+      .in('agent_id', (await supabase.from('agents').select('id').eq('status', 'FAILED')).data?.map(a => a.id) || []);
+
+    if (deactivateError) {
+      console.warn('⚠️ Error deactivating deployed contracts:', deactivateError);
+    }
+
+    // ============================================================
+    // Step 3: Delete ALL FAILED agents
+    // Name/symbol now available for retry
     // ============================================================
     const { data: deletedAgents, error: deleteError } = await supabase
       .from('agents')
@@ -64,7 +77,7 @@ Deno.serve(async (req) => {
     console.log(`🗑️ Deleted ${deletedCount} FAILED agents`);
 
     // ============================================================
-    // Step 3: Log cleanup actions to system_alerts
+    // Step 4: Log cleanup actions to system_alerts
     // ============================================================
     if (markedCount > 0 || deletedCount > 0) {
       const alertData = {
@@ -90,7 +103,7 @@ Deno.serve(async (req) => {
     }
 
     // ============================================================
-    // Step 4: Return summary
+    // Step 5: Return summary
     // ============================================================
     const summary = {
       success: true,
