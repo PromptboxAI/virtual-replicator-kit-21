@@ -177,3 +177,6 @@ verify_jwt = false
 
 [functions.cleanup-failed-agents]
 verify_jwt = false
+
+[functions.get-agent-details]
+verify_jwt = false
