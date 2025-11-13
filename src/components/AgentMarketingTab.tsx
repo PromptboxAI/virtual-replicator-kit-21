@@ -89,7 +89,9 @@ export function AgentMarketingTab({ agent }: AgentMarketingTabProps) {
   };
 
   const hasScreenshots = marketingData?.screenshots && Array.isArray(marketingData.screenshots) && marketingData.screenshots.length > 0;
+  const hasVideos = marketingData?.demo_videos && Array.isArray(marketingData.demo_videos) && marketingData.demo_videos.length > 0;
   const hasMarketingDescription = marketingData?.description;
+  const hasDescription = hasMarketingDescription || agent.description;
   
   // Real-time graduation status - Phase 3 implementation
   const { isGraduated } = useAgentRealtime(agent.id, {
@@ -213,92 +215,89 @@ export function AgentMarketingTab({ agent }: AgentMarketingTabProps) {
       </div>
 
       {/* What This Agent Does */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Zap className="h-5 w-5" />
-            What This Agent Does
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <p className="text-muted-foreground">
-              {hasMarketingDescription ? marketingData.description : (agent.description || 'This AI agent provides automated capabilities using advanced machine learning and blockchain integration.')}
-            </p>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-              <div className="text-center p-4 border rounded-lg">
-                <Code className="h-8 w-8 mx-auto mb-2 text-primary" />
-                <h4 className="font-medium mb-1">Automated Logic</h4>
-                <p className="text-sm text-muted-foreground">Executes predefined workflows and decision trees</p>
-              </div>
-              <div className="text-center p-4 border rounded-lg">
-                <Activity className="h-8 w-8 mx-auto mb-2 text-primary" />
-                <h4 className="font-medium mb-1">Real-time Processing</h4>
-                <p className="text-sm text-muted-foreground">Responds to market conditions and user inputs</p>
-              </div>
-              <div className="text-center p-4 border rounded-lg">
-                <BarChart3 className="h-8 w-8 mx-auto mb-2 text-primary" />
-                <h4 className="font-medium mb-1">Performance Tracking</h4>
-                <p className="text-sm text-muted-foreground">Monitors and optimizes its own performance</p>
+      {hasDescription && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Zap className="h-5 w-5" />
+              What This Agent Does
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <p className="text-muted-foreground">
+                {hasMarketingDescription ? marketingData.description : (agent.description || 'This AI agent provides automated capabilities using advanced machine learning and blockchain integration.')}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                <div className="text-center p-4 border rounded-lg">
+                  <Code className="h-8 w-8 mx-auto mb-2 text-primary" />
+                  <h4 className="font-medium mb-1">Automated Logic</h4>
+                  <p className="text-sm text-muted-foreground">Executes predefined workflows and decision trees</p>
+                </div>
+                <div className="text-center p-4 border rounded-lg">
+                  <Activity className="h-8 w-8 mx-auto mb-2 text-primary" />
+                  <h4 className="font-medium mb-1">Real-time Processing</h4>
+                  <p className="text-sm text-muted-foreground">Responds to market conditions and user inputs</p>
+                </div>
+                <div className="text-center p-4 border rounded-lg">
+                  <BarChart3 className="h-8 w-8 mx-auto mb-2 text-primary" />
+                  <h4 className="font-medium mb-1">Performance Tracking</h4>
+                  <p className="text-sm text-muted-foreground">Monitors and optimizes its own performance</p>
+                </div>
               </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Screenshots & Media */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Camera className="h-5 w-5" />
-            Screenshots & Media
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <p className="text-muted-foreground">
-              Visual demonstrations of the agent's capabilities and interface.
-            </p>
-            
-            {hasScreenshots ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {marketingData.screenshots.map((screenshot: string, index: number) => (
-                  <div key={index} className="aspect-video rounded-lg overflow-hidden border">
-                    <img 
-                      src={screenshot} 
-                      alt={`${agent.name} Screenshot ${index + 1}`}
-                      className="w-full h-full object-cover hover:scale-105 transition-transform cursor-pointer"
-                      onClick={() => window.open(screenshot, '_blank')}
-                    />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
-                  <div className="text-center text-muted-foreground">
-                    <Camera className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm">Agent Interface Preview</p>
-                  </div>
-                </div>
-                <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
-                  <div className="text-center text-muted-foreground">
-                    <BarChart3 className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm">Performance Dashboard</p>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            {!hasScreenshots && (
-              <p className="text-xs text-muted-foreground">
-                Screenshots will be available once the creator uploads them via the Agent Dashboard.
+      {(hasScreenshots || hasVideos) && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Camera className="h-5 w-5" />
+              Screenshots & Media
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <p className="text-muted-foreground">
+                Visual demonstrations of the agent's capabilities and interface.
               </p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+              
+              {hasScreenshots && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {marketingData.screenshots.map((screenshot: string, index: number) => (
+                    <div key={index} className="aspect-video rounded-lg overflow-hidden border">
+                      <img 
+                        src={screenshot} 
+                        alt={`${agent.name} Screenshot ${index + 1}`}
+                        className="w-full h-full object-cover hover:scale-105 transition-transform cursor-pointer"
+                        onClick={() => window.open(screenshot, '_blank')}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {hasVideos && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  {marketingData.demo_videos.map((video: string, index: number) => (
+                    <div key={index} className="aspect-video rounded-lg overflow-hidden border">
+                      <video 
+                        src={video} 
+                        controls
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Social Links & Resources */}
       {marketingData && (marketingData.website_url || marketingData.youtube_url || marketingData.twitter_url || marketingData.discord_url || marketingData.telegram_url || marketingData.whitepaper_url) && (
