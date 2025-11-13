@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { CalendarDays, Users, Activity, Code, Zap, Camera, BarChart3, ExternalLink } from 'lucide-react';
+import { CalendarDays, Users, Activity, Code, Zap, Camera, BarChart3, ExternalLink, MapPin, Linkedin, Twitter, CheckCircle2, Clock, Target } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { isAgentGraduatedV3, formatPriceV3, getCurrentPriceV3, tokensSoldFromPromptRaisedV3 } from '@/lib/bondingCurveV3';
 import { useAgentRealtime } from '@/hooks/useAgentRealtime';
@@ -66,6 +66,8 @@ export function AgentMarketingTab({ agent }: AgentMarketingTabProps) {
 
   const [marketingData, setMarketingData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [teamMembers, setTeamMembers] = useState<any[]>([]);
+  const [roadmapMilestones, setRoadmapMilestones] = useState<any[]>([]);
 
   const loadMarketingData = async () => {
     try {
@@ -81,6 +83,28 @@ export function AgentMarketingTab({ agent }: AgentMarketingTabProps) {
       }
 
       setMarketingData(data);
+
+      // Load team members
+      const { data: teamData, error: teamError } = await supabase
+        .from('agent_team_members')
+        .select('*')
+        .eq('agent_id', agent.id)
+        .order('order_index', { ascending: true });
+
+      if (!teamError && teamData) {
+        setTeamMembers(teamData);
+      }
+
+      // Load roadmap milestones
+      const { data: roadmapData, error: roadmapError } = await supabase
+        .from('agent_roadmap_milestones')
+        .select('*')
+        .eq('agent_id', agent.id)
+        .order('order_index', { ascending: true });
+
+      if (!roadmapError && roadmapData) {
+        setRoadmapMilestones(roadmapData);
+      }
     } catch (error) {
       console.error('Error loading marketing data:', error);
     } finally {
@@ -395,18 +419,145 @@ export function AgentMarketingTab({ agent }: AgentMarketingTabProps) {
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 p-3 border rounded-lg hover:bg-muted transition-colors"
                 >
-                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                    <svg className="h-4 w-4 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <svg className="h-4 w-4 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                      <polyline points="14,2 14,8 20,8"/>
-                      <line x1="16" y1="13" x2="8" y2="13"/>
-                      <line x1="16" y1="17" x2="8" y2="17"/>
-                      <polyline points="10,9 9,9 8,9"/>
+                      <path d="M14 2v6h6"/>
+                      <path d="M16 13H8"/>
+                      <path d="M16 17H8"/>
+                      <path d="M10 9H8"/>
                     </svg>
                   </div>
                   <span className="text-sm font-medium">Whitepaper</span>
                 </a>
               )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Team Members */}
+      {teamMembers.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Team Members
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {teamMembers.map((member) => (
+                <div key={member.id} className="flex flex-col items-center text-center space-y-3 p-4 border rounded-lg hover:border-primary/50 transition-colors">
+                  <Avatar className="h-20 w-20">
+                    <AvatarImage src={member.avatar_url} alt={member.name} />
+                    <AvatarFallback className="text-lg">
+                      {member.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h4 className="font-semibold">{member.name}</h4>
+                    <p className="text-sm text-muted-foreground">{member.role}</p>
+                  </div>
+                  {member.bio && (
+                    <p className="text-sm text-muted-foreground line-clamp-3">{member.bio}</p>
+                  )}
+                  {(member.twitter_url || member.linkedin_url) && (
+                    <div className="flex gap-2 pt-2">
+                      {member.twitter_url && (
+                        <a 
+                          href={member.twitter_url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="p-2 border rounded-lg hover:bg-muted transition-colors"
+                        >
+                          <Twitter className="h-4 w-4" />
+                        </a>
+                      )}
+                      {member.linkedin_url && (
+                        <a 
+                          href={member.linkedin_url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="p-2 border rounded-lg hover:bg-muted transition-colors"
+                        >
+                          <Linkedin className="h-4 w-4" />
+                        </a>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Roadmap */}
+      {roadmapMilestones.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MapPin className="h-5 w-5" />
+              Roadmap
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {roadmapMilestones.map((milestone, index) => (
+                <div key={milestone.id} className="flex gap-4">
+                  <div className="flex flex-col items-center">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                      milestone.status === 'completed' 
+                        ? 'bg-green-100 text-green-600' 
+                        : milestone.status === 'in_progress'
+                        ? 'bg-blue-100 text-blue-600'
+                        : 'bg-muted text-muted-foreground'
+                    }`}>
+                      {milestone.status === 'completed' ? (
+                        <CheckCircle2 className="h-5 w-5" />
+                      ) : milestone.status === 'in_progress' ? (
+                        <Clock className="h-5 w-5" />
+                      ) : (
+                        <Target className="h-5 w-5" />
+                      )}
+                    </div>
+                    {index < roadmapMilestones.length - 1 && (
+                      <div className="w-0.5 h-full min-h-[60px] bg-border mt-2" />
+                    )}
+                  </div>
+                  <div className="flex-1 pb-6">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <h4 className="font-semibold">{milestone.title}</h4>
+                        {milestone.description && (
+                          <p className="text-sm text-muted-foreground mt-1">{milestone.description}</p>
+                        )}
+                      </div>
+                      <Badge variant={
+                        milestone.status === 'completed' 
+                          ? 'default' 
+                          : milestone.status === 'in_progress'
+                          ? 'secondary'
+                          : 'outline'
+                      }>
+                        {milestone.status === 'completed' ? 'Completed' : milestone.status === 'in_progress' ? 'In Progress' : 'Upcoming'}
+                      </Badge>
+                    </div>
+                    {milestone.target_date && (
+                      <div className="flex items-center gap-1 mt-2 text-sm text-muted-foreground">
+                        <CalendarDays className="h-3 w-3" />
+                        <span>{new Date(milestone.target_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                      </div>
+                    )}
+                    {milestone.completed_at && milestone.status === 'completed' && (
+                      <div className="text-xs text-muted-foreground mt-1">
+                        Completed: {new Date(milestone.completed_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
