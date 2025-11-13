@@ -90,6 +90,24 @@ serve(async (req) => {
 
     if (!graduatedAgents || graduatedAgents.length === 0) {
       console.log('📊 No graduated agents found for price sync');
+      
+      // Update cron job log if scheduled
+      if (cronLogId) {
+        await supabase
+          .from('cron_job_logs')
+          .update({
+            status: 'completed',
+            execution_end: new Date().toISOString(),
+            metadata: {
+              ...requestBody,
+              synced_count: 0,
+              total_agents: 0,
+              message: 'No graduated agents to sync'
+            }
+          })
+          .eq('id', cronLogId);
+      }
+      
       return new Response(
         JSON.stringify({
           success: true,
@@ -261,7 +279,7 @@ serve(async (req) => {
       await supabase
         .from('cron_job_logs')
         .update({
-          status: 'success',
+          status: 'completed',
           execution_end: new Date().toISOString(),
           metadata: {
             ...requestBody,

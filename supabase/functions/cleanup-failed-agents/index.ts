@@ -11,12 +11,38 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+  const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    console.log('🧹 Starting failed agents cleanup...');
+  // Handle cron job calls
+  const requestBody = req.method === 'POST' ? await req.json().catch(() => ({})) : {};
+  const isScheduledRun = requestBody.scheduled === true;
+  const jobName = 'cleanup-failed-agents';
+  
+  let cronLogId: string | null = null;
+
+  try {
+    console.log(`🧹 Starting failed agents cleanup... ${isScheduledRun ? '(Scheduled)' : '(Manual)'}`);
+    
+    // Log cron job start if scheduled
+    if (isScheduledRun) {
+      const { data: cronLog, error: cronLogError } = await supabase
+        .from('cron_job_logs')
+        .insert({
+          job_name: jobName,
+          status: 'running',
+          metadata: { request_timestamp: requestBody.timestamp }
+        })
+        .select('id')
+        .single();
+        
+      if (cronLogError) {
+        console.error('❌ Error creating cron log:', cronLogError);
+      } else {
+        cronLogId = cronLog?.id;
+      }
+    }
 
     // ============================================================
     // Step 1: Mark stuck agents as FAILED
@@ -132,6 +158,22 @@ Deno.serve(async (req) => {
 
     console.log('✅ Cleanup completed:', summary);
 
+    // Update cron job log on success
+    if (cronLogId) {
+      await supabase
+        .from('cron_job_logs')
+        .update({
+          status: 'completed',
+          execution_end: new Date().toISOString(),
+          metadata: {
+            ...requestBody,
+            marked_as_failed: markedCount,
+            deleted: deletedCount
+          }
+        })
+        .eq('id', cronLogId);
+    }
+
     return new Response(
       JSON.stringify(summary),
       { 
@@ -142,6 +184,22 @@ Deno.serve(async (req) => {
 
   } catch (error: any) {
     console.error('💥 Cleanup function error:', error);
+    
+    // Update cron job log on failure
+    if (cronLogId) {
+      await supabase
+        .from('cron_job_logs')
+        .update({
+          status: 'failed',
+          execution_end: new Date().toISOString(),
+          error_message: error.message,
+          metadata: {
+            ...requestBody,
+            error_details: error.stack
+          }
+        })
+        .eq('id', cronLogId);
+    }
     
     return new Response(
       JSON.stringify({ 

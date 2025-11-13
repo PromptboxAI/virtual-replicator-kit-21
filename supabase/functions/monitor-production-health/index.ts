@@ -201,7 +201,7 @@ const serve_handler = async (req: Request): Promise<Response> => {
       await supabase
         .from('cron_job_logs')
         .update({
-          status: 'success',
+          status: 'completed',
           execution_end: new Date().toISOString(),
           metadata: {
             ...requestBody,
