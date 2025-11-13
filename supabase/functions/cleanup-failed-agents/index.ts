@@ -96,16 +96,15 @@ Deno.serve(async (req) => {
     // ============================================================
     if (markedCount > 0 || deletedCount > 0) {
       const alertData = {
-        alert_type: 'cleanup',
+        type: 'cleanup',
         severity: 'info',
-        title: 'Failed Agents Cleanup',
         message: `Marked ${markedCount} stuck agents as FAILED, deleted ${deletedCount} failed agents`,
+        is_resolved: true,
         metadata: {
           marked_agents: stuckAgents?.map(a => ({ id: a.id, name: a.name, symbol: a.symbol })),
           deleted_agents: deletedAgents?.map(a => ({ id: a.id, name: a.name, symbol: a.symbol, reason: a.failure_reason })),
           cleanup_timestamp: new Date().toISOString()
-        },
-        resolved: true
+        }
       };
 
       const { error: alertError } = await supabase
