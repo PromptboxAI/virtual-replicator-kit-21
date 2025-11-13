@@ -57,19 +57,19 @@ Deno.serve(async (req) => {
     console.log(`📋 Found ${failedAgentIds.length} FAILED agents to clean up`);
 
     // ============================================================
-    // Step 3: Deactivate deployed_contracts for FAILED agents
+    // Step 3: Delete deployed_contracts for FAILED agents
     // This prevents foreign key constraint violations
     // ============================================================
     if (failedAgentIds.length > 0) {
-      const { error: deactivateError } = await supabase
+      const { error: deleteContractsError } = await supabase
         .from('deployed_contracts')
-        .update({ is_active: false })
+        .delete()
         .in('agent_id', failedAgentIds);
 
-      if (deactivateError) {
-        console.warn('⚠️ Error deactivating deployed contracts:', deactivateError);
+      if (deleteContractsError) {
+        console.warn('⚠️ Error deleting deployed contracts:', deleteContractsError);
       } else {
-        console.log(`✅ Deactivated deployed_contracts for ${failedAgentIds.length} agents`);
+        console.log(`✅ Deleted deployed_contracts for ${failedAgentIds.length} agents`);
       }
     }
 
