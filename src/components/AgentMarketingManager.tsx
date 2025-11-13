@@ -20,7 +20,10 @@ import {
   Plus,
   Save,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Users,
+  MapPin,
+  Calendar
 } from 'lucide-react';
 
 interface AgentMarketingManagerProps {
@@ -40,12 +43,35 @@ interface MarketingData {
   demo_videos: string[];
 }
 
+interface TeamMember {
+  id?: string;
+  name: string;
+  role: string;
+  bio?: string;
+  avatar_url?: string;
+  twitter_url?: string;
+  linkedin_url?: string;
+  order_index: number;
+}
+
+interface RoadmapMilestone {
+  id?: string;
+  title: string;
+  description?: string;
+  target_date?: string;
+  status: 'upcoming' | 'in_progress' | 'completed';
+  completed_at?: string;
+  order_index: number;
+}
+
 export function AgentMarketingManager({ agentId, agentName }: AgentMarketingManagerProps) {
   const [marketingData, setMarketingData] = useState<MarketingData>({
     description: '',
     screenshots: [],
     demo_videos: []
   });
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [roadmapMilestones, setRoadmapMilestones] = useState<RoadmapMilestone[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
@@ -57,29 +83,37 @@ export function AgentMarketingManager({ agentId, agentName }: AgentMarketingMana
 
   const loadMarketingData = async () => {
     try {
-      const { data, error } = await supabase
-        .from('agent_marketing')
-        .select('*')
-        .eq('agent_id', agentId)
-        .maybeSingle();
+      const [marketingRes, teamRes, roadmapRes] = await Promise.all([
+        supabase.from('agent_marketing').select('*').eq('agent_id', agentId).maybeSingle(),
+        supabase.from('agent_team_members').select('*').eq('agent_id', agentId).order('order_index'),
+        supabase.from('agent_roadmap_milestones').select('*').eq('agent_id', agentId).order('order_index')
+      ]);
 
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error loading marketing data:', error);
-        return;
+      if (marketingRes.error && marketingRes.error.code !== 'PGRST116') {
+        console.error('Error loading marketing data:', marketingRes.error);
+      } else if (marketingRes.data) {
+        setMarketingData({
+          description: marketingRes.data.description || '',
+          whitepaper_url: marketingRes.data.whitepaper_url || '',
+          website_url: marketingRes.data.website_url || '',
+          youtube_url: marketingRes.data.youtube_url || '',
+          twitter_url: marketingRes.data.twitter_url || '',
+          discord_url: marketingRes.data.discord_url || '',
+          telegram_url: marketingRes.data.telegram_url || '',
+          screenshots: Array.isArray(marketingRes.data.screenshots) ? marketingRes.data.screenshots.filter((s): s is string => typeof s === 'string') : [],
+          demo_videos: Array.isArray(marketingRes.data.demo_videos) ? marketingRes.data.demo_videos.filter((v): v is string => typeof v === 'string') : []
+        });
       }
 
-      if (data) {
-        setMarketingData({
-          description: data.description || '',
-          whitepaper_url: data.whitepaper_url || '',
-          website_url: data.website_url || '',
-          youtube_url: data.youtube_url || '',
-          twitter_url: data.twitter_url || '',
-          discord_url: data.discord_url || '',
-          telegram_url: data.telegram_url || '',
-          screenshots: Array.isArray(data.screenshots) ? data.screenshots.filter((s): s is string => typeof s === 'string') : [],
-          demo_videos: Array.isArray(data.demo_videos) ? data.demo_videos.filter((v): v is string => typeof v === 'string') : []
-        });
+      if (!teamRes.error && teamRes.data) {
+        setTeamMembers(teamRes.data);
+      }
+
+      if (!roadmapRes.error && roadmapRes.data) {
+        setRoadmapMilestones(roadmapRes.data.map(m => ({
+          ...m,
+          status: (m.status as 'upcoming' | 'in_progress' | 'completed') || 'upcoming'
+        })));
       }
     } catch (error) {
       console.error('Error loading marketing data:', error);
@@ -138,17 +172,86 @@ export function AgentMarketingManager({ agentId, agentName }: AgentMarketingMana
     setMarketingData(newData);
   };
 
+  const addTeamMember = () => {
+    setTeamMembers([...teamMembers, {
+      name: '',
+      role: '',
+      order_index: teamMembers.length
+    }]);
+  };
+
+  const updateTeamMember = (index: number, field: keyof TeamMember, value: any) => {
+    const updated = [...teamMembers];
+    updated[index] = { ...updated[index], [field]: value };
+    setTeamMembers(updated);
+  };
+
+  const removeTeamMember = (index: number) => {
+    setTeamMembers(teamMembers.filter((_, i) => i !== index));
+  };
+
+  const addRoadmapMilestone = () => {
+    setRoadmapMilestones([...roadmapMilestones, {
+      title: '',
+      status: 'upcoming',
+      order_index: roadmapMilestones.length
+    }]);
+  };
+
+  const updateRoadmapMilestone = (index: number, field: keyof RoadmapMilestone, value: any) => {
+    const updated = [...roadmapMilestones];
+    updated[index] = { ...updated[index], [field]: value };
+    setRoadmapMilestones(updated);
+  };
+
+  const removeRoadmapMilestone = (index: number) => {
+    setRoadmapMilestones(roadmapMilestones.filter((_, i) => i !== index));
+  };
+
   const saveMarketingData = async () => {
     setIsSaving(true);
     try {
-      const { error } = await supabase
+      // Save marketing data
+      const { error: marketingError } = await supabase
         .from('agent_marketing')
         .upsert({
           agent_id: agentId,
           ...marketingData
         });
 
-      if (error) throw error;
+      if (marketingError) throw marketingError;
+
+      // Delete existing team members and roadmap milestones, then insert new ones
+      await supabase.from('agent_team_members').delete().eq('agent_id', agentId);
+      await supabase.from('agent_roadmap_milestones').delete().eq('agent_id', agentId);
+
+      // Save team members
+      if (teamMembers.length > 0) {
+        const teamData = teamMembers.map((member, index) => ({
+          agent_id: agentId,
+          ...member,
+          order_index: index
+        }));
+        const { error: teamError } = await supabase
+          .from('agent_team_members')
+          .insert(teamData);
+        
+        if (teamError) throw teamError;
+      }
+
+      // Save roadmap milestones
+      if (roadmapMilestones.length > 0) {
+        const roadmapData = roadmapMilestones.map((milestone, index) => ({
+          agent_id: agentId,
+          ...milestone,
+          order_index: index
+        }));
+        const { error: roadmapError } = await supabase
+          .from('agent_roadmap_milestones')
+          .insert(roadmapData);
+        
+        if (roadmapError) throw roadmapError;
+      }
 
       toast({
         title: "Marketing data saved",
@@ -370,6 +473,178 @@ export function AgentMarketingManager({ agentId, agentName }: AgentMarketingMana
         </Card>
       </div>
 
+      {/* Team Members */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            Team Members
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {teamMembers.map((member, index) => (
+            <div key={index} className="border rounded-lg p-4 space-y-3">
+              <div className="flex items-start justify-between">
+                <h4 className="font-medium">Team Member {index + 1}</h4>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => removeTeamMember(index)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <Label>Name</Label>
+                  <Input
+                    placeholder="John Doe"
+                    value={member.name}
+                    onChange={(e) => updateTeamMember(index, 'name', e.target.value)}
+                  />
+                </div>
+                
+                <div>
+                  <Label>Role</Label>
+                  <Input
+                    placeholder="Lead Developer"
+                    value={member.role}
+                    onChange={(e) => updateTeamMember(index, 'role', e.target.value)}
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <Label>Bio</Label>
+                <Textarea
+                  placeholder="Brief bio..."
+                  value={member.bio || ''}
+                  onChange={(e) => updateTeamMember(index, 'bio', e.target.value)}
+                  className="min-h-[60px]"
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div>
+                  <Label>Avatar URL</Label>
+                  <Input
+                    placeholder="https://..."
+                    value={member.avatar_url || ''}
+                    onChange={(e) => updateTeamMember(index, 'avatar_url', e.target.value)}
+                  />
+                </div>
+                
+                <div>
+                  <Label>Twitter</Label>
+                  <Input
+                    placeholder="https://x.com/..."
+                    value={member.twitter_url || ''}
+                    onChange={(e) => updateTeamMember(index, 'twitter_url', e.target.value)}
+                  />
+                </div>
+                
+                <div>
+                  <Label>LinkedIn</Label>
+                  <Input
+                    placeholder="https://linkedin.com/in/..."
+                    value={member.linkedin_url || ''}
+                    onChange={(e) => updateTeamMember(index, 'linkedin_url', e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+          
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={addTeamMember}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Team Member
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Roadmap */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <MapPin className="h-5 w-5" />
+            Roadmap Milestones
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {roadmapMilestones.map((milestone, index) => (
+            <div key={index} className="border rounded-lg p-4 space-y-3">
+              <div className="flex items-start justify-between">
+                <h4 className="font-medium">Milestone {index + 1}</h4>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => removeRoadmapMilestone(index)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <Label>Title</Label>
+                  <Input
+                    placeholder="Launch Beta Version"
+                    value={milestone.title}
+                    onChange={(e) => updateRoadmapMilestone(index, 'title', e.target.value)}
+                  />
+                </div>
+                
+                <div>
+                  <Label>Status</Label>
+                  <select
+                    className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    value={milestone.status}
+                    onChange={(e) => updateRoadmapMilestone(index, 'status', e.target.value)}
+                  >
+                    <option value="upcoming">Upcoming</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="completed">Completed</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div>
+                <Label>Description</Label>
+                <Textarea
+                  placeholder="What will be achieved..."
+                  value={milestone.description || ''}
+                  onChange={(e) => updateRoadmapMilestone(index, 'description', e.target.value)}
+                  className="min-h-[60px]"
+                />
+              </div>
+              
+              <div>
+                <Label>Target Date</Label>
+                <Input
+                  type="date"
+                  value={milestone.target_date || ''}
+                  onChange={(e) => updateRoadmapMilestone(index, 'target_date', e.target.value)}
+                />
+              </div>
+            </div>
+          ))}
+          
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={addRoadmapMilestone}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Milestone
+          </Button>
+        </CardContent>
+      </Card>
+
       {/* Status Checklist */}
       <Card>
         <CardHeader>
@@ -429,6 +704,28 @@ export function AgentMarketingManager({ agentId, agentName }: AgentMarketingMana
               )}
               <span className={(marketingData.twitter_url || marketingData.discord_url || marketingData.telegram_url) ? 'text-foreground' : 'text-muted-foreground'}>
                 {(marketingData.twitter_url || marketingData.discord_url || marketingData.telegram_url) ? 'Social media connected' : 'Social media optional'}
+              </span>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              {teamMembers.length > 0 ? (
+                <CheckCircle className="h-4 w-4 text-green-600" />
+              ) : (
+                <div className="h-4 w-4 rounded-full border-2 border-muted-foreground/30" />
+              )}
+              <span className={teamMembers.length > 0 ? 'text-foreground' : 'text-muted-foreground'}>
+                {teamMembers.length > 0 ? `${teamMembers.length} team member(s) added` : 'Team members optional'}
+              </span>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              {roadmapMilestones.length > 0 ? (
+                <CheckCircle className="h-4 w-4 text-green-600" />
+              ) : (
+                <div className="h-4 w-4 rounded-full border-2 border-muted-foreground/30" />
+              )}
+              <span className={roadmapMilestones.length > 0 ? 'text-foreground' : 'text-muted-foreground'}>
+                {roadmapMilestones.length > 0 ? `${roadmapMilestones.length} milestone(s) added` : 'Roadmap optional'}
               </span>
             </div>
           </div>
