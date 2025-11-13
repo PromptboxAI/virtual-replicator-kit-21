@@ -936,6 +936,74 @@ export type Database = {
           },
         ]
       }
+      agent_roadmap_milestones: {
+        Row: {
+          agent_id: string
+          completed_at: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          order_index: number | null
+          status: string | null
+          target_date: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          agent_id: string
+          completed_at?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          order_index?: number | null
+          status?: string | null
+          target_date?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          agent_id?: string
+          completed_at?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          order_index?: number | null
+          status?: string | null
+          target_date?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_roadmap_milestones_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_metrics_normalized"
+            referencedColumns: ["agent_id"]
+          },
+          {
+            foreignKeyName: "agent_roadmap_milestones_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_prices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_roadmap_milestones_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_roadmap_milestones_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "token_metadata_cache"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agent_runtime_status: {
         Row: {
           agent_id: string
@@ -1059,6 +1127,77 @@ export type Database = {
           },
           {
             foreignKeyName: "agent_safety_settings_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "token_metadata_cache"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_team_members: {
+        Row: {
+          agent_id: string
+          avatar_url: string | null
+          bio: string | null
+          created_at: string | null
+          id: string
+          linkedin_url: string | null
+          name: string
+          order_index: number | null
+          role: string
+          twitter_url: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          agent_id: string
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          id?: string
+          linkedin_url?: string | null
+          name: string
+          order_index?: number | null
+          role: string
+          twitter_url?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          agent_id?: string
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          id?: string
+          linkedin_url?: string | null
+          name?: string
+          order_index?: number | null
+          role?: string
+          twitter_url?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_team_members_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_metrics_normalized"
+            referencedColumns: ["agent_id"]
+          },
+          {
+            foreignKeyName: "agent_team_members_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_prices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_team_members_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_team_members_agent_id_fkey"
             columns: ["agent_id"]
             isOneToOne: false
             referencedRelation: "token_metadata_cache"
