@@ -2698,6 +2698,71 @@ export type Database = {
           },
         ]
       }
+      price_alerts: {
+        Row: {
+          agent_id: string
+          created_at: string
+          direction: Database["public"]["Enums"]["alert_direction"]
+          id: string
+          owner_id: string
+          status: Database["public"]["Enums"]["alert_status"]
+          threshold_price: number
+          triggered_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          agent_id: string
+          created_at?: string
+          direction: Database["public"]["Enums"]["alert_direction"]
+          id?: string
+          owner_id: string
+          status?: Database["public"]["Enums"]["alert_status"]
+          threshold_price: number
+          triggered_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string
+          created_at?: string
+          direction?: Database["public"]["Enums"]["alert_direction"]
+          id?: string
+          owner_id?: string
+          status?: Database["public"]["Enums"]["alert_status"]
+          threshold_price?: number
+          triggered_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "price_alerts_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_metrics_normalized"
+            referencedColumns: ["agent_id"]
+          },
+          {
+            foreignKeyName: "price_alerts_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_prices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "price_alerts_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "price_alerts_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "token_metadata_cache"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           auth_method: string
@@ -3428,6 +3493,56 @@ export type Database = {
         }
         Relationships: []
       }
+      watchlists: {
+        Row: {
+          agent_id: string
+          created_at: string
+          id: string
+          owner_id: string
+        }
+        Insert: {
+          agent_id: string
+          created_at?: string
+          id?: string
+          owner_id: string
+        }
+        Update: {
+          agent_id?: string
+          created_at?: string
+          id?: string
+          owner_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "watchlists_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_metrics_normalized"
+            referencedColumns: ["agent_id"]
+          },
+          {
+            foreignKeyName: "watchlists_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_prices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "watchlists_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "watchlists_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "token_metadata_cache"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       agent_metrics_normalized: {
@@ -3894,6 +4009,8 @@ export type Database = {
       verify_pending_deployments: { Args: never; Returns: number }
     }
     Enums: {
+      alert_direction: "above" | "below"
+      alert_status: "active" | "triggered" | "cancelled"
       app_role: "admin" | "user"
       revenue_status: "pending" | "completed" | "failed"
     }
@@ -4023,6 +4140,8 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      alert_direction: ["above", "below"],
+      alert_status: ["active", "triggered", "cancelled"],
       app_role: ["admin", "user"],
       revenue_status: ["pending", "completed", "failed"],
     },
