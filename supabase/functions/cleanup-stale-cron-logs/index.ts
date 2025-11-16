@@ -71,6 +71,7 @@ serve(async (req) => {
       .from('cron_job_logs')
       .insert({
         job_name: 'cleanup-stale-cron-logs',
+        execution_start: new Date().toISOString(),
         status: 'completed',
         execution_end: new Date().toISOString(),
         metadata: {
