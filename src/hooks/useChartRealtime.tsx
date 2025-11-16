@@ -23,20 +23,22 @@ export const useChartRealtime = ({
     
     // Throttle updates to prevent too many calls
     const now = Date.now();
-    if (now - lastUpdateTimeRef.current < 100) return;
+    if (now - lastUpdateTimeRef.current < 1000) return; // Increased to 1 second
     lastUpdateTimeRef.current = now;
 
     try {
-      // Get latest data point efficiently
-      const { data } = await ChartDataService.getChartData(agentId, '1' as ChartInterval,
-        new Date(Date.now() - 60 * 60 * 1000), // Last hour
+      // Get latest OHLCV data (last 5 minutes)
+      const latestData = await ChartDataService.getOHLCVData(
+        agentId, 
+        '1m',
+        new Date(Date.now() - 5 * 60 * 1000), // Last 5 minutes
         new Date()
       );
       
-      if (data.length > 0) {
-        const latestData = data[data.length - 1];
-        onUpdate(latestData);
-        onPriceChange(latestData.close);
+      if (latestData && latestData.length > 0) {
+        const latest = latestData[latestData.length - 1];
+        onUpdate(latest);
+        onPriceChange(latest.close);
       }
     } catch (error) {
       console.error('Error updating chart data:', error);
@@ -47,15 +49,20 @@ export const useChartRealtime = ({
     console.log('Agent updated for real-time chart update:', payload);
     
     // Handle agent status changes (like graduation)
-    if (payload.new?.graduated !== payload.old?.graduated ||
+    if (payload.new?.token_graduated !== payload.old?.token_graduated ||
         payload.new?.current_price !== payload.old?.current_price) {
       
       try {
-        const { data } = await ChartDataService.getChartData(agentId);
-        if (data.length > 0) {
-          const latestData = data[data.length - 1];
-          onUpdate(latestData);
-          onPriceChange(latestData.close);
+        const latestData = await ChartDataService.getOHLCVData(
+          agentId, 
+          '1m',
+          new Date(Date.now() - 5 * 60 * 1000), // Last 5 minutes
+          new Date()
+        );
+        if (latestData && latestData.length > 0) {
+          const latest = latestData[latestData.length - 1];
+          onUpdate(latest);
+          onPriceChange(latest.close);
         }
       } catch (error) {
         console.error('Error updating chart data:', error);

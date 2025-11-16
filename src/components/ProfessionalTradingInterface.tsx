@@ -19,6 +19,9 @@ import { MigrationBanner } from './MigrationBanner';
 import { useMigrationPolling } from '@/hooks/useMigrationPolling';
 import { useLiquiditySummary } from '@/hooks/useLiquiditySummary';
 import { LiquidityMetrics } from './LiquidityMetrics';
+import { GraduationTransitionHandler } from './GraduationTransitionHandler';
+import { useMobileOptimization } from '@/hooks/useMobileOptimization';
+import { cn } from '@/lib/utils';
 
 interface Agent {
   id: string;
@@ -52,6 +55,7 @@ export const ProfessionalTradingInterface = ({
   const { toast } = useToast();
   const marketCap = useAgentFDV(agent.id);
   const { liquidity: liquiditySummary, loading: liquidityLoading, refetch: refetchLiquidity } = useLiquiditySummary(agent.id);
+  const mobile = useMobileOptimization();
 
   const { isGraduated, agentData, isMigrating, checkMigration } = useAgentRealtime(agent.id, {
     id: agent.id,
@@ -98,6 +102,18 @@ export const ProfessionalTradingInterface = ({
 
   return (
     <div className="w-full space-y-6">
+      {/* Graduation Transition Handler - Monitors graduation events */}
+      <GraduationTransitionHandler
+        agentId={agent.id}
+        currentPrice={currentPrice.toString()}
+        promptRaised={agentData?.prompt_raised?.toString() || agent.prompt_raised.toString()}
+        isGraduated={isGraduated}
+        onGraduationDetected={() => {
+          checkMigration(agent.prompt_raised, agent.token_address);
+          refetchLiquidity();
+        }}
+      />
+
       {/* Migration Banner - Only show for V3 agents that are graduating */}
       {isMigrating && agent.pricing_model !== 'linear_v4' && (
         <MigrationBanner 
@@ -164,7 +180,10 @@ export const ProfessionalTradingInterface = ({
       </Card>
 
       {/* Main Trading Interface */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className={cn(
+        "grid gap-6",
+        mobile.isMobile ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-3"
+      )}>
         {/* Chart Area with Graduation Progress - 70% width on desktop */}
         <div className="lg:col-span-2 space-y-6">
           <ProfessionalTradingChart
