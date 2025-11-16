@@ -18,6 +18,7 @@ import { AgentMigrationStatus } from './AgentMigrationStatus';
 import { MigrationBanner } from './MigrationBanner';
 import { useMigrationPolling } from '@/hooks/useMigrationPolling';
 import { useLiquiditySummary } from '@/hooks/useLiquiditySummary';
+import { LiquidityMetrics } from './LiquidityMetrics';
 
 interface Agent {
   id: string;
@@ -203,7 +204,7 @@ export const ProfessionalTradingInterface = ({
         </div>
 
         {/* Trading Panel - 30% width on desktop */}
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 space-y-4">
           <TradingModeGuard 
             tokenAddress={agent.token_graduated ? "mock-address" : undefined}
             tokenGraduated={agent.token_graduated}
@@ -216,6 +217,9 @@ export const ProfessionalTradingInterface = ({
               }}
             />
           </TradingModeGuard>
+          
+          {/* Liquidity Metrics */}
+          <LiquidityMetrics agentId={agent.id} />
         </div>
       </div>
 

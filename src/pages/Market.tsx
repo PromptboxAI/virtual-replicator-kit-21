@@ -1,6 +1,7 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { MarketOverview } from "@/components/MarketOverview";
+import { LeaderboardsDisplay } from "@/components/LeaderboardsDisplay";
 
 export default function Market() {
   return (
@@ -16,6 +17,8 @@ export default function Market() {
           </div>
           
           <MarketOverview />
+          
+          <LeaderboardsDisplay />
         </div>
       </main>
       <Footer />
