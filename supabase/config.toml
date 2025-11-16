@@ -183,3 +183,19 @@ verify_jwt = false
 
 [functions.get-agent-details]
 verify_jwt = false
+
+# Phase 4-5: Market Data Functions
+[functions.refresh-market-data]
+verify_jwt = false
+
+[functions.update-leaderboards]
+verify_jwt = false
+
+[functions.get-leaderboards]
+verify_jwt = false
+
+[functions.get-market-overview]
+verify_jwt = false
+
+[functions.check-price-alerts]
+verify_jwt = false

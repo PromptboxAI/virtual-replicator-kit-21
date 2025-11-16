@@ -31,8 +31,11 @@ serve(async (req) => {
     const creatorId = url.searchParams.get('creatorId');
 
     // Sort parameters
-    const sortBy = url.searchParams.get('sortBy') || 'created_at'; // created_at, market_cap, volume_24h, token_holders
-    const sortOrder = url.searchParams.get('sortOrder') || 'desc'; // asc or desc
+    const sortBy = url.searchParams.get('sortBy') || 'created_at';
+    const sortOrder = url.searchParams.get('sortOrder') || 'desc';
+    
+    // Market view parameter - use agent_prices_latest for better performance
+    const useMarketView = url.searchParams.get('marketView') === 'true';
 
     console.log('📋 list-tokens called:', { 
       page, 
@@ -46,7 +49,8 @@ serve(async (req) => {
       hasContract,
       creatorId,
       sortBy, 
-      sortOrder 
+      sortOrder,
+      useMarketView
     });
 
     const supabase = createClient(
@@ -54,10 +58,14 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_ANON_KEY")!
     );
 
+    // Use agent_prices_latest view for market pages (better performance)
+    const tableName = useMarketView ? 'agent_prices_latest' : 'token_metadata_cache';
+
     // Build query
     let query = supabase
-      .from('token_metadata_cache')
-      .select('*', { count: 'exact' });
+      .from(tableName)
+      .select('*', { count: 'exact' })
+      .eq('is_active', true); // Only active agents for market view
 
     // Apply filters
     if (testMode !== null) {
@@ -72,30 +80,33 @@ serve(async (req) => {
       query = query.eq('token_graduated', graduated === 'true');
     }
 
-    if (chainId) {
+    if (chainId && !useMarketView) {
       query = query.eq('chain_id', parseInt(chainId));
     }
 
-    if (deploymentStatus) {
+    if (deploymentStatus && !useMarketView) {
       query = query.eq('deployment_status', deploymentStatus);
     }
 
-    if (networkEnvironment) {
+    if (networkEnvironment && !useMarketView) {
       query = query.eq('network_environment', networkEnvironment);
     }
 
-    if (hasContract === 'true') {
+    if (hasContract === 'true' && !useMarketView) {
       query = query.not('token_address', 'is', null);
     }
 
-    if (creatorId) {
+    if (creatorId && !useMarketView) {
       query = query.eq('creator_id', creatorId);
     }
 
-    // Apply sorting
-    const validSortFields = ['created_at', 'market_cap', 'market_cap_usd', 'volume_24h', 'token_holders', 'prompt_raised'];
-    const sortField = validSortFields.includes(sortBy) ? sortBy : 'created_at';
-    query = query.order(sortField, { ascending: sortOrder === 'asc' });
+    // Apply sorting - use market-optimized fields
+    const validSortFields = useMarketView 
+      ? ['market_cap', 'volume_24h', 'price_change_24h', 'token_holders', 'dynamic_price', 'updated_at']
+      : ['created_at', 'market_cap', 'market_cap_usd', 'volume_24h', 'token_holders', 'prompt_raised'];
+    
+    const sortField = validSortFields.includes(sortBy) ? sortBy : (useMarketView ? 'market_cap' : 'created_at');
+    query = query.order(sortField, { ascending: sortOrder === 'asc', nullsFirst: false });
 
     // Apply pagination
     query = query.range(offset, offset + limit - 1);

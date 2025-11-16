@@ -13,6 +13,8 @@ serve(async (req) => {
 
   try {
     const { agentId } = await req.json();
+    const url = new URL(req.url);
+    const includeRanking = url.searchParams.get('includeRanking') === 'true';
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -92,6 +94,26 @@ serve(async (req) => {
       }, { onConflict: 'agent_id' });
     }
 
+    // Optionally get ranking from agent_prices_latest
+    let ranking = null;
+    if (includeRanking) {
+      const { data: rankData } = await supabase
+        .from('agent_prices_latest')
+        .select('agent_id, market_cap')
+        .eq('is_active', true)
+        .order('market_cap', { ascending: false });
+      
+      if (rankData) {
+        const rank = rankData.findIndex(a => a.agent_id === agentId);
+        if (rank !== -1) {
+          ranking = {
+            rank: rank + 1,
+            totalAgents: rankData.length
+          };
+        }
+      }
+    }
+
     // Phase B2: Stringify all numerics, map fx from view
     const payload = {
       agentId,
@@ -120,6 +142,7 @@ serve(async (req) => {
         met: gradEval[0]?.met ?? {},
         thresholds: gradEval[0]?.thresholds ?? {}
       },
+      ranking: ranking, // Include ranking if requested
       updatedAt: m.updated_at
     };
 
