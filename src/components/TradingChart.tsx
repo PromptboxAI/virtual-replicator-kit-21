@@ -33,12 +33,12 @@ export function TradingChart({ tokenAddress, agentSymbol, currentPrice, priceCha
   const fetchChartData = async () => {
     setLoading(true);
     try {
-      // For now, generate mock data since Moralis chart endpoint needs specific implementation
-      // This would be replaced with actual Moralis API call
+      // Use mock data - real implementation would fetch from backend
       const mockData = generateMockChartData();
       setChartData(mockData);
     } catch (error) {
       console.error('Failed to fetch chart data:', error);
+      setChartData([]);
     } finally {
       setLoading(false);
     }

@@ -37,8 +37,13 @@ export function PriceDisplay({
 }: PriceDisplayProps) {
   const { metrics } = useAgentMetrics(agentId);
   
-  // Show skeleton until chart price arrives OR metrics load
-  if (loading || !metrics?.price?.fx || (overridePrice === undefined && !metrics?.price?.prompt)) {
+  // Show skeleton during loading or if essential data is missing
+  if (loading || !metrics?.price?.fx) {
+    return <Skeleton className={cn("h-8 w-32 rounded", className)} />;
+  }
+
+  // If no override and no metrics price, show placeholder
+  if (overridePrice === undefined && !metrics?.price?.prompt) {
     return <Skeleton className={cn("h-8 w-32 rounded", className)} />;
   }
 

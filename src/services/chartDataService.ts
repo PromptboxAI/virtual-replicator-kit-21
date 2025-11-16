@@ -128,61 +128,54 @@ export class ChartDataService {
 
   static async getChartData(
     agentId: string,
-    interval: ChartInterval = '5m', // Default fallback to 5m
+    interval: ChartInterval = '5m',
     startTime?: Date,
     endTime?: Date
   ): Promise<{ data: OHLCVData[]; isGraduated: boolean }> {
     try {
-      // Check if we should use mock data
-      const envMode = import.meta.env.VITE_USE_MOCK_DATAFEED;
-      const isMockMode = envMode === 'true';
+      console.log('📊 Fetching chart data for agent:', agentId, 'interval:', interval);
       
-      if (isMockMode) {
-        console.log('📊 Using MOCK data (VITE_USE_MOCK_DATAFEED=true)');
-        return {
-          data: this.generateMockData(interval),
-          isGraduated: false
-        };
+      // Fetch OHLC data from edge function
+      const { data: response, error } = await supabase.functions.invoke('get-ohlc', {
+        body: { agentId, timeframe: interval }
+      });
+
+      if (error) {
+        console.error('Error fetching OHLC data:', error);
+        return { data: this.generateMockData(interval), isGraduated: false };
       }
+
+      if (!response?.data?.buckets || response.data.buckets.length === 0) {
+        console.warn('⚠️ No OHLC data returned, using fallback');
+        return { data: this.generateMockData(interval), isGraduated: false };
+      }
+
+      // Transform response to OHLCVData format
+      const ohlcvData: OHLCVData[] = response.data.buckets.map((bucket: any) => ({
+        time: Math.floor(new Date(bucket.timestamp).getTime() / 1000),
+        open: parseFloat(bucket.open),
+        high: parseFloat(bucket.high),
+        low: parseFloat(bucket.low),
+        close: parseFloat(bucket.close),
+        volume: parseFloat(bucket.volume || '0'),
+        tradeCount: 0
+      }));
+
+      console.log(`✅ Loaded ${ohlcvData.length} OHLC bars for agent ${agentId}`);
       
-      console.log('📊 Using REAL data (VITE_USE_MOCK_DATAFEED=false)');
-      // Get agent data to check graduation status and ensure token address exists
-      const { data: agent, error: agentError } = await supabase
+      // Check if agent is graduated
+      const { data: agent } = await supabase
         .from('agents')
-        .select('prompt_raised, token_address, token_graduated')
+        .select('token_graduated')
         .eq('id', agentId)
         .single();
-
-      if (agentError) {
-        console.error('Error fetching agent:', agentError);
-        return { data: [], isGraduated: false };
-      }
-
-      // Generate token address if missing (for pre-graduated tokens)
-      if (!agent.token_address) {
-        const { data: addressData, error: addressError } = await supabase.rpc('generate_agent_token_address', {
-          p_agent_id: agentId
-        });
-
-        if (!addressError && addressData) {
-          agent.token_address = addressData;
-        }
-      }
-
-      const graduated = isAgentGraduatedV3(agent.prompt_raised || 0) || agent.token_graduated;
-
-      if (graduated && agent.token_address) {
-        // Use DEX data for graduated tokens
-        const dexData = await this.getDEXData(agent.token_address, interval);
-        return { data: dexData, isGraduated: true };
-      } else {
-        // Use bonding curve data for non-graduated tokens
-        const bondingData = await this.getOHLCVData(agentId, interval, startTime, endTime);
-        return { data: bondingData, isGraduated: false };
-      }
+      
+      const isGraduated = agent?.token_graduated || false;
+      
+      return { data: ohlcvData, isGraduated };
     } catch (error) {
       console.error('Error in getChartData:', error);
-      return { data: [], isGraduated: false };
+      return { data: this.generateMockData(interval), isGraduated: false };
     }
   }
 
