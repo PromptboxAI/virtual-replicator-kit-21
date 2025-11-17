@@ -1,10 +1,11 @@
-
+import { useMemo } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { PrivyProvider, usePrivy } from '@privy-io/react-auth';
+import type { PrivyClientConfig } from '@privy-io/react-auth';
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { WagmiWrapper } from './components/WagmiWrapper';
 import Index from "./pages/Index";
@@ -73,23 +74,27 @@ const AdminProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-const App = () => (
+const App = () => {
+  // Memoize Privy config to prevent re-initialization on re-renders
+  const privyConfig: PrivyClientConfig = useMemo(() => ({
+    appearance: {
+      theme: 'dark',
+      accentColor: '#10b981' as `#${string}`,
+      logo: 'https://avatars.githubusercontent.com/u/108554348?s=280&v=4',
+      showWalletLoginFirst: false,
+    },
+    embeddedWallets: {
+      createOnLogin: 'off',
+      requireUserPasswordOnCreate: false,
+    },
+  }), []);
+
+  return (
   <ErrorBoundary>
     <PrivyProvider
-    appId="cmcv2r72202fqld0lnr5kgq3k"
-    config={{
-      appearance: {
-        theme: 'dark',
-        accentColor: '#10b981',
-        logo: 'https://avatars.githubusercontent.com/u/108554348?s=280&v=4',
-        showWalletLoginFirst: false,
-      },
-      embeddedWallets: {
-        createOnLogin: 'off',
-        requireUserPasswordOnCreate: false,
-      },
-    }}
-  >
+      appId="cmcv2r72202fqld0lnr5kgq3k"
+      config={privyConfig}
+    >
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
@@ -149,6 +154,7 @@ const App = () => (
     </QueryClientProvider>
   </PrivyProvider>
   </ErrorBoundary>
-);
+  );
+};
 
 export default App;
