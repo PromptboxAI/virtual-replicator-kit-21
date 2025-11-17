@@ -443,7 +443,7 @@ export default function MyAgents() {
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
       
-      <div className="container mx-auto px-4 py-8 flex-1" style={{ minHeight: 'calc(100vh - 400px)' }}>
+      <div className="container mx-auto px-4 py-8 flex-1">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
