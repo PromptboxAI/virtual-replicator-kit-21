@@ -4,7 +4,7 @@ import { Input } from './ui/input';
 
 const Footer = () => {
   return (
-    <footer className="py-12 px-4 border-t border-border bg-background">
+    <footer className="mt-auto py-12 px-4 border-t border-border bg-background">
       <div className="container mx-auto">
         {/* Top section with email and links */}
         <div className="grid grid-cols-1 lg:grid-cols-6 gap-8 mb-12">
