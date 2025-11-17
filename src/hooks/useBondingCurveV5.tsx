@@ -12,9 +12,16 @@ import {
   type BondingCurveV5State,
 } from '@/lib/bondingCurveV5';
 
-// Contract addresses (will be updated after deployment)
-const BONDING_CURVE_V5_ADDRESS = '0x0000000000000000000000000000000000000000'; // TODO: Update
-const PROMPT_TOKEN_ADDRESS = '0x0000000000000000000000000000000000000000'; // TODO: Update
+// Get deployed contract addresses from localStorage (set by deployment component)
+const getBondingCurveAddress = () => 
+  typeof window !== 'undefined' 
+    ? localStorage.getItem('BONDING_CURVE_V5_ADDRESS') || '0x0000000000000000000000000000000000000000'
+    : '0x0000000000000000000000000000000000000000';
+
+const getPromptTokenAddress = () =>
+  typeof window !== 'undefined'
+    ? localStorage.getItem('PROMPT_TOKEN_ADDRESS') || '0x0000000000000000000000000000000000000000'
+    : '0x0000000000000000000000000000000000000000';
 
 // Simplified ABIs for the hook
 const BONDING_CURVE_V5_ABI = [
@@ -100,7 +107,7 @@ export function useBondingCurveV5({ agentId, config }: UseBondingCurveV5Props) {
 
   // Read current state from contract
   const { data: contractState, refetch: refetchState } = useReadContract({
-    address: BONDING_CURVE_V5_ADDRESS,
+    address: getBondingCurveAddress() as `0x${string}`,
     abi: BONDING_CURVE_V5_ABI,
     functionName: 'agentStates',
     args: [agentId as `0x${string}`],
@@ -108,7 +115,7 @@ export function useBondingCurveV5({ agentId, config }: UseBondingCurveV5Props) {
 
   // Read current price from contract
   const { data: currentPrice } = useReadContract({
-    address: BONDING_CURVE_V5_ADDRESS,
+    address: getBondingCurveAddress() as `0x${string}`,
     abi: BONDING_CURVE_V5_ABI,
     functionName: 'getCurrentPrice',
     args: [agentId as `0x${string}`],
@@ -134,7 +141,7 @@ export function useBondingCurveV5({ agentId, config }: UseBondingCurveV5Props) {
       const minTokensOut = tokensOut * (1 - slippageBps / 10000);
 
       writeContract({
-        address: BONDING_CURVE_V5_ADDRESS,
+        address: getBondingCurveAddress() as `0x${string}`,
         abi: BONDING_CURVE_V5_ABI,
         functionName: 'buy',
         args: [
@@ -160,7 +167,7 @@ export function useBondingCurveV5({ agentId, config }: UseBondingCurveV5Props) {
       const minPromptOut = promptOut * (1 - slippageBps / 10000);
 
       writeContract({
-        address: BONDING_CURVE_V5_ADDRESS,
+        address: getBondingCurveAddress() as `0x${string}`,
         abi: BONDING_CURVE_V5_ABI,
         functionName: 'sell',
         args: [
@@ -183,10 +190,10 @@ export function useBondingCurveV5({ agentId, config }: UseBondingCurveV5Props) {
   const approvePrompt = (amount: number) => {
     try {
       writeContract({
-        address: PROMPT_TOKEN_ADDRESS,
+        address: getPromptTokenAddress() as `0x${string}`,
         abi: ERC20_ABI,
         functionName: 'approve',
-        args: [BONDING_CURVE_V5_ADDRESS, parseEther(amount.toString())],
+        args: [getBondingCurveAddress() as `0x${string}`, parseEther(amount.toString())],
       } as any);
 
       toast.success('Approval submitted');
