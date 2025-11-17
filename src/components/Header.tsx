@@ -1,11 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, User, LogOut, Wallet, ChevronDown, Menu, X, Bot } from "lucide-react";
+import { Search, User, LogOut, Wallet, ChevronDown, Menu, X, Bot, BarChart3 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useState } from "react";
-import portfolioIcon from "@/assets/portfolio-icon.png";
 
 import TestnetOnlyBanner from "./TestnetOnlyBanner";
 import { SystemStatusIndicator } from "./SystemStatusIndicator";
@@ -152,7 +151,7 @@ export function Header() {
                       {/* Portfolio Link */}
                       <DropdownMenuItem asChild className="cursor-pointer">
                         <Link to="/dashboard" className="flex items-center">
-                          <img src={portfolioIcon} alt="" className="mr-2 h-4 w-4" />
+                          <BarChart3 className="mr-2 h-4 w-4" />
                           Portfolio
                         </Link>
                       </DropdownMenuItem>
