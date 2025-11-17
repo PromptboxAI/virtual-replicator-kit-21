@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { PrivyProvider, usePrivy } from '@privy-io/react-auth';
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { WagmiWrapper } from './components/WagmiWrapper';
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import About from "./pages/About";
@@ -100,7 +101,7 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/about" element={<About />} />
               <Route path="/learn" element={<Learn />} />
-              <Route path="/faucet" element={<Faucet />} />
+              <Route path="/faucet" element={<WagmiWrapper><Faucet /></WagmiWrapper>} />
               <Route path="/create" element={<CreateAgent />} />
               <Route path="/my-agents" element={<MyAgents />} />
               <Route path="/my-agents/:agentId" element={<CreatorAgentDashboard />} />
