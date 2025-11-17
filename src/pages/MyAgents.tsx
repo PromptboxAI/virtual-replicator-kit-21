@@ -140,7 +140,7 @@ const StatsSummary = ({ agents, agentStatuses }: { agents: any[]; agentStatuses:
 };
 
 export default function MyAgents() {
-  const { user, loading: authLoading, signIn } = useAuth();
+  const { user, loading: authLoading, signIn, ready, initError } = useAuth();
   const { myAgents, loading, error } = useMyAgents(user?.id);
   const [agentStatuses, setAgentStatuses] = useState<Record<string, any>>({});
   const { toast } = useToast();
@@ -199,17 +199,39 @@ export default function MyAgents() {
     }
   };
 
-  // Show loading state
-  if (authLoading || loading) {
+  // Show loading state with stable layout
+  if (authLoading || loading || !ready) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background flex flex-col">
         <Header />
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="text-center">
-              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-              <p className="text-muted-foreground">Loading your agents...</p>
+        <div className="container mx-auto px-4 py-8 flex-1" style={{ minHeight: 'calc(100vh - 200px)' }}>
+          <div className="max-w-6xl mx-auto">
+            <div className="h-10 w-48 bg-muted animate-pulse rounded mb-6" />
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-64 bg-muted animate-pulse rounded-lg" />
+              ))}
             </div>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Show auth error state
+  if (initError) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <Header />
+        <div className="container mx-auto px-4 py-8 flex-1 flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+            <h1 className="text-2xl font-bold mb-4">Authentication Error</h1>
+            <p className="text-muted-foreground mb-6">
+              Failed to load authentication. Please refresh the page or check your network connection.
+            </p>
+            <Button onClick={() => window.location.reload()}>Refresh Page</Button>
           </div>
         </div>
         <Footer />
