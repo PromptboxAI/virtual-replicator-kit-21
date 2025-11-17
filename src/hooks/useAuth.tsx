@@ -19,10 +19,21 @@ export function useAuth() {
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [hasAcceptedTerms, setHasAcceptedTerms] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
+  const [initTimeout, setInitTimeout] = useState(false);
 
-  // Log authentication state changes (removed aggressive modal closing that caused infinite loops)
+  // Log authentication state changes with timeout protection
   useEffect(() => {
     console.log('Privy state:', { ready, authenticated, user: user?.id });
+    
+    // Set timeout if Privy doesn't initialize within 10 seconds
+    const timeout = setTimeout(() => {
+      if (!ready) {
+        console.error('Privy initialization timeout - check network/CSP');
+        setInitTimeout(true);
+      }
+    }, 10000);
+    
+    return () => clearTimeout(timeout);
   }, [ready, authenticated, user?.id]);
 
   // Sync Privy user with Supabase profiles (optimized with localStorage cache)
@@ -161,9 +172,10 @@ export function useAuth() {
     unlinkEmail,
     unlinkWallet,
     authenticated,
-    ready,
+    ready: ready && !initTimeout,
     showTermsModal,
     hasAcceptedTerms,
-    handleAcceptTerms
+    handleAcceptTerms,
+    initError: initTimeout
   };
 }

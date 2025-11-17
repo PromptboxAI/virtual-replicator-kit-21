@@ -85,39 +85,7 @@ const App = () => (
         logo: 'https://avatars.githubusercontent.com/u/108554348?s=280&v=4',
         showWalletLoginFirst: false,
       },
-      loginMethods: ['email'],
-      supportedChains: [
-        {
-          id: 1,
-          name: 'Ethereum',
-          network: 'ethereum',
-          nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
-          rpcUrls: { default: { http: ['https://rpc.ankr.com/eth'] } },
-          blockExplorers: { default: { name: 'Etherscan', url: 'https://etherscan.io' } },
-        },
-        {
-          id: 84532,
-          name: 'Base Sepolia',
-          network: 'base-sepolia',
-          nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
-          rpcUrls: { default: { http: ['https://sepolia.base.org'] } },
-          blockExplorers: { default: { name: 'BaseScan', url: 'https://sepolia.basescan.org' } },
-        },
-      ],
-      defaultChain: {
-        id: 84532,
-        name: 'Base Sepolia',
-        network: 'base-sepolia',
-        nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
-        rpcUrls: { default: { http: ['https://sepolia.base.org'] } },
-        blockExplorers: { default: { name: 'BaseScan', url: 'https://sepolia.basescan.org' } },
-      },
-      solanaClusters: [
-        {
-          name: 'mainnet-beta',
-          rpcUrl: 'https://api.mainnet-beta.solana.com',
-        },
-      ],
+      loginMethods: ['email', 'wallet'],
       embeddedWallets: {
         createOnLogin: 'off',
         requireUserPasswordOnCreate: false,
