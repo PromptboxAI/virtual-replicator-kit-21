@@ -96,7 +96,7 @@ export function Header() {
               {user ? (
                 <div className="flex items-center space-x-2">
                   <Button asChild variant="dashboard" className="hidden md:flex">
-                    <Link to="/my-agents">Dashboard</Link>
+                    <Link to="/dashboard">Dashboard</Link>
                   </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -123,7 +123,7 @@ export function Header() {
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem asChild className="cursor-pointer md:hidden">
-                        <Link to="/my-agents" className="flex items-center">
+                        <Link to="/dashboard" className="flex items-center">
                           {isAdmin ? 'Agent Dashboard' : 'Dashboard'}
                         </Link>
                       </DropdownMenuItem>
@@ -146,6 +146,35 @@ export function Header() {
                           Disconnect External Wallet
                         </DropdownMenuItem>
                       )}
+                      <DropdownMenuSeparator />
+                      
+                      {/* Portfolio Link */}
+                      <DropdownMenuItem asChild className="cursor-pointer">
+                        <Link to="/dashboard" className="flex items-center">
+                          <Wallet className="mr-2 h-4 w-4" />
+                          Portfolio
+                        </Link>
+                      </DropdownMenuItem>
+
+                      {/* View on Explorer - Only if external wallet connected */}
+                      {user.wallet && user.wallet.walletClientType !== 'privy' && (
+                        <DropdownMenuItem asChild className="cursor-pointer">
+                          <a 
+                            href={`https://sepolia.basescan.org/address/${user.wallet.address}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center"
+                          >
+                            <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                              <polyline points="15 3 21 3 21 9" />
+                              <line x1="10" y1="14" x2="21" y2="3" />
+                            </svg>
+                            View on Explorer
+                          </a>
+                        </DropdownMenuItem>
+                      )}
+                      
                       <DropdownMenuSeparator />
                       {isAdmin && (
                         <>
@@ -260,7 +289,7 @@ export function Header() {
                     {user ? (
                       <>
                         <Link 
-                          to="/my-agents" 
+                          to="/dashboard" 
                           className="text-lg font-medium text-foreground hover:text-primary transition-colors"
                           onClick={() => setMobileMenuOpen(false)}
                         >
