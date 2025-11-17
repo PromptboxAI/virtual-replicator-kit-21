@@ -12,7 +12,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useMyAgents } from "@/hooks/useMyAgents";
 import { useAgentMetrics } from "@/hooks/useAgentMetrics";
 import { useToast } from "@/hooks/use-toast";
-import { useHideShadowDOMAnimations } from "@/hooks/useHideShadowDOMAnimations";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 
@@ -145,9 +144,6 @@ export default function MyAgents() {
   const { myAgents, loading, error } = useMyAgents(user?.id);
   const [agentStatuses, setAgentStatuses] = useState<Record<string, any>>({});
   const { toast } = useToast();
-  
-  // Prevent Shadow DOM wallet components from causing layout shifts
-  useHideShadowDOMAnimations();
 
   useEffect(() => {
     if (myAgents.length > 0) {
