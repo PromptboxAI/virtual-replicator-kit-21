@@ -26,8 +26,9 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { usePrivyWallet } from "@/hooks/usePrivyWallet";
 import { useAdminSettings } from "@/hooks/useAdminSettings";
 import { FrameworkSDKService, FRAMEWORK_CONFIGS } from "@/lib/frameworkSDK";
-import { WalletConnectionGuard } from "@/components/WalletConnectionGuard";
 import { OnboardingGuide } from "@/components/OnboardingGuide";
+import { ExternalWalletRequired } from "@/components/ExternalWalletRequired";
+import { ExternalWalletRequiredModal } from "@/components/ExternalWalletRequiredModal";
 import { useSmartContractCreation } from "@/hooks/useSmartContractCreation";
 import { CreatorPrebuyPanel } from "@/components/CreatorPrebuyPanel";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -146,7 +147,7 @@ export default function CreateAgent() {
   const { connectTwitter, disconnectTwitter, isConnecting, connectedAccount, setConnectedAccount } = useTwitterAuth();
   const { isTestMode: appIsTestMode } = useAppMode();
   const { isAdmin } = useUserRole();
-  const { isConnected, promptBalance } = usePrivyWallet();
+  const { isConnected, promptBalance, hasExternalWallet } = usePrivyWallet();
   const { settings: adminSettings, isLoading: adminSettingsLoading } = useAdminSettings();
   
   // Smart contract creation hook
@@ -190,6 +191,7 @@ export default function CreateAgent() {
   const [checkingSymbol, setCheckingSymbol] = useState(false);
   const [deployMethod, setDeployMethod] = useState<'sequential' | 'atomic'>('sequential');
   const [approvalReady, setApprovalReady] = useState(false);
+  const [showWalletModal, setShowWalletModal] = useState(false);
   const debouncedSymbol = useDebounce(formData.symbol, 500);
 
   const categories = [
@@ -327,13 +329,9 @@ export default function CreateAgent() {
       return;
     }
 
-    // Require wallet connection for agent creation
-    if (!isConnected) {
-      toast({
-        title: "Wallet Connection Required",
-        description: "Please connect your wallet to create agents",
-        variant: "destructive"
-      });
+    // Check for external wallet connection before proceeding
+    if (!hasExternalWallet) {
+      setShowWalletModal(true);
       return;
     }
 
@@ -821,10 +819,6 @@ export default function CreateAgent() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <WalletConnectionGuard 
-        title="External Wallet Required for Agent Creation"
-        description="Creating an AI agent requires an external wallet to handle token transactions and payments."
-      >
         <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
@@ -843,6 +837,21 @@ export default function CreateAgent() {
               />
             </p>
           </div>
+
+          {/* Informational Banner for Email-Only Users */}
+          {user && !hasExternalWallet && (
+            <Alert className="mb-6 border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/20">
+              <Coins className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+              <AlertDescription className="text-orange-900 dark:text-orange-200">
+                <div className="flex items-start gap-2">
+                  <div>
+                    <p className="font-medium">💡 Connect a wallet to create agents</p>
+                    <p className="text-sm mt-1">Creating agents requires 100 PROMPT tokens. Connect an external wallet like MetaMask to get started.</p>
+                  </div>
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
 
 
           {/* Progress Bar */}
@@ -1893,7 +1902,16 @@ export default function CreateAgent() {
           </div>
           </div>
         </div>
-      </WalletConnectionGuard>
+
+      {/* External Wallet Required Modal */}
+      <ExternalWalletRequiredModal 
+        open={showWalletModal}
+        onOpenChange={setShowWalletModal}
+        title="Connect Wallet to Create Agent"
+        description="Creating an agent requires 100 PROMPT tokens. Connect an external wallet to continue."
+        actionRequired="Agent Creation"
+      />
+
       <Footer />
     </div>
   );
