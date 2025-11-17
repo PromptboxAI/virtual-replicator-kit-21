@@ -155,12 +155,7 @@
     flex-direction: column;
   }
 
-  /* Disable wallet UI animations that cause layout shifts */
-  wui-card,
-  w3m-modal,
-  [class*="w3m-"],
-  [class*="wui-"] {
-    animation: none !important;
-    transition: none !important;
-  }
+  /* Note: Wallet UI components (wui-card, w3m-modal) use Shadow DOM,
+     which CSS cannot penetrate. Animation handling is done via
+     useHideShadowDOMAnimations hook instead. */
 }
