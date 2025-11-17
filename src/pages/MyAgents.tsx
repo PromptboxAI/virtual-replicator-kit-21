@@ -245,7 +245,7 @@ export default function MyAgents() {
       <div className="min-h-screen bg-background flex flex-col">
         <Header />
         <div className="flex-1 flex items-center justify-center px-4">
-          <div className="max-w-2xl text-center">
+          <div className="max-w-2xl text-center bg-black p-8 rounded-lg">
             <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h1 className="text-2xl font-bold mb-4">Authentication Required</h1>
             <p className="text-muted-foreground mb-6">
