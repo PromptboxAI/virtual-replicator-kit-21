@@ -249,7 +249,7 @@ export default function MyAgents() {
             <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h1 className="text-2xl font-bold mb-4">Authentication Required</h1>
             <p className="text-muted-foreground mb-6">
-              You need to be signed in to view your created agents.
+              You need to be signed in to create and view your Agents.
             </p>
             <Button onClick={signIn}>Sign In</Button>
           </div>
