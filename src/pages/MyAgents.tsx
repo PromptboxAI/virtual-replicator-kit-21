@@ -204,7 +204,7 @@ export default function MyAgents() {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Header />
-        <div className="container mx-auto px-4 py-8 flex-1" style={{ minHeight: 'calc(100vh - 200px)' }}>
+        <div className="container mx-auto px-4 py-8 flex-1">
           <div className="max-w-6xl mx-auto">
             <div className="h-10 w-48 bg-muted animate-pulse rounded mb-6" />
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
