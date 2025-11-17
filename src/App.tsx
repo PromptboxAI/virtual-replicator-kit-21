@@ -107,7 +107,7 @@ const App = () => {
               <Route path="/about" element={<About />} />
               <Route path="/learn" element={<Learn />} />
               <Route path="/faucet" element={<WagmiWrapper><Faucet /></WagmiWrapper>} />
-              <Route path="/create" element={<CreateAgent />} />
+              <Route path="/create" element={<WagmiWrapper><CreateAgent /></WagmiWrapper>} />
               <Route path="/my-agents" element={<MyAgents />} />
               <Route path="/my-agents/:agentId" element={<CreatorAgentDashboard />} />
               <Route path="/market" element={<Market />} />
