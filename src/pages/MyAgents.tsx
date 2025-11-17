@@ -245,13 +245,13 @@ export default function MyAgents() {
       <div className="min-h-screen bg-background flex flex-col">
         <Header />
         <div className="flex-1 flex items-center justify-center px-4">
-          <div className="max-w-2xl text-center bg-black p-8 rounded-lg">
+          <div className="max-w-2xl text-center">
             <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h1 className="text-2xl font-bold mb-4">Authentication Required</h1>
             <p className="text-muted-foreground mb-6">
               You need to be signed in to create and view your Agents.
             </p>
-            <Button onClick={signIn}>Sign In</Button>
+            <Button onClick={signIn} className="bg-black text-white hover:bg-black/90">Sign In</Button>
           </div>
         </div>
         <Footer />
