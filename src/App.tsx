@@ -4,8 +4,6 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { WagmiProvider } from 'wagmi';
-import { config } from './lib/wagmi';
 import { PrivyProvider, usePrivy } from '@privy-io/react-auth';
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
@@ -85,19 +83,17 @@ const App = () => (
         logo: 'https://avatars.githubusercontent.com/u/108554348?s=280&v=4',
         showWalletLoginFirst: false,
       },
-      loginMethods: ['email'],
       embeddedWallets: {
         createOnLogin: 'off',
         requireUserPasswordOnCreate: false,
       },
     }}
   >
-    <WagmiProvider config={config}>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
             <Routes>
               <Route path="/" element={<TokenAgents />} />
               <Route path="/ai-agents" element={<Index />} />
@@ -150,7 +146,6 @@ const App = () => (
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
-    </WagmiProvider>
   </PrivyProvider>
   </ErrorBoundary>
 );
