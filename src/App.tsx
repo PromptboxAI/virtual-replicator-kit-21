@@ -85,7 +85,7 @@ const App = () => (
         logo: 'https://avatars.githubusercontent.com/u/108554348?s=280&v=4',
         showWalletLoginFirst: false,
       },
-      loginMethods: ['email', 'wallet'],
+      loginMethods: ['email'],
       embeddedWallets: {
         createOnLogin: 'off',
         requireUserPasswordOnCreate: false,
@@ -147,9 +147,9 @@ const App = () => (
                 </div>
               } />
             </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </QueryClientProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
     </WagmiProvider>
   </PrivyProvider>
   </ErrorBoundary>
