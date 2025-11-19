@@ -14,19 +14,24 @@ interface IAgentTokenV5 {
 /**
  * @title BondingCurveV5
  * @notice Central contract managing all agent tokens with linear bonding curve
- * @dev PROMPT-native, reserve-based graduation, two-way trading
+ * @dev PROMPT-native, reserve-based graduation, two-way trading, admin-configurable fees
  */
 contract BondingCurveV5 is ReentrancyGuard, Ownable {
     // Constants
     uint256 public constant GRADUATION_SUPPLY = 1_000_000 * 10**18; // 1M tokens
-    uint256 public constant BUY_FEE_BPS = 500; // 5%
-    uint256 public constant SELL_FEE_BPS = 0; // 0% on sells
     uint256 public constant BASIS_POINTS = 10000;
     
-    // Fee distribution (of the 5% buy fee)
-    uint256 public constant CREATOR_FEE_BPS = 4000; // 2% of trade = 40% of 5% fee
-    uint256 public constant PLATFORM_FEE_BPS = 4000; // 2% of trade = 40% of 5% fee
-    uint256 public constant LP_FEE_BPS = 2000; // 1% of trade = 20% of 5% fee
+    // Admin-configurable fee parameters
+    uint256 public buyFeeBps = 500; // 5% default
+    uint256 public sellFeeBps = 500; // 5% default
+    
+    // Admin-configurable fee distribution (must sum to BASIS_POINTS)
+    uint256 public creatorFeeBps = 4000; // 40% default
+    uint256 public platformFeeBps = 4000; // 40% default
+    uint256 public lpFeeBps = 2000; // 20% default
+    
+    // Admin-configurable default graduation threshold
+    uint256 public defaultGraduationThreshold = 42000 * 10**18; // 42,000 PROMPT
     
     IERC20 public immutable promptToken;
     address public platformVault;
@@ -80,6 +85,12 @@ contract BondingCurveV5 is ReentrancyGuard, Ownable {
         uint256 finalReserves,
         uint256 timestamp
     );
+    
+    event FeesUpdated(uint256 buyFeeBps, uint256 sellFeeBps);
+    event FeeDistributionUpdated(uint256 creatorFeeBps, uint256 platformFeeBps, uint256 lpFeeBps);
+    event DefaultGraduationThresholdUpdated(uint256 newThreshold);
+    event PlatformVaultUpdated(address newVault);
+    event TreasuryUpdated(address newTreasury);
     
     constructor(
         address _promptToken,
@@ -154,7 +165,7 @@ contract BondingCurveV5 is ReentrancyGuard, Ownable {
         require(promptIn > 0, "Invalid PROMPT amount");
         
         // Calculate fee
-        uint256 fee = (promptIn * BUY_FEE_BPS) / BASIS_POINTS;
+        uint256 fee = (promptIn * buyFeeBps) / BASIS_POINTS;
         uint256 promptAfterFee = promptIn - fee;
         
         // Calculate tokens to mint
@@ -213,19 +224,29 @@ contract BondingCurveV5 is ReentrancyGuard, Ownable {
         require(tokensIn > 0, "Invalid token amount");
         require(tokensIn <= state.tokensSold, "Exceeds sold supply");
         
-        // Calculate PROMPT to return
-        promptOut = _calculateSellReturn(agentId, tokensIn);
+        // Calculate PROMPT to return (GROSS amount before fees)
+        uint256 promptGross = _calculateSellReturn(agentId, tokensIn);
+        
+        // Apply sell fee
+        uint256 fee = (promptGross * sellFeeBps) / BASIS_POINTS;
+        promptOut = promptGross - fee;
+        
         require(promptOut >= minPromptOut, "Slippage exceeded");
-        require(promptOut <= state.promptReserves, "Insufficient reserves");
+        require(promptGross <= state.promptReserves, "Insufficient reserves");
         
         // Burn tokens from seller
         IAgentTokenV5(config.agentToken).burn(msg.sender, tokensIn);
         
-        // Update state
+        // Update state (reserve decrements by GROSS amount)
         state.tokensSold -= tokensIn;
-        state.promptReserves -= promptOut;
+        state.promptReserves -= promptGross;
         
-        // Transfer PROMPT to seller
+        // Distribute sell fees
+        if (fee > 0) {
+            _distributeSellFees(config.creator, fee);
+        }
+        
+        // Transfer net PROMPT to seller
         require(promptToken.transfer(msg.sender, promptOut), "PROMPT transfer failed");
         
         emit TradeExecuted(
@@ -272,21 +293,21 @@ contract BondingCurveV5 is ReentrancyGuard, Ownable {
         
         uint256 priceAtStart = getCurrentPrice(agentId);
         
-        // For small purchases, use average price approximation
-        // tokens = (2 * promptIn) / (priceAtStart + priceAtEnd)
-        // We need to solve for tokens where priceAtEnd = p0 + (p1 - p0) * (supply + tokens) / GRADUATION_SUPPLY
+        // For linear curve: price(s) = p0 + slope * s, where slope = (p1 - p0) / GRADUATION_SUPPLY
+        // Integral: promptIn = p0 * tokens + 0.5 * slope * tokens^2
+        // Solving quadratic: tokens = (sqrt(p0^2 + 2*slope*promptIn) - p0) / slope
         
-        // Simplified calculation using quadratic formula
-        // a = (p1 - p0) / GRADUATION_SUPPLY
-        // b = priceAtStart
-        // tokens = (sqrt(b^2 + 2*a*promptIn) - b) / a
+        uint256 slope = ((config.p1 - config.p0) * 10**18) / GRADUATION_SUPPLY;
+        uint256 a = slope / 2;
+        uint256 b = priceAtStart;
+        uint256 c = promptIn;
         
-        uint256 a = (config.p1 - config.p0);
-        uint256 b = priceAtStart * GRADUATION_SUPPLY;
-        uint256 c = 2 * promptIn * GRADUATION_SUPPLY;
+        // Discriminant: b^2 + 4*a*c (we use 2*a*c since a is already halved)
+        uint256 discriminant = (b * b) / 10**18 + (2 * a * c) / 10**18;
+        uint256 sqrtDiscriminant = sqrt(discriminant * 10**18);
         
-        // Approximate solution for small trades
-        uint256 tokensOut = (c * GRADUATION_SUPPLY) / (b + a * state.tokensSold / GRADUATION_SUPPLY);
+        // tokens = (sqrt(discriminant) - b) / (2*a) = (sqrt(discriminant) - b) / slope
+        uint256 tokensOut = ((sqrtDiscriminant - b) * GRADUATION_SUPPLY) / (config.p1 - config.p0);
         
         return tokensOut;
     }

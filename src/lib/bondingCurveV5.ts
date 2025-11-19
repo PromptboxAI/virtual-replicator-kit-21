@@ -6,21 +6,21 @@
  * - PROMPT-native (no USD oracle needed for core logic)
  * - Two-way trading (buy and sell)
  * - Reserve-based graduation
- * - 5% buy fee (2% creator, 2% platform, 1% LP)
- * - 0% sell fee
+ * - Configurable fees (default: 5% buy, 5% sell)
+ * - Configurable fee distribution (default: 40% creator, 40% platform, 20% LP)
  */
 
 // Constants matching the smart contract
 export const BONDING_CURVE_V5_CONSTANTS = {
   GRADUATION_SUPPLY: 1_000_000, // 1M tokens
-  BUY_FEE_BPS: 500, // 5%
-  SELL_FEE_BPS: 0, // 0%
+  BUY_FEE_BPS: 500, // 5% (admin-configurable)
+  SELL_FEE_BPS: 500, // 5% (admin-configurable)
   BASIS_POINTS: 10000,
   
-  // Fee distribution (of the 5% buy fee)
-  CREATOR_FEE_BPS: 4000, // 2% of trade = 40% of 5% fee
-  PLATFORM_FEE_BPS: 4000, // 2% of trade = 40% of 5% fee
-  LP_FEE_BPS: 2000, // 1% of trade = 20% of 5% fee
+  // Fee distribution (admin-configurable)
+  CREATOR_FEE_BPS: 4000, // 40% of fee
+  PLATFORM_FEE_BPS: 4000, // 40% of fee
+  LP_FEE_BPS: 2000, // 20% of fee
   
   // Default parameters
   DEFAULT_P0: 0.00004, // Starting price in PROMPT
@@ -59,8 +59,12 @@ export function calculateCurrentPrice(
 }
 
 /**
- * Calculate tokens received for a given PROMPT amount (before fees)
- * This is an approximation using the average price method
+ * Calculate tokens received for a given PROMPT amount (after fees)
+ * Uses proper quadratic solution for exact calculation
+ * 
+ * For linear curve: price(s) = p0 + slope * s, where slope = (p1 - p0) / GRADUATION_SUPPLY
+ * Integral: promptIn = p0 * tokens + 0.5 * slope * tokens^2
+ * Solving quadratic: tokens = (sqrt(p0^2 + 2*slope*promptIn) - p0) / slope
  */
 export function calculateBuyReturn(
   config: BondingCurveV5Config,
@@ -83,10 +87,30 @@ export function calculateBuyReturn(
   // Get current price
   const priceAtStart = calculateCurrentPrice(config, state.tokensSold);
   
-  // Approximate tokens out using quadratic solution
-  // For linear curve: tokens ≈ (2 * promptIn) / (priceStart + priceEnd)
-  const a = (config.p1 - config.p0) / GRADUATION_SUPPLY;
-  const tokensOut = promptAfterFee / (priceAtStart + (a * promptAfterFee) / 2);
+  // Calculate slope of the linear curve
+  const slope = (config.p1 - config.p0) / GRADUATION_SUPPLY;
+  
+  // Solve quadratic equation: 0.5 * slope * tokens^2 + p0 * tokens - promptAfterFee = 0
+  // Using quadratic formula: tokens = (-b + sqrt(b^2 + 4ac)) / 2a
+  const a = slope / 2;
+  const b = priceAtStart;
+  const c = -promptAfterFee;
+  
+  // Calculate discriminant: b^2 - 4ac (note: c is negative, so we add)
+  const discriminant = b * b - 4 * a * c;
+  
+  // Calculate tokens out
+  let tokensOut: number;
+  if (Math.abs(slope) < 1e-15) {
+    // If slope is near zero, use simple division (flat curve)
+    tokensOut = promptAfterFee / priceAtStart;
+  } else {
+    // Standard quadratic solution
+    tokensOut = (-b + Math.sqrt(discriminant)) / (2 * a);
+  }
+  
+  // Ensure we don't exceed graduation supply
+  tokensOut = Math.min(tokensOut, GRADUATION_SUPPLY - state.tokensSold);
   
   // Calculate price at end
   const priceAtEnd = calculateCurrentPrice(config, state.tokensSold + tokensOut);
@@ -103,31 +127,42 @@ export function calculateBuyReturn(
 }
 
 /**
- * Calculate PROMPT received for selling tokens
- * Formula: promptOut = tokens * (priceStart + priceEnd) / 2
+ * Calculate PROMPT received for selling tokens (before fees)
+ * Formula: promptOut = integral of price from (supply - tokens) to supply
+ * For linear curve: promptOut = tokens * (priceStart + priceEnd) / 2
  */
 export function calculateSellReturn(
   config: BondingCurveV5Config,
   state: BondingCurveV5State,
   tokensIn: number
 ): {
-  promptOut: number;
+  promptGross: number; // PROMPT before sell fee
+  promptNet: number;   // PROMPT after sell fee
+  sellFee: number;
   priceAtStart: number;
   priceAtEnd: number;
   averagePrice: number;
 } {
+  const { SELL_FEE_BPS, BASIS_POINTS } = BONDING_CURVE_V5_CONSTANTS;
+  
   // Get current price
   const priceAtStart = calculateCurrentPrice(config, state.tokensSold);
   
   // Calculate price after sell
   const priceAtEnd = calculateCurrentPrice(config, state.tokensSold - tokensIn);
   
-  // Average price method
+  // Average price method (equivalent to integral for linear curve)
   const averagePrice = (priceAtStart + priceAtEnd) / 2;
-  const promptOut = tokensIn * averagePrice;
+  const promptGross = tokensIn * averagePrice;
+  
+  // Apply sell fee
+  const sellFee = (promptGross * SELL_FEE_BPS) / BASIS_POINTS;
+  const promptNet = promptGross - sellFee;
   
   return {
-    promptOut,
+    promptGross,
+    promptNet,
+    sellFee,
     priceAtStart,
     priceAtEnd,
     averagePrice,
