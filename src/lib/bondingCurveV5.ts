@@ -281,8 +281,8 @@ export function validateTrade(
       return { valid: false, error: 'Exceeds available supply' };
     }
     
-    const { promptOut } = calculateSellReturn(config, state, tokensToSell);
-    if (promptOut > state.promptReserves) {
+    const { promptGross } = calculateSellReturn(config, state, tokensToSell);
+    if (promptGross > state.promptReserves) {
       return { valid: false, error: 'Insufficient reserves' };
     }
   }
