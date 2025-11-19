@@ -163,8 +163,8 @@ export function useBondingCurveV5({ agentId, config }: UseBondingCurveV5Props) {
    */
   const sellTokens = (tokenAmount: number, slippageBps: number = 100) => {
     try {
-      const { promptOut } = calculateSellReturn(config, state, tokenAmount);
-      const minPromptOut = promptOut * (1 - slippageBps / 10000);
+      const { promptNet } = calculateSellReturn(config, state, tokenAmount);
+      const minPromptOut = promptNet * (1 - slippageBps / 10000);
 
       writeContract({
         address: getBondingCurveAddress() as `0x${string}`,
