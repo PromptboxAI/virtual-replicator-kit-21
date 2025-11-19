@@ -373,11 +373,57 @@ contract BondingCurveV5 is ReentrancyGuard, Ownable {
     }
     
     /**
+     * @notice Update buy and sell fees
+     * @param _buyFeeBps New buy fee in basis points (max 1000 = 10%)
+     * @param _sellFeeBps New sell fee in basis points (max 1000 = 10%)
+     */
+    function setFees(uint256 _buyFeeBps, uint256 _sellFeeBps) external onlyOwner {
+        require(_buyFeeBps <= 1000, "Buy fee too high"); // Max 10%
+        require(_sellFeeBps <= 1000, "Sell fee too high"); // Max 10%
+        buyFeeBps = _buyFeeBps;
+        sellFeeBps = _sellFeeBps;
+        emit FeesUpdated(_buyFeeBps, _sellFeeBps);
+    }
+    
+    /**
+     * @notice Update fee distribution percentages
+     * @param _creatorFeeBps Percentage to creator (basis points)
+     * @param _platformFeeBps Percentage to platform (basis points)
+     * @param _lpFeeBps Percentage to LP/treasury (basis points)
+     * @dev Must sum to exactly 10000 (100%)
+     */
+    function setFeeDistribution(
+        uint256 _creatorFeeBps,
+        uint256 _platformFeeBps,
+        uint256 _lpFeeBps
+    ) external onlyOwner {
+        require(
+            _creatorFeeBps + _platformFeeBps + _lpFeeBps == BASIS_POINTS,
+            "Fee distribution must sum to 100%"
+        );
+        creatorFeeBps = _creatorFeeBps;
+        platformFeeBps = _platformFeeBps;
+        lpFeeBps = _lpFeeBps;
+        emit FeeDistributionUpdated(_creatorFeeBps, _platformFeeBps, _lpFeeBps);
+    }
+    
+    /**
+     * @notice Update default graduation threshold for new agents
+     * @param _newThreshold New threshold in PROMPT (with 18 decimals)
+     */
+    function setDefaultGraduationThreshold(uint256 _newThreshold) external onlyOwner {
+        require(_newThreshold > 0, "Threshold must be positive");
+        defaultGraduationThreshold = _newThreshold;
+        emit DefaultGraduationThresholdUpdated(_newThreshold);
+    }
+    
+    /**
      * @notice Update platform vault address
      */
     function updatePlatformVault(address _platformVault) external onlyOwner {
         require(_platformVault != address(0), "Invalid address");
         platformVault = _platformVault;
+        emit PlatformVaultUpdated(_platformVault);
     }
     
     /**
@@ -386,5 +432,6 @@ contract BondingCurveV5 is ReentrancyGuard, Ownable {
     function updateTreasury(address _treasury) external onlyOwner {
         require(_treasury != address(0), "Invalid address");
         treasury = _treasury;
+        emit TreasuryUpdated(_treasury);
     }
 }
