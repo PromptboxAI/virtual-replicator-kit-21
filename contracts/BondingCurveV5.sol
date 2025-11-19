@@ -339,9 +339,22 @@ contract BondingCurveV5 is ReentrancyGuard, Ownable {
      * @notice Distribute buy fees to creator, platform, and LP fund
      */
     function _distributeBuyFees(address creator, uint256 fee) internal {
-        uint256 creatorFee = (fee * CREATOR_FEE_BPS) / BASIS_POINTS;
-        uint256 platformFee = (fee * PLATFORM_FEE_BPS) / BASIS_POINTS;
-        uint256 lpFee = (fee * LP_FEE_BPS) / BASIS_POINTS;
+        uint256 creatorFee = (fee * creatorFeeBps) / BASIS_POINTS;
+        uint256 platformFee = (fee * platformFeeBps) / BASIS_POINTS;
+        uint256 lpFee = (fee * lpFeeBps) / BASIS_POINTS;
+        
+        require(promptToken.transfer(creator, creatorFee), "Creator fee transfer failed");
+        require(promptToken.transfer(platformVault, platformFee), "Platform fee transfer failed");
+        require(promptToken.transfer(treasury, lpFee), "LP fee transfer failed");
+    }
+    
+    /**
+     * @notice Distribute sell fees to creator, platform, and LP fund
+     */
+    function _distributeSellFees(address creator, uint256 fee) internal {
+        uint256 creatorFee = (fee * creatorFeeBps) / BASIS_POINTS;
+        uint256 platformFee = (fee * platformFeeBps) / BASIS_POINTS;
+        uint256 lpFee = (fee * lpFeeBps) / BASIS_POINTS;
         
         require(promptToken.transfer(creator, creatorFee), "Creator fee transfer failed");
         require(promptToken.transfer(platformVault, platformFee), "Platform fee transfer failed");
