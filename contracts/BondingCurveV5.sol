@@ -386,6 +386,23 @@ contract BondingCurveV5 is ReentrancyGuard, Ownable {
     }
     
     /**
+     * @dev Calculates the square root of a number using the Babylonian method
+     * @param x The number to calculate the square root of (with 18 decimals)
+     * @return y The square root (with 18 decimals)
+     */
+    function sqrt(uint256 x) private pure returns (uint256 y) {
+        if (x == 0) return 0;
+        
+        uint256 z = (x + 1) / 2;
+        y = x;
+        
+        while (z < y) {
+            y = z;
+            z = (x / z + z) / 2;
+        }
+    }
+    
+    /**
      * @notice Update buy and sell fees
      * @param _buyFeeBps New buy fee in basis points (max 1000 = 10%)
      * @param _sellFeeBps New sell fee in basis points (max 1000 = 10%)
