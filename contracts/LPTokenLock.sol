@@ -25,6 +25,10 @@ contract LPTokenLock is ReentrancyGuard, Ownable {
     
     uint256 public constant LOCK_DURATION = 10 * 365 days; // 10 years
     
+    constructor() Ownable(msg.sender) {
+        nextLockId = 0;
+    }
+    
     event TokensLocked(
         uint256 indexed lockId,
         address indexed tokenAddress,

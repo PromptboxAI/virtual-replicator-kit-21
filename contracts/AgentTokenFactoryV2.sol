@@ -9,6 +9,7 @@ interface IERC20Extended {
     function transfer(address to, uint256 amount) external returns (bool);
     function transferFrom(address from, address to, uint256 amount) external returns (bool);
     function balanceOf(address account) external view returns (uint256);
+    function approve(address spender, uint256 amount) external returns (bool);
 }
 
 contract AgentToken is ERC20, ReentrancyGuard {
@@ -271,7 +272,7 @@ contract AgentTokenFactoryV2 is Ownable, ReentrancyGuard {
         uint256 tokensReceived
     );
     
-    constructor(address _promptToken, address _treasury) {
+    constructor(address _promptToken, address _treasury) Ownable(msg.sender) {
         promptToken = _promptToken;
         treasury = _treasury;
     }
