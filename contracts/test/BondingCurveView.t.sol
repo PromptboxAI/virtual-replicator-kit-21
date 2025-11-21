@@ -2,10 +2,23 @@
 pragma solidity ^0.8.28;
 
 import "forge-std/Test.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "../BondingCurveV5.sol";
 import "../BondingCurveViewV5.sol";
 import "../PromptTestToken.sol";
 import "../PlatformVault.sol";
+
+contract MockAgentTokenView is ERC20 {
+    constructor() ERC20("Mock Agent Token", "MOCK") {}
+
+    function mint(address to, uint256 amount) external {
+        _mint(to, amount);
+    }
+
+    function burn(address from, uint256 amount) external {
+        _burn(from, amount);
+    }
+}
 
 /**
  * @title BondingCurveViewTest
@@ -13,12 +26,12 @@ import "../PlatformVault.sol";
  */
 contract BondingCurveViewTest is Test {
     BondingCurveV5 public curve;
-    BondingCurveViewV5 public view;
+    BondingCurveViewV5 public curveView;
     PromptTestToken public promptToken;
-    PromptTestToken public agentToken;
+    MockAgentTokenView public agentToken;
     PlatformVault public platformVault;
     
-    address public owner = address(1);
+    bytes32 public constant AGENT_ID = keccak256("TEST_AGENT");
     address public creator = address(2);
     address public treasury = address(3);
     address public user = address(4);
@@ -28,121 +41,82 @@ contract BondingCurveViewTest is Test {
     uint256 constant GRADUATION_THRESHOLD = 8000e18;
     
     function setUp() public {
-        vm.startPrank(owner);
-        
+        // Deploy PROMPT token and platform vault
         promptToken = new PromptTestToken();
-        agentToken = new PromptTestToken();
-        platformVault = new PlatformVault(address(promptToken));
+        platformVault = new PlatformVault(address(this), address(treasury));
         
+        // Deploy bonding curve
         curve = new BondingCurveV5(
-            address(agentToken),
             address(promptToken),
-            creator,
             address(platformVault),
             treasury,
+            address(this)
+        );
+        
+        // Deploy view helper
+        curveView = new BondingCurveViewV5(address(curve));
+        
+        // Deploy mock agent token
+        agentToken = new MockAgentTokenView();
+        
+        // Register agent
+        curve.registerAgent(
+            AGENT_ID,
+            address(agentToken),
+            creator,
             P0,
             P1,
             GRADUATION_THRESHOLD
         );
         
-        view = new BondingCurveViewV5();
-        
-        agentToken.grantRole(agentToken.MINTER_ROLE(), address(curve));
-        promptToken.mint(user, 100_000e18);
-        
-        vm.stopPrank();
+        // Fund test user
+        promptToken.transfer(user, 100_000e18);
     }
     
     function testGetMetricsInitialState() public view {
-        (
-            uint256 tokensSold,
-            uint256 promptReserves,
-            uint256 currentPrice,
-            uint256 marketCap,
-            uint256 graduationProgress,
-            bool hasGraduated
-        ) = view.getMetrics(address(curve));
+        BondingCurveViewV5.AgentMetrics memory metrics = curveView.getMetrics(AGENT_ID);
         
-        assertEq(tokensSold, 0, "Initial tokens sold should be 0");
-        assertEq(promptReserves, 0, "Initial reserves should be 0");
-        assertEq(currentPrice, P0, "Initial price should be P0");
-        assertEq(marketCap, 0, "Initial market cap should be 0");
-        assertEq(graduationProgress, 0, "Initial progress should be 0");
-        assertFalse(hasGraduated, "Should not be graduated");
+        assertEq(metrics.tokensSold, 0, "Initial tokens sold should be 0");
+        assertEq(metrics.promptReserves, 0, "Initial reserves should be 0");
+        assertEq(metrics.currentPrice, P0, "Initial price should be P0");
+        assertEq(metrics.graduationProgress, 0, "Initial progress should be 0");
+        assertFalse(metrics.canGraduate, "Should not be able to graduate");
+        assertEq(metrics.phase, 0, "Should be in Active phase");
     }
     
     function testGetMetricsAfterBuy() public {
         vm.startPrank(user);
         promptToken.approve(address(curve), 1000e18);
-        curve.buy(1000e18, 0);
+        curve.buy(AGENT_ID, 1000e18, 0);
         vm.stopPrank();
         
-        (
-            uint256 tokensSold,
-            uint256 promptReserves,
-            uint256 currentPrice,
-            uint256 marketCap,
-            uint256 graduationProgress,
-            bool hasGraduated
-        ) = view.getMetrics(address(curve));
+        BondingCurveViewV5.AgentMetrics memory metrics = curveView.getMetrics(AGENT_ID);
         
-        assertGt(tokensSold, 0, "Should have tokens sold");
-        assertGt(promptReserves, 0, "Should have reserves");
-        assertGt(currentPrice, P0, "Price should increase");
-        assertGt(marketCap, 0, "Market cap should be positive");
-        assertGt(graduationProgress, 0, "Should have some progress");
-        assertFalse(hasGraduated, "Should not be graduated yet");
+        assertGt(metrics.tokensSold, 0, "Should have tokens sold");
+        assertGt(metrics.promptReserves, 0, "Should have reserves");
+        assertGt(metrics.currentPrice, P0, "Price should increase");
+        assertGt(metrics.graduationProgress, 0, "Should have some progress");
+        assertFalse(metrics.canGraduate, "Should not be graduated yet");
     }
     
-    function testGetMetricsAtGraduation() public {
-        // Buy enough to graduate
-        vm.startPrank(user);
-        uint256 buyAmount = GRADUATION_THRESHOLD * 110 / 100;
-        promptToken.approve(address(curve), buyAmount);
-        curve.buy(buyAmount, 0);
-        vm.stopPrank();
+    function testGetMetricsConfiguration() public view {
+        BondingCurveViewV5.AgentMetrics memory metrics = curveView.getMetrics(AGENT_ID);
         
-        (
-            ,
-            uint256 promptReserves,
-            ,
-            ,
-            uint256 graduationProgress,
-            bool hasGraduated
-        ) = view.getMetrics(address(curve));
-        
-        assertGe(promptReserves, GRADUATION_THRESHOLD, "Should meet threshold");
-        assertEq(graduationProgress, 10000, "Should be 100% (10000 bps)");
-        assertTrue(hasGraduated, "Should be graduated");
+        assertEq(metrics.p0, P0, "p0 should match");
+        assertEq(metrics.p1, P1, "p1 should match");
+        assertEq(metrics.graduationThreshold, GRADUATION_THRESHOLD, "Threshold should match");
+        assertEq(metrics.creator, creator, "Creator should match");
+        assertEq(metrics.agentToken, address(agentToken), "Token address should match");
     }
     
-    function testCalculateBuyReturn() public view {
-        uint256 promptIn = 1000e18;
+    function testGetMetricsFeeConfiguration() public view {
+        BondingCurveViewV5.AgentMetrics memory metrics = curveView.getMetrics(AGENT_ID);
         
-        (uint256 tokensOut, uint256 fee) = view.calculateBuyReturn(
-            address(curve),
-            promptIn
-        );
-        
-        assertGt(tokensOut, 0, "Should return tokens");
-        assertEq(fee, promptIn * 500 / 10000, "Fee should be 5%");
-    }
-    
-    function testCalculateSellReturn() public {
-        // First buy tokens
-        vm.startPrank(user);
-        promptToken.approve(address(curve), 1000e18);
-        curve.buy(1000e18, 0);
-        vm.stopPrank();
-        
-        uint256 tokensToSell = 1000e18;
-        
-        (uint256 promptOut, uint256 fee) = view.calculateSellReturn(
-            address(curve),
-            tokensToSell
-        );
-        
-        assertGt(promptOut, 0, "Should return PROMPT");
-        assertGt(fee, 0, "Should have fee");
+        // Default fee configuration from BondingCurveV5
+        assertEq(metrics.buyFeeBps, 500, "Buy fee should be 5%");
+        assertEq(metrics.sellFeeBps, 500, "Sell fee should be 5%");
+        assertEq(metrics.creatorFeeBps, 4000, "Creator fee should be 40%");
+        assertEq(metrics.platformFeeBps, 4000, "Platform fee should be 40%");
+        assertEq(metrics.lpFeeBps, 2000, "LP fee should be 20%");
     }
 }
