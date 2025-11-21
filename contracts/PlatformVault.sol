@@ -31,10 +31,9 @@ contract PlatformVault is Ownable, ReentrancyGuard {
     error NotReceiver();
     error EmergencyDelayNotMet();
 
-    constructor(address _owner, address _initialReceiver) {
+    constructor(address _owner, address _initialReceiver) Ownable(_owner) {
         if (_owner == address(0) || _initialReceiver == address(0)) revert InvalidReceiver();
         
-        _transferOwnership(_owner);
         receiver = _initialReceiver;
     }
 

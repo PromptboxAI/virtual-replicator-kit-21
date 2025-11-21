@@ -87,14 +87,11 @@ contract AgentTokenV2 is ERC20, Ownable, ReentrancyGuard {
         address _promptToken,
         address _creator,
         address _platformTreasury
-    ) ERC20(_name, _symbol) {
+    ) ERC20(_name, _symbol) Ownable(_creator) {
         agentId = _agentId;
         promptToken = IERC20(_promptToken);
         creator = _creator;
         platformTreasury = _platformTreasury;
-        
-        // Transfer ownership to creator
-        _transferOwnership(_creator);
     }
     
     /**

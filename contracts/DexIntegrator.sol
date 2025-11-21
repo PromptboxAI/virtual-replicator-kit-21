@@ -64,7 +64,7 @@ contract DexIntegrator {
         uint256 agentTokenAmount,
         uint256 baseTokenAmount
     ) external returns (address poolAddress) {
-        require(!pools[agentId].poolAddress != address(0), "Pool already exists");
+        require(pools[agentId].poolAddress == address(0), "Pool already exists");
         
         // TODO: Implement Uniswap V3 pool creation
         // 1. Calculate initial price (sqrt price X96)
