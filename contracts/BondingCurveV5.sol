@@ -282,6 +282,23 @@ contract BondingCurveV5 is ReentrancyGuard, Ownable {
     }
     
     /**
+     * @dev Calculates the square root of a number using the Babylonian method
+     * @param x The number to calculate the square root of (with 18 decimals)
+     * @return y The square root (with 18 decimals)
+     */
+    function sqrt(uint256 x) private pure returns (uint256 y) {
+        if (x == 0) return 0;
+        
+        uint256 z = (x + 1) / 2;
+        y = x;
+        
+        while (z < y) {
+            y = z;
+            z = (x / z + z) / 2;
+        }
+    }
+    
+    /**
      * @notice Calculate tokens received for a given PROMPT amount
      * @param agentId Unique identifier for the agent
      * @param promptIn Amount of PROMPT to spend (after fees)
@@ -383,23 +400,6 @@ contract BondingCurveV5 is ReentrancyGuard, Ownable {
         
         // Note: Actual DEX integration would happen here
         // For testnet, we just emit the event
-    }
-    
-    /**
-     * @dev Calculates the square root of a number using the Babylonian method
-     * @param x The number to calculate the square root of (with 18 decimals)
-     * @return y The square root (with 18 decimals)
-     */
-    function sqrt(uint256 x) private pure returns (uint256 y) {
-        if (x == 0) return 0;
-        
-        uint256 z = (x + 1) / 2;
-        y = x;
-        
-        while (z < y) {
-            y = z;
-            z = (x / z + z) / 2;
-        }
     }
     
     /**
