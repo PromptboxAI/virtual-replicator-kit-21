@@ -79,6 +79,9 @@ const TokenAgents = () => {
       <section className="py-32">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center mb-24">
+            <p className="text-sm font-mono text-muted-foreground mb-4 tracking-wider uppercase inline-block border-b-2 border-foreground/30 pb-1">
+              PROTOCOL
+            </p>
             <h2 className="text-3xl md:text-4xl font-heading font-medium text-foreground mb-4 tracking-tight">
               Proof of Demand Meets Verifiable Revenue
             </h2>
@@ -240,6 +243,9 @@ const TokenAgents = () => {
       <section className="py-32">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center mb-24">
+            <p className="text-sm font-mono text-muted-foreground mb-4 tracking-wider uppercase inline-block border-b-2 border-foreground/30 pb-1">
+              AUDIENCE
+            </p>
             <h2 className="text-3xl md:text-4xl font-heading font-medium text-foreground mb-4 tracking-tight">
               Built for Everyone
             </h2>
@@ -304,6 +310,9 @@ const TokenAgents = () => {
       <section className="bg-muted/30 py-32">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center mb-24">
+            <p className="text-sm font-mono text-muted-foreground mb-4 tracking-wider uppercase inline-block border-b-2 border-foreground/30 pb-1">
+              PROCESS
+            </p>
             <h2 className="text-3xl md:text-4xl font-heading font-medium text-foreground mb-4 tracking-tight">
               How It Works
             </h2>
@@ -350,6 +359,9 @@ const TokenAgents = () => {
       <section className="py-32">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center mb-20">
+            <p className="text-sm font-mono text-muted-foreground mb-4 tracking-wider uppercase inline-block border-b-2 border-foreground/30 pb-1">
+              FAQ
+            </p>
             <h2 className="text-3xl md:text-4xl font-heading font-medium text-foreground mb-4 tracking-tight">
               Frequently Asked Questions
             </h2>
