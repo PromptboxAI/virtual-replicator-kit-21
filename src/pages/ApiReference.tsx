@@ -366,25 +366,35 @@ const ApiReference = () => {
               <thead className="bg-muted/50">
                 <tr>
                   <th className="px-6 py-3 text-left font-medium text-foreground">Code</th>
+                  <th className="px-6 py-3 text-left font-medium text-foreground">HTTP Status</th>
                   <th className="px-6 py-3 text-left font-medium text-foreground">Description</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 <tr>
                   <td className="px-6 py-3 font-mono text-foreground">TOKEN_NOT_FOUND</td>
+                  <td className="px-6 py-3 text-foreground/70">404</td>
                   <td className="px-6 py-3 text-foreground/70">Agent token doesn't exist</td>
                 </tr>
                 <tr>
-                  <td className="px-6 py-3 font-mono text-foreground">INVALID_PARAMETERS</td>
-                  <td className="px-6 py-3 text-foreground/70">Invalid query parameters</td>
+                  <td className="px-6 py-3 font-mono text-foreground">BAD_REQUEST</td>
+                  <td className="px-6 py-3 text-foreground/70">400</td>
+                  <td className="px-6 py-3 text-foreground/70">Missing or invalid required parameters</td>
                 </tr>
                 <tr>
                   <td className="px-6 py-3 font-mono text-foreground">RATE_LIMIT_EXCEEDED</td>
-                  <td className="px-6 py-3 text-foreground/70">Too many requests</td>
+                  <td className="px-6 py-3 text-foreground/70">429</td>
+                  <td className="px-6 py-3 text-foreground/70">Too many requests (100/min or 1000/hour)</td>
                 </tr>
                 <tr>
-                  <td className="px-6 py-3 font-mono text-foreground">INSUFFICIENT_LIQUIDITY</td>
-                  <td className="px-6 py-3 text-foreground/70">Not enough liquidity for trade</td>
+                  <td className="px-6 py-3 font-mono text-foreground">TRANSACTION_BUILD_FAILED</td>
+                  <td className="px-6 py-3 text-foreground/70">400</td>
+                  <td className="px-6 py-3 text-foreground/70">Failed to build trade transaction</td>
+                </tr>
+                <tr>
+                  <td className="px-6 py-3 font-mono text-foreground">INTERNAL</td>
+                  <td className="px-6 py-3 text-foreground/70">500</td>
+                  <td className="px-6 py-3 text-foreground/70">Internal server or database error</td>
                 </tr>
               </tbody>
             </table>
