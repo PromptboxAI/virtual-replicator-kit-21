@@ -45,7 +45,7 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold text-foreground mb-4 uppercase text-sm tracking-wider">Platform</h4>
             <div className="space-y-2 text-sm text-muted-foreground">
-              <div className="hover:text-foreground cursor-pointer transition-colors">AI Agents</div>
+              <Link to="/platform/ai-agents" className="block hover:text-foreground transition-colors">AI Agents</Link>
               <div className="hover:text-foreground cursor-pointer transition-colors">ACP Protocol</div>
               <div className="hover:text-foreground cursor-pointer transition-colors">PROMPT Framework</div>
               <div className="hover:text-foreground cursor-pointer transition-colors">Governance</div>
