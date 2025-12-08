@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Helmet } from "react-helmet-async";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Bot, Briefcase, Code, FileText, Globe, MessageSquare, Phone, Search, ShoppingCart, Users, Zap, CheckCircle2, Cpu, Workflow, Shield } from "lucide-react";
 import { Link } from "react-router-dom";
+import { motion, useInView } from "framer-motion";
 
 const agents = [
   {
@@ -157,10 +158,52 @@ const useCaseCategories = [
   },
 ];
 
+// Animation variants
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 }
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const scaleIn = {
+  hidden: { opacity: 0, scale: 0.9 },
+  visible: { opacity: 1, scale: 1 }
+};
+
+const AnimatedSection = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
+  
+  return (
+    <motion.div
+      ref={ref}
+      initial="hidden"
+      animate={isInView ? "visible" : "hidden"}
+      variants={fadeInUp}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+};
+
 const AIAgentsHub = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  const heroRef = useRef(null);
+  const heroInView = useInView(heroRef, { once: true });
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -173,141 +216,213 @@ const AIAgentsHub = () => {
 
       <main className="flex-1">
         {/* Hero Section - Clean, minimal like Stack AI */}
-        <section className="py-20 md:py-32 bg-background">
+        <section className="py-20 md:py-32 bg-background overflow-hidden">
           <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto text-center">
-              <p className="text-sm font-mono text-muted-foreground mb-6 tracking-wider uppercase">
+            <motion.div 
+              ref={heroRef}
+              className="max-w-4xl mx-auto text-center"
+              initial="hidden"
+              animate={heroInView ? "visible" : "hidden"}
+              variants={staggerContainer}
+            >
+              <motion.p 
+                className="text-sm font-mono text-muted-foreground mb-6 tracking-wider uppercase"
+                variants={fadeInUp}
+                transition={{ duration: 0.5 }}
+              >
                 Tokenized Production-Grade AI Agent Platform
-              </p>
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 text-foreground leading-tight">
+              </motion.p>
+              <motion.h1 
+                className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 text-foreground leading-tight"
+                variants={fadeInUp}
+                transition={{ duration: 0.5, delay: 0.1 }}
+              >
                 Transform Your Operations with AI Agents
-              </h1>
-              <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
+              </motion.h1>
+              <motion.p 
+                className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed"
+                variants={fadeInUp}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
                 Automate routine processes and ensure compliance across your organization with AI agents that extract data, retrieve critical knowledge, and generate audit-ready documentation.
-              </p>
-              <Button size="lg" className="gap-2 bg-foreground text-background hover:bg-foreground/90 px-8 py-6 text-base">
-                Get a Demo
-              </Button>
-            </div>
+              </motion.p>
+              <motion.div
+                variants={fadeInUp}
+                transition={{ duration: 0.5, delay: 0.3 }}
+              >
+                <Button 
+                  size="lg" 
+                  className="gap-2 bg-foreground text-background hover:bg-foreground/90 px-8 py-6 text-base transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                >
+                  Get a Demo
+                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                </Button>
+              </motion.div>
+            </motion.div>
           </div>
         </section>
 
         {/* Use Case Tabs Section */}
         <section className="py-16 bg-muted/30 border-y border-border">
           <div className="container mx-auto px-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <motion.div 
+              className="grid grid-cols-1 md:grid-cols-3 gap-6"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              variants={staggerContainer}
+            >
               {useCaseCategories.map((useCase, index) => (
-                <div 
+                <motion.div 
                   key={index} 
-                  className={`p-6 rounded-lg border border-border bg-background hover:border-foreground/30 transition-colors cursor-pointer ${index === 0 ? 'border-foreground/50' : ''}`}
+                  className={`p-6 rounded-lg border border-border bg-background hover:border-foreground/30 transition-all duration-300 cursor-pointer hover:shadow-md hover:-translate-y-1 ${index === 0 ? 'border-foreground/50' : ''}`}
+                  variants={scaleIn}
+                  transition={{ duration: 0.4, delay: index * 0.1 }}
+                  whileHover={{ scale: 1.02 }}
                 >
                   <h3 className="font-semibold text-foreground mb-2">{useCase.title}</h3>
                   <p className="text-sm text-muted-foreground">{useCase.description}</p>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           </div>
         </section>
 
         {/* Capabilities Section */}
         <section className="py-20 bg-background">
           <div className="container mx-auto px-4">
-            <div className="max-w-3xl mx-auto text-center mb-16">
+            <AnimatedSection className="max-w-3xl mx-auto text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
                 Built for Volume
               </h2>
               <p className="text-lg text-muted-foreground">
                 Our AI agents are designed to handle complex workflows with reliability and security.
               </p>
-            </div>
+            </AnimatedSection>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <motion.div 
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              variants={staggerContainer}
+            >
               {capabilities.map((capability, index) => {
                 const IconComponent = capability.icon;
                 return (
-                  <div key={index} className="text-center">
-                    <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center mx-auto mb-4">
-                      <IconComponent className="w-6 h-6 text-foreground" />
-                    </div>
+                  <motion.div 
+                    key={index} 
+                    className="text-center group"
+                    variants={fadeInUp}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                  >
+                    <motion.div 
+                      className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center mx-auto mb-4 transition-all duration-300 group-hover:bg-foreground group-hover:scale-110"
+                      whileHover={{ rotate: [0, -10, 10, 0] }}
+                      transition={{ duration: 0.4 }}
+                    >
+                      <IconComponent className="w-6 h-6 text-foreground group-hover:text-background transition-colors" />
+                    </motion.div>
                     <h3 className="font-semibold text-foreground mb-2">{capability.title}</h3>
                     <p className="text-sm text-muted-foreground">{capability.description}</p>
-                  </div>
+                  </motion.div>
                 );
               })}
-            </div>
+            </motion.div>
           </div>
         </section>
 
         {/* Agents Grid */}
         <section className="py-20 bg-muted/30">
           <div className="container mx-auto px-4">
-            <div className="max-w-3xl mx-auto text-center mb-16">
+            <AnimatedSection className="max-w-3xl mx-auto text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
                 Explore Our AI Agents
               </h2>
               <p className="text-lg text-muted-foreground">
                 Each agent is designed for specific use cases, from legal document review to autonomous coding.
               </p>
-            </div>
+            </AnimatedSection>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {agents.map((agent) => {
+            <motion.div 
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-50px" }}
+              variants={staggerContainer}
+            >
+              {agents.map((agent, index) => {
                 const IconComponent = agent.icon;
                 return (
-                  <Link key={agent.id} to={`/platform/ai-agents/${agent.id}`}>
-                    <Card className="group p-6 h-full bg-background border-border hover:border-foreground/30 transition-all duration-300 cursor-pointer">
-                      <div className="flex items-start gap-4 mb-4">
-                        <div className="p-3 rounded-lg bg-muted">
-                          <IconComponent className="w-5 h-5 text-foreground" />
+                  <motion.div
+                    key={agent.id}
+                    variants={fadeInUp}
+                    transition={{ duration: 0.4, delay: index * 0.05 }}
+                  >
+                    <Link to={`/platform/ai-agents/${agent.id}`}>
+                      <Card className="group p-6 h-full bg-background border-border hover:border-foreground/30 transition-all duration-300 cursor-pointer hover:shadow-lg hover:-translate-y-1">
+                        <div className="flex items-start gap-4 mb-4">
+                          <motion.div 
+                            className="p-3 rounded-lg bg-muted transition-all duration-300 group-hover:bg-foreground"
+                            whileHover={{ scale: 1.1, rotate: 5 }}
+                          >
+                            <IconComponent className="w-5 h-5 text-foreground group-hover:text-background transition-colors" />
+                          </motion.div>
+                          <div className="flex-1">
+                            <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
+                              {agent.name}
+                            </h3>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {agent.category}
+                            </p>
+                          </div>
                         </div>
-                        <div className="flex-1">
-                          <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
-                            {agent.name}
-                          </h3>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {agent.category}
-                          </p>
+                        
+                        <p className="text-muted-foreground text-sm mb-4 line-clamp-3">
+                          {agent.description}
+                        </p>
+
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          {agent.useCases.slice(0, 2).map((useCase) => (
+                            <Badge key={useCase} variant="secondary" className="text-xs font-normal transition-colors group-hover:bg-foreground/10">
+                              {useCase}
+                            </Badge>
+                          ))}
                         </div>
-                      </div>
-                      
-                      <p className="text-muted-foreground text-sm mb-4 line-clamp-3">
-                        {agent.description}
-                      </p>
 
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {agent.useCases.slice(0, 2).map((useCase) => (
-                          <Badge key={useCase} variant="secondary" className="text-xs font-normal">
-                            {useCase}
-                          </Badge>
-                        ))}
-                      </div>
-
-                      <div className="flex items-center justify-between pt-4 border-t border-border">
-                        <span className="text-xs text-muted-foreground">
-                          For {agent.targetAudience}
-                        </span>
-                        <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all" />
-                      </div>
-                    </Card>
-                  </Link>
+                        <div className="flex items-center justify-between pt-4 border-t border-border">
+                          <span className="text-xs text-muted-foreground">
+                            For {agent.targetAudience}
+                          </span>
+                          <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all" />
+                        </div>
+                      </Card>
+                    </Link>
+                  </motion.div>
                 );
               })}
-            </div>
+            </motion.div>
           </div>
         </section>
 
         {/* Features List Section */}
-        <section className="py-20 bg-background">
+        <section className="py-20 bg-background overflow-hidden">
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-              <div>
+              <AnimatedSection>
                 <h2 className="text-3xl md:text-4xl font-bold mb-6 text-foreground">
                   Why Choose Our Platform
                 </h2>
                 <p className="text-lg text-muted-foreground mb-8">
                   Our AI agent platform provides everything you need to build, deploy, and manage autonomous workflows at scale.
                 </p>
-                <ul className="space-y-4">
+                <motion.ul 
+                  className="space-y-4"
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                  variants={staggerContainer}
+                >
                   {[
                     "No-code agent builder with pre-built templates",
                     "Multi-agent collaboration for complex workflows",
@@ -316,51 +431,110 @@ const AIAgentsHub = () => {
                     "Seamless integration with existing tools",
                     "24/7 autonomous operation with human oversight"
                   ].map((feature, index) => (
-                    <li key={index} className="flex items-start gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-foreground mt-0.5 flex-shrink-0" />
-                      <span className="text-muted-foreground">{feature}</span>
-                    </li>
+                    <motion.li 
+                      key={index} 
+                      className="flex items-start gap-3 group"
+                      variants={fadeInUp}
+                      transition={{ duration: 0.3, delay: index * 0.1 }}
+                    >
+                      <motion.div
+                        whileHover={{ scale: 1.2, rotate: 360 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <CheckCircle2 className="w-5 h-5 text-foreground mt-0.5 flex-shrink-0 transition-colors group-hover:text-primary" />
+                      </motion.div>
+                      <span className="text-muted-foreground group-hover:text-foreground transition-colors">{feature}</span>
+                    </motion.li>
                   ))}
-                </ul>
-              </div>
-              <div className="bg-muted rounded-lg aspect-video flex items-center justify-center border border-border">
-                <div className="text-center p-8">
+                </motion.ul>
+              </AnimatedSection>
+              
+              <motion.div 
+                className="bg-muted rounded-lg aspect-video flex items-center justify-center border border-border overflow-hidden"
+                initial={{ opacity: 0, x: 50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
+              >
+                <motion.div 
+                  className="text-center p-8"
+                  animate={{ 
+                    y: [0, -10, 0],
+                  }}
+                  transition={{ 
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                >
                   <Bot className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                   <p className="text-muted-foreground">Platform Demo</p>
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
             </div>
           </div>
         </section>
 
         {/* CTA Section - Black background with dots */}
         <section className="py-20 bg-foreground relative overflow-hidden">
-          {/* Semi-transparent dots pattern */}
-          <div 
+          {/* Animated dots pattern */}
+          <motion.div 
             className="absolute inset-0 opacity-10"
             style={{
               backgroundImage: 'radial-gradient(circle, currentColor 1px, transparent 1px)',
               backgroundSize: '24px 24px',
             }}
+            animate={{
+              backgroundPosition: ['0px 0px', '24px 24px'],
+            }}
+            transition={{
+              duration: 20,
+              repeat: Infinity,
+              ease: "linear"
+            }}
           />
           
           <div className="container mx-auto px-4 relative z-10">
-            <div className="max-w-3xl mx-auto text-center">
-              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-background">
+            <motion.div 
+              className="max-w-3xl mx-auto text-center"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={staggerContainer}
+            >
+              <motion.h2 
+                className="text-3xl md:text-4xl font-bold mb-6 text-background"
+                variants={fadeInUp}
+              >
                 Ready to Build Your AI Agent?
-              </h2>
-              <p className="text-lg text-background/70 mb-8">
+              </motion.h2>
+              <motion.p 
+                className="text-lg text-background/70 mb-8"
+                variants={fadeInUp}
+              >
                 Start with our platform to create custom autonomous workflows where you control exactly how much independence you want to grant your AI agents.
-              </p>
-              <div className="flex flex-wrap gap-4 justify-center">
-                <Button size="lg" variant="secondary" className="gap-2 bg-background text-foreground hover:bg-background/90 px-8">
-                  Start Building <ArrowRight className="w-4 h-4" />
+              </motion.p>
+              <motion.div 
+                className="flex flex-wrap gap-4 justify-center"
+                variants={fadeInUp}
+              >
+                <Button 
+                  size="lg" 
+                  variant="secondary" 
+                  className="gap-2 bg-background text-foreground hover:bg-background/90 px-8 transition-all duration-300 hover:scale-105 hover:shadow-xl group"
+                >
+                  Start Building 
+                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                 </Button>
-                <Button size="lg" variant="outline" className="border-background/30 text-background hover:bg-background/10 px-8">
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="border-background/30 text-background hover:bg-background/10 px-8 transition-all duration-300 hover:scale-105"
+                >
                   Talk to Sales
                 </Button>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
           </div>
         </section>
       </main>
