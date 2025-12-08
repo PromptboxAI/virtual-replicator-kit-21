@@ -96,13 +96,13 @@ const Careers = () => {
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
                   Careers at Promptbox
                 </h1>
-                <p className="text-xl md:text-2xl text-muted-foreground mb-8">
+                <p className="text-xl md:text-2xl text-foreground mb-8">
                   Help build the tokenized AI agent future
                 </p>
-                <p className="text-muted-foreground mb-8 max-w-lg">
+                <p className="text-foreground mb-8 max-w-lg">
                   Promptbox is building a launchpad for tokenized AI agents—where anyone can spin up an agent, launch a token, and turn it into a cash-flowing micro-SaaS, all in one place.
                 </p>
-                <p className="text-muted-foreground mb-8 max-w-lg">
+                <p className="text-foreground mb-8 max-w-lg">
                   We're early, product-obsessed, and moving fast at the intersection of AI agents, crypto, and creator tools. If that sounds like your playground, you're in the right place.
                 </p>
                 <Button 
@@ -138,7 +138,7 @@ const Careers = () => {
               <h2 className="text-2xl font-semibold text-foreground mb-4">
                 We don't have active job openings yet.
               </h2>
-              <p className="text-muted-foreground">
+              <p className="text-foreground">
                 But we are building a talent network for our first wave of hires. If you'd like to be on our radar, scroll down and reach out.
               </p>
             </div>
@@ -154,7 +154,7 @@ const Careers = () => {
                 <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
                   The Platform Behind the Platform
                 </h2>
-                <div className="space-y-4 text-muted-foreground">
+                <div className="space-y-4 text-foreground">
                   <p>
                     <strong className="text-foreground">A token-first AI agent platform</strong> where every agent can have its own on-chain token and revenue stream.
                   </p>
@@ -188,7 +188,7 @@ const Careers = () => {
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
                 Why join Promptbox (when we start hiring)
               </h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto">
+              <p className="text-foreground max-w-2xl mx-auto">
                 Even as an early, lean team, we're committed to building a place where great people can do the best work of their careers.
               </p>
             </div>
@@ -202,7 +202,7 @@ const Careers = () => {
                       </div>
                       <div>
                         <h3 className="text-lg font-semibold text-foreground mb-2">{reason.title}</h3>
-                        <p className="text-muted-foreground text-sm">{reason.description}</p>
+                        <p className="text-foreground text-sm">{reason.description}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -221,7 +221,7 @@ const Careers = () => {
                 <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
                   Builder-first, low-ego team
                 </h2>
-                <p className="text-muted-foreground mb-8">
+                <p className="text-foreground mb-8">
                   We expect to be lean and highly collaborative for a while—working closely with the founder, iterating live with users, and keeping meetings light so people can build.
                 </p>
                 <img 
@@ -235,7 +235,7 @@ const Careers = () => {
                   <Card key={index} className="border-border">
                     <CardContent className="p-5">
                       <h3 className="font-semibold text-foreground mb-1">{principle.title}</h3>
-                      <p className="text-sm text-muted-foreground">{principle.description}</p>
+                      <p className="text-sm text-foreground">{principle.description}</p>
                     </CardContent>
                   </Card>
                 ))}
@@ -252,7 +252,7 @@ const Careers = () => {
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
                 Teams we'll likely hire for
               </h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto">
+              <p className="text-foreground max-w-2xl mx-auto">
                 We're not hiring for these roles today, but this is the shape of the future team.
               </p>
             </div>
@@ -266,7 +266,7 @@ const Careers = () => {
                     <h3 className="text-xl font-semibold text-foreground mb-4">{team.title}</h3>
                     <ul className="space-y-2">
                       {team.roles.map((role, roleIndex) => (
-                        <li key={roleIndex} className="text-sm text-muted-foreground flex items-start gap-2">
+                        <li key={roleIndex} className="text-sm text-foreground flex items-start gap-2">
                           <ArrowRight className="w-4 h-4 mt-0.5 flex-shrink-0 text-primary/60" />
                           {role}
                         </li>
@@ -276,7 +276,7 @@ const Careers = () => {
                 </Card>
               ))}
             </div>
-            <p className="text-center text-muted-foreground mt-8">
+            <p className="text-center text-foreground mt-8">
               If you'd be great at something adjacent to this list, we'd still love to hear from you.
             </p>
           </div>
@@ -291,7 +291,7 @@ const Careers = () => {
                 <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
                   No open roles yet – but we want to meet you
                 </h2>
-                <p className="text-muted-foreground">
+                <p className="text-foreground">
                   The best time to meet future teammates is before we post a job description.
                 </p>
               </div>
@@ -299,7 +299,7 @@ const Careers = () => {
               <Card className="border-border bg-card mb-12">
                 <CardContent className="p-8">
                   <h3 className="text-lg font-semibold text-foreground mb-4">If you're excited about Promptbox, tell us:</h3>
-                  <ul className="space-y-3 text-muted-foreground mb-6">
+                  <ul className="space-y-3 text-foreground mb-6">
                     <li className="flex items-start gap-2">
                       <ArrowRight className="w-4 h-4 mt-1 flex-shrink-0 text-primary" />
                       Who you are and what you do best
@@ -326,11 +326,11 @@ const Careers = () => {
                       <Mail className="w-5 h-5" />
                       Email kevin@promptbox.com
                     </Button>
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-sm text-foreground">
                       Subject: Future Hire – {'<Role you want>'}
                     </span>
                   </div>
-                  <p className="text-sm text-muted-foreground mt-4">
+                  <p className="text-sm text-foreground mt-4">
                     We read every email, even if we can't respond to all of them right away.
                   </p>
                 </CardContent>
@@ -339,10 +339,10 @@ const Careers = () => {
               {/* How to Stand Out */}
               <div className="mb-12">
                 <h3 className="text-xl font-semibold text-foreground mb-4">How to stand out</h3>
-                <p className="text-muted-foreground mb-4">You don't need a perfect resume. What impresses us:</p>
+                <p className="text-foreground mb-4">You don't need a perfect resume. What impresses us:</p>
                 <ul className="space-y-2">
                   {standOutPoints.map((point, index) => (
-                    <li key={index} className="flex items-start gap-2 text-muted-foreground">
+                    <li key={index} className="flex items-start gap-2 text-foreground">
                       <div className="w-1.5 h-1.5 bg-primary rounded-full mt-2 flex-shrink-0" />
                       {point}
                     </li>
@@ -357,8 +357,8 @@ const Careers = () => {
               <Card className="border-border bg-muted/50">
                 <CardContent className="p-6">
                   <h3 className="text-lg font-semibold text-foreground mb-4">Stay in the loop</h3>
-                  <p className="text-muted-foreground mb-4">If you want to keep an eye on Promptbox as we grow:</p>
-                  <ul className="space-y-2 text-muted-foreground">
+                  <p className="text-foreground mb-4">If you want to keep an eye on Promptbox as we grow:</p>
+                  <ul className="space-y-2 text-foreground">
                     <li className="flex items-center gap-2">
                       <ExternalLink className="w-4 h-4 text-primary" />
                       Follow us on X
