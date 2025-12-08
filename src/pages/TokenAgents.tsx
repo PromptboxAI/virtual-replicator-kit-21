@@ -408,14 +408,6 @@ const TokenAgents = () => {
                 </AccordionContent>
               </AccordionItem>
 
-              <AccordionItem value="item-5" className="border-b border-border">
-                <AccordionTrigger className="py-4 text-left hover:no-underline">
-                  What's the difference between Promptbox and StackAI?
-                </AccordionTrigger>
-                <AccordionContent className="pb-4 text-muted-foreground">
-                  Promptbox is token-gated. Every AI agent on the platform begins as a crypto-backed project. This means agents can be community-owned, tradable, and incentivized — unlocking a whole new layer of utility and value beyond traditional SaaS tools.
-                </AccordionContent>
-              </AccordionItem>
 
               <AccordionItem value="item-6" className="border-b border-border">
                 <AccordionTrigger className="py-4 text-left hover:no-underline">
