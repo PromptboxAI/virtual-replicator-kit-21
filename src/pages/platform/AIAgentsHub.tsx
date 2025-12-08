@@ -218,47 +218,30 @@ const AIAgentsHub = () => {
         {/* Hero Section - Clean, minimal like Stack AI */}
         <section className="py-20 md:py-32 bg-background overflow-hidden">
           <div className="container mx-auto px-4">
-            <motion.div 
-              ref={heroRef}
-              className="max-w-4xl mx-auto text-center"
-              initial="hidden"
-              animate={heroInView ? "visible" : "hidden"}
-              variants={staggerContainer}
-            >
-              <motion.p 
-                className="text-sm font-mono text-muted-foreground mb-6 tracking-wider uppercase"
-                variants={fadeInUp}
-                transition={{ duration: 0.5 }}
-              >
+            <div className="max-w-4xl mx-auto text-center">
+              <p className="text-sm font-mono text-muted-foreground mb-6 tracking-wider uppercase">
                 Tokenized Production-Grade AI Agent Platform
-              </motion.p>
-              <motion.h1 
-                className="text-4xl md:text-6xl lg:text-7xl font-heading font-medium mb-6 text-foreground leading-tight tracking-tight"
-                variants={fadeInUp}
-                transition={{ duration: 0.5, delay: 0.1 }}
-              >
+              </p>
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-heading font-medium mb-6 text-foreground leading-tight tracking-tight">
                 Transform Your Operations with AI Agents
-              </motion.h1>
-              <motion.p 
-                className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed"
-                variants={fadeInUp}
-                transition={{ duration: 0.5, delay: 0.2 }}
-              >
+              </h1>
+              <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
                 Automate routine processes and ensure compliance across your organization with AI agents that extract data, retrieve critical knowledge, and generate audit-ready documentation.
-              </motion.p>
+              </p>
               <motion.div
-                variants={fadeInUp}
-                transition={{ duration: 0.5, delay: 0.3 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.98 }}
+                className="inline-block"
               >
                 <Button 
                   size="lg" 
-                  className="gap-2 bg-foreground text-background hover:bg-foreground/90 px-8 py-6 text-base transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                  className="gap-2 bg-foreground text-background hover:bg-foreground/90 px-8 py-6 text-base transition-all duration-300 hover:shadow-lg"
                 >
                   Get a Demo
-                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                  <ArrowRight className="w-4 h-4" />
                 </Button>
               </motion.div>
-            </motion.div>
+            </div>
           </div>
         </section>
 
