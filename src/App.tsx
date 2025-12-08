@@ -36,6 +36,7 @@ import { Header } from "./components/Header";
 import { ContractDeploymentTest } from "./components/ContractDeploymentTest";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
+import PromptboxDPA from "./pages/PromptboxDPA";
 
 const queryClient = new QueryClient();
 
@@ -145,6 +146,7 @@ const App = () => {
               <Route path="/healthz" element={<HealthCheck />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />
+              <Route path="/promptbox-dpa" element={<PromptboxDPA />} />
               {/* Legacy redirect for old trade routes */}
               <Route path="/trade/:agentId" element={<LegacyTradeRedirect />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

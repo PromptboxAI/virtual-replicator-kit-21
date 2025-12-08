@@ -80,7 +80,7 @@ const Footer = () => {
             <div className="space-y-2 text-sm text-muted-foreground">
               <Link to="/privacy" className="block hover:text-foreground transition-colors">Privacy</Link>
               <Link to="/terms" className="block hover:text-foreground transition-colors">Terms</Link>
-              <div className="hover:text-foreground cursor-pointer transition-colors">Referral Terms</div>
+              <Link to="/promptbox-dpa" className="block hover:text-foreground transition-colors">Promptbox DPA</Link>
               <div className="hover:text-foreground cursor-pointer transition-colors">OpenAI DPA</div>
               <div className="hover:text-foreground cursor-pointer transition-colors">Anthropic DPA</div>
               <div className="hover:text-foreground cursor-pointer transition-colors">SOC 2 Report</div>
