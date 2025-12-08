@@ -5,7 +5,7 @@ import { Footer } from "@/components/Footer";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Bot, Briefcase, Code, FileText, Globe, MessageSquare, Phone, Search, ShoppingCart, Users, Zap } from "lucide-react";
+import { ArrowRight, Bot, Briefcase, Code, FileText, Globe, MessageSquare, Phone, Search, ShoppingCart, Users, Zap, CheckCircle2, Cpu, Workflow, Shield } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const agents = [
@@ -17,7 +17,6 @@ const agents = [
     targetAudience: "Business users",
     useCases: ["Workflow automation", "Customer service", "Lead generation"],
     icon: Bot,
-    color: "from-violet-500 to-purple-600",
   },
   {
     id: "relevance-ai",
@@ -27,7 +26,6 @@ const agents = [
     targetAudience: "Enterprise teams",
     useCases: ["Multi-agent workflows", "Business process automation"],
     icon: Users,
-    color: "from-blue-500 to-cyan-600",
   },
   {
     id: "harvey-ai",
@@ -37,7 +35,6 @@ const agents = [
     targetAudience: "Legal professionals",
     useCases: ["Document review", "Contract analysis", "Compliance"],
     icon: FileText,
-    color: "from-amber-500 to-orange-600",
   },
   {
     id: "clay",
@@ -47,7 +44,6 @@ const agents = [
     targetAudience: "Sales teams",
     useCases: ["Sales prospecting", "Data enrichment", "Outreach personalization"],
     icon: Search,
-    color: "from-emerald-500 to-teal-600",
   },
   {
     id: "hubspot-breeze",
@@ -57,7 +53,6 @@ const agents = [
     targetAudience: "HubSpot users",
     useCases: ["Marketing automation", "Sales automation", "Customer service"],
     icon: Briefcase,
-    color: "from-orange-500 to-red-600",
   },
   {
     id: "salescloser-ai",
@@ -67,7 +62,6 @@ const agents = [
     targetAudience: "Sales teams",
     useCases: ["Automated sales conversations", "Lead qualification"],
     icon: ShoppingCart,
-    color: "from-pink-500 to-rose-600",
   },
   {
     id: "vapi",
@@ -77,7 +71,6 @@ const agents = [
     targetAudience: "Developers",
     useCases: ["Voice AI applications", "Phone automation", "Conversational interfaces"],
     icon: Phone,
-    color: "from-indigo-500 to-blue-600",
   },
   {
     id: "box-ai-agents",
@@ -87,7 +80,6 @@ const agents = [
     targetAudience: "Enterprise document management",
     useCases: ["Document analysis", "Content management", "Enterprise search"],
     icon: FileText,
-    color: "from-sky-500 to-blue-600",
   },
   {
     id: "browserbase-director",
@@ -97,7 +89,6 @@ const agents = [
     targetAudience: "Developers & automation teams",
     useCases: ["Web scraping", "Browser automation", "Testing"],
     icon: Globe,
-    color: "from-slate-500 to-gray-600",
   },
   {
     id: "legacy-use",
@@ -107,7 +98,6 @@ const agents = [
     targetAudience: "Enterprise IT",
     useCases: ["Legacy system API modernization"],
     icon: Zap,
-    color: "from-yellow-500 to-amber-600",
   },
   {
     id: "droidrun",
@@ -117,7 +107,6 @@ const agents = [
     targetAudience: "Mobile app developers",
     useCases: ["Android device automation", "Mobile testing"],
     icon: Bot,
-    color: "from-green-500 to-emerald-600",
   },
   {
     id: "claude-code",
@@ -127,7 +116,44 @@ const agents = [
     targetAudience: "Software developers",
     useCases: ["Autonomous coding", "Code review", "Development automation"],
     icon: Code,
-    color: "from-purple-500 to-violet-600",
+  },
+];
+
+const capabilities = [
+  {
+    icon: Cpu,
+    title: "Autonomous Operation",
+    description: "AI agents that work independently, making decisions and taking actions without constant human oversight.",
+  },
+  {
+    icon: Workflow,
+    title: "Multi-Step Workflows",
+    description: "Chain complex tasks together with intelligent handoffs between different specialized agents.",
+  },
+  {
+    icon: Shield,
+    title: "Enterprise Security",
+    description: "SOC 2 compliant infrastructure with role-based access control and audit logging.",
+  },
+  {
+    icon: Zap,
+    title: "Real-Time Processing",
+    description: "Sub-500ms response times with streaming outputs for immediate feedback.",
+  },
+];
+
+const useCaseCategories = [
+  {
+    title: "Extract insights from documents",
+    description: "Automatically analyze contracts, reports, and legal documents to surface key information.",
+  },
+  {
+    title: "Automate customer interactions",
+    description: "Handle support tickets, qualify leads, and manage conversations across channels.",
+  },
+  {
+    title: "Streamline sales workflows",
+    description: "Research prospects, enrich data, and personalize outreach at scale.",
   },
 ];
 
@@ -146,67 +172,80 @@ const AIAgentsHub = () => {
       <Header />
 
       <main className="flex-1">
-        {/* Hero Section */}
-        <section className="relative py-20 md:py-32 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-background" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent" />
-          
-          <div className="container mx-auto px-4 relative z-10">
+        {/* Hero Section - Clean, minimal like Stack AI */}
+        <section className="py-20 md:py-32 bg-background">
+          <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
-              <Badge variant="outline" className="mb-6 px-4 py-2 text-sm border-primary/30 bg-primary/5">
-                AI Agents Platform
-              </Badge>
-              <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
-                12 Best Autonomous AI Agents
-              </h1>
-              <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-                From simple no-code builders to sophisticated systems that operate independently. 
-                Find the perfect AI agent for your business needs.
+              <p className="text-sm font-mono text-muted-foreground mb-6 tracking-wider uppercase">
+                Enterprise-Grade AI Agent Platform
               </p>
-              <div className="flex flex-wrap gap-4 justify-center">
-                <Button size="lg" className="gap-2">
-                  Get Started <ArrowRight className="w-4 h-4" />
-                </Button>
-                <Button size="lg" variant="outline">
-                  View Documentation
-                </Button>
-              </div>
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 text-foreground leading-tight">
+                Transform Your Operations with AI Agents
+              </h1>
+              <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
+                Automate routine processes and ensure compliance across your organization with AI agents that extract data, retrieve critical knowledge, and generate audit-ready documentation.
+              </p>
+              <Button size="lg" className="gap-2 bg-foreground text-background hover:bg-foreground/90 px-8 py-6 text-base">
+                Get a Demo
+              </Button>
             </div>
           </div>
         </section>
 
-        {/* Stats Section */}
-        <section className="py-16 border-y border-border/50 bg-muted/30">
+        {/* Use Case Tabs Section */}
+        <section className="py-16 bg-muted/30 border-y border-border">
           <div className="container mx-auto px-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-              <div className="text-center">
-                <div className="text-4xl font-bold text-primary mb-2">12</div>
-                <div className="text-sm text-muted-foreground">AI Agents</div>
-              </div>
-              <div className="text-center">
-                <div className="text-4xl font-bold text-primary mb-2">100+</div>
-                <div className="text-sm text-muted-foreground">Integrations</div>
-              </div>
-              <div className="text-center">
-                <div className="text-4xl font-bold text-primary mb-2">500ms</div>
-                <div className="text-sm text-muted-foreground">Response Time</div>
-              </div>
-              <div className="text-center">
-                <div className="text-4xl font-bold text-primary mb-2">24/7</div>
-                <div className="text-sm text-muted-foreground">Availability</div>
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {useCaseCategories.map((useCase, index) => (
+                <div 
+                  key={index} 
+                  className={`p-6 rounded-lg border border-border bg-background hover:border-foreground/30 transition-colors cursor-pointer ${index === 0 ? 'border-foreground/50' : ''}`}
+                >
+                  <h3 className="font-semibold text-foreground mb-2">{useCase.title}</h3>
+                  <p className="text-sm text-muted-foreground">{useCase.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Capabilities Section */}
+        <section className="py-20 bg-background">
+          <div className="container mx-auto px-4">
+            <div className="max-w-3xl mx-auto text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
+                Built for Enterprise Scale
+              </h2>
+              <p className="text-lg text-muted-foreground">
+                Our AI agents are designed to handle complex workflows with reliability and security.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {capabilities.map((capability, index) => {
+                const IconComponent = capability.icon;
+                return (
+                  <div key={index} className="text-center">
+                    <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center mx-auto mb-4">
+                      <IconComponent className="w-6 h-6 text-foreground" />
+                    </div>
+                    <h3 className="font-semibold text-foreground mb-2">{capability.title}</h3>
+                    <p className="text-sm text-muted-foreground">{capability.description}</p>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </section>
 
         {/* Agents Grid */}
-        <section className="py-20">
+        <section className="py-20 bg-muted/30">
           <div className="container mx-auto px-4">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            <div className="max-w-3xl mx-auto text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
                 Explore Our AI Agents
               </h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              <p className="text-lg text-muted-foreground">
                 Each agent is designed for specific use cases, from legal document review to autonomous coding.
               </p>
             </div>
@@ -216,18 +255,18 @@ const AIAgentsHub = () => {
                 const IconComponent = agent.icon;
                 return (
                   <Link key={agent.id} to={`/platform/ai-agents/${agent.id}`}>
-                    <Card className="group p-6 h-full hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 cursor-pointer">
+                    <Card className="group p-6 h-full bg-background border-border hover:border-foreground/30 transition-all duration-300 cursor-pointer">
                       <div className="flex items-start gap-4 mb-4">
-                        <div className={`p-3 rounded-xl bg-gradient-to-br ${agent.color} text-white`}>
-                          <IconComponent className="w-6 h-6" />
+                        <div className="p-3 rounded-lg bg-muted">
+                          <IconComponent className="w-5 h-5 text-foreground" />
                         </div>
                         <div className="flex-1">
-                          <h3 className="text-xl font-semibold group-hover:text-primary transition-colors">
+                          <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
                             {agent.name}
                           </h3>
-                          <Badge variant="secondary" className="mt-1 text-xs">
+                          <p className="text-xs text-muted-foreground mt-1">
                             {agent.category}
-                          </Badge>
+                          </p>
                         </div>
                       </div>
                       
@@ -237,17 +276,17 @@ const AIAgentsHub = () => {
 
                       <div className="flex flex-wrap gap-2 mb-4">
                         {agent.useCases.slice(0, 2).map((useCase) => (
-                          <Badge key={useCase} variant="outline" className="text-xs">
+                          <Badge key={useCase} variant="secondary" className="text-xs font-normal">
                             {useCase}
                           </Badge>
                         ))}
                       </div>
 
-                      <div className="flex items-center justify-between pt-4 border-t border-border/50">
+                      <div className="flex items-center justify-between pt-4 border-t border-border">
                         <span className="text-xs text-muted-foreground">
                           For {agent.targetAudience}
                         </span>
-                        <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                        <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all" />
                       </div>
                     </Card>
                   </Link>
@@ -257,21 +296,67 @@ const AIAgentsHub = () => {
           </div>
         </section>
 
-        {/* CTA Section */}
-        <section className="py-20 bg-gradient-to-br from-primary/10 via-background to-background">
+        {/* Features List Section */}
+        <section className="py-20 bg-background">
           <div className="container mx-auto px-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+              <div>
+                <h2 className="text-3xl md:text-4xl font-bold mb-6 text-foreground">
+                  Why Choose Our Platform
+                </h2>
+                <p className="text-lg text-muted-foreground mb-8">
+                  Our AI agent platform provides everything you need to build, deploy, and manage autonomous workflows at scale.
+                </p>
+                <ul className="space-y-4">
+                  {[
+                    "No-code agent builder with pre-built templates",
+                    "Multi-agent collaboration for complex workflows",
+                    "Real-time monitoring and analytics dashboard",
+                    "Enterprise-grade security and compliance",
+                    "Seamless integration with existing tools",
+                    "24/7 autonomous operation with human oversight"
+                  ].map((feature, index) => (
+                    <li key={index} className="flex items-start gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-foreground mt-0.5 flex-shrink-0" />
+                      <span className="text-muted-foreground">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="bg-muted rounded-lg aspect-video flex items-center justify-center border border-border">
+                <div className="text-center p-8">
+                  <Bot className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">Platform Demo</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section - Black background with dots */}
+        <section className="py-20 bg-foreground relative overflow-hidden">
+          {/* Semi-transparent dots pattern */}
+          <div 
+            className="absolute inset-0 opacity-10"
+            style={{
+              backgroundImage: 'radial-gradient(circle, currentColor 1px, transparent 1px)',
+              backgroundSize: '24px 24px',
+            }}
+          />
+          
+          <div className="container mx-auto px-4 relative z-10">
             <div className="max-w-3xl mx-auto text-center">
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">
+              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-background">
                 Ready to Build Your AI Agent?
               </h2>
-              <p className="text-lg text-muted-foreground mb-8">
+              <p className="text-lg text-background/70 mb-8">
                 Start with our platform to create custom autonomous workflows where you control exactly how much independence you want to grant your AI agents.
               </p>
               <div className="flex flex-wrap gap-4 justify-center">
-                <Button size="lg" className="gap-2">
+                <Button size="lg" variant="secondary" className="gap-2 bg-background text-foreground hover:bg-background/90 px-8">
                   Start Building <ArrowRight className="w-4 h-4" />
                 </Button>
-                <Button size="lg" variant="outline">
+                <Button size="lg" variant="outline" className="border-background/30 text-background hover:bg-background/10 px-8">
                   Talk to Sales
                 </Button>
               </div>

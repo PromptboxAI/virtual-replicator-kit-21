@@ -7,7 +7,7 @@ import { useSystemStatus, getStatusColor, getStatusText } from '@/hooks/useSyste
 const Footer = () => {
   const systemStatus = useSystemStatus();
   return (
-    <footer className="mt-auto py-12 px-4 border-t border-border bg-background">
+    <footer className="mt-auto py-12 px-4 border-t border-border bg-white dark:bg-background">
       <div className="container mx-auto">
         {/* Top section with email and links */}
         <div className="grid grid-cols-1 lg:grid-cols-6 gap-8 mb-12">
