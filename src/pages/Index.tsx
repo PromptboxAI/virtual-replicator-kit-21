@@ -202,11 +202,11 @@ const Index = () => {
             Funded. Liquid. Verifiable.
           </div>
           <div className="flex items-center justify-center gap-2 mb-4 relative z-10">
-            <h1 className="text-6xl font-bold text-foreground leading-tight">
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-heading font-medium text-foreground leading-tight tracking-tight">
               Promptbox Trade
             </h1>
           </div>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-6 relative z-10">
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-6 relative z-10">
             Phase 1: Mock Trading Interface
           </p>
           <p className="text-base text-muted-foreground max-w-2xl mx-auto mb-6 relative z-10">
@@ -236,7 +236,7 @@ const Index = () => {
         {spotlightAgent && (
           <section className="mb-12">
             <div className="flex items-center gap-3 mb-6">
-              <h2 className="text-2xl font-bold text-foreground">Spotlight Agent</h2>
+              <h2 className="text-2xl font-heading font-medium text-foreground">Spotlight Agent</h2>
             </div>
             <Card className="p-6 bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/20">
               <div className="flex items-center justify-between">
@@ -253,7 +253,7 @@ const Index = () => {
                     </div>
                   )}
                   <div>
-                    <h3 className="text-2xl font-bold text-foreground">{spotlightAgent.name}</h3>
+                    <h3 className="text-2xl font-heading font-medium text-foreground">{spotlightAgent.name}</h3>
                     <Badge className="bg-primary text-primary-foreground">${spotlightAgent.symbol}</Badge>
                   </div>
                 </div>
@@ -290,7 +290,7 @@ const Index = () => {
         {/* Agent Categories */}
         <section className="mb-8">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-foreground">Discover Agents</h2>
+            <h2 className="text-2xl font-heading font-medium text-foreground">Discover Agents</h2>
             <Link 
               to="/agents" 
               className="text-black hover:text-gray-700 flex items-center gap-1 text-sm font-medium"

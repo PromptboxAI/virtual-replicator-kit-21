@@ -15,11 +15,11 @@ const Learn = () => {
       {/* Hero Section */}
       <section className="py-20 px-4">
         <div className="container mx-auto">
-          <h1 className="text-6xl md:text-8xl mb-8 text-foreground text-left">
-            <span className="font-normal">LEARN </span>
-            <span className="font-bold">PROMPT</span>
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-heading font-medium mb-8 text-foreground text-left tracking-tight">
+            <span>LEARN </span>
+            <span className="font-semibold">PROMPT</span>
           </h1>
-          <h2 className="text-3xl md:text-4xl mb-6 text-foreground text-left">
+          <h2 className="text-2xl md:text-3xl font-heading font-medium mb-6 text-foreground text-left tracking-tight">
             Leverage the power
             <br />
             of autonomous intelligence
@@ -58,10 +58,9 @@ const Learn = () => {
       {/* Tokenize Intelligence Section */}
       <section className="py-16 px-4">
         <div className="container mx-auto text-center">
-          <h2 className="text-4xl font-bold mb-6 text-foreground">Tokenize Intelligence</h2>
-          <p className="text-xl text-muted-foreground mb-12 max-w-4xl mx-auto">
-            Experience true autonomous AI that thinks, acts, and earns revenue independently. 
-            Our agents don't just hold tokens—they actively execute goals, engage socially, and generate value for their holders.
+          <h2 className="text-3xl md:text-4xl font-heading font-medium mb-6 text-foreground tracking-tight">Tokenize Intelligence</h2>
+          <p className="text-lg text-muted-foreground mb-12 max-w-4xl mx-auto">
+            Experience true autonomous AI that thinks, acts, and earns revenue independently. Our agents don't just hold tokens—they actively execute goals, engage socially, and generate value for their holders.
           </p>
           
           {/* Autonomous Features Grid */}
@@ -159,7 +158,7 @@ const Learn = () => {
 
           {/* Core Protocol Layers */}
           <div className="max-w-4xl mx-auto">
-            <h3 className="text-2xl font-bold mb-8 text-foreground">Built on Three Revolutionary Layers</h3>
+            <h3 className="text-xl font-heading font-medium mb-8 text-foreground tracking-tight">Built on Three Revolutionary Layers</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {/* Layer 1 */}
               <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 hover:shadow-lg transition-all duration-300 text-center group">
@@ -212,8 +211,8 @@ const Learn = () => {
         ></div>
         <div className="container mx-auto px-4 text-center relative z-10">
           <p className="text-sm text-white/60 tracking-widest uppercase mb-6">CREATE AGENT</p>
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">Ready to Build the Future?</h2>
-          <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-heading font-medium mb-6 text-white tracking-tight">Ready to Build the Future?</h2>
+          <p className="text-lg text-white/80 mb-8 max-w-2xl mx-auto">
             Join thousands of developers and investors shaping the autonomous AI economy
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
