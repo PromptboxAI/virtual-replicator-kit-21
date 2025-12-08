@@ -379,22 +379,21 @@ const Index = () => {
           <div className="container mx-auto px-4 relative z-10">
             <div className="max-w-3xl mx-auto text-center">
               <h2 className="text-3xl md:text-4xl font-heading font-medium mb-6 text-background tracking-tight">
-                Ready to Launch Your Own AI Agent?
+                Ready to Build Your AI Agent?
               </h2>
               <p className="text-lg text-background/70 mb-8">
-                Join the decentralized AI economy. Create intelligent agents that generate value 
-                for you and your community.
+                Start with our platform to create custom autonomous workflows where you control exactly how much independence you want to grant your AI agents.
               </p>
               <div className="flex flex-wrap gap-4 justify-center">
                 <Button 
                   asChild 
                   size="lg" 
                   variant="secondary" 
-                  className="gap-2 bg-background text-foreground hover:bg-background/90 px-8 transition-all duration-300 hover:scale-105 hover:shadow-xl"
+                  className="gap-2 bg-background text-foreground hover:bg-background/90 px-8 transition-all duration-300 hover:scale-105 hover:shadow-xl group"
                 >
                   <Link to="/create">
-                    Create Agent
-                    <ArrowRight className="w-4 h-4" />
+                    Start Building
+                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                   </Link>
                 </Button>
                 <Button 
