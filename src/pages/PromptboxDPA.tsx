@@ -33,7 +33,7 @@ const PromptboxDPA = () => {
 
             <ul className="list-disc pl-6 mb-6 text-foreground/90 space-y-2">
               <li>
-                [Promptbox, Inc.], a [●] company with registered address at [●]
+                Promptbox, Inc., a New York-based company with registered address in Stony Brook, NY
                 ("<strong>Promptbox</strong>", "<strong>Processor</strong>", "
                 <strong>we</strong>", "<strong>us</strong>", or "
                 <strong>our</strong>"), and
