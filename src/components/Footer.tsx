@@ -2,8 +2,10 @@ import { Linkedin, Twitter, Github, Youtube } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
+import { useSystemStatus, getStatusColor, getStatusText } from '@/hooks/useSystemStatus';
 
 const Footer = () => {
+  const systemStatus = useSystemStatus();
   return (
     <footer className="mt-auto py-12 px-4 border-t border-border bg-background">
       <div className="container mx-auto">
@@ -58,7 +60,7 @@ const Footer = () => {
               <div className="hover:text-foreground cursor-pointer transition-colors">Documentation</div>
               <div className="hover:text-foreground cursor-pointer transition-colors">API Reference</div>
               <div className="hover:text-foreground cursor-pointer transition-colors">Academy</div>
-              <div className="hover:text-foreground cursor-pointer transition-colors">Status Page</div>
+              <Link to="/status" className="block hover:text-foreground transition-colors">Status Page</Link>
               <div className="hover:text-foreground cursor-pointer transition-colors">Changelog</div>
             </div>
           </div>
@@ -103,10 +105,10 @@ const Footer = () => {
           </div>
           
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              All Systems Operational
-            </div>
+            <Link to="/status" className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
+              <div className={`w-2 h-2 rounded-full ${getStatusColor(systemStatus.overall)}`}></div>
+              {getStatusText(systemStatus.overall)}
+            </Link>
             <div className="flex items-center gap-3">
               <Twitter className="w-5 h-5 text-muted-foreground hover:text-foreground cursor-pointer transition-colors" />
               <Github className="w-5 h-5 text-muted-foreground hover:text-foreground cursor-pointer transition-colors" />
