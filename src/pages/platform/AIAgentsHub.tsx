@@ -177,7 +177,7 @@ const AIAgentsHub = () => {
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
               <p className="text-sm font-mono text-muted-foreground mb-6 tracking-wider uppercase">
-                Enterprise-Grade AI Agent Platform
+                Tokenized Production-Grade AI Agent Platform
               </p>
               <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 text-foreground leading-tight">
                 Transform Your Operations with AI Agents
