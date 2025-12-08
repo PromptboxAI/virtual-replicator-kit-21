@@ -35,6 +35,7 @@ import { useUserRole } from "./hooks/useUserRole";
 import { Header } from "./components/Header";
 import { ContractDeploymentTest } from "./components/ContractDeploymentTest";
 import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 
 const queryClient = new QueryClient();
 
@@ -143,6 +144,7 @@ const App = () => {
               <Route path="/fee-test/:agentId" element={<AdminProtectedRoute><FeeTest /></AdminProtectedRoute>} />
               <Route path="/healthz" element={<HealthCheck />} />
               <Route path="/privacy" element={<Privacy />} />
+              <Route path="/terms" element={<Terms />} />
               {/* Legacy redirect for old trade routes */}
               <Route path="/trade/:agentId" element={<LegacyTradeRedirect />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
