@@ -214,7 +214,7 @@ const AIAgentsHub = () => {
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
-                Built for Enterprise Scale
+                Built for Volume
               </h2>
               <p className="text-lg text-muted-foreground">
                 Our AI agents are designed to handle complex workflows with reliability and security.
