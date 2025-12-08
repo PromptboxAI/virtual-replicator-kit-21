@@ -20,10 +20,10 @@ const TokenAgents = () => {
             <div className="text-sm text-muted-foreground tracking-widest uppercase mb-4">
               Funded. Liquid. Verifiable.
             </div>
-            <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold text-foreground leading-[1.1] tracking-tight">
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-heading font-medium text-foreground leading-tight tracking-tight">
               The Agent Graduation Protocol
             </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto font-light leading-relaxed">
+            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               Turn AI agents into investable, cash-flowing micro-SaaS with proof of demand and verifiable revenue.
             </p>
           </div>
@@ -79,10 +79,10 @@ const TokenAgents = () => {
       <section className="py-32">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center mb-24">
-            <h2 className="text-5xl md:text-6xl font-bold text-foreground mb-8 leading-tight">
+            <h2 className="text-3xl md:text-4xl font-heading font-medium text-foreground mb-4 tracking-tight">
               Proof of Demand Meets Verifiable Revenue
             </h2>
-            <p className="text-xl text-muted-foreground font-light leading-relaxed">
+            <p className="text-lg text-muted-foreground">
               Every agent must prove real demand before graduation. Every revenue event is cryptographically 
               verified and transparently shared with creators, platform, and token holders.
             </p>
@@ -93,10 +93,9 @@ const TokenAgents = () => {
               <div className="w-12 h-12 bg-foreground/5 rounded-xl flex items-center justify-center mb-6">
                 <Coins className="h-6 w-6 text-foreground" />
               </div>
-              <h3 className="text-2xl font-semibold mb-4">Bonding Curve Launch</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Agents launch via transparent bonding curves. Only those reaching the graduation 
-                threshold unlock full capabilities and DEX liquidity.
+              <h3 className="font-semibold text-foreground mb-2">Bonding Curve Launch</h3>
+              <p className="text-sm text-muted-foreground">
+                Agents launch via transparent bonding curves. Only those reaching the graduation threshold unlock full capabilities and DEX liquidity.
               </p>
             </Card>
 
@@ -104,10 +103,9 @@ const TokenAgents = () => {
               <div className="w-12 h-12 bg-foreground/5 rounded-xl flex items-center justify-center mb-6">
                 <Bot className="h-6 w-6 text-foreground" />
               </div>
-              <h3 className="text-2xl font-semibold mb-4">Verifiable Receipts</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Every agent action generates cryptographic receipts. Revenue and usage are 
-                auditable, tamper-evident, and anchored on-chain.
+              <h3 className="font-semibold text-foreground mb-2">Verifiable Receipts</h3>
+              <p className="text-sm text-muted-foreground">
+                Every agent action generates cryptographic receipts. Revenue and usage are auditable, tamper-evident, and anchored on-chain.
               </p>
             </Card>
 
@@ -115,10 +113,9 @@ const TokenAgents = () => {
               <div className="w-12 h-12 bg-foreground/5 rounded-xl flex items-center justify-center mb-6">
                 <TrendingUp className="h-6 w-6 text-foreground" />
               </div>
-              <h3 className="text-2xl font-semibold mb-4">Revenue Sharing</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Revenue automatically splits between platform, creator, and token holders 
-                according to on-chain policies. No trust required.
+              <h3 className="font-semibold text-foreground mb-2">Revenue Sharing</h3>
+              <p className="text-sm text-muted-foreground">
+                Revenue automatically splits between platform, creator, and token holders according to on-chain policies. No trust required.
               </p>
             </Card>
           </div>
@@ -134,10 +131,10 @@ const TokenAgents = () => {
             <div className="grid md:grid-cols-2 gap-16 items-center">
               <div className="space-y-6 order-2 md:order-1">
                 <Badge className="mb-2">Agent Graduation Protocol</Badge>
-                <h3 className="text-4xl md:text-5xl font-bold text-foreground leading-tight">
+                <h3 className="text-3xl md:text-4xl font-heading font-medium text-foreground tracking-tight">
                   Launch with Proof of Demand
                 </h3>
-                <p className="text-lg text-muted-foreground leading-relaxed">
+                <p className="text-lg text-muted-foreground">
                   Agents start on a transparent bonding curve. Reach the 42K threshold to graduate, 
                   unlock full capabilities, and automatically deploy to Uniswap V3 with permanent liquidity.
                 </p>
@@ -176,10 +173,10 @@ const TokenAgents = () => {
               </div>
               <div className="space-y-6">
                 <Badge className="mb-2">Verifiable Output Receipts</Badge>
-                <h3 className="text-4xl md:text-5xl font-bold text-foreground leading-tight">
+                <h3 className="text-3xl md:text-4xl font-heading font-medium text-foreground tracking-tight">
                   Cryptographically Auditable
                 </h3>
-                <p className="text-lg text-muted-foreground leading-relaxed">
+                <p className="text-lg text-muted-foreground">
                   Every monetized agent action generates a signed receipt. Receipts are batched into Merkle trees 
                   with roots anchored on-chain, making all revenue and usage tamper-evident.
                 </p>
@@ -204,10 +201,10 @@ const TokenAgents = () => {
             <div className="grid md:grid-cols-2 gap-16 items-center">
               <div className="space-y-6 order-2 md:order-1">
                 <Badge className="mb-2">Token-Bound Agent Accounts</Badge>
-                <h3 className="text-4xl md:text-5xl font-bold text-foreground leading-tight">
+                <h3 className="text-3xl md:text-4xl font-heading font-medium text-foreground tracking-tight">
                   Agents as Economic Objects
                 </h3>
-                <p className="text-lg text-muted-foreground leading-relaxed">
+                <p className="text-lg text-muted-foreground">
                   Each agent is linked to an on-chain controller defining creator, platform permissions, 
                   and revenue split policies. Agents become composable DeFi primitives.
                 </p>
@@ -243,10 +240,10 @@ const TokenAgents = () => {
       <section className="py-32">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center mb-24">
-            <h2 className="text-5xl md:text-6xl font-bold text-foreground mb-8 leading-tight">
+            <h2 className="text-3xl md:text-4xl font-heading font-medium text-foreground mb-4 tracking-tight">
               Built for Everyone
             </h2>
-            <p className="text-xl text-muted-foreground font-light leading-relaxed">
+            <p className="text-lg text-muted-foreground">
               Whether you're a creator, investor, or builder, Promptbox offers clear value.
             </p>
           </div>
@@ -307,10 +304,10 @@ const TokenAgents = () => {
       <section className="bg-muted/30 py-32">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center mb-24">
-            <h2 className="text-5xl md:text-6xl font-bold text-foreground mb-8 leading-tight">
+            <h2 className="text-3xl md:text-4xl font-heading font-medium text-foreground mb-4 tracking-tight">
               How It Works
             </h2>
-            <p className="text-xl text-muted-foreground font-light leading-relaxed">
+            <p className="text-lg text-muted-foreground">
               A systematic approach to launching and scaling AI agents with verifiable economics.
             </p>
           </div>
@@ -320,10 +317,9 @@ const TokenAgents = () => {
               <div className="w-14 h-14 bg-foreground text-background rounded-2xl flex items-center justify-center text-2xl font-bold mb-6 group-hover:scale-110 transition-transform duration-300">
                 1
               </div>
-              <h3 className="text-2xl font-semibold">Launch on Bonding Curve</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Create your agent concept and launch on a transparent bonding curve. Early supporters 
-                get better pricing and help prove demand.
+              <h3 className="font-semibold text-foreground">Launch on Bonding Curve</h3>
+              <p className="text-sm text-muted-foreground">
+                Create your agent concept and launch on a transparent bonding curve. Early supporters get better pricing and help prove demand.
               </p>
             </div>
 
@@ -331,10 +327,9 @@ const TokenAgents = () => {
               <div className="w-14 h-14 bg-foreground text-background rounded-2xl flex items-center justify-center text-2xl font-bold mb-6 group-hover:scale-110 transition-transform duration-300">
                 2
               </div>
-              <h3 className="text-2xl font-semibold">Graduate to DEX</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Once the threshold is reached, your agent graduates with automatic liquidity pool 
-                creation on Uniswap V3. Fully liquid and tradeable.
+              <h3 className="font-semibold text-foreground">Graduate to DEX</h3>
+              <p className="text-sm text-muted-foreground">
+                Once the threshold is reached, your agent graduates with automatic liquidity pool creation on Uniswap V3. Fully liquid and tradeable.
               </p>
             </div>
 
@@ -342,10 +337,9 @@ const TokenAgents = () => {
               <div className="w-14 h-14 bg-foreground text-background rounded-2xl flex items-center justify-center text-2xl font-bold mb-6 group-hover:scale-110 transition-transform duration-300">
                 3
               </div>
-              <h3 className="text-2xl font-semibold">Generate & Share Revenue</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Your agent generates verifiable revenue. Every action creates a cryptographic 
-                receipt. Revenue splits automatically to all stakeholders.
+              <h3 className="font-semibold text-foreground">Generate & Share Revenue</h3>
+              <p className="text-sm text-muted-foreground">
+                Your agent generates verifiable revenue. Every action creates a cryptographic receipt. Revenue splits automatically to all stakeholders.
               </p>
             </div>
           </div>
@@ -356,7 +350,7 @@ const TokenAgents = () => {
       <section className="py-32">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center mb-20">
-            <h2 className="text-5xl md:text-6xl font-bold text-foreground mb-8 leading-tight">
+            <h2 className="text-3xl md:text-4xl font-heading font-medium text-foreground mb-4 tracking-tight">
               Frequently Asked Questions
             </h2>
           </div>
