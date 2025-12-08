@@ -397,20 +397,14 @@ const AIAgentsHub = () => {
         <section className="py-20 bg-background overflow-hidden">
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-              <AnimatedSection>
+              <div>
                 <h2 className="text-3xl md:text-4xl font-heading font-medium mb-6 text-foreground tracking-tight">
                   Why Choose Our Platform
                 </h2>
                 <p className="text-lg text-muted-foreground mb-8">
                   Our AI agent platform provides everything you need to build, deploy, and manage autonomous workflows at scale.
                 </p>
-                <motion.ul 
-                  className="space-y-4"
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true }}
-                  variants={staggerContainer}
-                >
+                <ul className="space-y-4">
                   {[
                     "No-code agent builder with pre-built templates",
                     "Multi-agent collaboration for complex workflows",
@@ -419,23 +413,16 @@ const AIAgentsHub = () => {
                     "Seamless integration with existing tools",
                     "24/7 autonomous operation with human oversight"
                   ].map((feature, index) => (
-                    <motion.li 
+                    <li 
                       key={index} 
                       className="flex items-start gap-3 group"
-                      variants={fadeInUp}
-                      transition={{ duration: 0.3, delay: index * 0.1 }}
                     >
-                      <motion.div
-                        whileHover={{ scale: 1.2, rotate: 360 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <CheckCircle2 className="w-5 h-5 text-foreground mt-0.5 flex-shrink-0 transition-colors group-hover:text-primary" />
-                      </motion.div>
+                      <CheckCircle2 className="w-5 h-5 text-foreground mt-0.5 flex-shrink-0 transition-colors group-hover:text-primary" />
                       <span className="text-muted-foreground group-hover:text-foreground transition-colors">{feature}</span>
-                    </motion.li>
+                    </li>
                   ))}
-                </motion.ul>
-              </AnimatedSection>
+                </ul>
+              </div>
               
               <motion.div 
                 className="bg-muted rounded-lg aspect-video flex items-center justify-center border border-border overflow-hidden"
