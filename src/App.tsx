@@ -40,6 +40,8 @@ import PromptboxDPA from "./pages/PromptboxDPA";
 import Careers from "./pages/Careers";
 import Status from "./pages/Status";
 import ApiReference from "./pages/ApiReference";
+import AIAgentsHub from "./pages/platform/AIAgentsHub";
+import AIAgentDetail from "./pages/platform/AIAgentDetail";
 
 const queryClient = new QueryClient();
 
@@ -153,6 +155,8 @@ const App = () => {
               <Route path="/careers" element={<Careers />} />
               <Route path="/status" element={<Status />} />
               <Route path="/api-reference" element={<ApiReference />} />
+              <Route path="/platform/ai-agents" element={<AIAgentsHub />} />
+              <Route path="/platform/ai-agents/:agentId" element={<AIAgentDetail />} />
               {/* Legacy redirect for old trade routes */}
               <Route path="/trade/:agentId" element={<LegacyTradeRedirect />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
