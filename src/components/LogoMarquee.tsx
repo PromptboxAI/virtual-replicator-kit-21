@@ -26,7 +26,7 @@ export function LogoMarquee() {
           {logos.map((logo, index) => (
             <div
               key={`${logo.name}-1-${index}`}
-              className="flex items-center justify-center min-w-[140px] grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-300"
+              className="flex items-center justify-center min-w-[140px]"
             >
               <img src={logo.image} alt={logo.name} className={`${'height' in logo ? logo.height : 'h-20'} object-contain`} />
             </div>
@@ -38,7 +38,7 @@ export function LogoMarquee() {
           {logos.map((logo, index) => (
             <div
               key={`${logo.name}-2-${index}`}
-              className="flex items-center justify-center min-w-[140px] grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-300"
+              className="flex items-center justify-center min-w-[140px]"
             >
               <img src={logo.image} alt={logo.name} className={`${'height' in logo ? logo.height : 'h-20'} object-contain`} />
             </div>
