@@ -349,33 +349,62 @@ const Index = () => {
           )}
         </section>
 
-        {/* CTA Section */}
-        <section className="bg-gradient-primary py-20 relative overflow-hidden">
-          {/* Dot pattern overlay */}
+        {/* CTA Section - Black background with micro dots */}
+        <section className="py-20 bg-foreground relative overflow-hidden">
+          {/* Dense primary dot grid */}
           <div 
-            className="absolute inset-0 opacity-40"
+            className="absolute inset-0"
             style={{
-              backgroundImage: `radial-gradient(circle, rgba(100,100,100,0.6) 1px, transparent 1px)`,
-              backgroundSize: '8px 8px'
+              backgroundImage: 'radial-gradient(circle, hsl(var(--background) / 0.08) 1px, transparent 1px)',
+              backgroundSize: '8px 8px',
             }}
-          ></div>
-          <div className="container mx-auto px-4 text-center relative z-10">
-            <div className="text-sm text-white/60 tracking-widest uppercase mb-4">
-              CREATE AGENT
-            </div>
-            <h2 className="text-4xl font-bold text-white mb-6">
-              Ready to Launch<br />Your Own AI Agent?
-            </h2>
-            <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
-              Join the decentralized AI economy. Create intelligent agents that generate value 
-              for you and your community.
-            </p>
-            <div className="flex justify-center">
-              <Button asChild size="lg" variant="secondary" className="bg-white text-black hover:bg-white/90">
-                <Link to="/create">
-                  Create Agent
-                </Link>
-              </Button>
+          />
+          {/* Medium density layer */}
+          <div 
+            className="absolute inset-0"
+            style={{
+              backgroundImage: 'radial-gradient(circle, hsl(var(--background) / 0.05) 0.8px, transparent 0.8px)',
+              backgroundSize: '12px 12px',
+            }}
+          />
+          {/* Sparse larger dots for depth variation */}
+          <div 
+            className="absolute inset-0"
+            style={{
+              backgroundImage: 'radial-gradient(circle, hsl(var(--background) / 0.03) 1.5px, transparent 1.5px)',
+              backgroundSize: '24px 24px',
+            }}
+          />
+          
+          <div className="container mx-auto px-4 relative z-10">
+            <div className="max-w-3xl mx-auto text-center">
+              <h2 className="text-3xl md:text-4xl font-heading font-medium mb-6 text-background tracking-tight">
+                Ready to Launch Your Own AI Agent?
+              </h2>
+              <p className="text-lg text-background/70 mb-8">
+                Join the decentralized AI economy. Create intelligent agents that generate value 
+                for you and your community.
+              </p>
+              <div className="flex flex-wrap gap-4 justify-center">
+                <Button 
+                  asChild 
+                  size="lg" 
+                  variant="secondary" 
+                  className="gap-2 bg-background text-foreground hover:bg-background/90 px-8 transition-all duration-300 hover:scale-105 hover:shadow-xl"
+                >
+                  <Link to="/create">
+                    Create Agent
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                </Button>
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="border-background bg-foreground text-background hover:bg-foreground/90 px-8 transition-all duration-300 hover:scale-105"
+                >
+                  Talk to Sales
+                </Button>
+              </div>
             </div>
           </div>
         </section>
