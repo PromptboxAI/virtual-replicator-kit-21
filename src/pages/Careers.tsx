@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -6,6 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { Mail, Users, Zap, Target, Rocket, Code, Palette, Megaphone, ArrowRight, ExternalLink } from "lucide-react";
 
 const Careers = () => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   const whyJoinReasons = [
     {
       icon: Zap,
