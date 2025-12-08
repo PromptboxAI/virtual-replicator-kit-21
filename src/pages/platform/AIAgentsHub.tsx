@@ -233,7 +233,7 @@ const AIAgentsHub = () => {
                 Tokenized Production-Grade AI Agent Platform
               </motion.p>
               <motion.h1 
-                className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 text-foreground leading-tight"
+                className="text-4xl md:text-6xl lg:text-7xl font-heading font-medium mb-6 text-foreground leading-tight tracking-tight"
                 variants={fadeInUp}
                 transition={{ duration: 0.5, delay: 0.1 }}
               >
@@ -292,7 +292,7 @@ const AIAgentsHub = () => {
         <section className="py-20 bg-background">
           <div className="container mx-auto px-4">
             <AnimatedSection className="max-w-3xl mx-auto text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
+              <h2 className="text-3xl md:text-4xl font-heading font-medium mb-4 text-foreground tracking-tight">
                 Built for Volume
               </h2>
               <p className="text-lg text-muted-foreground">
@@ -336,7 +336,7 @@ const AIAgentsHub = () => {
         <section className="py-20 bg-muted/30">
           <div className="container mx-auto px-4">
             <AnimatedSection className="max-w-3xl mx-auto text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
+              <h2 className="text-3xl md:text-4xl font-heading font-medium mb-4 text-foreground tracking-tight">
                 Explore Some of Our Best Agents
               </h2>
               <p className="text-lg text-muted-foreground">
@@ -415,7 +415,7 @@ const AIAgentsHub = () => {
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
               <AnimatedSection>
-                <h2 className="text-3xl md:text-4xl font-bold mb-6 text-foreground">
+                <h2 className="text-3xl md:text-4xl font-heading font-medium mb-6 text-foreground tracking-tight">
                   Why Choose Our Platform
                 </h2>
                 <p className="text-lg text-muted-foreground mb-8">
@@ -508,7 +508,7 @@ const AIAgentsHub = () => {
               variants={staggerContainer}
             >
               <motion.h2 
-                className="text-3xl md:text-4xl font-bold mb-6 text-background"
+                className="text-3xl md:text-4xl font-heading font-medium mb-6 text-background tracking-tight"
                 variants={fadeInUp}
               >
                 Ready to Build Your AI Agent?
