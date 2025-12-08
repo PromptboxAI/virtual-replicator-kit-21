@@ -475,22 +475,22 @@ const AIAgentsHub = () => {
           </div>
         </section>
 
-        {/* CTA Section - Black background with dots */}
+        {/* CTA Section - Black background with micro dots */}
         <section className="py-20 bg-foreground relative overflow-hidden">
-          {/* Animated dots pattern */}
-          <motion.div 
-            className="absolute inset-0 opacity-10"
+          {/* Primary micro dot grid */}
+          <div 
+            className="absolute inset-0"
             style={{
-              backgroundImage: 'radial-gradient(circle, currentColor 1px, transparent 1px)',
-              backgroundSize: '24px 24px',
+              backgroundImage: 'radial-gradient(circle, hsl(var(--background) / 0.12) 1px, transparent 1px)',
+              backgroundSize: '20px 20px',
             }}
-            animate={{
-              backgroundPosition: ['0px 0px', '24px 24px'],
-            }}
-            transition={{
-              duration: 20,
-              repeat: Infinity,
-              ease: "linear"
+          />
+          {/* Secondary smaller dots for depth */}
+          <div 
+            className="absolute inset-0"
+            style={{
+              backgroundImage: 'radial-gradient(circle, hsl(var(--background) / 0.06) 0.5px, transparent 0.5px)',
+              backgroundSize: '10px 10px',
             }}
           />
           
