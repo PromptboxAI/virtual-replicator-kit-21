@@ -84,6 +84,7 @@ const Footer = () => {
               <div className="hover:text-foreground cursor-pointer transition-colors">OpenAI DPA</div>
               <div className="hover:text-foreground cursor-pointer transition-colors">Anthropic DPA</div>
               <div className="hover:text-foreground cursor-pointer transition-colors">SOC 2 Report</div>
+              <a href="mailto:kevin@promptbox.com" className="block hover:text-foreground transition-colors">Sign BAA With Us</a>
             </div>
           </div>
         </div>
