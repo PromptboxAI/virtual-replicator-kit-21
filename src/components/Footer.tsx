@@ -68,7 +68,7 @@ const Footer = () => {
             <h4 className="font-semibold text-foreground mb-4 uppercase text-sm tracking-wider">Company</h4>
             <div className="space-y-2 text-sm text-muted-foreground">
               <div className="hover:text-foreground cursor-pointer transition-colors">Blog</div>
-              <div className="hover:text-foreground cursor-pointer transition-colors">Careers</div>
+              <Link to="/careers" className="block hover:text-foreground transition-colors">Careers</Link>
               <div className="hover:text-foreground cursor-pointer transition-colors">About Us</div>
               <div className="hover:text-foreground cursor-pointer transition-colors">Get a Demo</div>
             </div>

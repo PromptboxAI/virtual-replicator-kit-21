@@ -37,6 +37,7 @@ import { ContractDeploymentTest } from "./components/ContractDeploymentTest";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import PromptboxDPA from "./pages/PromptboxDPA";
+import Careers from "./pages/Careers";
 
 const queryClient = new QueryClient();
 
@@ -147,6 +148,7 @@ const App = () => {
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/promptbox-dpa" element={<PromptboxDPA />} />
+              <Route path="/careers" element={<Careers />} />
               {/* Legacy redirect for old trade routes */}
               <Route path="/trade/:agentId" element={<LegacyTradeRedirect />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
