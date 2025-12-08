@@ -235,7 +235,10 @@ const Index = () => {
         {/* Spotlight Agent */}
         {spotlightAgent && (
           <section className="mb-12">
-            <div className="flex items-center gap-3 mb-6">
+            <div className="mb-6">
+              <p className="text-sm font-mono text-muted-foreground mb-2 tracking-wider uppercase inline-block border-b-2 border-foreground/30 pb-1">
+                FEATURED
+              </p>
               <h2 className="text-2xl font-heading font-medium text-foreground">Spotlight Agent</h2>
             </div>
             <Card className="p-6 bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/20">
@@ -290,7 +293,12 @@ const Index = () => {
         {/* Agent Categories */}
         <section className="mb-8">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-heading font-medium text-foreground">Discover Agents</h2>
+            <div>
+              <p className="text-sm font-mono text-muted-foreground mb-2 tracking-wider uppercase inline-block border-b-2 border-foreground/30 pb-1">
+                EXPLORE
+              </p>
+              <h2 className="text-2xl font-heading font-medium text-foreground">Discover Agents</h2>
+            </div>
             <Link 
               to="/agents" 
               className="text-black hover:text-gray-700 flex items-center gap-1 text-sm font-medium"

@@ -58,6 +58,9 @@ const Learn = () => {
       {/* Tokenize Intelligence Section */}
       <section className="py-16 px-4">
         <div className="container mx-auto text-center">
+          <p className="text-sm font-mono text-muted-foreground mb-4 tracking-wider uppercase inline-block border-b-2 border-foreground/30 pb-1">
+            CAPABILITIES
+          </p>
           <h2 className="text-3xl md:text-4xl font-heading font-medium mb-6 text-foreground tracking-tight">Tokenize Intelligence</h2>
           <p className="text-lg text-muted-foreground mb-12 max-w-4xl mx-auto">
             Experience true autonomous AI that thinks, acts, and earns revenue independently. Our agents don't just hold tokens—they actively execute goals, engage socially, and generate value for their holders.
@@ -158,6 +161,9 @@ const Learn = () => {
 
           {/* Core Protocol Layers */}
           <div className="max-w-4xl mx-auto">
+            <p className="text-sm font-mono text-muted-foreground mb-4 tracking-wider uppercase inline-block border-b-2 border-foreground/30 pb-1">
+              ARCHITECTURE
+            </p>
             <h3 className="text-xl font-heading font-medium mb-8 text-foreground tracking-tight">Built on Three Revolutionary Layers</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {/* Layer 1 */}
