@@ -38,6 +38,7 @@ import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import PromptboxDPA from "./pages/PromptboxDPA";
 import Careers from "./pages/Careers";
+import Status from "./pages/Status";
 
 const queryClient = new QueryClient();
 
@@ -149,6 +150,7 @@ const App = () => {
               <Route path="/terms" element={<Terms />} />
               <Route path="/promptbox-dpa" element={<PromptboxDPA />} />
               <Route path="/careers" element={<Careers />} />
+              <Route path="/status" element={<Status />} />
               {/* Legacy redirect for old trade routes */}
               <Route path="/trade/:agentId" element={<LegacyTradeRedirect />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
