@@ -488,25 +488,61 @@ const TokenAgents = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-32 bg-foreground text-background relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-background rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-background rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-        </div>
-        <div className="container mx-auto px-4 text-center relative z-10">
-          <h2 className="text-5xl md:text-6xl font-bold mb-8 leading-tight max-w-4xl mx-auto">
-            Ready to Launch Your Agent?
-          </h2>
-          <p className="text-xl mb-12 opacity-80 max-w-2xl mx-auto font-light">
-            Join the Agent Graduation Protocol. Prove demand, generate revenue, share success.
-          </p>
-          <Button size="lg" className="bg-background text-foreground hover:bg-background/90 hover:scale-105 transition-all duration-200 h-14 px-8 text-base" asChild>
-            <Link to="/create">
-              Get Started
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Link>
-          </Button>
+      {/* CTA Section - Black background with micro dots */}
+      <section className="py-20 bg-foreground relative overflow-hidden">
+        {/* Dense primary dot grid */}
+        <div 
+          className="absolute inset-0"
+          style={{
+            backgroundImage: 'radial-gradient(circle, hsl(var(--background) / 0.08) 1px, transparent 1px)',
+            backgroundSize: '8px 8px',
+          }}
+        />
+        {/* Medium density layer */}
+        <div 
+          className="absolute inset-0"
+          style={{
+            backgroundImage: 'radial-gradient(circle, hsl(var(--background) / 0.05) 0.8px, transparent 0.8px)',
+            backgroundSize: '12px 12px',
+          }}
+        />
+        {/* Sparse larger dots for depth variation */}
+        <div 
+          className="absolute inset-0"
+          style={{
+            backgroundImage: 'radial-gradient(circle, hsl(var(--background) / 0.03) 1.5px, transparent 1.5px)',
+            backgroundSize: '24px 24px',
+          }}
+        />
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="text-3xl md:text-4xl font-heading font-medium mb-6 text-background tracking-tight">
+              Ready to Build Your AI Agent?
+            </h2>
+            <p className="text-lg text-background/70 mb-8">
+              Start with our platform to create custom autonomous workflows where you control exactly how much independence you want to grant your AI agents.
+            </p>
+            <div className="flex flex-wrap gap-4 justify-center">
+              <Button 
+                size="lg" 
+                className="gap-2 bg-background text-foreground hover:bg-background/90 px-8 transition-all duration-300 hover:scale-105 hover:shadow-xl group"
+                asChild
+              >
+                <Link to="/create">
+                  Start Building
+                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                </Link>
+              </Button>
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="border-background bg-foreground text-background hover:bg-foreground/90 px-8 transition-all duration-300 hover:scale-105"
+              >
+                Talk to Sales
+              </Button>
+            </div>
+          </div>
         </div>
       </section>
 
