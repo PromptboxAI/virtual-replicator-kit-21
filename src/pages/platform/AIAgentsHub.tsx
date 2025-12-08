@@ -482,20 +482,28 @@ const AIAgentsHub = () => {
 
         {/* CTA Section - Black background with micro dots */}
         <section className="py-20 bg-foreground relative overflow-hidden">
-          {/* Primary micro dot grid */}
+          {/* Dense primary dot grid */}
           <div 
             className="absolute inset-0"
             style={{
-              backgroundImage: 'radial-gradient(circle, hsl(var(--background) / 0.12) 1px, transparent 1px)',
-              backgroundSize: '20px 20px',
+              backgroundImage: 'radial-gradient(circle, hsl(var(--background) / 0.08) 1px, transparent 1px)',
+              backgroundSize: '8px 8px',
             }}
           />
-          {/* Secondary smaller dots for depth */}
+          {/* Medium density layer */}
           <div 
             className="absolute inset-0"
             style={{
-              backgroundImage: 'radial-gradient(circle, hsl(var(--background) / 0.06) 0.5px, transparent 0.5px)',
-              backgroundSize: '10px 10px',
+              backgroundImage: 'radial-gradient(circle, hsl(var(--background) / 0.05) 0.8px, transparent 0.8px)',
+              backgroundSize: '12px 12px',
+            }}
+          />
+          {/* Sparse larger dots for depth variation */}
+          <div 
+            className="absolute inset-0"
+            style={{
+              backgroundImage: 'radial-gradient(circle, hsl(var(--background) / 0.03) 1.5px, transparent 1.5px)',
+              backgroundSize: '24px 24px',
             }}
           />
           
