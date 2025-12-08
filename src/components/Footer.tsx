@@ -81,7 +81,7 @@ const Footer = () => {
               <Link to="/privacy" className="block hover:text-foreground transition-colors">Privacy</Link>
               <Link to="/terms" className="block hover:text-foreground transition-colors">Terms</Link>
               <Link to="/promptbox-dpa" className="block hover:text-foreground transition-colors">Promptbox DPA</Link>
-              <div className="hover:text-foreground cursor-pointer transition-colors">OpenAI DPA</div>
+              <a href="/documents/OpenAI-DPA.pdf" target="_blank" rel="noopener noreferrer" className="block hover:text-foreground transition-colors">OpenAI DPA</a>
               <div className="hover:text-foreground cursor-pointer transition-colors">Anthropic DPA</div>
               <div className="hover:text-foreground cursor-pointer transition-colors">SOC 2 Report</div>
               <a href="mailto:kevin@promptbox.com" className="block hover:text-foreground transition-colors">Sign BAA With Us</a>
