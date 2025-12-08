@@ -334,8 +334,8 @@ const ApiReference = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
           <div className="bg-background border border-border rounded-lg p-6">
             <h3 className="font-semibold text-foreground mb-2">Base URL</h3>
-            <code className="text-sm text-foreground/70 bg-muted/50 px-2 py-1 rounded">
-              https://api.promptbox.com/v1
+            <code className="text-xs text-foreground/70 bg-muted/50 px-2 py-1 rounded break-all">
+              https://cjzazuuwapsliacmjxfg.supabase.co/functions/v1
             </code>
           </div>
           <div className="bg-background border border-border rounded-lg p-6">
@@ -395,12 +395,14 @@ const ApiReference = () => {
         <div className="mb-12">
           <h2 className="text-2xl font-bold text-foreground mb-6">Quick Start</h2>
           <CodeBlock
-            code={`// Fetch token list
-const response = await fetch('https://api.promptbox.com/v1/list-tokens?limit=10');
+            code={`const BASE_URL = 'https://cjzazuuwapsliacmjxfg.supabase.co/functions/v1';
+
+// Fetch token list
+const response = await fetch(\`\${BASE_URL}/list-tokens?limit=10\`);
 const data = await response.json();
 
-// Get specific token
-const tokenResponse = await fetch(\`https://api.promptbox.com/v1/get-token-metadata/\${agentId}\`);
+// Get specific token metadata
+const tokenResponse = await fetch(\`\${BASE_URL}/get-token-metadata?id=\${agentId}\`);
 const token = await tokenResponse.json();`}
             language="typescript"
           />
