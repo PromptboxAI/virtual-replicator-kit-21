@@ -1,4 +1,5 @@
 import { Linkedin, Twitter, Github, Youtube } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 
@@ -77,8 +78,8 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold text-foreground mb-4 uppercase text-sm tracking-wider">Legal</h4>
             <div className="space-y-2 text-sm text-muted-foreground">
-              <div className="hover:text-foreground cursor-pointer transition-colors">Privacy</div>
-              <div className="hover:text-foreground cursor-pointer transition-colors">Terms</div>
+              <Link to="/privacy" className="block hover:text-foreground transition-colors">Privacy</Link>
+              <Link to="/terms" className="block hover:text-foreground transition-colors">Terms</Link>
               <div className="hover:text-foreground cursor-pointer transition-colors">Referral Terms</div>
               <div className="hover:text-foreground cursor-pointer transition-colors">OpenAI DPA</div>
               <div className="hover:text-foreground cursor-pointer transition-colors">Anthropic DPA</div>

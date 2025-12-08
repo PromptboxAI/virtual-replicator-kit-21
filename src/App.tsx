@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { HelmetProvider } from "react-helmet-async";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -33,6 +34,7 @@ import { LegacyTradeRedirect } from "./components/LegacyRedirect";
 import { useUserRole } from "./hooks/useUserRole";
 import { Header } from "./components/Header";
 import { ContractDeploymentTest } from "./components/ContractDeploymentTest";
+import Privacy from "./pages/Privacy";
 
 const queryClient = new QueryClient();
 
@@ -91,6 +93,7 @@ const App = () => {
 
   return (
   <ErrorBoundary>
+    <HelmetProvider>
     <PrivyProvider
       appId="cmcv2r72202fqld0lnr5kgq3k"
       config={privyConfig}
@@ -139,6 +142,7 @@ const App = () => {
               <Route path="/token-agents" element={<TokenAgents />} />
               <Route path="/fee-test/:agentId" element={<AdminProtectedRoute><FeeTest /></AdminProtectedRoute>} />
               <Route path="/healthz" element={<HealthCheck />} />
+              <Route path="/privacy" element={<Privacy />} />
               {/* Legacy redirect for old trade routes */}
               <Route path="/trade/:agentId" element={<LegacyTradeRedirect />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
@@ -154,6 +158,7 @@ const App = () => {
       </TooltipProvider>
     </QueryClientProvider>
   </PrivyProvider>
+    </HelmetProvider>
   </ErrorBoundary>
   );
 };
