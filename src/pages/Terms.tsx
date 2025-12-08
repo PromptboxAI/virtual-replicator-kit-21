@@ -1,8 +1,10 @@
 import { Helmet } from "react-helmet-async";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 
 const Terms = () => {
   return (
-    <>
+    <div className="min-h-screen bg-background flex flex-col">
       <Helmet>
         <title>Terms of Service | Promptbox</title>
         <meta
@@ -12,7 +14,9 @@ const Terms = () => {
         <link rel="canonical" href="https://promptbox.com/terms" />
       </Helmet>
 
-      <div className="min-h-screen bg-background">
+      <Header />
+
+      <main className="flex-1">
         <div className="container mx-auto px-4 py-12 max-w-4xl">
           <article className="prose prose-invert max-w-none">
             <h1 className="text-4xl font-bold text-foreground mb-2">
@@ -952,8 +956,10 @@ const Terms = () => {
             </section>
           </article>
         </div>
-      </div>
-    </>
+      </main>
+
+      <Footer />
+    </div>
   );
 };
 
