@@ -337,7 +337,7 @@ const AIAgentsHub = () => {
           <div className="container mx-auto px-4">
             <AnimatedSection className="max-w-3xl mx-auto text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
-                Explore Our AI Agents
+                Explore Some of Our Best Agents
               </h2>
               <p className="text-lg text-muted-foreground">
                 Each agent is designed for specific use cases, from legal document review to autonomous coding.
@@ -360,7 +360,11 @@ const AIAgentsHub = () => {
                     transition={{ duration: 0.4, delay: index * 0.05 }}
                   >
                     <Link to={`/platform/ai-agents/${agent.id}`}>
-                      <Card className="group p-6 h-full bg-background border-border hover:border-foreground/30 transition-all duration-300 cursor-pointer hover:shadow-lg hover:-translate-y-1">
+                      <motion.div
+                        whileHover={{ y: -4, scale: 1.01 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                      >
+                      <Card className="group p-6 h-full bg-background border-border hover:border-foreground/30 transition-all duration-300 cursor-pointer hover:shadow-lg">
                         <div className="flex items-start gap-4 mb-4">
                           <motion.div 
                             className="p-3 rounded-lg bg-muted transition-all duration-300 group-hover:bg-foreground"
@@ -384,7 +388,7 @@ const AIAgentsHub = () => {
 
                         <div className="flex flex-wrap gap-2 mb-4">
                           {agent.useCases.slice(0, 2).map((useCase) => (
-                            <Badge key={useCase} variant="secondary" className="text-xs font-normal transition-colors group-hover:bg-foreground/10">
+                            <Badge key={useCase} variant="secondary" className="text-xs font-normal">
                               {useCase}
                             </Badge>
                           ))}
@@ -397,6 +401,7 @@ const AIAgentsHub = () => {
                           <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all" />
                         </div>
                       </Card>
+                      </motion.div>
                     </Link>
                   </motion.div>
                 );
