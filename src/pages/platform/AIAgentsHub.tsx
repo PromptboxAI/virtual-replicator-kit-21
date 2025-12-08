@@ -512,7 +512,7 @@ const AIAgentsHub = () => {
                 <Button 
                   size="lg" 
                   variant="outline" 
-                  className="border-background/30 text-background hover:bg-background/10 px-8 transition-all duration-300 hover:scale-105"
+                  className="border-background bg-foreground text-background hover:bg-foreground/90 px-8 transition-all duration-300 hover:scale-105"
                 >
                   Talk to Sales
                 </Button>
