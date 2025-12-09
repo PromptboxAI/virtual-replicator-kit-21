@@ -11,45 +11,53 @@ const logos = [
   { name: 'Github', image: githubLogo },
   { name: 'OpenAI', image: openaiLogo },
   { name: 'Privy', image: privyLogo },
-  { name: 'Supabase', image: supabaseLogo },
+  { name: 'Supabase', image: supabaseLogo, height: 'h-25' },
   { name: 'MIT License', image: mitLogo },
-  { name: 'Gemini', image: geminiLogo },
-  { name: 'Claude', image: claudeLogo },
+  { name: 'Gemini', image: geminiLogo, height: 'h-17' },
+  { name: 'Claude', image: claudeLogo, height: 'h-28' },
 ];
 
 export function LogoMarquee() {
   return (
     <div className="w-full overflow-hidden bg-background py-4 border-y border-border/50">
-      {/* Scrolling marquee for all screen sizes */}
-      <div className="flex relative">
+      {/* Mobile: Static two-column grid */}
+      <div className="md:hidden grid grid-cols-2 gap-3 max-w-xs mx-auto px-4">
+        {logos.slice(0, -1).map((logo, index) => (
+          <div
+            key={`${logo.name}-mobile-${index}`}
+            className="flex items-center justify-center"
+          >
+            <img src={logo.image} alt={logo.name} className={`${'height' in logo ? logo.height : 'h-14'} object-contain`} />
+          </div>
+        ))}
+        {/* Center the last logo (Claude) */}
+        <div className="col-span-2 flex items-center justify-center">
+          <img src={logos[logos.length - 1].image} alt={logos[logos.length - 1].name} className="h-24 object-contain" />
+        </div>
+      </div>
+
+      {/* Desktop: Animated marquee */}
+      <div className="hidden md:flex relative">
         {/* First set of logos */}
-        <div className="flex animate-marquee gap-8 md:gap-16 pr-8 md:pr-16">
+        <div className="flex animate-marquee gap-16 pr-16">
           {logos.map((logo, index) => (
             <div
               key={`${logo.name}-1-${index}`}
-              className="flex items-center justify-center min-w-[100px] md:min-w-[140px]"
+              className="flex items-center justify-center min-w-[140px]"
             >
-              <img 
-                src={logo.image} 
-                alt={logo.name} 
-                className="h-10 md:h-14 object-contain" 
-              />
+              <img src={logo.image} alt={logo.name} className={`${'height' in logo ? logo.height : 'h-20'} object-contain`} />
             </div>
           ))}
         </div>
         
         {/* Duplicate set for seamless loop */}
-        <div className="flex animate-marquee gap-8 md:gap-16 pr-8 md:pr-16" aria-hidden="true">
+        <div className="flex animate-marquee gap-16 pr-16" aria-hidden="true">
           {logos.map((logo, index) => (
             <div
               key={`${logo.name}-2-${index}`}
-              className="flex items-center justify-center min-w-[100px] md:min-w-[140px]"
+              className="flex items-center justify-center min-w-[140px]"
             >
-              <img 
-                src={logo.image} 
-                alt={logo.name} 
-                className="h-10 md:h-14 object-contain" 
-              />
+              <img src={logo.image} alt={logo.name} className={`${'height' in logo ? logo.height : 'h-20'} object-contain`} />
             </div>
           ))}
         </div>
