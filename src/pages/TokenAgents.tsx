@@ -40,40 +40,16 @@ const TokenAgents = () => {
               </Link>
             </Button>
           </div>
-        </div>
-      </section>
 
-      {/* Stats Section */}
-      <section className="container mx-auto px-4 py-16">
-        <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
-          <div className="text-center space-y-2 animate-fade-in hover:scale-105 transition-transform duration-300">
-            <div className="text-4xl md:text-5xl font-bold text-foreground">42K</div>
-            <div className="text-sm text-muted-foreground">Graduation Threshold</div>
-          </div>
-          <div className="text-center space-y-2 animate-fade-in hover:scale-105 transition-transform duration-300" style={{ animationDelay: '100ms' }}>
-            <div className="text-4xl md:text-5xl font-bold text-foreground">100%</div>
-            <div className="text-sm text-muted-foreground">On-Chain Verifiable</div>
-          </div>
-          <div className="text-center space-y-2 animate-fade-in hover:scale-105 transition-transform duration-300" style={{ animationDelay: '200ms' }}>
-            <div className="text-4xl md:text-5xl font-bold text-foreground">3-Way</div>
-            <div className="text-sm text-muted-foreground">Revenue Split</div>
-          </div>
-          <div className="text-center space-y-2 animate-fade-in hover:scale-105 transition-transform duration-300" style={{ animationDelay: '300ms' }}>
-            <div className="text-4xl md:text-5xl font-bold text-foreground">Base</div>
-            <div className="text-sm text-muted-foreground">L2 Network</div>
+          {/* Built on Badge */}
+          <div className="pt-8">
+            <p className="text-sm text-muted-foreground/60 flex items-center justify-center gap-1 mb-4">
+              Built on <img src={baseLogo} alt="Base" className="h-4 w-4 inline-block" /> • Powered by:
+            </p>
+            <LogoMarquee />
           </div>
         </div>
       </section>
-
-      {/* Built on Badge */}
-      <div className="text-center pb-4">
-        <p className="text-sm text-muted-foreground/60 flex items-center justify-center gap-1">
-          Built on <img src={baseLogo} alt="Base" className="h-4 w-4 inline-block" /> • Powered by:
-        </p>
-      </div>
-
-      {/* Logo Marquee */}
-      <LogoMarquee />
 
       {/* Core Protocol Features */}
       <section className="py-32">
