@@ -20,44 +20,27 @@ const logos = [
 export function LogoMarquee() {
   return (
     <div className="w-full overflow-hidden bg-background py-4 border-y border-border/50">
-      {/* Mobile: Static two-column grid */}
-      <div className="md:hidden grid grid-cols-2 gap-3 max-w-xs mx-auto px-4">
-        {logos.slice(0, -1).map((logo, index) => (
-          <div
-            key={`${logo.name}-mobile-${index}`}
-            className="flex items-center justify-center"
-          >
-            <img src={logo.image} alt={logo.name} className={`${'height' in logo ? logo.height : 'h-14'} object-contain`} />
-          </div>
-        ))}
-        {/* Center the last logo (Claude) */}
-        <div className="col-span-2 flex items-center justify-center">
-          <img src={logos[logos.length - 1].image} alt={logos[logos.length - 1].name} className="h-24 object-contain" />
-        </div>
-      </div>
-
-      {/* Desktop: Animated marquee */}
-      <div className="hidden md:flex relative">
+      <div className="flex relative">
         {/* First set of logos */}
-        <div className="flex animate-marquee gap-16 pr-16">
+        <div className="flex animate-marquee gap-8 md:gap-16 pr-8 md:pr-16">
           {logos.map((logo, index) => (
             <div
               key={`${logo.name}-1-${index}`}
-              className="flex items-center justify-center min-w-[140px]"
+              className="flex items-center justify-center min-w-[100px] md:min-w-[140px]"
             >
-              <img src={logo.image} alt={logo.name} className={`${'height' in logo ? logo.height : 'h-20'} object-contain`} />
+              <img src={logo.image} alt={logo.name} className={`${'height' in logo ? logo.height : 'h-12 md:h-20'} object-contain`} />
             </div>
           ))}
         </div>
         
         {/* Duplicate set for seamless loop */}
-        <div className="flex animate-marquee gap-16 pr-16" aria-hidden="true">
+        <div className="flex animate-marquee gap-8 md:gap-16 pr-8 md:pr-16" aria-hidden="true">
           {logos.map((logo, index) => (
             <div
               key={`${logo.name}-2-${index}`}
-              className="flex items-center justify-center min-w-[140px]"
+              className="flex items-center justify-center min-w-[100px] md:min-w-[140px]"
             >
-              <img src={logo.image} alt={logo.name} className={`${'height' in logo ? logo.height : 'h-20'} object-contain`} />
+              <img src={logo.image} alt={logo.name} className={`${'height' in logo ? logo.height : 'h-12 md:h-20'} object-contain`} />
             </div>
           ))}
         </div>
