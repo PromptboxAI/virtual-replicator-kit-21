@@ -40,7 +40,7 @@ const TokenAgents = () => {
 
           {/* Built on Badge */}
           <div className="pt-8">
-            <p className="text-sm text-muted-foreground/60 flex items-center justify-center gap-1 mb-4">
+            <p className="text-sm text-muted-foreground flex items-center justify-center gap-1 mb-4">
               Built on <img src={baseLogo} alt="Base" className="h-4 w-4 inline-block" /> • Powered by:
             </p>
             <LogoMarquee />
