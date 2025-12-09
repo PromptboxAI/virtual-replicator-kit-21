@@ -7,14 +7,15 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Bot, TrendingUp, TrendingDown, DollarSign, Users, Plus, Loader2, AlertCircle, Zap, Clock } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Bot, TrendingUp, TrendingDown, DollarSign, Users, Plus, Loader2, AlertCircle, Zap, Clock, Database, Globe, TestTube2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useMyAgents } from "@/hooks/useMyAgents";
+import { useMyAgents, AgentViewMode } from "@/hooks/useMyAgents";
 import { useAgentMetrics } from "@/hooks/useAgentMetrics";
+import { useUserRole } from "@/hooks/useUserRole";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
-
 // Stats Summary Component with Real-Time Metrics
 const StatsSummary = ({ agents, agentStatuses }: { agents: any[]; agentStatuses: Record<string, any> }) => {
   const [metricsData, setMetricsData] = useState<{ totalCap: number; avgPrice: number; loading: boolean }>({
@@ -141,7 +142,13 @@ const StatsSummary = ({ agents, agentStatuses }: { agents: any[]; agentStatuses:
 
 export default function MyAgents() {
   const { user, loading: authLoading, signIn, ready, initError } = useAuth();
-  const { myAgents, loading, error } = useMyAgents(user?.id);
+  const { role, isLoading: roleLoading } = useUserRole();
+  const isAdmin = role === 'admin';
+  
+  // Admin-only view mode toggle (defaults to database for dev)
+  const [viewMode, setViewMode] = useState<AgentViewMode>('database');
+  
+  const { myAgents, loading, error } = useMyAgents(user?.id, { viewMode });
   const [agentStatuses, setAgentStatuses] = useState<Record<string, any>>({});
   const { toast } = useToast();
 
@@ -446,7 +453,7 @@ export default function MyAgents() {
       <div className="container mx-auto px-4 py-8 flex-1">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
             <div>
               <h1 className="text-4xl font-bold mb-2">
                 <span className="bg-gradient-cyber bg-clip-text text-transparent">
@@ -464,6 +471,36 @@ export default function MyAgents() {
               </Button>
             </Link>
           </div>
+
+          {/* Admin View Mode Toggle */}
+          {isAdmin && (
+            <Card className="mb-6 border-primary/20 bg-primary/5">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <TestTube2 className="h-4 w-4" />
+                    <span className="font-medium">Admin View Mode</span>
+                  </div>
+                  <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as AgentViewMode)}>
+                    <TabsList className="grid grid-cols-3 w-auto">
+                      <TabsTrigger value="database" className="flex items-center gap-1.5 px-4">
+                        <Database className="h-3.5 w-3.5" />
+                        <span className="hidden sm:inline">Database</span>
+                      </TabsTrigger>
+                      <TabsTrigger value="testnet" className="flex items-center gap-1.5 px-4">
+                        <TestTube2 className="h-3.5 w-3.5" />
+                        <span className="hidden sm:inline">Testnet</span>
+                      </TabsTrigger>
+                      <TabsTrigger value="mainnet" className="flex items-center gap-1.5 px-4">
+                        <Globe className="h-3.5 w-3.5" />
+                        <span className="hidden sm:inline">Mainnet</span>
+                      </TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {error && (
             <Card className="mb-6 border-destructive">
