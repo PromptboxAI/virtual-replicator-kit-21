@@ -72,6 +72,7 @@ const Footer = () => {
               <div className="hover:text-foreground cursor-pointer transition-colors">Blog</div>
               <Link to="/careers" className="block hover:text-foreground transition-colors">Careers</Link>
               <div className="hover:text-foreground cursor-pointer transition-colors">About Us</div>
+              <Link to="/press-releases" className="block hover:text-foreground transition-colors">Press Releases</Link>
               <a href="mailto:kevin@promptbox.com" className="block hover:text-foreground transition-colors">Get a Demo</a>
             </div>
           </div>
