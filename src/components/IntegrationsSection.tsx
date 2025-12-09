@@ -86,7 +86,7 @@ export function IntegrationsSection() {
             Bring Life to Your Agents
           </h2>
           <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
-            With 100+ integrations, the agents built on Promptbox can fully interact with your existing systems and workflows.
+            With 100+ integrations, Promptbox agents can fully interact with your existing systems and workflows.
           </p>
         </div>
 
