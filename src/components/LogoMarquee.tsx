@@ -28,7 +28,7 @@ export function LogoMarquee() {
               key={`${logo.name}-1-${index}`}
               className="flex items-center justify-center min-w-[100px] md:min-w-[140px]"
             >
-              <img src={logo.image} alt={logo.name} className={`${'height' in logo ? logo.height : 'h-12 md:h-20'} object-contain`} />
+              <img src={logo.image} alt={logo.name} className={`${'height' in logo ? logo.height : 'h-14 md:h-20'} object-contain`} />
             </div>
           ))}
         </div>
@@ -40,7 +40,7 @@ export function LogoMarquee() {
               key={`${logo.name}-2-${index}`}
               className="flex items-center justify-center min-w-[100px] md:min-w-[140px]"
             >
-              <img src={logo.image} alt={logo.name} className={`${'height' in logo ? logo.height : 'h-12 md:h-20'} object-contain`} />
+              <img src={logo.image} alt={logo.name} className={`${'height' in logo ? logo.height : 'h-14 md:h-20'} object-contain`} />
             </div>
           ))}
         </div>
