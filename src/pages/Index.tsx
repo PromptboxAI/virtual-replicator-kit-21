@@ -203,7 +203,7 @@ const Index = () => {
           </div>
           <div className="flex items-center justify-center gap-2 mb-4 relative z-10">
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-heading font-medium text-foreground leading-tight tracking-tight">
-              Launch Tokenized AI Agents<br />as Micro-SaaS Businesses.
+              Launch Tokenized AI Agents<br />as Micro-SaaS Businesses
             </h1>
           </div>
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-6 relative z-10">
