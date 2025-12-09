@@ -6,7 +6,7 @@ const corsHeaders = {
   'Content-Type': 'application/xml',
 };
 
-const SITE_URL = 'https://promptbox.ai';
+const SITE_URL = 'https://promptbox.com';
 
 // Static pages that should be indexed
 const staticPages = [

@@ -3,7 +3,7 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://promptbox.ai/sitemap.xml
+Sitemap: https://promptbox.com/sitemap.xml
 
 # Disallow admin and test pages
 Disallow: /admin
