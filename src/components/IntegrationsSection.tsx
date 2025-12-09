@@ -6,7 +6,7 @@ const row1Integrations = [
   { name: 'Salesforce', logo: 'https://cdn.simpleicons.org/salesforce' },
   { name: 'HubSpot', logo: 'https://cdn.simpleicons.org/hubspot' },
   { name: 'Zendesk', logo: 'https://cdn.simpleicons.org/zendesk' },
-  { name: 'Google Drive', logo: 'https://cdn.simpleicons.org/googledrive' },
+  { name: 'LinkedIn', logo: 'https://cdn.simpleicons.org/linkedin' },
   { name: 'Intercom', logo: 'https://cdn.simpleicons.org/intercom' },
   { name: 'Slack', logo: 'https://cdn.simpleicons.org/slack' },
   { name: 'Microsoft Teams', logo: 'https://img.icons8.com/fluency/96/microsoft-teams-2019.png' },
