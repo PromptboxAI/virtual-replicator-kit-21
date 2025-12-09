@@ -9,6 +9,7 @@ import { Footer } from "@/components/Footer";
 import { LogoMarquee } from "@/components/LogoMarquee";
 import { FeatureToggle } from "@/components/FeatureToggle";
 import { IntegrationsSection } from "@/components/IntegrationsSection";
+import { TestimonialsSection } from "@/components/TestimonialsSection";
 import baseLogo from "@/assets/base-logo.png";
 const TokenAgents = () => {
   return <div className="min-h-screen bg-background">
@@ -477,6 +478,9 @@ const TokenAgents = () => {
           </div>
         </div>
       </section>
+
+      {/* Testimonials Section */}
+      <TestimonialsSection />
 
       {/* CTA Section - Black background with micro dots */}
       <section className="py-20 bg-foreground relative overflow-hidden">
