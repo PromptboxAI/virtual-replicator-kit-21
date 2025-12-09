@@ -21,10 +21,10 @@ const TokenAgents = () => {
               Funded. Liquid. Verifiable.
             </div>
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-heading font-medium text-foreground leading-tight tracking-tight">
-              The Agent Graduation Protocol
+              Launch Tokenized AI Agents<br />as Micro-SaaS Businesses.
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Turn AI agents into investable, cash-flowing micro-SaaS with proof of demand and verifiable revenue.
+              Promptbox lets you create, fund and track AI agents with built-in tokenomics, dashboards, and on-chain rails - with 100's of templates.
             </p>
           </div>
 
