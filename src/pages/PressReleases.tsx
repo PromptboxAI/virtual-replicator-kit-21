@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Card } from "@/components/ui/card";
@@ -27,6 +28,9 @@ const pressReleases: PressRelease[] = [
 ];
 
 const PressReleases = () => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
