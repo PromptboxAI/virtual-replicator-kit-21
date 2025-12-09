@@ -100,9 +100,10 @@ export function FeatureToggle() {
           <div className="flex flex-col md:flex-row items-center gap-6 p-6 md:p-8">
             <div className="flex-1 flex items-center justify-center">
               <img
+                key={active.id}
                 src={active.image}
                 alt={active.label}
-                className="max-h-[400px] w-auto rounded-lg shadow-lg border border-border/50"
+                className="max-h-[400px] w-auto rounded-lg shadow-lg border border-border/50 animate-scale-in"
               />
             </div>
             <div className="flex-1 text-center md:text-left">
