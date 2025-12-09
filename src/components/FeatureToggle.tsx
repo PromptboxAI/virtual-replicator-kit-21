@@ -77,7 +77,7 @@ export function FeatureToggle() {
                   "border",
                   isActive
                     ? "bg-foreground text-background border-foreground"
-                    : "bg-transparent text-muted-foreground border-border hover:bg-accent hover:text-foreground hover:border-foreground/50"
+                    : "bg-transparent text-muted-foreground border-border hover:bg-foreground hover:text-background hover:border-foreground"
                 )}
               >
                 <Icon className="h-4 w-4" />
