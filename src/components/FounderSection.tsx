@@ -13,8 +13,8 @@ interface TeamQuote {
 const teamQuotes: TeamQuote[] = [
   {
     id: '1',
-    quote: "Working on Promptbox has been an incredible journey. We're not just writing code—we're building infrastructure that will empower the next generation of AI creators to turn their ideas into real, sustainable businesses.",
-    author: 'Alex Chen',
+    quote: "Working on Promptbox has been an incredible journey. We're not just writing code, we're building infrastructure that will really help the next generation of AI creators to turn their ideas into real, sustainable businesses.",
+    author: 'Alex C.',
     role: 'Lead Developer',
   },
   {
