@@ -164,6 +164,8 @@ export default {
 				'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
 				'float': 'float 3s ease-in-out infinite',
 				'marquee': 'marquee 25s linear infinite',
+				'marquee-slow': 'marquee 40s linear infinite',
+				'marquee-fast': 'marquee 15s linear infinite',
 				'scale-in': 'scale-in 0.25s ease-out',
 				'fade-in': 'fade-in 0.3s ease-out'
 			}
