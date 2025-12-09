@@ -15,9 +15,9 @@ const TokenAgents = () => {
       
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-12 md:pt-24">
-        <div className="max-w-5xl mx-auto text-center space-y-8 animate-fade-in">
-          <div className="space-y-6">
+      <section className="container mx-auto px-4 py-6 md:py-12 md:pt-24">
+        <div className="max-w-5xl mx-auto text-center space-y-4 md:space-y-8 animate-fade-in">
+          <div className="space-y-3 md:space-y-6">
             <h1 className="text-[30px] md:text-6xl lg:text-7xl font-heading font-medium text-foreground leading-tight tracking-tight">
               Launch Tokenized<br className="md:hidden" /> AI Agents as a<br className="md:hidden" /> Micro-SaaS Business<span className="hidden md:inline">.</span>
             </h1>
@@ -32,7 +32,7 @@ const TokenAgents = () => {
                 Launch Your Agent
               </Link>
             </Button>
-            <Button variant="outline" size="lg" className="h-14 px-8 text-base hover:scale-105 transition-all duration-200" asChild>
+            <Button variant="outline" size="lg" className="hidden sm:inline-flex h-14 px-8 text-base hover:scale-105 transition-all duration-200" asChild>
               <Link to="/learn">
                 Learn More
               </Link>
