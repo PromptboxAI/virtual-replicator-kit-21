@@ -45,7 +45,8 @@ import {
   TestTube,
   MonitorSpeaker,
   Briefcase,
-  Rocket
+  Rocket,
+  Search
 } from "lucide-react";
 import { TGERunbook } from "@/components/TGERunbook";
 import { AdminSystemValidator } from "@/components/AdminSystemValidator";
@@ -53,6 +54,7 @@ import { TestingGuide } from "@/components/TestingGuide";
 
 type AdminSection = 
   | 'system-settings'
+  | 'seo-metadata'
   | 'testing-development' 
   | 'revenue-analytics'
   | 'monitoring-alerts'
@@ -83,6 +85,12 @@ const Admin = () => {
       title: 'System & Settings',
       icon: Settings,
       description: 'App mode, admin settings, system status'
+    },
+    {
+      id: 'seo-metadata' as AdminSection,
+      title: 'SEO & Metadata',
+      icon: Search,
+      description: 'Page titles, descriptions, social images'
     },
     {
       id: 'testing-development' as AdminSection,
@@ -329,6 +337,31 @@ const Admin = () => {
                   variant="outline"
                 >
                   Open Advanced Settings Panel
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        );
+
+      case 'seo-metadata':
+        return (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Search className="h-5 w-5" />
+                  SEO & Metadata Management
+                </CardTitle>
+                <CardDescription>
+                  Manage page titles, descriptions, social images, and search engine settings
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button 
+                  onClick={() => navigate('/admin/seo')} 
+                  className="w-full"
+                >
+                  Open SEO Manager
                 </Button>
               </CardContent>
             </Card>

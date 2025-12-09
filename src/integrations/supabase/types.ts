@@ -3367,6 +3367,60 @@ export type Database = {
           },
         ]
       }
+      site_metadata: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          description_template: string | null
+          favicon_url: string | null
+          id: string
+          is_dynamic: boolean | null
+          is_global: boolean | null
+          is_indexable: boolean | null
+          keywords: string | null
+          og_image_url: string | null
+          page_name: string
+          page_path: string
+          title: string | null
+          title_template: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          description_template?: string | null
+          favicon_url?: string | null
+          id?: string
+          is_dynamic?: boolean | null
+          is_global?: boolean | null
+          is_indexable?: boolean | null
+          keywords?: string | null
+          og_image_url?: string | null
+          page_name: string
+          page_path: string
+          title?: string | null
+          title_template?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          description_template?: string | null
+          favicon_url?: string | null
+          id?: string
+          is_dynamic?: boolean | null
+          is_global?: boolean | null
+          is_indexable?: boolean | null
+          keywords?: string | null
+          og_image_url?: string | null
+          page_name?: string
+          page_path?: string
+          title?: string | null
+          title_template?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       system_alerts: {
         Row: {
           agent_id: string | null
