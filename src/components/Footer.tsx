@@ -95,7 +95,7 @@ const Footer = () => {
         <div className="flex flex-col md:flex-row justify-between items-center gap-6 pt-8 border-t border-border">
           <div className="flex items-center gap-8">
             <img 
-              src="/lovable-uploads/2e7ad5f9-215d-4361-bcc3-b84d6328849c.png" 
+              src="/lovable-uploads/promptbox-logo-black.png" 
               alt="PROMPTBOX" 
               className="h-8 w-auto"
             />
