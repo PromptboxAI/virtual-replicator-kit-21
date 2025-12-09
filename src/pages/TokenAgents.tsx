@@ -8,6 +8,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { LogoMarquee } from "@/components/LogoMarquee";
 import { FeatureToggle } from "@/components/FeatureToggle";
+import { IntegrationsSection } from "@/components/IntegrationsSection";
 import baseLogo from "@/assets/base-logo.png";
 const TokenAgents = () => {
   return <div className="min-h-screen bg-background">
@@ -104,6 +105,9 @@ const TokenAgents = () => {
           </div>
         </div>
       </section>
+
+      {/* Integrations Section */}
+      <IntegrationsSection />
 
       {/* Platform Features with Visuals */}
       <section className="py-32 bg-muted/30">
