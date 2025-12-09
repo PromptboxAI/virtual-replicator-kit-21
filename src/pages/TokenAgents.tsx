@@ -57,7 +57,7 @@ const TokenAgents = () => {
       </section>
 
       {/* Core Protocol Features */}
-      <section className="py-32">
+      <section className="py-16 md:py-24">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center mb-24">
             <p className="text-sm font-mono text-muted-foreground mb-4 tracking-wider uppercase inline-block border-b-2 border-foreground/30 pb-1">
