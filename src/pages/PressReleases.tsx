@@ -4,6 +4,7 @@ import { Footer } from "@/components/Footer";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, ExternalLink } from "lucide-react";
+import disaIndustryDay2026 from "@/assets/press/disa-industry-day-2026.jpg";
 
 interface PressRelease {
   id: string;
@@ -12,6 +13,7 @@ interface PressRelease {
   excerpt: string;
   category: string;
   link?: string;
+  image?: string;
 }
 
 // Add your press releases here
@@ -22,7 +24,8 @@ const pressReleases: PressRelease[] = [
     date: '2025-11-20',
     excerpt: 'Promptbox announced today that it is participating in the Defense Information Systems Agency (DISA) Industry Day 2026 by submitting its capabilities in response to the Agency\'s request on artificial intelligence and emerging technologies.',
     category: 'Government',
-    link: 'https://www.abnewswire.com/pressreleases/promptbox-a-microsaas-ai-agent-builder-platform-to-participate-in-disa-industry-day-2026_775439.html'
+    link: 'https://www.abnewswire.com/pressreleases/promptbox-a-microsaas-ai-agent-builder-platform-to-participate-in-disa-industry-day-2026_775439.html',
+    image: disaIndustryDay2026
   },
 ];
 
@@ -62,37 +65,48 @@ const PressReleases = () => {
             {pressReleases.map((release) => (
               <Card 
                 key={release.id}
-                className="p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 border-border/50 hover:border-border"
+                className="overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 border-border/50 hover:border-border"
               >
-                <div className="flex items-center gap-2 mb-4">
-                  <Badge variant="outline" className="text-xs">
-                    {release.category}
-                  </Badge>
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Calendar className="h-3 w-3" />
-                    {formatDate(release.date)}
+                {release.image && (
+                  <div className="aspect-video w-full overflow-hidden">
+                    <img 
+                      src={release.image} 
+                      alt={release.title}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-                </div>
-                
-                <h3 className="text-lg font-semibold text-foreground mb-3 line-clamp-2">
-                  {release.title}
-                </h3>
+                )}
+                <div className="p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Badge variant="outline" className="text-xs">
+                      {release.category}
+                    </Badge>
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Calendar className="h-3 w-3" />
+                      {formatDate(release.date)}
+                    </div>
+                  </div>
+                  
+                  <h3 className="text-lg font-semibold text-foreground mb-3 line-clamp-2">
+                    {release.title}
+                  </h3>
                 
                 <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
                   {release.excerpt}
                 </p>
                 
-                {release.link && (
-                  <a 
-                    href={release.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-sm font-medium text-foreground hover:text-primary transition-colors"
-                  >
-                    Read More
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
-                )}
+                  {release.link && (
+                    <a 
+                      href={release.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-sm font-medium text-foreground hover:text-primary transition-colors"
+                    >
+                      Read More
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  )}
+                </div>
               </Card>
             ))}
           </div>
