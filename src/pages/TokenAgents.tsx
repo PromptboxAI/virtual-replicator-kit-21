@@ -17,11 +17,11 @@ const TokenAgents = () => {
       <section className="container mx-auto px-4 py-12">
         <div className="max-w-5xl mx-auto text-center space-y-8 animate-fade-in">
           <div className="space-y-6">
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-heading font-medium text-foreground leading-tight tracking-tight">
-              Launch Tokenized AI Agents<br />as Micro-SaaS Businesses.
+            <h1 className="text-[30px] md:text-6xl lg:text-7xl font-heading font-medium text-foreground leading-tight tracking-tight">
+              Launch Tokenized<br className="md:hidden" /> AI Agents as a<br className="md:hidden" /> Micro-SaaS Business<span className="hidden md:inline">.</span>
             </h1>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Promptbox lets you create, fund and track AI agents with built-in tokenomics, dashboards, and on-chain rails - with 100's of templates.
+            <p className="text-[15px] md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              Promptbox lets you create, fund and track AI agents with built-in tokenomics, dashboards, and on-chain rails from 100's of templates.
             </p>
           </div>
 
