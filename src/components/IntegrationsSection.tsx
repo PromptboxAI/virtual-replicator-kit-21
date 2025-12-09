@@ -48,17 +48,20 @@ interface IntegrationRowProps {
 }
 
 function IntegrationRow({ integrations, direction = 'left', speed = 'medium' }: IntegrationRowProps) {
-  const speedClass = {
-    slow: 'animate-marquee-slow',
-    medium: 'animate-marquee',
-    fast: 'animate-marquee-fast',
-  }[speed];
-  
-  const directionStyle = direction === 'right' ? { animationDirection: 'reverse' } : {};
+  const directionStyle = direction === 'right' ? { animationDirection: 'reverse' as const } : {};
+
+  const getAnimationClass = () => {
+    if (speed === 'slow') return 'animate-marquee-slow';
+    if (speed === 'fast') return 'animate-marquee-fast';
+    return 'animate-marquee';
+  };
 
   return (
     <div className="flex overflow-hidden py-3">
-      <div className={`flex ${speedClass} gap-12 pr-12`} style={directionStyle}>
+      <div 
+        className={`flex gap-12 pr-12 ${getAnimationClass()}`} 
+        style={directionStyle}
+      >
         {integrations.map((integration, index) => (
           <div
             key={`${integration.name}-1-${index}`}
@@ -75,7 +78,11 @@ function IntegrationRow({ integrations, direction = 'left', speed = 'medium' }: 
         ))}
       </div>
       {/* Duplicate for seamless loop */}
-      <div className={`flex ${speedClass} gap-12 pr-12`} style={directionStyle} aria-hidden="true">
+      <div 
+        className={`flex gap-12 pr-12 ${getAnimationClass()}`} 
+        style={directionStyle} 
+        aria-hidden="true"
+      >
         {integrations.map((integration, index) => (
           <div
             key={`${integration.name}-2-${index}`}
