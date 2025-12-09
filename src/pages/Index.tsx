@@ -203,15 +203,11 @@ const Index = () => {
           </div>
           <div className="flex items-center justify-center gap-2 mb-4 relative z-10">
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-heading font-medium text-foreground leading-tight tracking-tight">
-              The<br />Agent Graduation Protocol
+              Launch Tokenized AI Agents<br />as Micro-SaaS Businesses.
             </h1>
           </div>
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-6 relative z-10">
-            Phase 1: Mock Trading Interface
-          </p>
-          <p className="text-base text-muted-foreground max-w-2xl mx-auto mb-6 relative z-10">
-            This is a development preview with mock data.<br />
-            No real contracts deployed yet.
+            Promptbox lets you create, fund and track AI agents with built-in tokenomics, dashboards, and on-chain rails - with 100's of templates.
           </p>
           <div className="flex justify-center gap-4 mb-8 relative z-10">
             <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
