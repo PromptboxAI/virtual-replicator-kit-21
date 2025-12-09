@@ -99,8 +99,8 @@ export function FeatureToggle() {
         <div 
           className="relative rounded-2xl border border-border overflow-hidden"
           style={{
-            backgroundColor: '#fafafa',
-            backgroundImage: 'radial-gradient(circle, #d1d5db 1px, transparent 1px)',
+            backgroundColor: '#ffffff',
+            backgroundImage: 'radial-gradient(circle, #e5e7eb 1px, transparent 1px)',
             backgroundSize: '16px 16px'
           }}
         >
