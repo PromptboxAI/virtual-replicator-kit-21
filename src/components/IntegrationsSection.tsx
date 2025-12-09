@@ -99,7 +99,7 @@ export function IntegrationsSection() {
 
         {/* SEO/AEO Line */}
         <div className="text-center">
-          <p className="text-sm md:text-base text-muted-foreground max-w-4xl mx-auto leading-relaxed">
+          <p className="text-sm md:text-base text-foreground/70 max-w-4xl mx-auto leading-relaxed">
             Any app with an API - from Salesforce and Zendesk to Slack, Stripe, and on-chain DEXs - can be wired into a Promptbox agent via in-platform tools, GPT Actions, or MCP.
           </p>
         </div>
