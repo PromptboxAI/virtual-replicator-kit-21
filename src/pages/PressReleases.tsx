@@ -136,10 +136,10 @@ const PressReleases = () => {
               For press inquiries, please contact our media relations team.
             </p>
             <a 
-              href="mailto:press@promptbox.com"
+              href="mailto:kevin@promptbox.com"
               className="text-foreground font-medium hover:text-primary transition-colors"
             >
-              press@promptbox.com
+              kevin@promptbox.com
             </a>
           </Card>
         </div>
