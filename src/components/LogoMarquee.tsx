@@ -8,32 +8,42 @@ import claudeLogo from '@/assets/claude-logo.png';
 import githubLogo from '@/assets/github-logo.png';
 
 const logos = [
-  { name: 'Github', image: githubLogo },
-  { name: 'OpenAI', image: openaiLogo },
-  { name: 'Privy', image: privyLogo },
-  { name: 'Supabase', image: supabaseLogo, height: 'h-25' },
-  { name: 'MIT License', image: mitLogo },
-  { name: 'Gemini', image: geminiLogo, height: 'h-17' },
-  { name: 'Claude', image: claudeLogo, height: 'h-28' },
+  { name: 'Github', image: githubLogo, mobileHeight: 32, desktopHeight: 48 },
+  { name: 'OpenAI', image: openaiLogo, mobileHeight: 32, desktopHeight: 48 },
+  { name: 'Privy', image: privyLogo, mobileHeight: 28, desktopHeight: 44 },
+  { name: 'Supabase', image: supabaseLogo, mobileHeight: 32, desktopHeight: 52 },
+  { name: 'MIT License', image: mitLogo, mobileHeight: 32, desktopHeight: 48 },
+  { name: 'Gemini', image: geminiLogo, mobileHeight: 36, desktopHeight: 56 },
+  { name: 'Claude', image: claudeLogo, mobileHeight: 44, desktopHeight: 72 },
 ];
 
 export function LogoMarquee() {
   return (
-    <div className="w-full overflow-hidden bg-background py-3 border-y border-border/50">
+    <div className="w-full overflow-hidden bg-background py-2 border-y border-border/50">
       {/* Mobile: Static two-column grid */}
-      <div className="md:hidden px-4">
-        <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+      <div className="md:hidden px-3">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-2">
           {logos.slice(0, -1).map((logo, index) => (
             <div
               key={`${logo.name}-mobile-${index}`}
               className="flex items-center justify-center"
             >
-              <img src={logo.image} alt={logo.name} className={`${'height' in logo ? logo.height : 'h-10'} object-contain`} />
+              <img 
+                src={logo.image} 
+                alt={logo.name} 
+                style={{ height: logo.mobileHeight }}
+                className="object-contain" 
+              />
             </div>
           ))}
           {/* Center the last logo (Claude) */}
           <div className="col-span-2 flex items-center justify-center">
-            <img src={logos[logos.length - 1].image} alt={logos[logos.length - 1].name} className="h-16 object-contain" />
+            <img 
+              src={logos[logos.length - 1].image} 
+              alt={logos[logos.length - 1].name} 
+              style={{ height: logos[logos.length - 1].mobileHeight }}
+              className="object-contain" 
+            />
           </div>
         </div>
       </div>
@@ -47,7 +57,12 @@ export function LogoMarquee() {
               key={`${logo.name}-1-${index}`}
               className="flex items-center justify-center min-w-[140px]"
             >
-              <img src={logo.image} alt={logo.name} className={`${'height' in logo ? logo.height : 'h-20'} object-contain`} />
+              <img 
+                src={logo.image} 
+                alt={logo.name} 
+                style={{ height: logo.desktopHeight }}
+                className="object-contain" 
+              />
             </div>
           ))}
         </div>
@@ -59,7 +74,12 @@ export function LogoMarquee() {
               key={`${logo.name}-2-${index}`}
               className="flex items-center justify-center min-w-[140px]"
             >
-              <img src={logo.image} alt={logo.name} className={`${'height' in logo ? logo.height : 'h-20'} object-contain`} />
+              <img 
+                src={logo.image} 
+                alt={logo.name} 
+                style={{ height: logo.desktopHeight }}
+                className="object-contain" 
+              />
             </div>
           ))}
         </div>
