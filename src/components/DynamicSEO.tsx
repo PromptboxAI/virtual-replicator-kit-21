@@ -1,6 +1,9 @@
 import { Helmet } from 'react-helmet-async';
 import { useCurrentPageMetadata } from '@/hooks/useSiteMetadata';
 
+const SITE_URL = 'https://promptbox.com';
+const TWITTER_HANDLE = '@promptaboratory';
+
 interface DynamicSEOProps {
   // Optional overrides for dynamic pages
   title?: string;
@@ -28,8 +31,7 @@ export function DynamicSEO({ title, description, image, templateVars, structured
   const finalTitle = title || applyTemplate(metadata.pageMetadata?.title_template, templateVars) || metadata.title;
   const finalDescription = description || applyTemplate(metadata.pageMetadata?.description_template, templateVars) || metadata.description;
   const finalImage = image || metadata.ogImage;
-  const siteUrl = 'https://promptbox.ai';
-  const currentUrl = typeof window !== 'undefined' ? window.location.href : siteUrl;
+  const currentUrl = typeof window !== 'undefined' ? window.location.href : SITE_URL;
   const currentPath = typeof window !== 'undefined' ? window.location.pathname : '/';
   
   // Build default WebPage structured data
@@ -40,12 +42,12 @@ export function DynamicSEO({ title, description, image, templateVars, structured
     "description": finalDescription,
     "url": currentUrl,
     ...(finalImage && { 
-      "image": finalImage.startsWith('http') ? finalImage : `${siteUrl}${finalImage}` 
+      "image": finalImage.startsWith('http') ? finalImage : `${SITE_URL}${finalImage}` 
     }),
     "isPartOf": {
       "@type": "WebSite",
       "name": "PromptBox",
-      "url": siteUrl
+      "url": SITE_URL
     }
   };
   
@@ -74,17 +76,17 @@ export function DynamicSEO({ title, description, image, templateVars, structured
       <meta property="og:url" content={currentUrl} />
       <meta property="og:type" content="website" />
       <meta property="og:site_name" content="PromptBox" />
-      {finalImage && <meta property="og:image" content={finalImage.startsWith('http') ? finalImage : `${siteUrl}${finalImage}`} />}
+      {finalImage && <meta property="og:image" content={finalImage.startsWith('http') ? finalImage : `${SITE_URL}${finalImage}`} />}
       
       {/* Twitter Card */}
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={finalTitle} />
       <meta name="twitter:description" content={finalDescription || ''} />
-      <meta name="twitter:site" content="@promptbox" />
-      {finalImage && <meta name="twitter:image" content={finalImage.startsWith('http') ? finalImage : `${siteUrl}${finalImage}`} />}
+      <meta name="twitter:site" content={TWITTER_HANDLE} />
+      {finalImage && <meta name="twitter:image" content={finalImage.startsWith('http') ? finalImage : `${SITE_URL}${finalImage}`} />}
       
       {/* Canonical */}
-      <link rel="canonical" href={`${siteUrl}${currentPath}`} />
+      <link rel="canonical" href={`${SITE_URL}${currentPath}`} />
       
       {/* JSON-LD Structured Data */}
       <script type="application/ld+json">
@@ -109,14 +111,12 @@ interface AgentSEOProps {
 }
 
 export function AgentSEO({ agent }: AgentSEOProps) {
-  const siteUrl = 'https://promptbox.ai';
-  
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "Product",
     "name": `${agent.name} (${agent.symbol})`,
     "description": agent.description || `Trade ${agent.name} AI agent tokens on PromptBox`,
-    "url": `${siteUrl}/agent/${agent.id}`,
+    "url": `${SITE_URL}/agent/${agent.id}`,
     ...(agent.avatar_url && { "image": agent.avatar_url }),
     "brand": {
       "@type": "Brand",
