@@ -1,5 +1,22 @@
+# PromptBox Robots.txt
 User-agent: *
-Disallow: /
+Allow: /
 
-# This is a development/testing environment
-# Indexing is blocked until production launch
+# Sitemap
+Sitemap: https://promptbox.ai/sitemap.xml
+
+# Disallow admin and test pages
+Disallow: /admin
+Disallow: /admin-settings
+Disallow: /admin/
+Disallow: /test-lab
+Disallow: /test-simple
+Disallow: /test-sepolia-token
+Disallow: /graduation-test
+Disallow: /price-audit
+Disallow: /fee-test/
+Disallow: /contract-test
+Disallow: /healthz
+
+# Crawl-delay for politeness
+Crawl-delay: 1
