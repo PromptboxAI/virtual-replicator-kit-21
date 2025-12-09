@@ -7,6 +7,7 @@ interface Feature {
   label: string;
   icon: React.ElementType;
   image: string;
+  title: string;
   description: string;
 }
 
@@ -16,13 +17,15 @@ const features: Feature[] = [
     label: 'Token',
     icon: Coins,
     image: '/placeholder.svg',
-    description: 'Launch tokens with built-in bonding curves and automatic liquidity.'
+    title: 'Launch Token',
+    description: 'Launch an on-chain token for your agent on Base in a few clicks - supply, curve, and fees handled for you.'
   },
   {
     id: 'agent',
     label: 'Agent',
     icon: Bot,
     image: '/placeholder.svg',
+    title: 'Agent',
     description: 'Deploy AI agents that can trade, analyze, and execute strategies.'
   },
   {
@@ -30,6 +33,7 @@ const features: Feature[] = [
     label: 'Workflow',
     icon: Workflow,
     image: '/placeholder.svg',
+    title: 'Workflow',
     description: 'Build automated workflows connecting agents with data and actions.'
   },
   {
@@ -37,6 +41,7 @@ const features: Feature[] = [
     label: 'Integrations',
     icon: Plug,
     image: '/placeholder.svg',
+    title: 'Integrations',
     description: 'Connect to 100+ APIs, blockchains, and external services.'
   },
   {
@@ -44,6 +49,7 @@ const features: Feature[] = [
     label: 'Community',
     icon: Users,
     image: '/placeholder.svg',
+    title: 'Community',
     description: 'Join a thriving ecosystem of builders and traders.'
   },
   {
@@ -51,6 +57,7 @@ const features: Feature[] = [
     label: 'Security',
     icon: Shield,
     image: '/placeholder.svg',
+    title: 'Security',
     description: 'Enterprise-grade security with audited smart contracts.'
   }
 ];
@@ -98,7 +105,7 @@ export function FeatureToggle() {
             <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
               <h3 className="text-xl md:text-2xl font-heading font-medium text-foreground mb-2">
-                {active.label}
+                {active.title}
               </h3>
               <p className="text-muted-foreground max-w-lg">
                 {active.description}
