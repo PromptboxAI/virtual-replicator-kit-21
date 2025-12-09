@@ -61,7 +61,7 @@ function IntegrationRow({ integrations, direction = 'left', speed = 'medium' }: 
         {integrations.map((integration, index) => (
           <div
             key={`${integration.name}-1-${index}`}
-            className="flex items-center justify-center min-w-[48px] grayscale hover:grayscale-0 transition-all duration-300 opacity-60 hover:opacity-100"
+            className="flex items-center justify-center min-w-[48px]"
             title={integration.name}
           >
             <img 
@@ -78,7 +78,7 @@ function IntegrationRow({ integrations, direction = 'left', speed = 'medium' }: 
         {integrations.map((integration, index) => (
           <div
             key={`${integration.name}-2-${index}`}
-            className="flex items-center justify-center min-w-[48px] grayscale hover:grayscale-0 transition-all duration-300 opacity-60 hover:opacity-100"
+            className="flex items-center justify-center min-w-[48px]"
             title={integration.name}
           >
             <img 
