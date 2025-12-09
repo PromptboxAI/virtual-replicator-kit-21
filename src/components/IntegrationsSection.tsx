@@ -18,7 +18,7 @@ const row1Integrations = [
 const row2Integrations = [
   { name: 'Snowflake', logo: 'https://cdn.simpleicons.org/snowflake' },
   { name: 'BigQuery', logo: 'https://cdn.simpleicons.org/googlebigquery' },
-  { name: 'Amazon Redshift', logo: 'https://cdn.simpleicons.org/amazonredshift' },
+  { name: 'Amazon Redshift', logo: 'https://upload.wikimedia.org/wikipedia/commons/7/73/Amazon-Redshift-Logo.svg' },
   { name: 'PostgreSQL', logo: 'https://cdn.simpleicons.org/postgresql' },
   { name: 'MySQL', logo: 'https://cdn.simpleicons.org/mysql' },
   { name: 'Google Drive', logo: 'https://cdn.simpleicons.org/googledrive' },
