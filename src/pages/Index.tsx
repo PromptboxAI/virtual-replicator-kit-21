@@ -361,69 +361,69 @@ const Index = () => {
             </div>
           )}
         </section>
+      </main>
 
-        {/* Testimonials Section */}
-        <TestimonialsSection />
+      {/* Testimonials Section - Full Width */}
+      <TestimonialsSection />
 
-        {/* CTA Section - Black background with micro dots */}
-        <section className="py-20 bg-foreground relative overflow-hidden">
-          {/* Dense primary dot grid */}
-          <div 
-            className="absolute inset-0"
-            style={{
-              backgroundImage: 'radial-gradient(circle, hsl(var(--background) / 0.08) 1px, transparent 1px)',
-              backgroundSize: '8px 8px',
-            }}
-          />
-          {/* Medium density layer */}
-          <div 
-            className="absolute inset-0"
-            style={{
-              backgroundImage: 'radial-gradient(circle, hsl(var(--background) / 0.05) 0.8px, transparent 0.8px)',
-              backgroundSize: '12px 12px',
-            }}
-          />
-          {/* Sparse larger dots for depth variation */}
-          <div 
-            className="absolute inset-0"
-            style={{
-              backgroundImage: 'radial-gradient(circle, hsl(var(--background) / 0.03) 1.5px, transparent 1.5px)',
-              backgroundSize: '24px 24px',
-            }}
-          />
-          
-          <div className="container mx-auto px-4 relative z-10">
-            <div className="max-w-3xl mx-auto text-center">
-              <h2 className="text-3xl md:text-4xl font-heading font-medium mb-6 text-background tracking-tight">
-                Ready to Build Your AI Agent?
-              </h2>
-              <p className="text-lg text-background/70 mb-8">
-                Start with our platform to create custom autonomous workflows where you control exactly how much independence you want to grant your AI agents.
-              </p>
-              <div className="flex flex-wrap gap-4 justify-center">
-                <Button 
-                  asChild 
-                  size="lg" 
-                  variant="secondary" 
-                  className="gap-2 bg-background text-foreground hover:bg-background/90 px-8 transition-all duration-300 hover:scale-105 hover:shadow-xl group"
-                >
-                  <Link to="/create">
-                    Start Building
-                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                  </Link>
-                </Button>
-                <Button 
-                  size="lg" 
-                  variant="outline" 
-                  className="border-background bg-foreground text-background hover:bg-foreground/90 px-8 transition-all duration-300 hover:scale-105"
-                >
-                  Talk to Sales
-                </Button>
-              </div>
+      {/* CTA Section - Black background with micro dots */}
+      <section className="py-20 bg-foreground relative overflow-hidden">
+        {/* Dense primary dot grid */}
+        <div 
+          className="absolute inset-0"
+          style={{
+            backgroundImage: 'radial-gradient(circle, hsl(var(--background) / 0.08) 1px, transparent 1px)',
+            backgroundSize: '8px 8px',
+          }}
+        />
+        {/* Medium density layer */}
+        <div 
+          className="absolute inset-0"
+          style={{
+            backgroundImage: 'radial-gradient(circle, hsl(var(--background) / 0.05) 0.8px, transparent 0.8px)',
+            backgroundSize: '12px 12px',
+          }}
+        />
+        {/* Sparse larger dots for depth variation */}
+        <div 
+          className="absolute inset-0"
+          style={{
+            backgroundImage: 'radial-gradient(circle, hsl(var(--background) / 0.03) 1.5px, transparent 1.5px)',
+            backgroundSize: '24px 24px',
+          }}
+        />
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="text-3xl md:text-4xl font-heading font-medium mb-6 text-background tracking-tight">
+              Ready to Build Your AI Agent?
+            </h2>
+            <p className="text-lg text-background/70 mb-8">
+              Start with our platform to create custom autonomous workflows where you control exactly how much independence you want to grant your AI agents.
+            </p>
+            <div className="flex flex-wrap gap-4 justify-center">
+              <Button 
+                asChild 
+                size="lg" 
+                variant="secondary" 
+                className="gap-2 bg-background text-foreground hover:bg-background/90 px-8 transition-all duration-300 hover:scale-105 hover:shadow-xl group"
+              >
+                <Link to="/create">
+                  Start Building
+                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                </Link>
+              </Button>
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="border-background bg-foreground text-background hover:bg-foreground/90 px-8 transition-all duration-300 hover:scale-105"
+              >
+                Talk to Sales
+              </Button>
             </div>
           </div>
-        </section>
-      </main>
+        </div>
+      </section>
 
       <Footer />
       {showTermsModal && (
