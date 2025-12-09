@@ -69,9 +69,9 @@ export function FeatureToggle() {
 
   return (
     <section className="py-16 px-4">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-6xl mx-auto flex flex-col-reverse md:flex-col gap-6 md:gap-0">
         {/* Toggle Buttons */}
-        <div className="flex md:flex-wrap md:justify-center gap-2 mb-10 overflow-x-auto pb-2 md:pb-0 snap-x snap-mandatory scrollbar-hide">
+        <div className="flex md:flex-wrap md:justify-center gap-2 md:mb-10 overflow-x-auto pb-2 md:pb-0 snap-x snap-mandatory scrollbar-hide">
           {features.map((feature) => {
             const Icon = feature.icon;
             const isActive = activeFeature === feature.id;
