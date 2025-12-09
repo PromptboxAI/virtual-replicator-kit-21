@@ -63,7 +63,7 @@ export function useMyAgents(userId: string | undefined, options: UseMyAgentsOpti
         }
 
         const result = await response.json();
-        setMyAgents(result.data || []);
+        setMyAgents(result.tokens || result.data || []);
       } catch (err: any) {
         console.error('Error fetching my agents:', err);
         setError(err.message);
@@ -111,7 +111,7 @@ export function useMyAgents(userId: string | undefined, options: UseMyAgentsOpti
       }
 
       const result = await response.json();
-      setMyAgents(result.data || []);
+      setMyAgents(result.tokens || result.data || []);
     } catch (err: any) {
       console.error('Error refetching my agents:', err);
       setError(err.message);
