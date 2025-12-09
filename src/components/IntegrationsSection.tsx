@@ -1,36 +1,47 @@
 import React from 'react';
 
-// Integration logos organized by row
+// Integration logos organized by row - using Simple Icons CDN
 const row1Integrations = [
-  { name: 'Salesforce', icon: '☁️' },
-  { name: 'HubSpot', icon: '🧡' },
-  { name: 'Zendesk', icon: '💬' },
-  { name: 'ServiceNow', icon: '⚙️' },
-  { name: 'Slack', icon: '💬' },
-  { name: 'Microsoft Teams', icon: '💼' },
+  { name: 'Salesforce', logo: 'https://cdn.simpleicons.org/salesforce' },
+  { name: 'HubSpot', logo: 'https://cdn.simpleicons.org/hubspot' },
+  { name: 'Zendesk', logo: 'https://cdn.simpleicons.org/zendesk' },
+  { name: 'ServiceNow', logo: 'https://cdn.simpleicons.org/servicenow' },
+  { name: 'Intercom', logo: 'https://cdn.simpleicons.org/intercom' },
+  { name: 'Slack', logo: 'https://cdn.simpleicons.org/slack' },
+  { name: 'Microsoft Teams', logo: 'https://cdn.simpleicons.org/microsoftteams' },
+  { name: 'Gmail', logo: 'https://cdn.simpleicons.org/gmail' },
+  { name: 'Outlook', logo: 'https://cdn.simpleicons.org/microsoftoutlook' },
+  { name: 'Twilio', logo: 'https://cdn.simpleicons.org/twilio' },
 ];
 
 const row2Integrations = [
-  { name: 'Snowflake', icon: '❄️' },
-  { name: 'BigQuery', icon: '📊' },
-  { name: 'Postgres', icon: '🐘' },
-  { name: 'Google Drive', icon: '📁' },
-  { name: 'Notion', icon: '📝' },
-  { name: 'Confluence', icon: '📚' },
+  { name: 'Snowflake', logo: 'https://cdn.simpleicons.org/snowflake' },
+  { name: 'BigQuery', logo: 'https://cdn.simpleicons.org/googlebigquery' },
+  { name: 'Amazon Redshift', logo: 'https://cdn.simpleicons.org/amazonredshift' },
+  { name: 'PostgreSQL', logo: 'https://cdn.simpleicons.org/postgresql' },
+  { name: 'MySQL', logo: 'https://cdn.simpleicons.org/mysql' },
+  { name: 'Google Drive', logo: 'https://cdn.simpleicons.org/googledrive' },
+  { name: 'Notion', logo: 'https://cdn.simpleicons.org/notion' },
+  { name: 'Confluence', logo: 'https://cdn.simpleicons.org/confluence' },
+  { name: 'Dropbox', logo: 'https://cdn.simpleicons.org/dropbox' },
+  { name: 'OneDrive', logo: 'https://cdn.simpleicons.org/microsoftonedrive' },
 ];
 
 const row3Integrations = [
-  { name: 'GitHub', icon: '🐙' },
-  { name: 'Jira', icon: '📋' },
-  { name: 'Stripe', icon: '💳' },
-  { name: 'Shopify', icon: '🛒' },
-  { name: 'Supabase', icon: '⚡' },
-  { name: 'Base', icon: '🔵' },
-  { name: 'Uniswap', icon: '🦄' },
+  { name: 'GitHub', logo: 'https://cdn.simpleicons.org/github' },
+  { name: 'GitLab', logo: 'https://cdn.simpleicons.org/gitlab' },
+  { name: 'Jira', logo: 'https://cdn.simpleicons.org/jira' },
+  { name: 'Linear', logo: 'https://cdn.simpleicons.org/linear' },
+  { name: 'Stripe', logo: 'https://cdn.simpleicons.org/stripe' },
+  { name: 'Shopify', logo: 'https://cdn.simpleicons.org/shopify' },
+  { name: 'Supabase', logo: 'https://cdn.simpleicons.org/supabase' },
+  { name: 'Base', logo: 'https://cdn.simpleicons.org/coinbase' },
+  { name: 'Uniswap', logo: 'https://cdn.simpleicons.org/uniswap' },
+  { name: 'Privy', logo: 'https://cdn.simpleicons.org/privateinternetaccess' },
 ];
 
 interface IntegrationRowProps {
-  integrations: { name: string; icon: string }[];
+  integrations: { name: string; logo: string }[];
   direction?: 'left' | 'right';
   speed?: 'slow' | 'medium' | 'fast';
 }
@@ -45,27 +56,37 @@ function IntegrationRow({ integrations, direction = 'left', speed = 'medium' }: 
   const directionStyle = direction === 'right' ? { animationDirection: 'reverse' } : {};
 
   return (
-    <div className="flex overflow-hidden py-2">
-      <div className={`flex ${speedClass} gap-4 pr-4`} style={directionStyle}>
+    <div className="flex overflow-hidden py-3">
+      <div className={`flex ${speedClass} gap-12 pr-12`} style={directionStyle}>
         {integrations.map((integration, index) => (
           <div
             key={`${integration.name}-1-${index}`}
-            className="flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-full border border-border/50 whitespace-nowrap min-w-max"
+            className="flex items-center justify-center min-w-[48px] grayscale hover:grayscale-0 transition-all duration-300 opacity-60 hover:opacity-100"
+            title={integration.name}
           >
-            <span className="text-lg">{integration.icon}</span>
-            <span className="text-sm font-medium text-foreground">{integration.name}</span>
+            <img 
+              src={integration.logo} 
+              alt={integration.name}
+              className="h-8 w-8 object-contain"
+              loading="lazy"
+            />
           </div>
         ))}
       </div>
       {/* Duplicate for seamless loop */}
-      <div className={`flex ${speedClass} gap-4 pr-4`} style={directionStyle} aria-hidden="true">
+      <div className={`flex ${speedClass} gap-12 pr-12`} style={directionStyle} aria-hidden="true">
         {integrations.map((integration, index) => (
           <div
             key={`${integration.name}-2-${index}`}
-            className="flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-full border border-border/50 whitespace-nowrap min-w-max"
+            className="flex items-center justify-center min-w-[48px] grayscale hover:grayscale-0 transition-all duration-300 opacity-60 hover:opacity-100"
+            title={integration.name}
           >
-            <span className="text-lg">{integration.icon}</span>
-            <span className="text-sm font-medium text-foreground">{integration.name}</span>
+            <img 
+              src={integration.logo} 
+              alt={integration.name}
+              className="h-8 w-8 object-contain"
+              loading="lazy"
+            />
           </div>
         ))}
       </div>
@@ -91,7 +112,7 @@ export function IntegrationsSection() {
         </div>
 
         {/* Rotating Logo Rows */}
-        <div className="space-y-3 mb-10">
+        <div className="space-y-2 mb-10">
           <IntegrationRow integrations={row1Integrations} direction="left" speed="slow" />
           <IntegrationRow integrations={row2Integrations} direction="right" speed="medium" />
           <IntegrationRow integrations={row3Integrations} direction="left" speed="slow" />
