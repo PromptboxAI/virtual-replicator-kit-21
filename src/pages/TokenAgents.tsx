@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { LogoMarquee } from "@/components/LogoMarquee";
+import { FeatureToggle } from "@/components/FeatureToggle";
 import baseLogo from "@/assets/base-logo.png";
 const TokenAgents = () => {
   return <div className="min-h-screen bg-background">
@@ -47,6 +48,9 @@ const TokenAgents = () => {
           </div>
         </div>
       </section>
+
+      {/* Feature Toggle Section */}
+      <FeatureToggle />
 
       {/* Core Protocol Features */}
       <section className="py-32">
