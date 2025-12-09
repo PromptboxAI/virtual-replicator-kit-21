@@ -16,15 +16,14 @@ interface PressRelease {
 
 // Add your press releases here
 const pressReleases: PressRelease[] = [
-  // Example press release - replace with real ones
-  // {
-  //   id: '1',
-  //   title: 'Promptbox Launches Revolutionary AI Agent Platform',
-  //   date: '2025-01-15',
-  //   excerpt: 'Promptbox announces the launch of its tokenized AI agent platform, enabling creators to build and monetize autonomous AI agents.',
-  //   category: 'Product Launch',
-  //   link: 'https://example.com/press-release-1'
-  // },
+  {
+    id: '1',
+    title: 'Promptbox, a Micro-SaaS AI Agent Builder Platform, to Participate in DISA Industry Day 2026',
+    date: '2025-11-20',
+    excerpt: 'Promptbox announced today that it is participating in the Defense Information Systems Agency (DISA) Industry Day 2026 by submitting its capabilities in response to the Agency\'s request on artificial intelligence and emerging technologies.',
+    category: 'Government',
+    link: 'https://www.abnewswire.com/pressreleases/promptbox-a-microsaas-ai-agent-builder-platform-to-participate-in-disa-industry-day-2026_775439.html'
+  },
 ];
 
 const PressReleases = () => {
