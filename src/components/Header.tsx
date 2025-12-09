@@ -38,7 +38,7 @@ export function Header() {
             <div className="flex items-center space-x-8">
               <Link to="/" className="flex items-center">
                 <img 
-                  src="/lovable-uploads/promptbox-logo-black.png" 
+                  src="/lovable-uploads/promptbox-logo-new.png" 
                   alt="PROMPTBOX" 
                   className="h-10 md:h-12 w-auto"
                 />
@@ -235,7 +235,7 @@ export function Header() {
                     {/* Header with close button */}
                     <div className="flex items-center justify-between p-4 border-b">
                       <img 
-                        src="/lovable-uploads/promptbox-logo-black.png" 
+                        src="/lovable-uploads/promptbox-logo-new.png" 
                         alt="PROMPTBOX" 
                         className="h-10 w-auto"
                       />
