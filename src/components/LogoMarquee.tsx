@@ -21,7 +21,7 @@ export function LogoMarquee() {
   return (
     <div className="w-full overflow-hidden bg-background py-4 border-y border-border/50">
       {/* Mobile: Static two-column grid */}
-      <div className="md:hidden grid grid-cols-2 gap-3 px-4">
+      <div className="md:hidden grid grid-cols-2 gap-3 max-w-xs mx-auto px-4">
         {logos.slice(0, -1).map((logo, index) => (
           <div
             key={`${logo.name}-mobile-${index}`}
