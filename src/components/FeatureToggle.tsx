@@ -109,7 +109,7 @@ export function FeatureToggle() {
               <h3 className="text-xl md:text-2xl font-heading font-medium text-foreground mb-3">
                 {active.title}
               </h3>
-              <p className="text-muted-foreground">
+              <p className="text-foreground">
                 {active.description}
               </p>
             </div>
