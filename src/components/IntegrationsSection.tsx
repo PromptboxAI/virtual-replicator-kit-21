@@ -6,7 +6,7 @@ const row1Integrations = [
   { name: 'Salesforce', logo: 'https://cdn.simpleicons.org/salesforce' },
   { name: 'HubSpot', logo: 'https://cdn.simpleicons.org/hubspot' },
   { name: 'Zendesk', logo: 'https://cdn.simpleicons.org/zendesk' },
-  { name: 'ServiceNow', logo: 'https://logo.svgcdn.com/l/servicenow.svg' },
+  { name: 'Google Drive', logo: 'https://cdn.simpleicons.org/googledrive' },
   { name: 'Intercom', logo: 'https://cdn.simpleicons.org/intercom' },
   { name: 'Slack', logo: 'https://cdn.simpleicons.org/slack' },
   { name: 'Microsoft Teams', logo: 'https://img.icons8.com/fluency/96/microsoft-teams-2019.png' },
@@ -38,7 +38,7 @@ const row3Integrations = [
   { name: 'Supabase', logo: 'https://cdn.simpleicons.org/supabase' },
   { name: 'Base', logo: 'https://avatars.githubusercontent.com/u/108554348?s=200&v=4' },
   { name: 'Uniswap', logo: 'https://cryptologos.cc/logos/uniswap-uni-logo.svg' },
-  { name: 'Privy', logo: 'https://framerusercontent.com/images/48ha9ZR9oZQGQ6gZ8YUfElP3T0.png' },
+  { name: 'Google Cloud', logo: 'https://cdn.simpleicons.org/googlecloud' },
 ];
 
 interface IntegrationRowProps {
