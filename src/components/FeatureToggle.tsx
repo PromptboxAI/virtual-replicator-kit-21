@@ -68,7 +68,7 @@ export function FeatureToggle() {
   const active = features.find(f => f.id === activeFeature) || features[0];
 
   return (
-    <section className="py-6 md:py-16 px-4">
+    <section className="py-6 pb-10 md:py-16 px-4">
       <div className="max-w-6xl mx-auto flex flex-col-reverse md:flex-col gap-4 md:gap-0">
         {/* Toggle Buttons */}
         <div className="flex md:flex-wrap md:justify-center gap-2 md:mb-10 overflow-x-auto pb-2 md:pb-0 snap-x snap-mandatory scrollbar-hide">
