@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FeatureToggle } from '@/components/FeatureToggle';
+import { IntegrationsSection } from '@/components/IntegrationsSection';
 
 // Agent Card Component for Index page
 function IndexAgentCard({ agent }: { agent: Agent }) {
@@ -226,6 +227,9 @@ const Index = () => {
 
         {/* Feature Toggle Section */}
         <FeatureToggle />
+
+        {/* Integrations Section */}
+        <IntegrationsSection />
 
         {/* Market Stats */}
         <div className="mb-12">
