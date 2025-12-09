@@ -44,6 +44,7 @@ import ApiReference from "./pages/ApiReference";
 import AIAgentsHub from "./pages/platform/AIAgentsHub";
 import AIAgentDetail from "./pages/platform/AIAgentDetail";
 import AdminSEO from "./pages/AdminSEO";
+import PressReleases from "./pages/PressReleases";
 
 const queryClient = new QueryClient();
 
@@ -159,6 +160,7 @@ const App = () => {
               <Route path="/careers" element={<Careers />} />
               <Route path="/status" element={<Status />} />
               <Route path="/api-reference" element={<ApiReference />} />
+              <Route path="/press-releases" element={<PressReleases />} />
               <Route path="/platform/ai-agents" element={<AIAgentsHub />} />
               <Route path="/platform/ai-agents/:agentId" element={<AIAgentDetail />} />
               {/* Legacy redirect for old trade routes */}
