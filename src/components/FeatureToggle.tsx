@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Coins, Bot, Workflow, Plug, Users, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import featureTokenImg from '@/assets/feature-token.png';
 
 interface Feature {
   id: string;
@@ -16,7 +17,7 @@ const features: Feature[] = [
     id: 'token',
     label: 'Token',
     icon: Coins,
-    image: '/placeholder.svg',
+    image: featureTokenImg,
     title: 'Launch Token',
     description: 'Launch an on-chain token for your agent on Base in a few clicks - supply, curve, and fees handled for you.'
   },
