@@ -96,19 +96,20 @@ export function FeatureToggle() {
         </div>
 
         {/* Feature Display */}
-        <div className="relative rounded-2xl border border-border bg-card/50 backdrop-blur-sm overflow-hidden">
-          <div className="aspect-[16/9] md:aspect-[21/9] relative">
-            <img
-              src={active.image}
-              alt={active.label}
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
-              <h3 className="text-xl md:text-2xl font-heading font-medium text-foreground mb-2">
+        <div className="relative rounded-2xl border border-border bg-muted/30 overflow-hidden">
+          <div className="flex flex-col md:flex-row items-center gap-6 p-6 md:p-8">
+            <div className="flex-1 flex items-center justify-center">
+              <img
+                src={active.image}
+                alt={active.label}
+                className="max-h-[400px] w-auto rounded-lg shadow-lg border border-border/50"
+              />
+            </div>
+            <div className="flex-1 text-center md:text-left">
+              <h3 className="text-xl md:text-2xl font-heading font-medium text-foreground mb-3">
                 {active.title}
               </h3>
-              <p className="text-muted-foreground max-w-lg">
+              <p className="text-muted-foreground">
                 {active.description}
               </p>
             </div>
