@@ -3,6 +3,28 @@ import { Card } from '@/components/ui/card';
 import { Quote } from 'lucide-react';
 import kevinPhoto from '@/assets/kevin-godfrey.png';
 
+interface TeamQuote {
+  id: string;
+  quote: string;
+  author: string;
+  role: string;
+}
+
+const teamQuotes: TeamQuote[] = [
+  {
+    id: '1',
+    quote: "Working on Promptbox has been an incredible journey. We're not just writing code—we're building infrastructure that will empower the next generation of AI creators to turn their ideas into real, sustainable businesses.",
+    author: 'Alex Chen',
+    role: 'Lead Developer',
+  },
+  {
+    id: '2',
+    quote: "The technical challenges we're solving here are unique. Combining smart contracts, bonding curves, and AI agent orchestration into a seamless experience is exactly the kind of problem that gets me excited to code every day.",
+    author: 'Marcus Rodriguez',
+    role: 'Senior Engineer',
+  },
+];
+
 export function FounderSection() {
   return (
     <section className="py-20 bg-background">
@@ -18,11 +40,11 @@ export function FounderSection() {
         </div>
 
         {/* Founder Quote Card */}
-        <Card className="p-8 md:p-12 bg-card border-border">
+        <Card className="p-8 md:p-12 mb-6 bg-card border-border">
           <div className="flex flex-col md:flex-row gap-8 md:gap-12 items-start">
-            {/* Photo */}
+            {/* Photo - Doubled size */}
             <div className="flex-shrink-0">
-              <div className="w-40 h-48 md:w-48 md:h-56 overflow-hidden group">
+              <div className="w-80 h-96 md:w-96 md:h-[28rem] overflow-hidden group">
                 <img 
                   src={kevinPhoto} 
                   alt="Kevin Godfrey, Founder of Promptbox"
@@ -34,7 +56,7 @@ export function FounderSection() {
             {/* Quote Content */}
             <div className="flex-1">
               <blockquote className="text-lg md:text-xl lg:text-2xl font-medium text-foreground leading-relaxed mb-8">
-                "We built Promptbox because we believe the future of AI isn't just about building smarter models—it's about giving everyone the power to create, own, and monetize their own AI agents. The intersection of AI and tokenomics creates entirely new possibilities for how software can be built, funded, and governed."
+                "We're building Promptbox because we believe the future of AI isn't just about building smarter models or the next big tool - it's about giving everyone the power to create, own, and monetize their own AI-driven ideas. The intersection of Agents and tokenomics creates entirely new possibilities for how software can be built, funded, and governed."
               </blockquote>
               
               <div className="flex items-center justify-between">
@@ -51,6 +73,28 @@ export function FounderSection() {
             </div>
           </div>
         </Card>
+
+        {/* Team Quotes Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {teamQuotes.map((member) => (
+            <Card 
+              key={member.id} 
+              className="p-6 md:p-8 bg-card border-border"
+            >
+              <blockquote className="text-muted-foreground leading-relaxed mb-6 italic">
+                "{member.quote}"
+              </blockquote>
+              <div>
+                <p className="font-semibold text-foreground">
+                  {member.author}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {member.role}
+                </p>
+              </div>
+            </Card>
+          ))}
+        </div>
       </div>
     </section>
   );
