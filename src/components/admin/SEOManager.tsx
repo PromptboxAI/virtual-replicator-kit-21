@@ -178,24 +178,28 @@ export function SEOManager() {
                     <Globe className="h-6 w-6 text-muted-foreground" />
                   )}
                 </div>
-                <label className="cursor-pointer">
+                <div>
                   <input
                     type="file"
+                    id="favicon-upload"
                     accept="image/*,.ico"
                     className="hidden"
                     onChange={handleFaviconUpload}
                     disabled={faviconUploading}
                   />
-                  <Button variant="outline" size="sm" asChild disabled={faviconUploading}>
-                    <span>
-                      {faviconUploading ? (
-                        <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Uploading...</>
-                      ) : (
-                        <><Upload className="h-4 w-4 mr-2" /> Upload Favicon</>
-                      )}
-                    </span>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    disabled={faviconUploading}
+                    onClick={() => document.getElementById('favicon-upload')?.click()}
+                  >
+                    {faviconUploading ? (
+                      <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Uploading...</>
+                    ) : (
+                      <><Upload className="h-4 w-4 mr-2" /> Upload Favicon</>
+                    )}
                   </Button>
-                </label>
+                </div>
               </div>
               <p className="text-xs text-muted-foreground">
                 Recommended: 32x32 or 64x64 PNG/ICO
@@ -217,24 +221,28 @@ export function SEOManager() {
                     <ImageIcon className="h-8 w-8 text-muted-foreground" />
                   )}
                 </div>
-                <label className="cursor-pointer">
+                <div>
                   <input
                     type="file"
+                    id="og-image-upload"
                     accept="image/*"
                     className="hidden"
                     onChange={handleGlobalOgUpload}
                     disabled={globalOgUploading}
                   />
-                  <Button variant="outline" size="sm" asChild disabled={globalOgUploading}>
-                    <span>
-                      {globalOgUploading ? (
-                        <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Uploading...</>
-                      ) : (
-                        <><Upload className="h-4 w-4 mr-2" /> Upload Image</>
-                      )}
-                    </span>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    disabled={globalOgUploading}
+                    onClick={() => document.getElementById('og-image-upload')?.click()}
+                  >
+                    {globalOgUploading ? (
+                      <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Uploading...</>
+                    ) : (
+                      <><Upload className="h-4 w-4 mr-2" /> Upload Image</>
+                    )}
                   </Button>
-                </label>
+                </div>
               </div>
               <p className="text-xs text-muted-foreground">
                 Recommended: 1200x630 for optimal social sharing
