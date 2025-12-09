@@ -25,6 +25,7 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import { FeatureToggle } from '@/components/FeatureToggle';
 import { IntegrationsSection } from '@/components/IntegrationsSection';
+import { TestimonialsSection } from '@/components/TestimonialsSection';
 
 // Agent Card Component for Index page
 function IndexAgentCard({ agent }: { agent: Agent }) {
@@ -360,6 +361,9 @@ const Index = () => {
             </div>
           )}
         </section>
+
+        {/* Testimonials Section */}
+        <TestimonialsSection />
 
         {/* CTA Section - Black background with micro dots */}
         <section className="py-20 bg-foreground relative overflow-hidden">
