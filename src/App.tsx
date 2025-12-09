@@ -9,6 +9,7 @@ import { PrivyProvider, usePrivy } from '@privy-io/react-auth';
 import type { PrivyClientConfig } from '@privy-io/react-auth';
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { WagmiWrapper } from './components/WagmiWrapper';
+import { DynamicSEO } from './components/DynamicSEO';
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import About from "./pages/About";
@@ -111,6 +112,7 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
+            <DynamicSEO />
             <Routes>
               <Route path="/" element={<TokenAgents />} />
               <Route path="/ai-agents" element={<Index />} />
