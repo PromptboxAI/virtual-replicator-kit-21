@@ -19,21 +19,21 @@ const logos = [
 
 export function LogoMarquee() {
   return (
-    <div className="w-full overflow-hidden bg-background py-4 border-y border-border/50">
+    <div className="w-full overflow-hidden bg-background py-3 border-y border-border/50">
       {/* Mobile: Static two-column grid */}
-      <div className="md:hidden px-6">
-        <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+      <div className="md:hidden px-4">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-3">
           {logos.slice(0, -1).map((logo, index) => (
             <div
               key={`${logo.name}-mobile-${index}`}
               className="flex items-center justify-center"
             >
-              <img src={logo.image} alt={logo.name} className={`${'height' in logo ? logo.height : 'h-12'} object-contain`} />
+              <img src={logo.image} alt={logo.name} className={`${'height' in logo ? logo.height : 'h-10'} object-contain`} />
             </div>
           ))}
           {/* Center the last logo (Claude) */}
           <div className="col-span-2 flex items-center justify-center">
-            <img src={logos[logos.length - 1].image} alt={logos[logos.length - 1].name} className="h-20 object-contain" />
+            <img src={logos[logos.length - 1].image} alt={logos[logos.length - 1].name} className="h-16 object-contain" />
           </div>
         </div>
       </div>
