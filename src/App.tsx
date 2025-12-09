@@ -42,6 +42,7 @@ import Status from "./pages/Status";
 import ApiReference from "./pages/ApiReference";
 import AIAgentsHub from "./pages/platform/AIAgentsHub";
 import AIAgentDetail from "./pages/platform/AIAgentDetail";
+import AdminSEO from "./pages/AdminSEO";
 
 const queryClient = new QueryClient();
 
@@ -126,6 +127,7 @@ const App = () => {
               <Route path="/agent/:agentId" element={<UnifiedAgentPage />} />
               <Route path="/admin" element={<AdminProtectedRoute><Admin /></AdminProtectedRoute>} />
               <Route path="/admin-settings" element={<AdminProtectedRoute><AdminSettings /></AdminProtectedRoute>} />
+              <Route path="/admin/seo" element={<AdminProtectedRoute><AdminSEO /></AdminProtectedRoute>} />
               <Route path="/test-simple" element={<div><h1>Simple Test Route Working!</h1></div>} />
               <Route path="/contract-test" element={
                 <div className="min-h-screen bg-background">
