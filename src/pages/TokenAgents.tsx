@@ -39,18 +39,21 @@ const TokenAgents = () => {
             </Button>
           </div>
 
-          {/* Built on Badge */}
-          <div className="pt-8">
-            <p className="text-sm text-muted-foreground flex items-center justify-center gap-1 mb-4">
-              Built on <img src={baseLogo} alt="Base" className="h-4 w-4 inline-block" /> • Powered by:
-            </p>
-            <LogoMarquee />
-          </div>
         </div>
       </section>
 
       {/* Feature Toggle Section */}
       <FeatureToggle />
+
+      {/* Built on Badge */}
+      <section className="pb-16">
+        <div className="container mx-auto px-4 text-center">
+          <p className="text-sm text-muted-foreground flex items-center justify-center gap-1 mb-4">
+            Built on <img src={baseLogo} alt="Base" className="h-4 w-4 inline-block" /> • Powered by:
+          </p>
+          <LogoMarquee />
+        </div>
+      </section>
 
       {/* Core Protocol Features */}
       <section className="py-32">
