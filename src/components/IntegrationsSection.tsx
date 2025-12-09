@@ -6,7 +6,7 @@ const row1Integrations = [
   { name: 'Salesforce', logo: 'https://cdn.simpleicons.org/salesforce' },
   { name: 'HubSpot', logo: 'https://cdn.simpleicons.org/hubspot' },
   { name: 'Zendesk', logo: 'https://cdn.simpleicons.org/zendesk' },
-  { name: 'ServiceNow', logo: 'https://cdn.worldvectorlogo.com/logos/servicenow-2.svg' },
+  { name: 'ServiceNow', logo: 'https://logo.svgcdn.com/l/servicenow.svg' },
   { name: 'Intercom', logo: 'https://cdn.simpleicons.org/intercom' },
   { name: 'Slack', logo: 'https://cdn.simpleicons.org/slack' },
   { name: 'Microsoft Teams', logo: 'https://img.icons8.com/fluency/96/microsoft-teams-2019.png' },
@@ -25,7 +25,7 @@ const row2Integrations = [
   { name: 'Notion', logo: 'https://cdn.simpleicons.org/notion' },
   { name: 'Confluence', logo: 'https://cdn.simpleicons.org/confluence' },
   { name: 'Dropbox', logo: 'https://cdn.simpleicons.org/dropbox' },
-  { name: 'OneDrive', logo: 'https://img.icons8.com/fluency/96/one-drive.png' },
+  { name: 'OneDrive', logo: 'https://logo.svgcdn.com/l/microsoft-onedrive.svg' },
 ];
 
 const row3Integrations = [
@@ -38,7 +38,7 @@ const row3Integrations = [
   { name: 'Supabase', logo: 'https://cdn.simpleicons.org/supabase' },
   { name: 'Base', logo: 'https://avatars.githubusercontent.com/u/108554348?s=200&v=4' },
   { name: 'Uniswap', logo: 'https://cryptologos.cc/logos/uniswap-uni-logo.svg' },
-  { name: 'Privy', logo: 'https://docs.privy.io/img/logo-dark.svg' },
+  { name: 'Privy', logo: 'https://framerusercontent.com/images/48ha9ZR9oZQGQ6gZ8YUfElP3T0.png' },
 ];
 
 interface IntegrationRowProps {
