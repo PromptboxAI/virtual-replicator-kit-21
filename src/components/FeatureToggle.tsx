@@ -96,7 +96,14 @@ export function FeatureToggle() {
         </div>
 
         {/* Feature Display */}
-        <div className="relative rounded-2xl border border-border bg-muted/30 overflow-hidden">
+        <div 
+          className="relative rounded-2xl border border-border overflow-hidden"
+          style={{
+            backgroundColor: '#fafafa',
+            backgroundImage: 'radial-gradient(circle, #d1d5db 1px, transparent 1px)',
+            backgroundSize: '16px 16px'
+          }}
+        >
           <div className="flex flex-col md:flex-row items-center gap-6 p-6 md:p-8">
             <div className="flex-1 flex items-center justify-center">
               <img
@@ -107,7 +114,7 @@ export function FeatureToggle() {
               />
             </div>
             <div className="flex-1 text-center md:text-left">
-              <h3 className="text-xl md:text-2xl font-heading font-medium text-foreground mb-3">
+              <h3 className="text-xl md:text-2xl font-heading font-bold text-foreground mb-3">
                 {active.title}
               </h3>
               <p className="text-foreground">
