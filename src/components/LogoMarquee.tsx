@@ -20,7 +20,20 @@ const logos = [
 export function LogoMarquee() {
   return (
     <div className="w-full overflow-hidden bg-background py-6 border-y border-border/50">
-      <div className="relative flex">
+      {/* Mobile: Static two-column grid */}
+      <div className="md:hidden grid grid-cols-2 gap-6 px-4">
+        {logos.map((logo, index) => (
+          <div
+            key={`${logo.name}-mobile-${index}`}
+            className="flex items-center justify-center"
+          >
+            <img src={logo.image} alt={logo.name} className={`${'height' in logo ? logo.height : 'h-16'} object-contain`} />
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop: Animated marquee */}
+      <div className="hidden md:flex relative">
         {/* First set of logos */}
         <div className="flex animate-marquee gap-16 pr-16">
           {logos.map((logo, index) => (
