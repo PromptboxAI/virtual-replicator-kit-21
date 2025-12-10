@@ -232,7 +232,7 @@ export function FeaturesSection() {
           </div>
 
           {/* Right Column - Feature Image */}
-          <div className="lg:sticky lg:top-24 h-fit">
+          <div className="lg:sticky lg:top-24 h-fit mb-8 lg:mb-0">
             <div 
               key={active.id}
               className="aspect-[4/3] animate-scale-in"
