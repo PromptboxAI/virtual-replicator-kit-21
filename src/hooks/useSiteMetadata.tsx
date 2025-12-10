@@ -18,6 +18,18 @@ export interface SiteMetadata {
   favicon_url: string | null;
   created_at: string;
   updated_at: string;
+  // Advanced SEO fields
+  canonical_url: string | null;
+  structured_data_type: string | null;
+  robots_directives: string | null;
+  sitemap_priority: number | null;
+  sitemap_changefreq: string | null;
+  og_type: string | null;
+  twitter_card_type: string | null;
+  focus_keyword: string | null;
+  author: string | null;
+  publish_date: string | null;
+  modified_date: string | null;
 }
 
 export function useSiteMetadata() {
@@ -78,6 +90,18 @@ export function usePageMetadata(pagePath: string) {
     keywords: pageMetadata?.keywords || globalMetadata?.keywords || '',
     isIndexable: pageMetadata?.is_indexable ?? true,
     favicon: globalMetadata?.favicon_url || '/favicon.ico',
+    // Advanced SEO
+    canonicalUrl: pageMetadata?.canonical_url || null,
+    structuredDataType: pageMetadata?.structured_data_type || 'WebPage',
+    robotsDirectives: pageMetadata?.robots_directives || null,
+    sitemapPriority: pageMetadata?.sitemap_priority || 0.5,
+    sitemapChangefreq: pageMetadata?.sitemap_changefreq || 'weekly',
+    ogType: pageMetadata?.og_type || 'website',
+    twitterCardType: pageMetadata?.twitter_card_type || 'summary_large_image',
+    focusKeyword: pageMetadata?.focus_keyword || null,
+    author: pageMetadata?.author || null,
+    publishDate: pageMetadata?.publish_date || null,
+    modifiedDate: pageMetadata?.modified_date || null,
   };
 }
 

@@ -81,6 +81,18 @@ export function SEOManager() {
           description_template: null,
           is_global: false,
           favicon_url: null,
+          // Advanced SEO defaults
+          canonical_url: null,
+          structured_data_type: 'WebPage',
+          robots_directives: null,
+          sitemap_priority: 0.5,
+          sitemap_changefreq: 'weekly',
+          og_type: 'website',
+          twitter_card_type: 'summary_large_image',
+          focus_keyword: null,
+          author: null,
+          publish_date: null,
+          modified_date: null,
         });
       }
       await refetch();

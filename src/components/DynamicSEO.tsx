@@ -13,9 +13,24 @@ interface DynamicSEOProps {
   templateVars?: Record<string, string>;
   // JSON-LD structured data
   structuredData?: object;
+  // Additional overrides
+  canonicalUrl?: string;
+  author?: string;
+  publishDate?: string;
+  modifiedDate?: string;
 }
 
-export function DynamicSEO({ title, description, image, templateVars, structuredData }: DynamicSEOProps) {
+export function DynamicSEO({ 
+  title, 
+  description, 
+  image, 
+  templateVars, 
+  structuredData,
+  canonicalUrl,
+  author,
+  publishDate,
+  modifiedDate
+}: DynamicSEOProps) {
   const metadata = useCurrentPageMetadata();
   
   // Apply template variables if provided
@@ -34,25 +49,83 @@ export function DynamicSEO({ title, description, image, templateVars, structured
   const currentUrl = typeof window !== 'undefined' ? window.location.href : SITE_URL;
   const currentPath = typeof window !== 'undefined' ? window.location.pathname : '/';
   
-  // Build default WebPage structured data
-  const defaultStructuredData = {
-    "@context": "https://schema.org",
-    "@type": "WebPage",
-    "name": finalTitle,
-    "description": finalDescription,
-    "url": currentUrl,
-    ...(finalImage && { 
-      "image": finalImage.startsWith('http') ? finalImage : `${SITE_URL}${finalImage}` 
-    }),
-    "isPartOf": {
-      "@type": "WebSite",
-      "name": "PromptBox",
-      "url": SITE_URL
+  // Get advanced SEO settings from metadata
+  const pageMetadata = metadata.pageMetadata;
+  const finalCanonical = canonicalUrl || pageMetadata?.canonical_url || `${SITE_URL}${currentPath}`;
+  const ogType = pageMetadata?.og_type || 'website';
+  const twitterCardType = pageMetadata?.twitter_card_type || 'summary_large_image';
+  const structuredDataType = pageMetadata?.structured_data_type || 'WebPage';
+  const robotsDirectives = pageMetadata?.robots_directives;
+  const finalAuthor = author || pageMetadata?.author;
+  const finalPublishDate = publishDate || pageMetadata?.publish_date;
+  const finalModifiedDate = modifiedDate || pageMetadata?.modified_date;
+  
+  // Build robots content
+  let robotsContent = metadata.isIndexable ? 'index, follow' : 'noindex, nofollow';
+  if (robotsDirectives) {
+    robotsContent += `, ${robotsDirectives}`;
+  }
+  
+  // Build default structured data based on type
+  const buildStructuredData = () => {
+    const baseData: Record<string, any> = {
+      "@context": "https://schema.org",
+      "@type": structuredDataType,
+      "name": finalTitle,
+      "description": finalDescription,
+      "url": currentUrl,
+    };
+    
+    if (finalImage) {
+      baseData.image = finalImage.startsWith('http') ? finalImage : `${SITE_URL}${finalImage}`;
     }
+    
+    // Add type-specific properties
+    switch (structuredDataType) {
+      case 'Article':
+        if (finalAuthor) {
+          baseData.author = { "@type": "Person", "name": finalAuthor };
+        }
+        if (finalPublishDate) {
+          baseData.datePublished = finalPublishDate;
+        }
+        if (finalModifiedDate) {
+          baseData.dateModified = finalModifiedDate;
+        }
+        baseData.publisher = {
+          "@type": "Organization",
+          "name": "PromptBox",
+          "url": SITE_URL
+        };
+        break;
+        
+      case 'Organization':
+        baseData.logo = `${SITE_URL}/favicon.ico`;
+        baseData.sameAs = [
+          "https://twitter.com/promptaboratory"
+        ];
+        break;
+        
+      case 'Product':
+        baseData.brand = { "@type": "Brand", "name": "PromptBox" };
+        break;
+        
+      case 'FAQPage':
+        baseData.mainEntity = [];
+        break;
+        
+      default:
+        baseData.isPartOf = {
+          "@type": "WebSite",
+          "name": "PromptBox",
+          "url": SITE_URL
+        };
+    }
+    
+    return baseData;
   };
   
-  // Merge with custom structured data if provided
-  const finalStructuredData = structuredData || defaultStructuredData;
+  const finalStructuredData = structuredData || buildStructuredData();
   
   return (
     <Helmet>
@@ -61,32 +134,42 @@ export function DynamicSEO({ title, description, image, templateVars, structured
       {metadata.keywords && <meta name="keywords" content={metadata.keywords} />}
       
       {/* Robots */}
-      {!metadata.isIndexable ? (
-        <meta name="robots" content="noindex, nofollow" />
-      ) : (
-        <meta name="robots" content="index, follow" />
-      )}
+      <meta name="robots" content={robotsContent} />
+      
+      {/* Author */}
+      {finalAuthor && <meta name="author" content={finalAuthor} />}
       
       {/* Favicon */}
       {metadata.favicon && <link rel="icon" href={metadata.favicon} />}
+      
+      {/* Canonical */}
+      <link rel="canonical" href={finalCanonical} />
       
       {/* Open Graph */}
       <meta property="og:title" content={finalTitle} />
       <meta property="og:description" content={finalDescription || ''} />
       <meta property="og:url" content={currentUrl} />
-      <meta property="og:type" content="website" />
+      <meta property="og:type" content={ogType} />
       <meta property="og:site_name" content="PromptBox" />
       {finalImage && <meta property="og:image" content={finalImage.startsWith('http') ? finalImage : `${SITE_URL}${finalImage}`} />}
       
+      {/* Article specific OG tags */}
+      {ogType === 'article' && finalPublishDate && (
+        <meta property="article:published_time" content={finalPublishDate} />
+      )}
+      {ogType === 'article' && finalModifiedDate && (
+        <meta property="article:modified_time" content={finalModifiedDate} />
+      )}
+      {ogType === 'article' && finalAuthor && (
+        <meta property="article:author" content={finalAuthor} />
+      )}
+      
       {/* Twitter Card */}
-      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:card" content={twitterCardType} />
       <meta name="twitter:title" content={finalTitle} />
       <meta name="twitter:description" content={finalDescription || ''} />
       <meta name="twitter:site" content={TWITTER_HANDLE} />
       {finalImage && <meta name="twitter:image" content={finalImage.startsWith('http') ? finalImage : `${SITE_URL}${finalImage}`} />}
-      
-      {/* Canonical */}
-      <link rel="canonical" href={`${SITE_URL}${currentPath}`} />
       
       {/* JSON-LD Structured Data */}
       <script type="application/ld+json">
