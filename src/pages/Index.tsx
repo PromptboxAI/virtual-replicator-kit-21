@@ -23,7 +23,7 @@ import {
   Search
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FeatureToggle } from '@/components/FeatureToggle';
+import { FeaturesSection } from '@/components/FeaturesSection';
 import { IntegrationsSection } from '@/components/IntegrationsSection';
 import { TestimonialsSection } from '@/components/TestimonialsSection';
 
@@ -226,8 +226,8 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Feature Toggle Section */}
-        <FeatureToggle />
+        {/* Features Section */}
+        <FeaturesSection />
 
         {/* Integrations Section */}
         <IntegrationsSection />
