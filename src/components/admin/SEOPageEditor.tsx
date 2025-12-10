@@ -97,7 +97,7 @@ export function SEOPageEditor({ metadata, open, onClose }: SEOPageEditorProps) {
   
   if (!metadata) return null;
   
-  const previewUrl = `https://promptbox.ai${metadata.page_path.replace(/:[^/]+/g, 'example')}`;
+  const previewUrl = `https://promptbox.com${metadata.page_path.replace(/:[^/]+/g, 'example')}`;
   
   return (
     <Dialog open={open} onOpenChange={onClose}>
