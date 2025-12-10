@@ -20,7 +20,7 @@ const teamQuotes: TeamQuote[] = [
   {
     id: '2',
     quote: "The technical challenges we're solving here are unique. Combining smart contracts, bonding curves, and AI agent orchestration into a seamless experience is exactly the kind of problem that gets me excited to code every day.",
-    author: 'Marcus Rodriguez',
+    author: 'Marco R.',
     role: 'Senior Engineer',
   },
 ];
