@@ -178,7 +178,7 @@ export function FeaturesSection() {
         {/* Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
           {/* Left Column - Feature List */}
-          <div className="space-y-2">
+          <div className="space-y-2 min-h-[420px] md:min-h-0">
             {features.map((feature) => {
               const Icon = feature.icon;
               const isActive = activeFeature === feature.id;
