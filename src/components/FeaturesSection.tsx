@@ -160,7 +160,7 @@ export function FeaturesSection() {
   const active = features.find(f => f.id === activeFeature) || features[0];
 
   return (
-    <section className="py-16 md:py-24 pb-20 md:pb-24 px-4">
+    <section className="pt-16 pb-24 md:py-24 px-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
