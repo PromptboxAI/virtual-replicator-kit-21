@@ -45,7 +45,7 @@ export function FounderSection() {
           <img 
             src={pbLogo} 
             alt="Promptbox" 
-            className="absolute bottom-6 right-6 w-10 h-10"
+            className="absolute bottom-6 right-6 w-10 h-10 md:w-20 md:h-20"
           />
           
           <div className="flex flex-col md:flex-row gap-8 md:gap-12 items-start">
