@@ -232,7 +232,12 @@ const Index = () => {
 
         {/* Integrations Section */}
         <IntegrationsSection />
+      </main>
 
+      {/* Security Section - Full Width */}
+      <SecuritySection />
+
+      <main className="container mx-auto px-4 relative">
         {/* Market Stats */}
         <div className="mb-12">
           <MarketStats />
@@ -363,9 +368,6 @@ const Index = () => {
           )}
         </section>
       </main>
-
-      {/* Security Section - Full Width */}
-      <SecuritySection />
 
       {/* Testimonials Section - Full Width */}
       <TestimonialsSection />
