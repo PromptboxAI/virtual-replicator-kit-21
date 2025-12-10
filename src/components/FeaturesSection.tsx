@@ -90,58 +90,58 @@ const featureImages: Record<string, React.ReactNode> = {
     </div>
   ),
   'ai-agent-builder': (
-    <div className="w-full h-full bg-gradient-to-br from-muted/50 to-muted rounded-xl border border-border p-6 flex flex-col gap-4">
-      <div className="bg-background rounded-lg border border-border p-4 shadow-sm flex-1">
-        <div className="text-xs text-muted-foreground mb-3">Workflow Canvas</div>
+    <div className="w-full h-full bg-gradient-to-br from-indigo-50 to-cyan-50 rounded-xl border border-indigo-200/50 p-6 flex flex-col gap-4">
+      <div className="bg-white rounded-lg border border-indigo-100 p-4 shadow-sm flex-1">
+        <div className="text-xs text-slate-500 mb-3">Workflow Canvas</div>
         <div className="flex items-center justify-center gap-3 h-32">
-          <div className="w-20 h-16 rounded-lg border-2 border-primary bg-primary/10 flex items-center justify-center text-xs font-medium text-foreground">Trigger</div>
-          <div className="w-8 h-0.5 bg-border" />
-          <div className="w-20 h-16 rounded-lg border-2 border-border bg-muted/30 flex items-center justify-center text-xs font-medium text-foreground">Process</div>
-          <div className="w-8 h-0.5 bg-border" />
-          <div className="w-20 h-16 rounded-lg border-2 border-border bg-muted/30 flex items-center justify-center text-xs font-medium text-foreground">Action</div>
+          <div className="w-20 h-16 rounded-lg border-2 border-indigo-500 bg-indigo-100 flex items-center justify-center text-xs font-medium text-indigo-700">Trigger</div>
+          <div className="w-8 h-0.5 bg-indigo-300" />
+          <div className="w-20 h-16 rounded-lg border-2 border-cyan-400 bg-cyan-50 flex items-center justify-center text-xs font-medium text-cyan-700">Process</div>
+          <div className="w-8 h-0.5 bg-cyan-300" />
+          <div className="w-20 h-16 rounded-lg border-2 border-purple-400 bg-purple-50 flex items-center justify-center text-xs font-medium text-purple-700">Action</div>
         </div>
       </div>
-      <div className="bg-background rounded-lg border border-border p-4 shadow-sm">
+      <div className="bg-white rounded-lg border border-indigo-100 p-4 shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-            <Bot className="w-4 h-4 text-primary" />
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center">
+            <Bot className="w-4 h-4 text-white" />
           </div>
           <div className="flex-1">
-            <div className="text-sm font-medium text-foreground">Agent Settings</div>
-            <div className="text-xs text-muted-foreground">OpenAI GPT-4 connected</div>
+            <div className="text-sm font-medium text-slate-900">Agent Settings</div>
+            <div className="text-xs text-slate-500">OpenAI GPT-4 connected</div>
           </div>
-          <div className="w-2 h-2 rounded-full bg-green-500" />
+          <div className="w-2 h-2 rounded-full bg-emerald-500" />
         </div>
       </div>
     </div>
   ),
   'community-revenue': (
-    <div className="w-full h-full bg-gradient-to-br from-muted/50 to-muted rounded-xl border border-border p-6 flex flex-col gap-4">
-      <div className="bg-background rounded-lg border border-border p-4 shadow-sm">
+    <div className="w-full h-full bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl border border-emerald-200/50 p-6 flex flex-col gap-4">
+      <div className="bg-white rounded-lg border border-emerald-100 p-4 shadow-sm">
         <div className="flex items-center justify-between mb-3">
-          <div className="text-xs text-muted-foreground">Dashboard</div>
-          <div className="text-xs text-green-600 font-medium">+12.4%</div>
+          <div className="text-xs text-slate-500">Dashboard</div>
+          <div className="text-xs text-emerald-600 font-medium">+12.4%</div>
         </div>
-        <div className="h-20 bg-gradient-to-r from-primary/10 to-transparent rounded flex items-end gap-1 p-2">
+        <div className="h-20 bg-gradient-to-r from-emerald-100 to-teal-50 rounded flex items-end gap-1 p-2">
           {[40, 55, 45, 70, 60, 80, 75, 90].map((h, i) => (
-            <div key={i} className="flex-1 bg-primary/60 rounded-t" style={{ height: `${h}%` }} />
+            <div key={i} className="flex-1 bg-gradient-to-t from-emerald-500 to-teal-400 rounded-t" style={{ height: `${h}%` }} />
           ))}
         </div>
       </div>
       <div className="grid grid-cols-2 gap-3">
-        <div className="bg-background rounded-lg border border-border p-3 shadow-sm">
-          <div className="text-xs text-muted-foreground">Holders</div>
-          <div className="text-lg font-semibold text-foreground">1,247</div>
+        <div className="bg-white rounded-lg border border-emerald-100 p-3 shadow-sm">
+          <div className="text-xs text-slate-500">Holders</div>
+          <div className="text-lg font-semibold text-slate-900">1,247</div>
         </div>
-        <div className="bg-background rounded-lg border border-border p-3 shadow-sm">
-          <div className="text-xs text-muted-foreground">Volume 24h</div>
-          <div className="text-lg font-semibold text-foreground">$42.5K</div>
+        <div className="bg-white rounded-lg border border-emerald-100 p-3 shadow-sm">
+          <div className="text-xs text-slate-500">Volume 24h</div>
+          <div className="text-lg font-semibold text-slate-900">$42.5K</div>
         </div>
       </div>
-      <div className="bg-background rounded-lg border border-border p-3 shadow-sm">
+      <div className="bg-white rounded-lg border border-emerald-100 p-3 shadow-sm">
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-          <div className="text-xs text-foreground">Rewards distributed: <span className="text-primary font-medium">0.5 ETH</span></div>
+          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <div className="text-xs text-slate-700">Rewards distributed: <span className="text-emerald-600 font-medium">0.5 ETH</span></div>
         </div>
       </div>
     </div>
