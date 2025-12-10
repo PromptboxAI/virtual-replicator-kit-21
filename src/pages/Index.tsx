@@ -25,6 +25,7 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import { FeaturesSection } from '@/components/FeaturesSection';
 import { IntegrationsSection } from '@/components/IntegrationsSection';
+import { SecuritySection } from '@/components/SecuritySection';
 import { TestimonialsSection } from '@/components/TestimonialsSection';
 
 // Agent Card Component for Index page
@@ -231,6 +232,9 @@ const Index = () => {
 
         {/* Integrations Section */}
         <IntegrationsSection />
+
+        {/* Security Section */}
+        <SecuritySection />
 
         {/* Market Stats */}
         <div className="mb-12">
