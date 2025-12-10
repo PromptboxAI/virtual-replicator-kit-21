@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { LogoMarquee } from "@/components/LogoMarquee";
+import { FeatureToggle } from "@/components/FeatureToggle";
 import { FeaturesSection } from "@/components/FeaturesSection";
 import { IntegrationsSection } from "@/components/IntegrationsSection";
 import { FounderSection } from "@/components/FounderSection";
@@ -43,6 +44,9 @@ const TokenAgents = () => {
 
         </div>
       </section>
+
+      {/* Feature Toggle Section */}
+      <FeatureToggle />
 
       {/* Features Section */}
       <FeaturesSection />
