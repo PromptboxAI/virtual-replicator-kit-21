@@ -10,11 +10,13 @@ import {
   SiteMetadata, 
   useSiteMetadata, 
   useGlobalMetadata, 
-  useUpdateSiteMetadata 
+  useUpdateSiteMetadata,
+  useCreateSiteMetadata
 } from '@/hooks/useSiteMetadata';
 import { SEOPageEditor } from './SEOPageEditor';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { APP_ROUTES, getMissingRoutes } from '@/lib/appRoutes';
 import { 
   Search, 
   Settings, 
@@ -27,13 +29,16 @@ import {
   Edit,
   Eye,
   Loader2,
-  Image as ImageIcon
+  Image as ImageIcon,
+  RefreshCw,
+  Plus
 } from 'lucide-react';
 
 export function SEOManager() {
-  const { data: allMetadata, isLoading } = useSiteMetadata();
+  const { data: allMetadata, isLoading, refetch } = useSiteMetadata();
   const { data: globalMetadata } = useGlobalMetadata();
   const updateMutation = useUpdateSiteMetadata();
+  const createMutation = useCreateSiteMetadata();
   
   const [searchQuery, setSearchQuery] = useState('');
   const [editingPage, setEditingPage] = useState<SiteMetadata | null>(null);
@@ -41,6 +46,7 @@ export function SEOManager() {
   const [globalOgUploading, setGlobalOgUploading] = useState(false);
   const [globalTitle, setGlobalTitle] = useState(globalMetadata?.title || '');
   const [globalDescription, setGlobalDescription] = useState(globalMetadata?.description || '');
+  const [syncing, setSyncing] = useState(false);
   
   // Filter pages (exclude global settings row)
   const pages = allMetadata?.filter(m => !m.is_global) || [];
@@ -48,6 +54,44 @@ export function SEOManager() {
     p.page_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     p.page_path.toLowerCase().includes(searchQuery.toLowerCase())
   );
+  
+  // Check for missing routes
+  const existingPaths = pages.map(p => p.page_path);
+  const missingRoutes = getMissingRoutes(existingPaths);
+  
+  const handleSyncRoutes = async () => {
+    if (missingRoutes.length === 0) {
+      toast.info('All routes are already synced');
+      return;
+    }
+    
+    setSyncing(true);
+    try {
+      for (const route of missingRoutes) {
+        await createMutation.mutateAsync({
+          page_path: route.path,
+          page_name: route.name,
+          title: `${route.name} | PromptBox`,
+          description: null,
+          og_image_url: null,
+          keywords: null,
+          is_indexable: route.isIndexable,
+          is_dynamic: route.isDynamic,
+          title_template: null,
+          description_template: null,
+          is_global: false,
+          favicon_url: null,
+        });
+      }
+      await refetch();
+      toast.success(`Added ${missingRoutes.length} missing page(s) to SEO`);
+    } catch (error) {
+      console.error('Sync error:', error);
+      toast.error('Failed to sync some routes');
+    } finally {
+      setSyncing(false);
+    }
+  };
   
   const getStatusBadge = (metadata: SiteMetadata) => {
     if (!metadata.is_indexable) {
@@ -288,16 +332,37 @@ export function SEOManager() {
               </CardTitle>
               <CardDescription>
                 {filteredPages.length} pages configured
+                {missingRoutes.length > 0 && (
+                  <span className="text-yellow-600 ml-2">
+                    ({missingRoutes.length} missing)
+                  </span>
+                )}
               </CardDescription>
             </div>
-            <div className="relative w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search pages..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
-              />
+            <div className="flex items-center gap-3">
+              {missingRoutes.length > 0 && (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={handleSyncRoutes}
+                  disabled={syncing}
+                >
+                  {syncing ? (
+                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Syncing...</>
+                  ) : (
+                    <><Plus className="h-4 w-4 mr-2" /> Add {missingRoutes.length} Missing</>
+                  )}
+                </Button>
+              )}
+              <div className="relative w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search pages..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
             </div>
           </div>
         </CardHeader>
