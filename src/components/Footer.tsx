@@ -59,9 +59,7 @@ const Footer = () => {
             <div className="space-y-2 text-sm text-muted-foreground">
               <a href="https://promptbox.gitbook.io/promptbox/" target="_blank" rel="noopener noreferrer" className="block hover:text-foreground transition-colors">Documentation</a>
               <Link to="/api-reference" className="block hover:text-foreground transition-colors">API Reference</Link>
-              <div className="hover:text-foreground cursor-pointer transition-colors">Academy</div>
               <Link to="/status" className="block hover:text-foreground transition-colors">Status Page</Link>
-              <div className="hover:text-foreground cursor-pointer transition-colors">Changelog</div>
             </div>
           </div>
 
