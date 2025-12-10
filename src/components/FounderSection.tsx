@@ -45,7 +45,7 @@ export function FounderSection() {
           <img 
             src={pbLogo} 
             alt="Promptbox" 
-            className="absolute bottom-6 right-6 w-10 h-10 opacity-30"
+            className="absolute bottom-6 right-6 w-10 h-10"
           />
           
           <div className="flex flex-col md:flex-row gap-8 md:gap-12 items-start">
@@ -89,7 +89,7 @@ export function FounderSection() {
               <img 
                 src={pbLogo} 
                 alt="Promptbox" 
-                className="absolute bottom-6 right-6 w-8 h-8 opacity-30"
+                className="absolute bottom-6 right-6 w-8 h-8"
               />
               
               <blockquote className="text-muted-foreground leading-relaxed mb-6 italic flex-1">
