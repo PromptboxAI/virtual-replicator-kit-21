@@ -50,7 +50,7 @@ export function FounderSection() {
           
           <div className="flex flex-col md:flex-row gap-8 md:gap-12 items-start">
             {/* Photo - Doubled size */}
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 mx-auto md:mx-0">
               <div className="w-80 h-96 md:w-96 md:h-[28rem] overflow-hidden group">
                 <img 
                   src={kevinPhoto} 
