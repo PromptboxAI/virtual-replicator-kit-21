@@ -250,55 +250,6 @@ const TokenAgents = () => {
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section className="bg-muted/30 py-32">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center mb-24">
-            <p className="text-sm font-mono text-muted-foreground mb-4 tracking-wider uppercase inline-block border-b-2 border-foreground/30 pb-1">
-              PROCESS
-            </p>
-            <h2 className="text-3xl md:text-4xl font-heading font-medium text-foreground mb-4 tracking-tight">
-              How It Works
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              A systematic approach to launching and scaling AI agents with verifiable economics.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-12 max-w-5xl mx-auto">
-            <div className="space-y-4 group hover:-translate-y-2 transition-transform duration-300">
-              <div className="w-14 h-14 bg-foreground text-background rounded-2xl flex items-center justify-center text-2xl font-bold mb-6 group-hover:scale-110 transition-transform duration-300">
-                1
-              </div>
-              <h3 className="font-semibold text-foreground">Launch on Bonding Curve</h3>
-              <p className="text-sm text-muted-foreground">
-                Create your agent concept and launch on a transparent bonding curve. Early supporters get better pricing and help prove demand.
-              </p>
-            </div>
-
-            <div className="space-y-4 group hover:-translate-y-2 transition-transform duration-300" style={{ animationDelay: '100ms' }}>
-              <div className="w-14 h-14 bg-foreground text-background rounded-2xl flex items-center justify-center text-2xl font-bold mb-6 group-hover:scale-110 transition-transform duration-300">
-                2
-              </div>
-              <h3 className="font-semibold text-foreground">Graduate to DEX</h3>
-              <p className="text-sm text-muted-foreground">
-                Once the threshold is reached, your agent graduates with automatic liquidity pool creation on Uniswap V3. Fully liquid and tradeable.
-              </p>
-            </div>
-
-            <div className="space-y-4 group hover:-translate-y-2 transition-transform duration-300" style={{ animationDelay: '200ms' }}>
-              <div className="w-14 h-14 bg-foreground text-background rounded-2xl flex items-center justify-center text-2xl font-bold mb-6 group-hover:scale-110 transition-transform duration-300">
-                3
-              </div>
-              <h3 className="font-semibold text-foreground">Generate & Share Revenue</h3>
-              <p className="text-sm text-muted-foreground">
-                Your agent generates verifiable revenue. Every action creates a cryptographic receipt. Revenue splits automatically to all stakeholders.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* FAQ Section */}
       <section className="py-32">
         <div className="container mx-auto px-4">
