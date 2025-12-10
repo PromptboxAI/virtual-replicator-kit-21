@@ -89,7 +89,7 @@ export function FounderSection() {
               <img 
                 src={pbLogo} 
                 alt="Promptbox" 
-                className="absolute bottom-6 right-6 w-16 h-16"
+                className="absolute bottom-6 right-6 w-8 h-8"
               />
               
               <blockquote className="text-muted-foreground leading-relaxed mb-6 italic flex-1">
