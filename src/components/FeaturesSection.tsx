@@ -49,34 +49,40 @@ const features: Feature[] = [
 // Placeholder illustrations for each feature
 const featureImages: Record<string, React.ReactNode> = {
   'token-generation': (
-    <div className="w-full h-full bg-gradient-to-br from-muted/50 to-muted rounded-xl border border-border p-6 flex flex-col gap-4">
-      <div className="bg-background rounded-lg border border-border p-4 shadow-sm">
+    <div className="w-full h-full bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl border border-blue-200/50 p-6 flex flex-col gap-4">
+      <div className="bg-white rounded-lg border border-blue-100 p-4 shadow-sm">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-            <Coins className="w-5 h-5 text-primary" />
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
+            <Coins className="w-5 h-5 text-white" />
           </div>
           <div>
-            <div className="text-sm font-medium text-foreground">Launch Token</div>
-            <div className="text-xs text-muted-foreground">Configure your token</div>
+            <div className="text-sm font-medium text-slate-900">Launch Token</div>
+            <div className="text-xs text-slate-500">Configure your token</div>
           </div>
         </div>
         <div className="space-y-3">
           <div className="space-y-1">
-            <div className="text-xs text-muted-foreground">Token Name</div>
-            <div className="h-8 bg-muted/50 rounded border border-border flex items-center px-3 text-sm text-foreground">MyAgent</div>
+            <div className="text-xs text-slate-500">Token Name</div>
+            <div className="h-8 bg-slate-50 rounded border border-slate-200 flex items-center px-3 text-sm text-slate-900">MyAgent</div>
           </div>
           <div className="space-y-1">
-            <div className="text-xs text-muted-foreground">Symbol</div>
-            <div className="h-8 bg-muted/50 rounded border border-border flex items-center px-3 text-sm text-foreground">$AGENT</div>
+            <div className="text-xs text-slate-500">Symbol</div>
+            <div className="h-8 bg-slate-50 rounded border border-slate-200 flex items-center px-3 text-sm text-slate-900">$AGENT</div>
           </div>
         </div>
       </div>
-      <div className="bg-background rounded-lg border border-border p-4 shadow-sm">
-        <div className="text-xs text-muted-foreground mb-2">Bonding Curve Preview</div>
-        <div className="h-24 bg-gradient-to-r from-primary/20 to-primary/5 rounded flex items-end px-2 pb-2">
-          <div className="w-full h-16 border-l-2 border-b-2 border-primary/30 relative">
+      <div className="bg-white rounded-lg border border-blue-100 p-4 shadow-sm">
+        <div className="text-xs text-slate-500 mb-2">Bonding Curve Preview</div>
+        <div className="h-24 bg-gradient-to-r from-blue-100 to-purple-100 rounded flex items-end px-2 pb-2">
+          <div className="w-full h-16 border-l-2 border-b-2 border-blue-300 relative">
             <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 60" preserveAspectRatio="none">
-              <path d="M0,60 Q30,55 50,40 T100,10" stroke="hsl(var(--primary))" strokeWidth="2" fill="none" />
+              <defs>
+                <linearGradient id="curveGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#3b82f6" />
+                  <stop offset="100%" stopColor="#8b5cf6" />
+                </linearGradient>
+              </defs>
+              <path d="M0,60 Q30,55 50,40 T100,10" stroke="url(#curveGradient)" strokeWidth="3" fill="none" />
             </svg>
           </div>
         </div>
