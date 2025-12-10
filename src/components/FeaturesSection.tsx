@@ -93,12 +93,19 @@ const featureImages: Record<string, React.ReactNode> = {
     <div className="w-full h-full bg-gradient-to-br from-indigo-50 to-cyan-50 rounded-xl border border-indigo-200/50 p-6 flex flex-col gap-4">
       <div className="bg-white rounded-lg border border-indigo-100 p-4 shadow-sm flex-1">
         <div className="text-xs text-slate-500 mb-3">Workflow Canvas</div>
-        <div className="flex items-center justify-center gap-3 h-32">
-          <div className="w-20 h-16 rounded-lg border-2 border-indigo-500 bg-indigo-100 flex items-center justify-center text-xs font-medium text-indigo-700">Trigger</div>
-          <div className="w-8 h-0.5 bg-indigo-300" />
-          <div className="w-20 h-16 rounded-lg border-2 border-cyan-400 bg-cyan-50 flex items-center justify-center text-xs font-medium text-cyan-700">Process</div>
-          <div className="w-8 h-0.5 bg-cyan-300" />
-          <div className="w-20 h-16 rounded-lg border-2 border-purple-400 bg-purple-50 flex items-center justify-center text-xs font-medium text-purple-700">Action</div>
+        <div 
+          className="flex items-center justify-center gap-3 h-32 rounded-lg"
+          style={{
+            backgroundColor: '#f8fafc',
+            backgroundImage: 'radial-gradient(circle, #cbd5e1 1px, transparent 1px)',
+            backgroundSize: '16px 16px'
+          }}
+        >
+          <div className="w-20 h-16 rounded-lg border-2 border-indigo-500 bg-indigo-100 flex items-center justify-center text-xs font-medium text-indigo-700 shadow-sm">Trigger</div>
+          <div className="w-8 h-0.5 bg-indigo-400" />
+          <div className="w-20 h-16 rounded-lg border-2 border-cyan-400 bg-cyan-50 flex items-center justify-center text-xs font-medium text-cyan-700 shadow-sm">Process</div>
+          <div className="w-8 h-0.5 bg-cyan-400" />
+          <div className="w-20 h-16 rounded-lg border-2 border-purple-400 bg-purple-50 flex items-center justify-center text-xs font-medium text-purple-700 shadow-sm">Action</div>
         </div>
       </div>
       <div className="bg-white rounded-lg border border-indigo-100 p-4 shadow-sm">
