@@ -48,9 +48,6 @@ const TokenAgents = () => {
       {/* Feature Toggle Section */}
       <FeatureToggle />
 
-      {/* Features Section */}
-      <FeaturesSection />
-
       {/* Built on Badge */}
       <section className="pb-16">
         <div className="container mx-auto px-4 text-center">
@@ -60,6 +57,9 @@ const TokenAgents = () => {
           <LogoMarquee />
         </div>
       </section>
+
+      {/* Features Section */}
+      <FeaturesSection />
 
 
       {/* Integrations Section */}
