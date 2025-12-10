@@ -10,6 +10,7 @@ import { LogoMarquee } from "@/components/LogoMarquee";
 import { FeatureToggle } from "@/components/FeatureToggle";
 import { FeaturesSection } from "@/components/FeaturesSection";
 import { IntegrationsSection } from "@/components/IntegrationsSection";
+import { SecuritySection } from "@/components/SecuritySection";
 import { FounderSection } from "@/components/FounderSection";
 import baseLogo from "@/assets/base-logo.png";
 const TokenAgents = () => {
@@ -64,6 +65,9 @@ const TokenAgents = () => {
 
       {/* Integrations Section */}
       <IntegrationsSection />
+
+      {/* Security Section */}
+      <SecuritySection />
 
       {/* Platform Features with Visuals */}
       <section className="py-32 bg-muted/30">
