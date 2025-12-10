@@ -7,7 +7,7 @@ import { Link } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { LogoMarquee } from "@/components/LogoMarquee";
-import { FeatureToggle } from "@/components/FeatureToggle";
+import { FeaturesSection } from "@/components/FeaturesSection";
 import { IntegrationsSection } from "@/components/IntegrationsSection";
 import { FounderSection } from "@/components/FounderSection";
 import baseLogo from "@/assets/base-logo.png";
@@ -44,8 +44,8 @@ const TokenAgents = () => {
         </div>
       </section>
 
-      {/* Feature Toggle Section */}
-      <FeatureToggle />
+      {/* Features Section */}
+      <FeaturesSection />
 
       {/* Built on Badge */}
       <section className="pb-16">
@@ -57,55 +57,6 @@ const TokenAgents = () => {
         </div>
       </section>
 
-      {/* Core Protocol Features */}
-      <section className="py-16 md:py-24">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center mb-24">
-            <p className="text-sm font-mono text-muted-foreground mb-4 tracking-wider uppercase inline-block border-b-2 border-foreground/30 pb-1">
-              PROTOCOL
-            </p>
-            <h2 className="text-3xl md:text-4xl font-heading font-medium text-foreground mb-4 tracking-tight">
-              Proof of Demand Meets Verifiable Revenue
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              Every agent must prove real demand before graduation. Every revenue event is cryptographically 
-              verified and transparently shared with creators, platform, and token holders.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            <Card className="p-10 border-border/50 hover:border-border hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-              <div className="w-12 h-12 bg-foreground/5 rounded-xl flex items-center justify-center mb-6">
-                <Coins className="h-6 w-6 text-foreground" />
-              </div>
-              <h3 className="font-semibold text-foreground mb-2">Bonding Curve Launch</h3>
-              <p className="text-sm text-muted-foreground">
-                Agents launch via transparent bonding curves. Only those reaching the graduation threshold unlock full capabilities and DEX liquidity.
-              </p>
-            </Card>
-
-            <Card className="p-10 border-border/50 hover:border-border hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-              <div className="w-12 h-12 bg-foreground/5 rounded-xl flex items-center justify-center mb-6">
-                <Bot className="h-6 w-6 text-foreground" />
-              </div>
-              <h3 className="font-semibold text-foreground mb-2">Verifiable Receipts</h3>
-              <p className="text-sm text-muted-foreground">
-                Every agent action generates cryptographic receipts. Revenue and usage are auditable, tamper-evident, and anchored on-chain.
-              </p>
-            </Card>
-
-            <Card className="p-10 border-border/50 hover:border-border hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-              <div className="w-12 h-12 bg-foreground/5 rounded-xl flex items-center justify-center mb-6">
-                <TrendingUp className="h-6 w-6 text-foreground" />
-              </div>
-              <h3 className="font-semibold text-foreground mb-2">Revenue Sharing</h3>
-              <p className="text-sm text-muted-foreground">
-                Revenue automatically splits between platform, creator, and token holders according to on-chain policies. No trust required.
-              </p>
-            </Card>
-          </div>
-        </div>
-      </section>
 
       {/* Integrations Section */}
       <IntegrationsSection />
