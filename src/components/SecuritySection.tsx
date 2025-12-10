@@ -62,10 +62,10 @@ export const SecuritySection = () => {
             OUR CERTIFICATIONS
           </p>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-heading font-medium text-background tracking-tight mb-4">
-            Enterprise-Grade Security
+            Security built in from day one
           </h2>
           <p className="text-background/60 max-w-2xl text-lg">
-            Don't just take our word for it — Promptbox is certified to protect sensitive data, no matter the industry or use case.
+            Promptbox is designed to protect your prompts, tokens, and agent workflows with modern, battle-tested security practices - so you can focus on building, not babysitting infrastructure.
           </p>
         </div>
 
