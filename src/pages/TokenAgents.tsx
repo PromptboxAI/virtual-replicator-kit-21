@@ -24,7 +24,7 @@ const TokenAgents = () => {
               Launch Tokenized<br className="md:hidden" /> AI Agents as a<br className="md:hidden" /> Micro-SaaS Business<span className="hidden md:inline">.</span>
             </h1>
             <p className="text-[15px] md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Promptbox lets you create, fund and track AI agents with built-in tokenomics, dashboards, and on-chain rails from 100's of templates.
+              Promptbox lets you create, fund, and run tokenized AI agents with visual workflows, deep integrations, and on-chain rails - from a growing library of ready-to-launch templates.
             </p>
           </div>
 
