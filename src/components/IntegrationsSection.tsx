@@ -1,9 +1,10 @@
 import React from 'react';
+import salesforceLogo from '@/assets/salesforce-logo.png';
 
 // Integration logos organized by row
 // Using a mix of Simple Icons CDN and SVG Repo for availability
 const row1Integrations = [
-  { name: 'Salesforce', logo: 'https://www.svgrepo.com/show/303195/salesforce-2-logo.svg' },
+  { name: 'Salesforce', logo: salesforceLogo },
   { name: 'HubSpot', logo: 'https://cdn.simpleicons.org/hubspot' },
   { name: 'Zendesk', logo: 'https://cdn.simpleicons.org/zendesk' },
   { name: 'LinkedIn', logo: 'https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/linkedin.svg' },
