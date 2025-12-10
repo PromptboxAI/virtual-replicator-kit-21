@@ -3,7 +3,7 @@ import React from 'react';
 // Integration logos organized by row
 // Using a mix of Simple Icons CDN and SVG Repo for availability
 const row1Integrations = [
-  { name: 'Salesforce', logo: 'https://cdn.simpleicons.org/salesforce' },
+  { name: 'Salesforce', logo: 'https://www.svgrepo.com/show/303195/salesforce-2-logo.svg' },
   { name: 'HubSpot', logo: 'https://cdn.simpleicons.org/hubspot' },
   { name: 'Zendesk', logo: 'https://cdn.simpleicons.org/zendesk' },
   { name: 'LinkedIn', logo: 'https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/linkedin.svg' },
