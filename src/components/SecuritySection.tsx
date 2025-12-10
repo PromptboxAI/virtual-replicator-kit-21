@@ -42,7 +42,7 @@ const certifications = [
 
 export const SecuritySection = () => {
   return (
-    <section className="py-20 bg-foreground relative overflow-hidden -mx-4 px-4">
+    <section className="py-20 px-4 bg-foreground relative overflow-hidden">
       {/* Subtle grid pattern */}
       <div 
         className="absolute inset-0 opacity-[0.03]"

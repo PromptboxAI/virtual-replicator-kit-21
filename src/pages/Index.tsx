@@ -233,9 +233,6 @@ const Index = () => {
         {/* Integrations Section */}
         <IntegrationsSection />
 
-        {/* Security Section */}
-        <SecuritySection />
-
         {/* Market Stats */}
         <div className="mb-12">
           <MarketStats />
@@ -366,6 +363,9 @@ const Index = () => {
           )}
         </section>
       </main>
+
+      {/* Security Section - Full Width */}
+      <SecuritySection />
 
       {/* Testimonials Section - Full Width */}
       <TestimonialsSection />
