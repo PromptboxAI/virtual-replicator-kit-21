@@ -69,6 +69,73 @@ const TokenAgents = () => {
       {/* Security Section */}
       <SecuritySection />
 
+      {/* Use Cases Section */}
+      <section className="py-32">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center mb-24">
+            <p className="text-sm font-mono text-muted-foreground mb-4 tracking-wider uppercase inline-block border-b-2 border-foreground/30 pb-1">
+              AUDIENCE
+            </p>
+            <h2 className="text-3xl md:text-4xl font-heading font-medium text-foreground mb-4 tracking-tight">
+              Built for Everyone
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              Whether you're a creator, investor, or builder, Promptbox offers clear value.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
+            <Card className="p-8 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+              <div className="space-y-4">
+                <div className="w-10 h-10 bg-foreground/5 rounded-lg flex items-center justify-center">
+                  <Users className="h-5 w-5 text-foreground" />
+                </div>
+                <h4 className="text-xl font-semibold">Creators</h4>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  One-click agent deployment with clear economics, templates, and ongoing revenue share.
+                </p>
+              </div>
+            </Card>
+
+            <Card className="p-8 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+              <div className="space-y-4">
+                <div className="w-10 h-10 bg-foreground/5 rounded-lg flex items-center justify-center">
+                  <TrendingUp className="h-5 w-5 text-foreground" />
+                </div>
+                <h4 className="text-xl font-semibold">Investors</h4>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  Proof-of-demand gating, auditable revenue, and a concrete protocol with real upside.
+                </p>
+              </div>
+            </Card>
+
+            <Card className="p-8 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+              <div className="space-y-4">
+                <div className="w-10 h-10 bg-foreground/5 rounded-lg flex items-center justify-center">
+                  <Bot className="h-5 w-5 text-foreground" />
+                </div>
+                <h4 className="text-xl font-semibold">Developers</h4>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  Composable primitives, open APIs, and verifiable on-chain rails for integrations.
+                </p>
+              </div>
+            </Card>
+
+            <Card className="p-8 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+              <div className="space-y-4">
+                <div className="w-10 h-10 bg-foreground/5 rounded-lg flex items-center justify-center">
+                  <Coins className="h-5 w-5 text-foreground" />
+                </div>
+                <h4 className="text-xl font-semibold">Users</h4>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  Transparent pricing, verifiable performance, and agents that work like micro-SaaS.
+                </p>
+              </div>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       {/* Platform Features with Visuals */}
       <section className="py-32 bg-muted/30">
         <div className="container mx-auto px-4">
@@ -179,73 +246,6 @@ const TokenAgents = () => {
               </div>
             </div>
 
-          </div>
-        </div>
-      </section>
-
-      {/* Use Cases Section */}
-      <section className="py-32">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center mb-24">
-            <p className="text-sm font-mono text-muted-foreground mb-4 tracking-wider uppercase inline-block border-b-2 border-foreground/30 pb-1">
-              AUDIENCE
-            </p>
-            <h2 className="text-3xl md:text-4xl font-heading font-medium text-foreground mb-4 tracking-tight">
-              Built for Everyone
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              Whether you're a creator, investor, or builder, Promptbox offers clear value.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
-            <Card className="p-8 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-              <div className="space-y-4">
-                <div className="w-10 h-10 bg-foreground/5 rounded-lg flex items-center justify-center">
-                  <Users className="h-5 w-5 text-foreground" />
-                </div>
-                <h4 className="text-xl font-semibold">Creators</h4>
-                <p className="text-muted-foreground text-sm leading-relaxed">
-                  One-click agent deployment with clear economics, templates, and ongoing revenue share.
-                </p>
-              </div>
-            </Card>
-
-            <Card className="p-8 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-              <div className="space-y-4">
-                <div className="w-10 h-10 bg-foreground/5 rounded-lg flex items-center justify-center">
-                  <TrendingUp className="h-5 w-5 text-foreground" />
-                </div>
-                <h4 className="text-xl font-semibold">Investors</h4>
-                <p className="text-muted-foreground text-sm leading-relaxed">
-                  Proof-of-demand gating, auditable revenue, and a concrete protocol with real upside.
-                </p>
-              </div>
-            </Card>
-
-            <Card className="p-8 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-              <div className="space-y-4">
-                <div className="w-10 h-10 bg-foreground/5 rounded-lg flex items-center justify-center">
-                  <Bot className="h-5 w-5 text-foreground" />
-                </div>
-                <h4 className="text-xl font-semibold">Developers</h4>
-                <p className="text-muted-foreground text-sm leading-relaxed">
-                  Composable primitives, open APIs, and verifiable on-chain rails for integrations.
-                </p>
-              </div>
-            </Card>
-
-            <Card className="p-8 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-              <div className="space-y-4">
-                <div className="w-10 h-10 bg-foreground/5 rounded-lg flex items-center justify-center">
-                  <Coins className="h-5 w-5 text-foreground" />
-                </div>
-                <h4 className="text-xl font-semibold">Users</h4>
-                <p className="text-muted-foreground text-sm leading-relaxed">
-                  Transparent pricing, verifiable performance, and agents that work like micro-SaaS.
-                </p>
-              </div>
-            </Card>
           </div>
         </div>
       </section>
