@@ -2,7 +2,13 @@ import { useAppMode } from '@/hooks/useAppMode';
 import { ArrowRight } from 'lucide-react';
 
 export default function TestnetOnlyBanner() {
-  const { isTestMode } = useAppMode();
+  const { isTestMode, isLoading } = useAppMode();
+  
+  // Reserve space during loading to prevent layout shift
+  if (isLoading) {
+    return <div className="w-full h-[40px] bg-black" />;
+  }
+  
   if (!isTestMode) return null;
 
   return (
