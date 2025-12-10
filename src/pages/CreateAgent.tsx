@@ -7,13 +7,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Upload, Sparkles, Coins, TrendingUp, Info, AlertCircle, Check, Twitter, Link2, X, Code, Rocket, ExternalLink, Settings, Users, Brain, Shield, Zap, HelpCircle, Loader2, Clock } from "lucide-react";
+import { Upload, Sparkles, Coins, TrendingUp, Info, AlertCircle, Check, Twitter, Link2, X, Rocket, Shield, Zap, Loader2, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Link } from "react-router-dom";
@@ -25,7 +24,7 @@ import { useAppMode } from "@/hooks/useAppMode";
 import { useUserRole } from "@/hooks/useUserRole";
 import { usePrivyWallet } from "@/hooks/usePrivyWallet";
 import { useAdminSettings } from "@/hooks/useAdminSettings";
-import { FrameworkSDKService, FRAMEWORK_CONFIGS } from "@/lib/frameworkSDK";
+// Framework SDK removed - now model agnostic
 import { OnboardingGuide } from "@/components/OnboardingGuide";
 import { ExternalWalletRequired } from "@/components/ExternalWalletRequired";
 import { ExternalWalletRequiredModal } from "@/components/ExternalWalletRequiredModal";
@@ -78,64 +77,6 @@ interface AgentFormData {
 export default function CreateAgent() {
   const { toast } = useToast();
 
-  // Framework recommendations based on agent category
-  const frameworkRecommendations: Record<string, {
-    primary: string[];
-    secondary: string[];
-    explanation: string;
-  }> = {
-    "Trading Bot": {
-      primary: ["PROMPT"],
-      secondary: ["AutoGen", "CrewAI"],
-      explanation: "PROMPT with G.A.M.E. integration provides bonding curves, autonomous trading, and market analysis - perfect for trading bots."
-    },
-    "DeFi Assistant": {
-      primary: ["PROMPT", "LangChain"],
-      secondary: ["AutoGen"],
-      explanation: "PROMPT offers tokenization and DeFi integrations, while LangChain excels at complex financial data processing."
-    },
-    "Content Creator": {
-      primary: ["Eliza", "PROMPT"],
-      secondary: ["CrewAI"],
-      explanation: "Eliza provides advanced conversational AI, while PROMPT offers social media integration and token incentives."
-    },
-    "Community Manager": {
-      primary: ["Eliza", "PROMPT"],
-      secondary: ["Swarm", "AutoGen"],
-      explanation: "Eliza for engaging conversations and PROMPT for social media management with tokenized communities."
-    },
-    "Analytics Agent": {
-      primary: ["LangChain", "PROMPT"],
-      secondary: ["AutoGen", "CrewAI"],
-      explanation: "LangChain for data processing and PROMPT for market analysis with real-time trading insights."
-    },
-    "Gaming Agent": {
-      primary: ["PROMPT", "Eliza"],
-      secondary: ["AutoGen"],
-      explanation: "PROMPT offers tokenization for gaming economies, while Eliza provides immersive character interactions."
-    },
-    "NFT Agent": {
-      primary: ["PROMPT"],
-      secondary: ["LangChain", "Eliza"],
-      explanation: "PROMPT's tokenization and bonding curves are ideal for NFT market analysis and trading."
-    },
-    "Research Assistant": {
-      primary: ["LangChain", "AutoGen"],
-      secondary: ["CrewAI", "PROMPT"],
-      explanation: "LangChain excels at complex research tasks, while AutoGen provides multi-agent collaboration."
-    }
-  };
-
-  const getRecommendedFrameworks = (category: string) => {
-    return frameworkRecommendations[category] || { primary: [], secondary: [], explanation: "" };
-  };
-
-  const isRecommendedFramework = (framework: string, category: string, type: 'primary' | 'secondary' = 'primary') => {
-    const recommendations = getRecommendedFrameworks(category);
-    return type === 'primary' 
-      ? recommendations.primary.includes(framework)
-      : recommendations.secondary.includes(framework);
-  };
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
   const [isCreating, setIsCreating] = useState(false);
@@ -206,14 +147,6 @@ export default function CreateAgent() {
     "Custom Agent"
   ];
 
-  // Get frameworks from SDK with fallback descriptions
-  const frameworks = Object.keys(FRAMEWORK_CONFIGS).reduce((acc, key) => {
-    acc[key] = FRAMEWORK_CONFIGS[key].description;
-    return acc;
-  }, {} as Record<string, string>);
-
-  // Only use frameworks from SDK that have actual deployment handlers
-  const allFrameworks = frameworks;
 
   // Real-time symbol validation
   useEffect(() => {
@@ -310,10 +243,6 @@ export default function CreateAgent() {
     }
     if (!formData.category) {
       toast({ title: "Error", description: "Please select a category", variant: "destructive" });
-      return false;
-    }
-    if (!formData.framework) {
-      toast({ title: "Error", description: "Please select a framework", variant: "destructive" });
       return false;
     }
     return true;
@@ -811,7 +740,6 @@ export default function CreateAgent() {
   const steps = [
     "Basic Details",
     "Project Pitch", 
-    "Framework",
     "Tokenomics",
     "Launch"
   ];
@@ -1250,258 +1178,8 @@ export default function CreateAgent() {
                 </>
               )}
 
-              {/* Step 2: Framework */}
+              {/* Step 2: Tokenomics */}
               {currentStep === 2 && (
-                <>
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Sparkles className="h-5 w-5 text-primary" />
-                        Framework
-                      </CardTitle>
-                      <CardDescription>
-                        Select the framework your AI Agent is built with
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div>
-                        <div className="flex items-center gap-2 mb-2">
-                          <Label htmlFor="framework">AI Agent Framework *</Label>
-                          {formData.category && (
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <button className="text-muted-foreground hover:text-primary">
-                                  <HelpCircle className="h-4 w-4" />
-                                </button>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-80 p-4">
-                                <div className="space-y-3">
-                                  <h4 className="font-semibold text-sm">Recommended for {formData.category}</h4>
-                                  <p className="text-sm text-muted-foreground">
-                                    {getRecommendedFrameworks(formData.category).explanation}
-                                  </p>
-                                  
-                                  {getRecommendedFrameworks(formData.category).primary.length > 0 && (
-                                    <div>
-                                      <p className="text-xs font-medium text-green-600 mb-1">Best Match:</p>
-                                      <div className="flex flex-wrap gap-1">
-                                        {getRecommendedFrameworks(formData.category).primary.map((fw) => (
-                                          <Badge key={fw} variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
-                                            {fw}
-                                          </Badge>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  )}
-                                  
-                                  {getRecommendedFrameworks(formData.category).secondary.length > 0 && (
-                                    <div>
-                                      <p className="text-xs font-medium text-blue-600 mb-1">Also Good:</p>
-                                      <div className="flex flex-wrap gap-1">
-                                        {getRecommendedFrameworks(formData.category).secondary.map((fw) => (
-                                          <Badge key={fw} variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-                                            {fw}
-                                          </Badge>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              </PopoverContent>
-                            </Popover>
-                          )}
-                        </div>
-                        
-                         <Select value={formData.framework} onValueChange={(value) => handleInputChange('framework', value)}>
-                            <SelectTrigger>
-                               <SelectValue placeholder="Select a framework">
-                                 {formData.framework && (
-                                   <div className="flex items-center gap-2">
-                                     <span>
-                                       {formData.framework === "PROMPT" 
-                                         ? "PROMPT (Default Framework)" 
-                                         : formData.framework
-                                       }
-                                     </span>
-                                     {formData.framework === "PROMPT" && (
-                                       <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-                                         Recommended
-                                       </Badge>
-                                     )}
-                                   </div>
-                                 )}
-                               </SelectValue>
-                             </SelectTrigger>
-                                <SelectContent>
-                                   {Object.keys(allFrameworks).filter(framework => {
-                                     // If admin settings exist, filter by allowed frameworks
-                                     // Handle the PROMPT vs "PROMPT (Default Framework)" mismatch
-                                     if (adminSettings?.allowed_frameworks) {
-                                       return adminSettings.allowed_frameworks.some(allowed => 
-                                         framework === allowed || 
-                                         (allowed === "PROMPT" && framework === "PROMPT (Default Framework)") ||
-                                         (allowed === "Custom" && !adminSettings.allowed_frameworks.includes(framework))
-                                       );
-                                     }
-                                     // If no admin settings, show all frameworks
-                                     return true;
-                                   }).map((framework) => {                               
-                                     const displayName = framework === "PROMPT (Default Framework)" ? "PROMPT" : framework;
-                                     const selectValue = framework === "PROMPT (Default Framework)" ? "PROMPT" : framework;
-                                     return (
-                                       <SelectItem key={framework} value={selectValue}>
-                                         <div className="flex items-center gap-2 w-full">
-                                           <span>{displayName}</span>
-                                           {(framework === "PROMPT (Default Framework)" || framework === "PROMPT") && (
-                                             <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-                                               Recommended
-                                             </Badge>
-                                           )}
-                                         </div>
-                                      </SelectItem>
-                                    );
-                                  })}
-                             </SelectContent>
-                         </Select>
-                         
-                          {/* Framework Description & SDK Status */}
-                          {formData.framework && allFrameworks[formData.framework as keyof typeof allFrameworks] && (
-                            <div className="mt-3 space-y-3">
-                              <div className="p-3 bg-muted/50 rounded-lg border">
-                                <p className="text-sm text-muted-foreground">
-                                  {allFrameworks[formData.framework as keyof typeof allFrameworks]}
-                                </p>
-                              </div>
-                              
-                              {/* SDK Integration Status */}
-                              {FRAMEWORK_CONFIGS[formData.framework] && (
-                                <div className="p-3 bg-primary/5 rounded-lg border border-primary/20">
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <Rocket className="h-4 w-4 text-primary" />
-                                    <span className="text-sm font-medium text-primary">SDK Integration Available</span>
-                                  </div>
-                                  <div className="space-y-2">
-                                    <div className="flex items-center gap-2">
-                                      <Badge variant="outline" className="text-xs">
-                                        {FRAMEWORK_CONFIGS[formData.framework].sdkType}
-                                      </Badge>
-                                      {FRAMEWORK_CONFIGS[formData.framework].requiresAPIKey && (
-                                        <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">
-                                          API Key Required
-                                        </Badge>
-                                      )}
-                                    </div>
-                                     <div className="flex flex-wrap gap-1">
-                                       {FRAMEWORK_CONFIGS[formData.framework].supportedFeatures.map((feature) => {
-                                         const getFeatureIcon = (feature: string) => {
-                                           switch (feature) {
-                                             case 'tokenization':
-                                             case 'governance': 
-                                               return <Shield className="h-3 w-3" />;
-                                             case 'multi_agent':
-                                             case 'team_collaboration':
-                                               return <Users className="h-3 w-3" />;
-                                             case 'conversation':
-                                             case 'personality':
-                                               return <Brain className="h-3 w-3" />;
-                                             case 'autonomous_execution':
-                                             case 'autonomous_trading':
-                                               return <Zap className="h-3 w-3" />;
-                                             default:
-                                               return <Settings className="h-3 w-3" />;
-                                           }
-                                         };
-                                         
-                                         return (
-                                           <Badge key={feature} variant="secondary" className="text-xs">
-                                             <span className="flex items-center gap-1">
-                                               {getFeatureIcon(feature)}
-                                               {feature.replace(/_/g, ' ')}
-                                             </span>
-                                           </Badge>
-                                         );
-                                       })}
-                                     </div>
-                                     
-                                     {/* API Key Requirement */}
-                                     {FRAMEWORK_CONFIGS[formData.framework].requiresAPIKey && (
-                                       <div className="p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
-                                         ⚠️ This framework requires an API key for deployment
-                                       </div>
-                                     )}
-                                       <div className="flex items-center justify-between">
-                                         <div className="flex items-center gap-2">
-                                           <Code className="h-3 w-3 text-muted-foreground" />
-                                           <span className="text-xs text-muted-foreground">
-                                             Auto-generates deployment code
-                                           </span>
-                                         </div>
-                                         <div className="flex gap-2">
-                                           <Dialog>
-                                             <DialogTrigger asChild>
-                                               <Button variant="outline" size="sm">
-                                                 <Code className="h-3 w-3 mr-1" />
-                                                 <span className="text-xs">View Code</span>
-                                               </Button>
-                                             </DialogTrigger>
-                                             <DialogContent className="max-w-2xl">
-                                               <DialogHeader>
-                                                 <DialogTitle>Generated {formData.framework} Agent Code</DialogTitle>
-                                                 <DialogDescription>
-                                                   This code will be automatically generated and deployed for your agent
-                                                 </DialogDescription>
-                                               </DialogHeader>
-                                               <div className="mt-4">
-                                                 <pre className="bg-gray-100 p-4 rounded-lg text-xs overflow-auto max-h-96">
-                                                   <code>{FrameworkSDKService.generateAgentCode(formData.framework, {
-                                                     name: formData.name,
-                                                     description: formData.description,
-                                                     framework: formData.framework
-                                                   })}</code>
-                                                 </pre>
-                                               </div>
-                                             </DialogContent>
-                                           </Dialog>
-                                           <Button variant="outline" size="sm" asChild>
-                                             <a href={FRAMEWORK_CONFIGS[formData.framework].documentationUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
-                                               <ExternalLink className="h-3 w-3" />
-                                               <span className="text-xs">Docs</span>
-                                             </a>
-                                           </Button>
-                                         </div>
-                                       </div>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                      </div>
-                    </CardContent>
-                   </Card>
-
-
-
-                   {/* Step 2 Action Buttons */}
-                  <div className="flex gap-4">
-                    <Button
-                      onClick={() => setCurrentStep(1)}
-                      variant="outline"
-                      className="flex-1"
-                    >
-                      Back
-                    </Button>
-                    <Button
-                      onClick={() => setCurrentStep(3)}
-                      className="flex-1 bg-gradient-primary hover:opacity-90"
-                    >
-                      Next
-                    </Button>
-                  </div>
-                </>
-              )}
-
-              {/* Step 3: Tokenomics */}
-              {currentStep === 3 && (
                 <>
                   <Card>
                     <CardHeader>
@@ -1578,17 +1256,17 @@ export default function CreateAgent() {
                     </CardContent>
                   </Card>
 
-                  {/* Step 3 Action Buttons */}
+                  {/* Step 2 Action Buttons */}
                   <div className="flex gap-4">
                     <Button
-                      onClick={() => setCurrentStep(2)}
+                      onClick={() => setCurrentStep(1)}
                       variant="outline"
                       className="flex-1"
                     >
                       Back
                     </Button>
                     <Button
-                      onClick={() => setCurrentStep(4)}
+                      onClick={() => setCurrentStep(3)}
                       className="flex-1 bg-gradient-primary hover:opacity-90"
                     >
                       Next
@@ -1597,8 +1275,8 @@ export default function CreateAgent() {
                 </>
               )}
 
-              {/* Step 4: Summary */}
-              {currentStep === 4 && (
+              {/* Step 3: Launch */}
+              {currentStep === 3 && (
                 <>
                   <Card>
                     <CardHeader>
@@ -1626,10 +1304,6 @@ export default function CreateAgent() {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                          <div>
-                            <p className="font-medium">Framework:</p>
-                            <p className="text-muted-foreground">{formData.framework}</p>
-                          </div>
                           <div>
                             <p className="font-medium">Total Supply:</p>
                             <p className="text-muted-foreground">{formData.total_supply.toLocaleString()}</p>
