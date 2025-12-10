@@ -211,12 +211,12 @@ export function FeaturesSection() {
                       
                       {isActive && (
                         <div className="animate-fade-in">
-                          <p className="text-muted-foreground text-sm leading-relaxed mb-4">
+                          <p className="text-foreground/80 text-sm leading-relaxed mb-4">
                             {feature.shortBody}
                           </p>
                           <ul className="space-y-2">
                             {feature.bullets.map((bullet, idx) => (
-                              <li key={idx} className="flex items-start gap-2 text-sm text-muted-foreground">
+                              <li key={idx} className="flex items-start gap-2 text-sm text-foreground/70">
                                 <span className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
                                 <span>{bullet}</span>
                               </li>
