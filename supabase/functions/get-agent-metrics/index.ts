@@ -12,9 +12,18 @@ serve(async (req) => {
   }
 
   try {
-    const { agentId } = await req.json();
+    const body = await req.json().catch(() => ({}));
+    const { agentId } = body;
     const url = new URL(req.url);
     const includeRanking = url.searchParams.get('includeRanking') === 'true';
+
+    // Validate agentId is provided
+    if (!agentId) {
+      return new Response(
+        JSON.stringify({ error: "agentId is required" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -26,11 +35,19 @@ serve(async (req) => {
       .from("agent_metrics_normalized")
       .select("*")
       .eq("agent_id", agentId)
-      .single();
+      .maybeSingle();
 
-    if (metricsError || !m) {
+    if (metricsError) {
+      console.error("Metrics query error:", metricsError);
       return new Response(
-        JSON.stringify({ error: metricsError?.message ?? "Agent not found" }),
+        JSON.stringify({ error: metricsError.message }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!m) {
+      return new Response(
+        JSON.stringify({ error: "Agent not found in metrics view" }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
