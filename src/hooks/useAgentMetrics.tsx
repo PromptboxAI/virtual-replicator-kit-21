@@ -71,6 +71,15 @@ export function useAgentMetrics(agentId: string | undefined, pollingInterval = 5
         if (fetchError) {
           console.error('Error fetching agent metrics:', fetchError);
           setError(fetchError.message);
+          setMetrics(null);
+          return;
+        }
+
+        // Handle case where edge function returns an error in the data
+        if (data?.error) {
+          console.warn('Agent metrics not available:', data.error);
+          setMetrics(null);
+          setError(null); // Not a fatal error, just no data
           return;
         }
 
@@ -79,6 +88,7 @@ export function useAgentMetrics(agentId: string | undefined, pollingInterval = 5
       } catch (err: any) {
         console.error('Failed to fetch agent metrics:', err);
         setError(err.message);
+        setMetrics(null);
       } finally {
         setLoading(false);
       }
