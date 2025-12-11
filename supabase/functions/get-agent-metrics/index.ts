@@ -40,12 +40,12 @@ serve(async (req) => {
       p_agent_id: agentId
     });
 
-    // Get current graduation status
+    // Get current graduation status (may not exist yet)
     const { data: gradStatus } = await supabase
       .from("agent_graduation")
       .select("*")
       .eq("agent_id", agentId)
-      .single();
+      .maybeSingle();
 
     // Evaluate policy logic (ANY)
     let shouldGraduate = false;
