@@ -1,5 +1,5 @@
 import { usePrivy } from '@privy-io/react-auth';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 export function useAuth() {
@@ -20,10 +20,45 @@ export function useAuth() {
   const [hasAcceptedTerms, setHasAcceptedTerms] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
   const [initTimeout, setInitTimeout] = useState(false);
+  
+  // Stabilized auth state to prevent flickering
+  const [stableAuthenticated, setStableAuthenticated] = useState(false);
+  const [stableUser, setStableUser] = useState(user);
+  const authChangeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Stabilize auth state changes - only update after state is stable for 500ms
+  // This prevents UI flickering from transient Privy state changes
+  useEffect(() => {
+    if (authChangeTimeoutRef.current) {
+      clearTimeout(authChangeTimeoutRef.current);
+    }
+
+    // If becoming authenticated, update immediately
+    if (ready && authenticated && user) {
+      setStableAuthenticated(true);
+      setStableUser(user);
+      return;
+    }
+
+    // If becoming unauthenticated, delay to avoid flickering
+    // Only sign out if state remains unauthenticated for 1 second
+    authChangeTimeoutRef.current = setTimeout(() => {
+      if (ready && !authenticated) {
+        setStableAuthenticated(false);
+        setStableUser(null);
+      }
+    }, 1000);
+
+    return () => {
+      if (authChangeTimeoutRef.current) {
+        clearTimeout(authChangeTimeoutRef.current);
+      }
+    };
+  }, [ready, authenticated, user]);
 
   // Log authentication state changes with timeout protection
   useEffect(() => {
-    console.log('Privy state:', { ready, authenticated, user: user?.id });
+    console.log('Privy state:', { ready, authenticated, stableAuthenticated, user: user?.id });
     
     // Set timeout if Privy doesn't initialize within 10 seconds
     const timeout = setTimeout(() => {
@@ -34,7 +69,7 @@ export function useAuth() {
     }, 10000);
     
     return () => clearTimeout(timeout);
-  }, [ready, authenticated, user?.id]);
+  }, [ready, authenticated, stableAuthenticated, user?.id]);
 
   // Sync Privy user with Supabase profiles (optimized with localStorage cache)
   useEffect(() => {
@@ -162,8 +197,8 @@ export function useAuth() {
   };
 
   return {
-    user: authenticated ? user : null,
-    session: authenticated ? { user } : null,
+    user: stableAuthenticated ? stableUser : null,
+    session: stableAuthenticated ? { user: stableUser } : null,
     loading: !ready || isProcessing,
     signOut: logout,
     signIn: login,
@@ -171,7 +206,7 @@ export function useAuth() {
     linkWallet,
     unlinkEmail,
     unlinkWallet,
-    authenticated,
+    authenticated: stableAuthenticated,
     ready: ready && !initTimeout,
     showTermsModal,
     hasAcceptedTerms,
