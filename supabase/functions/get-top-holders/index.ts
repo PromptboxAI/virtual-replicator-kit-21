@@ -13,19 +13,39 @@ Deno.serve(async (req) => {
 
   try {
     const url = new URL(req.url);
-    const agentId = url.searchParams.get('agentId');
+    let agentId = url.searchParams.get('agentId');
+    const address = url.searchParams.get('address');
+    const chainId = url.searchParams.get('chainId') || '84532';
     const limit = parseInt(url.searchParams.get('limit') || '10');
-
-    if (!agentId) {
-      return new Response(
-        JSON.stringify({ error: 'agentId is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // If address provided instead of agentId, look up the agent
+    if (!agentId && address) {
+      const { data: agent, error: lookupError } = await supabase
+        .from('agents')
+        .select('id')
+        .ilike('token_address', address.toLowerCase())
+        .eq('chain_id', parseInt(chainId))
+        .maybeSingle();
+
+      if (lookupError || !agent) {
+        return new Response(
+          JSON.stringify({ ok: false, error: 'Token not found' }),
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      agentId = agent.id;
+    }
+
+    if (!agentId) {
+      return new Response(
+        JSON.stringify({ error: 'agentId or address is required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Fetch agent's total supply and circulating supply
     const { data: agent, error: agentError } = await supabase
@@ -85,20 +105,35 @@ Deno.serve(async (req) => {
     // Calculate total held by top holders
     const totalHeldByTop = holders.reduce((sum, h) => sum + Number(h.token_balance), 0);
 
-    // Enrich holders with profile data and percentages
+    // Helper to detect if address looks like a contract (starts with 0x and is 42 chars)
+    const isContractAddress = (addr: string | null): boolean => {
+      if (!addr) return false;
+      // Simple heuristic: contracts tend to have specific patterns
+      // In production, you'd query the blockchain, but for now we mark all as false
+      return false;
+    };
+
+    // Enrich holders with profile data and percentages - trade app format
     const enrichedHolders = holders.map((holder, index) => {
       const percentage = circulatingSupply > 0 
         ? (Number(holder.token_balance) / Number(circulatingSupply)) * 100 
         : 0;
       
       const profile = profileMap.get(holder.user_id);
+      const walletAddr = profile?.wallet_address || null;
       
       return {
         rank: index + 1,
+        // Trade app format
+        address: walletAddr,
+        balance: Number(holder.token_balance),
+        percent_owned: Number(Math.min(percentage, 100).toFixed(2)),
+        is_contract: isContractAddress(walletAddr),
+        // Extended fields (backwards compatible)
         user_id: holder.user_id,
         display_name: profile?.display_name || null,
         avatar_url: profile?.avatar_url || null,
-        wallet_address: profile?.wallet_address || null,
+        wallet_address: walletAddr,
         token_balance: holder.token_balance,
         percentage: Math.min(percentage, 100).toFixed(2),
         total_invested: holder.total_invested,

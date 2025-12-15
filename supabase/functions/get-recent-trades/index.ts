@@ -73,19 +73,24 @@ Deno.serve(async (req) => {
       (profiles || []).map(p => [p.user_id, p])
     );
 
-    // Enrich trades with profile data
+    // Enrich trades with profile data - using trade app naming conventions
     const enrichedTrades = allTrades.map(trade => ({
       id: trade.id,
-      type: trade.type,
+      tradeType: trade.type, // renamed for trade app compatibility
+      type: trade.type, // keep for backwards compatibility
       user_id: trade.user_id,
       user_display_name: profileMap.get(trade.user_id)?.display_name || null,
       user_avatar_url: profileMap.get(trade.user_id)?.avatar_url || null,
-      wallet_address: profileMap.get(trade.user_id)?.wallet_address || null,
-      token_amount: trade.token_amount,
+      walletAddress: profileMap.get(trade.user_id)?.wallet_address || null, // renamed for trade app
+      wallet_address: profileMap.get(trade.user_id)?.wallet_address || null, // keep for backwards compat
+      amount: trade.token_amount, // renamed for trade app
+      token_amount: trade.token_amount, // keep for backwards compat
+      price: trade.price_per_token, // renamed for trade app
       prompt_amount: trade.prompt_amount,
       price_per_token: trade.price_per_token,
       bonding_curve_price: trade.bonding_curve_price,
-      transaction_hash: trade.transaction_hash,
+      txHash: trade.transaction_hash, // ADD THIS - trade app requested field
+      transaction_hash: trade.transaction_hash, // keep for backwards compat
       timestamp: trade.created_at,
     }));
 
