@@ -231,3 +231,7 @@ verify_jwt = false
 
 [functions.get-new-listings]
 verify_jwt = false
+
+# Token Page Parity Endpoints
+[functions.get-quote]
+verify_jwt = false

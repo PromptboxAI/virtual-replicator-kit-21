@@ -7,6 +7,12 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Constants matching bonding curve V5
+const BONDING_CURVE_CONSTANTS = {
+  GRADUATION_SUPPLY: 1_000_000, // 1M tokens max
+  DEFAULT_GRADUATION_THRESHOLD: 42000, // PROMPT reserves needed
+};
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -59,11 +65,12 @@ serve(async (req) => {
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    // Query directly from agents table for full data
     let query = supabase
-      .from('token_metadata_cache')
+      .from('agents')
       .select('*');
 
     // Query by ID or address
@@ -72,7 +79,7 @@ serve(async (req) => {
     } else if (address) {
       const normalizedAddress = address.toLowerCase();
       query = query
-        .eq('token_address_normalized', normalizedAddress)
+        .ilike('token_address', normalizedAddress)
         .eq('chain_id', parseInt(chainId));
     }
 
@@ -117,14 +124,63 @@ serve(async (req) => {
 
     console.log('✅ Token found:', data.name, data.symbol);
 
+    // Fetch trade count for last 24 hours
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    
+    const [buyCountResult, sellCountResult] = await Promise.all([
+      supabase
+        .from('agent_token_buy_trades')
+        .select('id', { count: 'exact', head: true })
+        .eq('agent_id', data.id)
+        .gte('created_at', oneDayAgo),
+      supabase
+        .from('agent_token_sell_trades')
+        .select('id', { count: 'exact', head: true })
+        .eq('agent_id', data.id)
+        .gte('created_at', oneDayAgo)
+    ]);
+
+    const tradeCount24h = (buyCountResult.count || 0) + (sellCountResult.count || 0);
+
+    // Calculate bonding progress
+    const promptRaised = Number(data.prompt_raised) || 0;
+    const graduationThreshold = Number(data.graduation_threshold) || BONDING_CURVE_CONSTANTS.DEFAULT_GRADUATION_THRESHOLD;
+    const tokensSold = Number(data.bonding_curve_supply) || Number(data.circulating_supply) || 0;
+    const maxTokens = BONDING_CURVE_CONSTANTS.GRADUATION_SUPPLY;
+    const progressPercent = graduationThreshold > 0 
+      ? Math.min((promptRaised / graduationThreshold) * 100, 100) 
+      : 0;
+
+    const bondingProgress = {
+      prompt_raised: promptRaised,
+      graduation_threshold: graduationThreshold,
+      tokens_sold: tokensSold,
+      max_tokens: maxTokens,
+      progress_percent: Number(progressPercent.toFixed(2)),
+    };
+
+    // Build creator info
+    const creator = {
+      address: data.creator_wallet_address || null,
+      display_name: data.creator_ens_name || null,
+    };
+
+    // Build enhanced response
+    const tokenData = {
+      ...data,
+      bonding_progress: bondingProgress,
+      trade_count_24h: tradeCount24h,
+      creator: creator,
+    };
+
     const timestamp = Date.now();
-    const etag = `"${data.id || data.agent_id}-${timestamp}"`;
+    const etag = `"${data.id}-${timestamp}"`;
 
     return new Response(
       JSON.stringify({ 
         ok: true,
         apiVersion: 'v1',
-        data: data,
+        data: tokenData,
         cached_at: new Date().toISOString()
       }),
       { 
