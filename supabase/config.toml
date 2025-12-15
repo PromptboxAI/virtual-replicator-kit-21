@@ -203,7 +203,7 @@ verify_jwt = false
 [functions.sitemap]
 verify_jwt = false
 
-# Trading App API Endpoints (NEW)
+# Trading App API Endpoints
 [functions.get-recent-trades]
 verify_jwt = false
 
@@ -223,4 +223,11 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.get-creator-agents]
+verify_jwt = false
+
+# Leaderboard Parity Endpoints (NEW)
+[functions.get-trending]
+verify_jwt = false
+
+[functions.get-new-listings]
 verify_jwt = false
