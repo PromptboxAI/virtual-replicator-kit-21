@@ -183,6 +183,7 @@ serve(async (req) => {
         ok: true,
         apiVersion: 'v1',
         data: tokenData,
+        token: tokenData, // Alias for compatibility with trade app
         cached_at: new Date().toISOString()
       }),
       { 
