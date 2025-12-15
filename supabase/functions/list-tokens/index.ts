@@ -6,6 +6,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Default PROMPT/USD rate for liquidity calculations
+const DEFAULT_PROMPT_USD_RATE = 0.10;
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -131,18 +134,142 @@ serve(async (req) => {
     // Default graduation threshold (fallback if not set on agent)
     const DEFAULT_GRADUATION_THRESHOLD = 42000;
 
-    // Enhance tokens with graduation_threshold and bonding_progress
+    // Get agent IDs for additional queries
+    const agentIds = (data || []).map(t => useMarketView ? t.agent_id : t.id).filter(Boolean);
+
+    // Fetch creator holdings for dev ownership %
+    let creatorHoldings: Record<string, number> = {};
+    if (agentIds.length > 0) {
+      // Get agents with creator_id to match with holdings
+      const { data: agentsData } = await supabase
+        .from('agents')
+        .select('id, creator_id, circulating_supply, total_supply')
+        .in('id', agentIds);
+
+      if (agentsData && agentsData.length > 0) {
+        // Get creator wallet addresses from user_id in holdings
+        const creatorIds = agentsData.map(a => a.creator_id).filter(Boolean);
+        
+        // Fetch holdings where user_id matches creator_id
+        const { data: holdingsData } = await supabase
+          .from('agent_token_holders')
+          .select('agent_id, user_id, token_balance')
+          .in('agent_id', agentIds);
+
+        if (holdingsData) {
+          // Build map of agent -> creator balance
+          for (const agent of agentsData) {
+            if (agent.creator_id) {
+              const creatorHolding = holdingsData.find(
+                h => h.agent_id === agent.id && h.user_id === agent.creator_id
+              );
+              if (creatorHolding) {
+                const supply = agent.circulating_supply || agent.total_supply || 1000000000;
+                creatorHoldings[agent.id] = (creatorHolding.token_balance / supply) * 100;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Fetch historical holder counts for holder change calculation
+    let holderChanges: Record<string, { change_4h: number; change_24h: number }> = {};
+    if (agentIds.length > 0) {
+      const now = new Date();
+      const fourHoursAgo = new Date(now.getTime() - 4 * 60 * 60 * 1000);
+      const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+      // Get snapshots from 4h ago
+      const { data: snapshots4h } = await supabase
+        .from('agent_price_snapshots')
+        .select('agent_id, holders_count, timestamp')
+        .in('agent_id', agentIds)
+        .lte('timestamp', fourHoursAgo.toISOString())
+        .order('timestamp', { ascending: false });
+
+      // Get snapshots from 24h ago
+      const { data: snapshots24h } = await supabase
+        .from('agent_price_snapshots')
+        .select('agent_id, holders_count, timestamp')
+        .in('agent_id', agentIds)
+        .lte('timestamp', twentyFourHoursAgo.toISOString())
+        .order('timestamp', { ascending: false });
+
+      // Build map of closest snapshot per agent
+      const closest4h: Record<string, number> = {};
+      const closest24h: Record<string, number> = {};
+
+      if (snapshots4h) {
+        for (const snap of snapshots4h) {
+          if (!closest4h[snap.agent_id] && snap.holders_count !== null) {
+            closest4h[snap.agent_id] = snap.holders_count;
+          }
+        }
+      }
+
+      if (snapshots24h) {
+        for (const snap of snapshots24h) {
+          if (!closest24h[snap.agent_id] && snap.holders_count !== null) {
+            closest24h[snap.agent_id] = snap.holders_count;
+          }
+        }
+      }
+
+      // Calculate changes for each agent
+      for (const agentId of agentIds) {
+        holderChanges[agentId] = {
+          change_4h: 0,
+          change_24h: 0
+        };
+      }
+
+      // Will be computed when we have current holder count from the token data
+      for (const token of (data || [])) {
+        const id = useMarketView ? token.agent_id : token.id;
+        const currentHolders = token.token_holders || 0;
+        
+        if (closest4h[id] !== undefined) {
+          holderChanges[id].change_4h = currentHolders - closest4h[id];
+        }
+        if (closest24h[id] !== undefined) {
+          holderChanges[id].change_24h = currentHolders - closest24h[id];
+        }
+      }
+    }
+
+    // Enhance tokens with all fields
     const enhancedTokens = (data || []).map(token => {
+      const id = useMarketView ? token.agent_id : token.id;
       const threshold = token.graduation_threshold || DEFAULT_GRADUATION_THRESHOLD;
+      const promptRaised = token.prompt_raised || 0;
+      const promptUsdRate = token.prompt_usd_rate || DEFAULT_PROMPT_USD_RATE;
+      
+      // Calculate liquidity (for bonding curve, liquidity = prompt_raised)
+      const liquidity = promptRaised;
+      const liquidityUsd = promptRaised * promptUsdRate;
+
+      // Get dev ownership %
+      const devOwnershipPct = creatorHoldings[id] || 0;
+
+      // Get holder changes
+      const holdersChange = holderChanges[id] || { change_4h: 0, change_24h: 0 };
+
       return {
         ...token,
         graduation_threshold: threshold,
         bonding_progress: {
-          prompt_raised: token.prompt_raised || 0,
+          prompt_raised: promptRaised,
           graduation_threshold: threshold,
-          progress_percent: Math.min(((token.prompt_raised || 0) / threshold) * 100, 100),
-          remaining: Math.max(threshold - (token.prompt_raised || 0), 0)
-        }
+          progress_percent: Math.min((promptRaised / threshold) * 100, 100),
+          remaining: Math.max(threshold - promptRaised, 0)
+        },
+        // NEW FIELDS
+        liquidity: liquidity,
+        liquidity_usd: liquidityUsd,
+        dev_ownership_pct: parseFloat(devOwnershipPct.toFixed(2)),
+        holders_change_4h: holdersChange.change_4h,
+        holders_change_24h: holdersChange.change_24h
       };
     });
 
