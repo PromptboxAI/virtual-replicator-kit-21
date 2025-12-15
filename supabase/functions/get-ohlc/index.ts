@@ -44,7 +44,34 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { agentId, timeframe = '5m', limit = 300 }: OHLCRequest = await req.json();
+    // Support both GET with query params and POST with JSON body
+    let agentId: string | null = null;
+    let timeframe = '5m';
+    let limit = 300;
+
+    if (req.method === 'GET') {
+      const url = new URL(req.url);
+      agentId = url.searchParams.get('agentId');
+      timeframe = url.searchParams.get('timeframe') || '5m';
+      limit = parseInt(url.searchParams.get('limit') || '300', 10);
+    } else {
+      // POST request - parse JSON body
+      try {
+        const contentType = req.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          const body = await req.text();
+          if (body && body.trim()) {
+            const parsed = JSON.parse(body);
+            agentId = parsed.agentId;
+            timeframe = parsed.timeframe || '5m';
+            limit = parsed.limit || 300;
+          }
+        }
+      } catch (parseError) {
+        console.error('Failed to parse request body:', parseError);
+        // Continue with empty agentId - will be caught below
+      }
+    }
 
     if (!agentId) {
       return new Response(
@@ -52,7 +79,10 @@ Deno.serve(async (req) => {
           ok: false,
           apiVersion: 'v1',
           error: 'agentId is required',
-          code: 'BAD_REQUEST'
+          code: 'BAD_REQUEST',
+          details: { 
+            usage: 'GET /get-ohlc?agentId=uuid&timeframe=5m&limit=300 OR POST with JSON body { agentId, timeframe?, limit? }' 
+          }
         }),
         { status: 400, headers: { ...corsHeaders, ...rateLimitHeaders, 'Content-Type': 'application/json' } }
       );
