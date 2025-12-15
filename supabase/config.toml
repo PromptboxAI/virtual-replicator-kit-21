@@ -202,3 +202,25 @@ verify_jwt = false
 
 [functions.sitemap]
 verify_jwt = false
+
+# Trading App API Endpoints (NEW)
+[functions.get-recent-trades]
+verify_jwt = false
+
+[functions.get-top-holders]
+verify_jwt = false
+
+[functions.alerts-delete]
+verify_jwt = false
+
+[functions.get-categories]
+verify_jwt = false
+
+[functions.get-user-portfolio]
+verify_jwt = false
+
+[functions.agent-comments]
+verify_jwt = false
+
+[functions.get-creator-agents]
+verify_jwt = false
