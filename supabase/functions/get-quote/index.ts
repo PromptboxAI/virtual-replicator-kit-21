@@ -124,19 +124,33 @@ Deno.serve(async (req) => {
     let query = supabase.from('agents').select('*');
     
     if (agentId) {
+      console.log(`📊 get-quote: Looking up by agentId: ${agentId}`);
       query = query.eq('id', agentId);
     } else if (address) {
+      console.log(`📊 get-quote: Looking up by address: ${address}, chainId: ${chainId}`);
       query = query.ilike('token_address', address.toLowerCase()).eq('chain_id', parseInt(chainId));
     }
 
     const { data: agent, error } = await query.maybeSingle();
 
-    if (error || !agent) {
+    if (error) {
+      console.error('❌ get-quote DB error:', error);
       return new Response(
-        JSON.stringify({ ok: false, error: 'Token not found' }),
+        JSON.stringify({ ok: false, error: 'Database error', details: error.message }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!agent) {
+      console.log(`⚠️ get-quote: Token not found for agentId=${agentId}, address=${address}`);
+      return new Response(
+        JSON.stringify({ ok: false, error: 'Token not found', searched: { agentId, address, chainId } }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    console.log(`✅ get-quote: Found agent ${agent.name} (${agent.symbol})`);
+
 
     // Check if graduated
     if (agent.token_graduated) {

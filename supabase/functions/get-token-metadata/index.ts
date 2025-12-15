@@ -165,9 +165,11 @@ serve(async (req) => {
       display_name: data.creator_ens_name || null,
     };
 
-    // Build enhanced response
+    // Build enhanced response - ensure graduation_threshold is at top level too
     const tokenData = {
       ...data,
+      // Ensure graduation_threshold is explicitly present (in case DB returns null)
+      graduation_threshold: graduationThreshold,
       bonding_progress: bondingProgress,
       trade_count_24h: tradeCount24h,
       creator: creator,

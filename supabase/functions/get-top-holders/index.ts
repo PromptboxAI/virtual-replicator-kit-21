@@ -47,16 +47,23 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Fetch agent's total supply and circulating supply
+    // Fetch agent's total supply and circulating supply - use maybeSingle to avoid error on no rows
     const { data: agent, error: agentError } = await supabase
       .from('agents')
       .select('total_supply, circulating_supply, bonding_curve_supply')
       .eq('id', agentId)
-      .single();
+      .maybeSingle();
 
     if (agentError) {
       console.error('Error fetching agent:', agentError);
       throw agentError;
+    }
+
+    if (!agent) {
+      return new Response(
+        JSON.stringify({ ok: false, error: 'Agent not found', agent_id: agentId }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     // Use bonding_curve_supply as circulating (tokens actually traded)
