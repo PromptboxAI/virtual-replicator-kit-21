@@ -58,14 +58,15 @@ Deno.serve(async (req) => {
     const agentIds = watchlists.map(w => w.agent_id);
 
     // Fetch latest prices for watchlisted agents
+    // Note: agent_prices_latest view uses: agent_id, symbol, name, price_prompt, price_usd, mc_prompt, mc_usd, volume_24h, change_24h_pct, holders, avatar_url, category
     const { data: agents, error: agentsError } = await supabase
       .from('agent_prices_latest')
-      .select('*')
+      .select('agent_id, symbol, name, price_prompt, price_usd, mc_prompt, mc_usd, volume_24h, change_24h_pct, holders, avatar_url, category, is_graduated, prompt_raised')
       .in('agent_id', agentIds);
 
     if (agentsError) {
       console.error('Agents fetch error:', agentsError);
-      // Fallback to agents table if materialized view fails
+      // Fallback to agents table if view fails
       const { data: fallbackAgents, error: fallbackError } = await supabase
         .from('agents')
         .select('id, symbol, name, current_price, market_cap, volume_24h, price_change_24h, token_holders, avatar_url, category')
@@ -94,11 +95,26 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Combine watchlist metadata with agent data
+    // Combine watchlist metadata with agent data - normalize column names for API consumers
     const watchlistData = watchlists.map(w => {
       const agent = agents?.find(a => a.agent_id === w.agent_id);
+      if (!agent) return null;
       return {
-        ...agent,
+        id: agent.agent_id,
+        agent_id: agent.agent_id,
+        symbol: agent.symbol,
+        name: agent.name,
+        current_price: agent.price_prompt,
+        price_usd: agent.price_usd,
+        market_cap: agent.mc_prompt,
+        market_cap_usd: agent.mc_usd,
+        volume_24h: agent.volume_24h,
+        price_change_24h: agent.change_24h_pct,
+        token_holders: agent.holders,
+        avatar_url: agent.avatar_url,
+        category: agent.category,
+        is_graduated: agent.is_graduated,
+        prompt_raised: agent.prompt_raised,
         watchlisted_at: w.created_at
       };
     }).filter(Boolean);

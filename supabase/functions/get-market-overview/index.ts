@@ -16,27 +16,53 @@ serve(async (req) => {
     console.log('Fetching market overview...');
 
     // Get aggregated stats from agent_prices_latest
+    // Note: View uses mc_prompt/mc_usd, volume_24h, holders, change_24h_pct
     const { data: stats, error: statsError } = await supabase
       .from('agent_prices_latest')
-      .select('market_cap, volume_24h, token_holders')
-      .eq('is_active', true);
+      .select('mc_prompt, mc_usd, volume_24h, holders');
 
     if (statsError) {
-      throw statsError;
+      console.error('Stats query error, falling back to agents table:', statsError);
+      // Fallback to agents table
+      const { data: agentStats, error: agentError } = await supabase
+        .from('agents')
+        .select('market_cap, volume_24h, token_holders')
+        .eq('is_active', true);
+      
+      if (agentError) throw agentError;
+      
+      const totalMarketCap = agentStats?.reduce((sum, agent) => sum + (agent.market_cap || 0), 0) || 0;
+      const totalVolume24h = agentStats?.reduce((sum, agent) => sum + (agent.volume_24h || 0), 0) || 0;
+      const totalHolders = agentStats?.reduce((sum, agent) => sum + (agent.token_holders || 0), 0) || 0;
+      
+      return new Response(
+        JSON.stringify({ 
+          success: true,
+          data: {
+            totalMarketCap,
+            totalVolume24h,
+            totalHolders,
+            activeAgents: agentStats?.length || 0,
+            topGainers: [],
+            topLosers: [],
+            timestamp: new Date().toISOString()
+          }
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    // Calculate totals
-    const totalMarketCap = stats?.reduce((sum, agent) => sum + (agent.market_cap || 0), 0) || 0;
-    const totalVolume24h = stats?.reduce((sum, agent) => sum + (agent.volume_24h || 0), 0) || 0;
-    const totalHolders = stats?.reduce((sum, agent) => sum + (agent.token_holders || 0), 0) || 0;
+    // Calculate totals using correct column names
+    const totalMarketCap = stats?.reduce((sum, agent) => sum + (parseFloat(agent.mc_prompt) || 0), 0) || 0;
+    const totalVolume24h = stats?.reduce((sum, agent) => sum + (parseFloat(agent.volume_24h) || 0), 0) || 0;
+    const totalHolders = stats?.reduce((sum, agent) => sum + (agent.holders || 0), 0) || 0;
     const activeAgents = stats?.length || 0;
 
-    // Get top gainers (last 24h)
+    // Get top gainers (last 24h) - use change_24h_pct
     const { data: gainers, error: gainersError } = await supabase
       .from('agent_prices_latest')
       .select('*')
-      .eq('is_active', true)
-      .order('price_change_24h', { ascending: false })
+      .order('change_24h_pct', { ascending: false, nullsFirst: false })
       .limit(5);
 
     if (gainersError) {
@@ -47,8 +73,7 @@ serve(async (req) => {
     const { data: losers, error: losersError } = await supabase
       .from('agent_prices_latest')
       .select('*')
-      .eq('is_active', true)
-      .order('price_change_24h', { ascending: true })
+      .order('change_24h_pct', { ascending: true, nullsFirst: false })
       .limit(5);
 
     if (losersError) {
