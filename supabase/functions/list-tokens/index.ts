@@ -128,20 +128,23 @@ serve(async (req) => {
 
     console.log(`✅ Retrieved ${data?.length || 0} tokens (page ${page}/${totalPages})`);
 
-    // V4 graduation threshold constant
-    const GRADUATION_THRESHOLD = 750000;
+    // Default graduation threshold (fallback if not set on agent)
+    const DEFAULT_GRADUATION_THRESHOLD = 42000;
 
     // Enhance tokens with graduation_threshold and bonding_progress
-    const enhancedTokens = (data || []).map(token => ({
-      ...token,
-      graduation_threshold: GRADUATION_THRESHOLD,
-      bonding_progress: {
-        prompt_raised: token.prompt_raised || 0,
-        graduation_threshold: GRADUATION_THRESHOLD,
-        progress_percent: Math.min(((token.prompt_raised || 0) / GRADUATION_THRESHOLD) * 100, 100),
-        remaining: Math.max(GRADUATION_THRESHOLD - (token.prompt_raised || 0), 0)
-      }
-    }));
+    const enhancedTokens = (data || []).map(token => {
+      const threshold = token.graduation_threshold || DEFAULT_GRADUATION_THRESHOLD;
+      return {
+        ...token,
+        graduation_threshold: threshold,
+        bonding_progress: {
+          prompt_raised: token.prompt_raised || 0,
+          graduation_threshold: threshold,
+          progress_percent: Math.min(((token.prompt_raised || 0) / threshold) * 100, 100),
+          remaining: Math.max(threshold - (token.prompt_raised || 0), 0)
+        }
+      };
+    });
 
     return new Response(
       JSON.stringify({ 
