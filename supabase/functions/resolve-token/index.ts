@@ -12,7 +12,7 @@ interface ResolveRequest {
 }
 
 interface TokenData {
-  agent_id: string;
+  id: string;
   symbol: string;
   name: string;
   token_address: string | null;
@@ -84,7 +84,7 @@ Deno.serve(async (req) => {
     // Query token_metadata_cache
     let query = supabase
       .from('token_metadata_cache')
-      .select('agent_id, symbol, name, token_address, creation_mode, deployment_status')
+      .select('id, symbol, name, token_address, creation_mode, deployment_status')
       .limit(1);
 
     if (symbol) {
@@ -146,7 +146,7 @@ Deno.serve(async (req) => {
         ok: true,
         apiVersion: 'v1',
         data: {
-          agentId: tokenData.agent_id,
+          agentId: tokenData.id,
           symbol: tokenData.symbol,
           name: tokenData.name,
           address: tokenData.token_address,
