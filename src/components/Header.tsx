@@ -232,20 +232,13 @@ export function Header() {
                 </SheetTrigger>
                 <SheetContent side="right" className="w-full h-full max-w-full p-0">
                   <div className="flex flex-col h-full bg-background">
-                    {/* Header with close button */}
-                    <div className="flex items-center justify-between p-4 border-b">
+                    {/* Header with logo */}
+                    <div className="flex items-center justify-start p-4 border-b">
                       <img 
                         src="/lovable-uploads/promptbox-logo-new.png" 
                         alt="PROMPTBOX" 
                         className="h-10 w-auto"
                       />
-                      <Button 
-                        variant="ghost" 
-                        size="icon"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        <X className="h-6 w-6" />
-                      </Button>
                     </div>
                     
                     {/* Navigation Links */}
