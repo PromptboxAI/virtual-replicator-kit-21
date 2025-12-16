@@ -6,6 +6,18 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Supported timeframes with their cache durations
+const SUPPORTED_TIMEFRAMES: Record<string, number> = {
+  // Seconds - cache for 5s
+  '1s': 5, '5s': 5, '15s': 5, '30s': 5,
+  // Minutes - cache for 30s
+  '1m': 30, '3m': 30, '5m': 30, '15m': 30, '30m': 30,
+  // Hours - cache for 60s
+  '1h': 60, '2h': 60, '4h': 60, '6h': 60, '12h': 60,
+  // Days/Weeks/Months - cache for 120s
+  '1d': 120, '3d': 120, '1w': 120, '1M': 120,
+};
+
 interface OHLCRequest {
   agentId: string;
   timeframe?: string;
@@ -81,7 +93,24 @@ Deno.serve(async (req) => {
           error: 'agentId is required',
           code: 'BAD_REQUEST',
           details: { 
-            usage: 'GET /get-ohlc?agentId=uuid&timeframe=5m&limit=300 OR POST with JSON body { agentId, timeframe?, limit? }' 
+            usage: 'GET /get-ohlc?agentId=uuid&timeframe=5m&limit=300 OR POST with JSON body { agentId, timeframe?, limit? }',
+            supported_timeframes: Object.keys(SUPPORTED_TIMEFRAMES)
+          }
+        }),
+        { status: 400, headers: { ...corsHeaders, ...rateLimitHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate timeframe
+    if (!SUPPORTED_TIMEFRAMES[timeframe]) {
+      return new Response(
+        JSON.stringify({ 
+          ok: false,
+          apiVersion: 'v1',
+          error: `Invalid timeframe: ${timeframe}`,
+          code: 'BAD_REQUEST',
+          details: { 
+            supported_timeframes: Object.keys(SUPPORTED_TIMEFRAMES)
           }
         }),
         { status: 400, headers: { ...corsHeaders, ...rateLimitHeaders, 'Content-Type': 'application/json' } }
@@ -115,6 +144,7 @@ Deno.serve(async (req) => {
 
     const timestamp = Date.now();
     const etag = `"${agentId}-${timeframe}-${timestamp}"`;
+    const cacheDuration = SUPPORTED_TIMEFRAMES[timeframe] || 30;
 
     return new Response(
       JSON.stringify({
@@ -133,7 +163,7 @@ Deno.serve(async (req) => {
           ...corsHeaders, 
           ...rateLimitHeaders,
           'Content-Type': 'application/json',
-          'Cache-Control': 'public, max-age=30, stale-while-revalidate=60',
+          'Cache-Control': `public, max-age=${cacheDuration}, stale-while-revalidate=${cacheDuration * 2}`,
           'ETag': etag
         } 
       }
