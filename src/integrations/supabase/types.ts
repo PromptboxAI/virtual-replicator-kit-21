@@ -4282,7 +4282,7 @@ export type Database = {
         }[]
       }
       get_ohlc_from_trades: {
-        Args: { p_agent_id: string; p_limit?: number; p_tf: string }
+        Args: { p_agent_id: string; p_limit?: number; p_timeframe?: string }
         Returns: {
           bucket_time: string
           close_prompt: number
@@ -4339,6 +4339,7 @@ export type Database = {
         }[]
       }
       tf_step_minutes: { Args: { tf: string }; Returns: number }
+      tf_step_seconds: { Args: { tf: string }; Returns: number }
       tokens_sold_from_prompt_v3: {
         Args: { p_prompt_raised: number }
         Returns: number
