@@ -747,34 +747,34 @@ export default function CreateAgent() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold mb-4">
+          <div className="text-center mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-4xl font-bold mb-2 sm:mb-4">
               <span className="bg-gradient-cyber bg-clip-text text-transparent">
                 Create New AI Agent on Base
               </span>
             </h1>
-            <p className="text-xl text-muted-foreground flex items-center justify-center gap-2">
+            <p className="text-base sm:text-xl text-muted-foreground flex items-center justify-center gap-2">
               Create your AI Agent on Base
               <img 
                 src="/lovable-uploads/653131a0-191a-4ba3-9126-6f9aef2d6a80.png" 
                 alt="Base logo" 
-                className="w-5 h-5"
+                className="w-4 h-4 sm:w-5 sm:h-5"
               />
             </p>
           </div>
 
           {/* Informational Banner for Email-Only Users */}
           {user && !hasExternalWallet && (
-            <Alert className="mb-6 border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/20">
+            <Alert className="mb-4 sm:mb-6 border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/20">
               <Coins className="h-4 w-4 text-orange-600 dark:text-orange-400" />
               <AlertDescription className="text-orange-900 dark:text-orange-200">
                 <div className="flex items-start gap-2">
                   <div>
-                    <p className="font-medium">💡 Connect a wallet to create agents</p>
-                    <p className="text-sm mt-1">Creating agents requires 100 PROMPT tokens. Connect an external wallet like MetaMask to get started.</p>
+                    <p className="font-medium text-sm sm:text-base">💡 Connect a wallet to create agents</p>
+                    <p className="text-xs sm:text-sm mt-1">Creating agents requires 100 PROMPT tokens. Connect an external wallet like MetaMask to get started.</p>
                   </div>
                 </div>
               </AlertDescription>
@@ -782,9 +782,40 @@ export default function CreateAgent() {
           )}
 
 
-          {/* Progress Bar */}
-          <div className="mb-8">
-            <div className="flex items-center justify-center mb-4">
+          {/* Progress Bar - Mobile Optimized */}
+          <div className="mb-6 sm:mb-8">
+            {/* Mobile: Compact progress */}
+            <div className="flex sm:hidden items-center justify-between mb-3 px-2">
+              {steps.map((step, index) => (
+                <div key={step} className="flex items-center flex-1">
+                  <div className="flex flex-col items-center flex-1">
+                    <div className={`flex items-center justify-center w-7 h-7 rounded-full border-2 ${
+                      index <= currentStep 
+                        ? 'bg-primary border-primary text-primary-foreground' 
+                        : 'border-muted-foreground/30 text-muted-foreground'
+                    }`}>
+                      {index < currentStep ? (
+                        <Check className="h-3 w-3" />
+                      ) : (
+                        <span className="text-xs font-medium">{index + 1}</span>
+                      )}
+                    </div>
+                  </div>
+                  {index < steps.length - 1 && (
+                    <div className={`flex-1 h-0.5 -mx-1 ${
+                      index < currentStep ? 'bg-primary' : 'bg-muted-foreground/30'
+                    }`} />
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="sm:hidden text-center">
+              <p className="text-sm font-medium text-primary">{steps[currentStep]}</p>
+              <p className="text-xs text-muted-foreground">Step {currentStep + 1} of {steps.length}</p>
+            </div>
+            
+            {/* Desktop: Full progress */}
+            <div className="hidden sm:flex items-center justify-center mb-4">
               {steps.map((step, index) => (
                 <div key={step} className="flex items-center">
                   <div className="flex flex-col items-center">
@@ -815,7 +846,7 @@ export default function CreateAgent() {
                 </div>
               ))}
             </div>
-            <div className="flex justify-center mt-4">
+            <div className="hidden sm:flex justify-center mt-4">
               <div className="text-center">
                 <p className="text-xs text-muted-foreground">Step {currentStep + 1} of {steps.length}</p>
               </div>
@@ -824,13 +855,13 @@ export default function CreateAgent() {
 
 
           {/* Token Balance & Cost Display */}
-          <div className="mb-8 flex justify-center">
-            <Alert className="w-fit">
-              <Coins className="h-4 w-4" />
+          <div className="mb-6 sm:mb-8 flex justify-center px-2">
+            <Alert className="w-full sm:w-fit">
+              <Coins className="h-4 w-4 shrink-0" />
               <AlertDescription>
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-sm">
                    <span>
-                     Your Balance: 
+                     Balance: 
                      {balanceLoading ? (
                        <span className="inline-flex items-center gap-1 ml-1">
                          <div className="animate-spin rounded-full h-3 w-3 border-b border-current"></div>
@@ -840,10 +871,10 @@ export default function CreateAgent() {
                        <strong> {appIsTestMode ? balance : promptBalance} $PROMPT</strong>
                      )}
                    </span>
-                  <span>•</span>
-                  <span>Creation Cost: <strong>{CREATION_COST} tokens</strong></span>
+                  <span className="hidden sm:inline">•</span>
+                  <span>Cost: <strong>{CREATION_COST} tokens</strong></span>
                   {appIsTestMode && !balanceLoading && balance > 0 && balance < CREATION_COST && (
-                    <span className="text-destructive">• Insufficient tokens!</span>
+                    <span className="text-destructive">Insufficient!</span>
                   )}
                 </div>
               </AlertDescription>
@@ -852,7 +883,7 @@ export default function CreateAgent() {
           
           {/* Test Token Button */}
           {appIsTestMode && !balanceLoading && balance > 0 && balance < CREATION_COST && (
-            <div className="mb-8 flex justify-center">
+            <div className="mb-6 sm:mb-8 flex justify-center">
               <Button 
                 onClick={() => addTestTokens(5000)}
                 variant="outline" 
@@ -863,9 +894,9 @@ export default function CreateAgent() {
             </div>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
             {/* Form */}
-            <div className={`${currentStep === 0 ? 'lg:col-span-2' : 'lg:col-span-3'} space-y-6`}>
+            <div className={`${currentStep === 0 ? 'lg:col-span-2' : 'lg:col-span-3'} space-y-4 sm:space-y-6`}>
               
               {/* Step 0: AI Agent Details */}
               {currentStep === 0 && (
@@ -883,7 +914,7 @@ export default function CreateAgent() {
                     <CardContent className="space-y-4">
                       <div>
                         <Label htmlFor="avatar">AI Agent Avatar *</Label>
-                        <div className="mt-2 flex items-center gap-4">
+                        <div className="mt-2 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
                           <input
                             id="avatar"
                             type="file"
@@ -891,21 +922,23 @@ export default function CreateAgent() {
                             onChange={handleAvatarUpload}
                             className="hidden"
                           />
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => document.getElementById('avatar')?.click()}
-                            className="flex items-center gap-2 bg-primary/10 border-primary/20 text-primary hover:bg-primary hover:text-primary-foreground hover:border-primary"
-                          >
-                            <Upload className="h-4 w-4" />
-                            Upload Avatar
-                          </Button>
-                          {formData.avatar_url && (
-                            <Avatar className="h-12 w-12">
-                              <AvatarImage src={formData.avatar_url} />
-                              <AvatarFallback>{formData.name.slice(0, 2).toUpperCase()}</AvatarFallback>
-                            </Avatar>
-                          )}
+                          <div className="flex items-center gap-3">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => document.getElementById('avatar')?.click()}
+                              className="flex items-center gap-2 bg-primary/10 border-primary/20 text-primary hover:bg-primary hover:text-primary-foreground hover:border-primary"
+                            >
+                              <Upload className="h-4 w-4" />
+                              Upload Avatar
+                            </Button>
+                            {formData.avatar_url && (
+                              <Avatar className="h-12 w-12">
+                                <AvatarImage src={formData.avatar_url} />
+                                <AvatarFallback>{formData.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+                              </Avatar>
+                            )}
+                          </div>
                         </div>
                       </div>
 
@@ -1072,18 +1105,18 @@ export default function CreateAgent() {
                   </Card>
 
                   {/* Step 0 Action Buttons */}
-                  <div className="flex gap-4">
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                     <Button
                       onClick={handleCancel}
                       variant="outline"
-                      className="flex-1"
+                      className="flex-1 order-2 sm:order-1"
                     >
                       Cancel
                     </Button>
                     <Button
                       onClick={handleNext}
                       disabled={!formData.name || !formData.symbol || !formData.description || !formData.category}
-                      className="flex-1 bg-gradient-primary hover:opacity-90"
+                      className="flex-1 bg-gradient-primary hover:opacity-90 order-1 sm:order-2"
                     >
                       Next
                     </Button>
@@ -1257,17 +1290,17 @@ export default function CreateAgent() {
                   </Card>
 
                   {/* Step 2 Action Buttons */}
-                  <div className="flex gap-4">
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                     <Button
                       onClick={() => setCurrentStep(1)}
                       variant="outline"
-                      className="flex-1"
+                      className="flex-1 order-2 sm:order-1"
                     >
                       Back
                     </Button>
                     <Button
                       onClick={() => setCurrentStep(3)}
-                      className="flex-1 bg-gradient-primary hover:opacity-90"
+                      className="flex-1 bg-gradient-primary hover:opacity-90 order-1 sm:order-2"
                     >
                       Next
                     </Button>
@@ -1288,48 +1321,48 @@ export default function CreateAgent() {
                         Launch your AI Agent on the bonding curve
                       </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-6">
+                    <CardContent className="space-y-4 sm:space-y-6">
                       {/* AI Agent Summary */}
                       <div className="space-y-4">
                         <div className="flex items-center gap-3">
-                          <Avatar className="h-16 w-16">
+                          <Avatar className="h-12 w-12 sm:h-16 sm:w-16 shrink-0">
                             <AvatarImage src={formData.avatar_url} />
                             <AvatarFallback>{formData.name.slice(0, 2).toUpperCase()}</AvatarFallback>
                           </Avatar>
-                          <div>
-                            <h3 className="text-xl font-bold">{formData.name}</h3>
-                            <p className="text-muted-foreground">${formData.symbol}</p>
-                            <Badge variant="secondary">{formData.category}</Badge>
+                          <div className="min-w-0">
+                            <h3 className="text-lg sm:text-xl font-bold truncate">{formData.name}</h3>
+                            <p className="text-muted-foreground text-sm">${formData.symbol}</p>
+                            <Badge variant="secondary" className="text-xs">{formData.category}</Badge>
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 text-sm">
                           <div>
-                            <p className="font-medium">Total Supply:</p>
-                            <p className="text-muted-foreground">{formData.total_supply.toLocaleString()}</p>
+                            <p className="font-medium text-xs sm:text-sm">Total Supply:</p>
+                            <p className="text-muted-foreground text-xs sm:text-sm">{formData.total_supply.toLocaleString()}</p>
                           </div>
                           <div>
-                            <p className="font-medium">Initial Price:</p>
-                            <p className="text-muted-foreground">Auto-determined</p>
+                            <p className="font-medium text-xs sm:text-sm">Initial Price:</p>
+                            <p className="text-muted-foreground text-xs sm:text-sm">Auto-determined</p>
                           </div>
                           <div>
-                            <p className="font-medium">Pre-buy Amount:</p>
-                            <p className="text-muted-foreground">{formData.prebuy_amount} $PROMPT</p>
+                            <p className="font-medium text-xs sm:text-sm">Pre-buy:</p>
+                            <p className="text-muted-foreground text-xs sm:text-sm">{formData.prebuy_amount} $PROMPT</p>
                           </div>
                         </div>
 
                         <div>
-                          <p className="font-medium mb-2">Description:</p>
-                          <p className="text-sm text-muted-foreground break-words">{formData.description}</p>
+                          <p className="font-medium mb-2 text-sm">Description:</p>
+                          <p className="text-xs sm:text-sm text-muted-foreground break-words">{formData.description}</p>
                         </div>
                       </div>
 
 
                        {/* Pre-buy Section */}
-                      <div className="border-t pt-6">
+                      <div className="border-t pt-4 sm:pt-6">
                         <div className="mb-4">
-                          <h3 className="text-lg font-semibold mb-2">Pre-buy Your Token (Optional)</h3>
-                          <p className="text-sm text-muted-foreground">
+                          <h3 className="text-base sm:text-lg font-semibold mb-2">Pre-buy Your Token (Optional)</h3>
+                          <p className="text-xs sm:text-sm text-muted-foreground">
                             Purchase your agent's tokens at launch price before they become available to others.
                             {adminSettings?.deployment_mode === 'smart_contract' && (
                               <span className="block mt-1 text-primary font-medium">
@@ -1339,7 +1372,7 @@ export default function CreateAgent() {
                           </p>
                         </div>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                           <div className="space-y-4">
                             {!user ? (
                               <div className="p-4 border border-dashed rounded-lg text-center">
@@ -1452,23 +1485,23 @@ export default function CreateAgent() {
                       </div>
 
                       {/* Payment Summary */}
-                      <div className="border-t pt-6">
-                        <h3 className="text-lg font-semibold mb-4">Payment Summary</h3>
-                        <div className="p-4 border rounded-lg">
-                          <div className="space-y-3 text-sm">
+                      <div className="border-t pt-4 sm:pt-6">
+                        <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Payment Summary</h3>
+                        <div className="p-3 sm:p-4 border rounded-lg">
+                          <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
                             <div className="flex justify-between">
-                              <span>Agent Creation Fee:</span>
+                              <span>Creation Fee:</span>
                               <span className="font-medium">100 $PROMPT</span>
                             </div>
                             {formData.prebuy_amount > 0 && (
                               <div className="flex justify-between">
-                                <span>Pre-buy Amount:</span>
+                                <span>Pre-buy:</span>
                                 <span className="font-medium">{formData.prebuy_amount} $PROMPT</span>
                               </div>
                             )}
                             <hr />
-                            <div className="flex justify-between font-medium text-base">
-                              <span>Total Required:</span>
+                            <div className="flex justify-between font-medium text-sm sm:text-base">
+                              <span>Total:</span>
                               <span>{100 + formData.prebuy_amount} $PROMPT</span>
                             </div>
                             {user && balance < (100 + formData.prebuy_amount) && (
@@ -1483,22 +1516,22 @@ export default function CreateAgent() {
                   </Card>
 
                    {/* Step 4 Action Buttons */}
-                   <div className="flex gap-4">
+                   <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                      {(() => {
                         const totalCost = (adminSettings?.creation_fee || CREATION_COST) + formData.prebuy_amount;
                         const deploymentMode = adminSettings?.deployment_mode || 'database';
                        return (
                          <>
                            <Button
-                             onClick={() => setCurrentStep(3)}
+                             onClick={() => setCurrentStep(2)}
                              variant="outline"
-                             className="flex-1"
+                             className="flex-1 order-2 sm:order-1"
                            >
                              Back
                            </Button>
                             <Button
                               onClick={handleCreateAgent}
-                              className="w-full bg-gradient-primary hover:opacity-90 text-white"
+                              className="flex-1 bg-gradient-primary hover:opacity-90 text-white order-1 sm:order-2"
                               disabled={isCreating || isDeploying || !user || (appIsTestMode && balance < totalCost)}
                             >
                               {(isCreating || isDeploying) ? (
@@ -1508,22 +1541,16 @@ export default function CreateAgent() {
                               ) : (
                                 <Rocket className="h-4 w-4 mr-2" />
                               )}
-                              {(isCreating || isDeploying)
-                                ? deploymentMode === 'smart_contract' 
-                                  ? deployMethod === 'atomic'
-                                    ? "Deploying Atomic Contract..." 
-                                    : "Deploying Sequential Contract..."
-                                  : "Creating Agent..."
-                                : deploymentMode === 'smart_contract'
-                                  ? deployMethod === 'atomic'
-                                    ? `Deploy Atomic Contract (${totalCost} $PROMPT)`
-                                    : `Deploy Sequential Contract (${totalCost} $PROMPT)`
-                                  : `Create Agent (${totalCost} $PROMPT)`
-                              }
-                           </Button>
-                         </>
-                       );
-                     })()}
+                              <span className="truncate">
+                                {(isCreating || isDeploying)
+                                  ? "Creating..."
+                                  : `Create (${totalCost} $PROMPT)`
+                                }
+                              </span>
+                            </Button>
+                          </>
+                        );
+                      })()}
                    </div>
                  </>
                )}
