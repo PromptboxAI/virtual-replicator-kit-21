@@ -165,6 +165,34 @@ serve(async (req) => {
       display_name: data.creator_ens_name || null,
     };
 
+    // Fetch graduation/DEX info if token has graduated
+    let graduation = null;
+    if (data.token_graduated && data.graduation_event_id) {
+      console.log('🎓 Fetching graduation info for event:', data.graduation_event_id);
+      
+      const { data: graduationEvent, error: gradError } = await supabase
+        .from('agent_graduation_events')
+        .select('*')
+        .eq('id', data.graduation_event_id)
+        .single();
+
+      if (graduationEvent && !gradError) {
+        graduation = {
+          status: graduationEvent.graduation_status,
+          dex_pair_address: graduationEvent.liquidity_pool_address || null,
+          dex_type: 'uniswap_v3',
+          v2_contract_address: graduationEvent.v2_contract_address || null,
+          graduation_tx_hash: graduationEvent.deployment_tx_hash || null,
+          liquidity_tx_hash: graduationEvent.liquidity_tx_hash || null,
+          graduated_at: graduationEvent.graduation_timestamp,
+          prompt_raised_at_graduation: graduationEvent.prompt_raised_at_graduation,
+        };
+        console.log('✅ Graduation info loaded:', graduation.status, graduation.dex_pair_address ? 'has DEX pair' : 'no DEX pair');
+      } else if (gradError) {
+        console.warn('⚠️ Could not fetch graduation event:', gradError.message);
+      }
+    }
+
     // Build enhanced response - ensure graduation_threshold is at top level too
     const tokenData = {
       ...data,
@@ -173,6 +201,8 @@ serve(async (req) => {
       bonding_progress: bondingProgress,
       trade_count_24h: tradeCount24h,
       creator: creator,
+      // Include graduation/DEX info when available
+      graduation: graduation,
     };
 
     const timestamp = Date.now();
