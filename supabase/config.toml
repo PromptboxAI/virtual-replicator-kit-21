@@ -235,3 +235,10 @@ verify_jwt = false
 # Token Page Parity Endpoints
 [functions.get-quote]
 verify_jwt = false
+
+# DEX Trading Endpoints
+[functions.get-dex-quote]
+verify_jwt = false
+
+[functions.execute-dex-trade]
+verify_jwt = false

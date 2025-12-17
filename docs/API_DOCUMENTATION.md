@@ -303,151 +303,175 @@ GET /get-market-overview
 
 ---
 
-### Get Leaderboards
+## DEX Trading (Graduated Tokens)
 
-Get top performing agents by various metrics.
+For tokens that have graduated from the bonding curve to Uniswap V3 liquidity pools.
+
+### Get DEX Quote
+
+Get a transparent quote for trading graduated tokens on the DEX.
 
 ```
-GET /get-leaderboards
+GET /get-dex-quote
 ```
 
 **Query Parameters**:
-- `metric` (string, optional): `volume`, `marketCap`, `holders`, `gainers`, `losers` (default: `volume`)
-- `limit` (integer, optional): Results to return (default: 10, max: 50)
+- `agentId` (string, required): Agent UUID
+- `side` (string, required): `buy` or `sell`
+- `amount` (number, required): Amount of input token
+- `slippage` (number, optional): Slippage tolerance in % (default: 0.5)
 
 **Response**:
 ```json
 {
-  "metric": "volume",
-  "leaderboard": [
-    {
-      "rank": 1,
-      "agentId": "agent-uuid",
-      "name": "Trading Bot Alpha",
-      "symbol": "TBA",
-      "value": 125000.50,
-      "change24h": 15.42
-    }
-  ],
-  "lastUpdated": "2024-01-15T12:00:00Z"
+  "ok": true,
+  "data": {
+    "input_amount": "100",
+    "input_amount_raw": "100000000000000000000",
+    "output_amount": "950000.123456",
+    "output_amount_raw": "950000123456000000000000",
+    "price_impact_percent": 0.25,
+    "fee_percent": 0.3,
+    "fee_amount": "0.300000",
+    "gas_estimate": "150000",
+    "gas_estimate_usd": 0.15,
+    "effective_price": 0.000105,
+    "min_output_amount": "945250.122873",
+    "liquidity_pool": "0x...",
+    "dex_type": "uniswap_v3",
+    "route": ["0xPROMPT...", "0xAGENT..."],
+    "pool_fee_tier": 3000,
+    "expires_at": 1705320030000,
+    "slippage_tolerance": 0.5
+  },
+  "agent": {
+    "id": "uuid",
+    "name": "Agent Name",
+    "symbol": "AGENT",
+    "token_address": "0x...",
+    "current_price": 0.000105,
+    "graduated": true
+  }
 }
 ```
 
-## Error Responses
-
-All endpoints return standard error responses:
-
+**Error Response** (Non-graduated token):
 ```json
 {
-  "error": {
-    "code": "TOKEN_NOT_FOUND",
-    "message": "Agent token not found",
-    "details": "No agent found with id: invalid-uuid"
+  "ok": false,
+  "error": "Agent has not graduated yet - use bonding curve trading via trade-agent-token endpoint",
+  "graduated": false
+}
+```
+
+---
+
+### Execute DEX Trade
+
+Execute a swap on Uniswap V3 for graduated tokens.
+
+```
+POST /execute-dex-trade
+```
+
+**Request Body**:
+```json
+{
+  "agentId": "agent-uuid",
+  "userId": "0x...",
+  "tradeType": "buy",
+  "promptAmount": 100,
+  "slippage": 0.5,
+  "minOutputAmount": "945250122873000000000000",
+  "poolFee": 3000
+}
+```
+
+**Parameters**:
+- `agentId` (string, required): Agent UUID
+- `userId` (string, required): User's wallet address
+- `tradeType` (string, required): `buy` or `sell`
+- `promptAmount` (number): Amount of PROMPT (for buy trades)
+- `tokenAmount` (number): Amount of agent tokens (for sell trades)
+- `slippage` (number, optional): Slippage tolerance in % (default: 0.5)
+- `minOutputAmount` (string, optional): Minimum output amount (raw wei)
+- `poolFee` (number, optional): Uniswap fee tier (default: 3000 = 0.3%)
+
+**Success Response** (Server-side execution):
+```json
+{
+  "success": true,
+  "transactionHash": "0x...",
+  "approvalTxHash": "0x...",
+  "srcAmount": "100000000000000000000",
+  "srcAmountFormatted": "100",
+  "dstAmount": "950000123456000000000000",
+  "dstAmountFormatted": "950000.123456",
+  "executedPrice": 0.000105,
+  "gasUsed": "145000",
+  "blockNumber": 12345678,
+  "explorerUrl": "https://basescan.org/tx/0x...",
+  "status": "success"
+}
+```
+
+**Response** (Client-side signing required):
+```json
+{
+  "success": true,
+  "requiresClientSigning": true,
+  "transactions": [
+    {
+      "step": "approve",
+      "to": "0xPROMPT...",
+      "data": "0x...",
+      "value": "0",
+      "description": "Approve 100 PROMPT for swap"
+    },
+    {
+      "step": "swap",
+      "to": "0xSwapRouter...",
+      "data": "0x...",
+      "value": "0",
+      "description": "Swap 100 PROMPT for AGENT"
+    }
+  ],
+  "quote": {
+    "amountIn": "100000000000000000000",
+    "minAmountOut": "945250122873000000000000",
+    "slippage": 0.5,
+    "poolFee": 3000,
+    "tokenIn": "0x...",
+    "tokenOut": "0x..."
   }
 }
 ```
 
-**Common Error Codes**:
-- `TOKEN_NOT_FOUND` - Agent token doesn't exist
-- `INVALID_PARAMETERS` - Invalid query parameters
-- `RATE_LIMIT_EXCEEDED` - Too many requests
-- `INTERNAL_ERROR` - Server error
-- `GRADUATION_IN_PROGRESS` - Agent is graduating
-- `INSUFFICIENT_LIQUIDITY` - Not enough liquidity for trade
-
-## Rate Limiting
-
-Rate limit headers are included in all responses:
-
-```
-X-RateLimit-Limit: 100
-X-RateLimit-Remaining: 95
-X-RateLimit-Reset: 1642252800
+**Error Response**:
+```json
+{
+  "success": false,
+  "error": "Swap failed: Insufficient liquidity or slippage too low",
+  "details": "STF"
+}
 ```
 
-## Webhooks
+---
 
-Webhooks are not currently supported. Use Supabase Realtime for live updates:
+## Trading Flow Summary
 
-```typescript
-import { supabase } from './supabase/client';
+| Token State | Endpoint | Description |
+|-------------|----------|-------------|
+| Pre-graduation | `trade-agent-token` | Bonding curve trading |
+| Post-graduation | `get-dex-quote` | Get DEX quote with transparent fees |
+| Post-graduation | `execute-dex-trade` | Execute swap on Uniswap V3 |
 
-// Subscribe to trade events
-const subscription = supabase
-  .channel('trades')
-  .on(
-    'postgres_changes',
-    {
-      event: 'INSERT',
-      schema: 'public',
-      table: 'agent_token_buy_trades'
-    },
-    (payload) => {
-      console.log('New trade:', payload);
-    }
-  )
-  .subscribe();
-```
+**Recommended Flow**:
+1. Check `get-token-metadata` → `graduation.status`
+2. If graduated: Use `get-dex-quote` → `execute-dex-trade`
+3. If not graduated: Use `trade-agent-token`
 
-## SDK Examples
-
-### JavaScript/TypeScript
-
-```typescript
-// Fetch token metadata
-const response = await fetch(
-  `${API_BASE_URL}/get-token-metadata/${agentId}`
-);
-const data = await response.json();
-
-// Build trade transaction
-const tradeResponse = await fetch(
-  `${API_BASE_URL}/build-trade-tx`,
-  {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      agentId,
-      tradeType: 'buy',
-      promptAmount: 100,
-      userAddress: address
-    })
-  }
-);
-const trade = await tradeResponse.json();
-
-// Execute with wagmi/viem
-const hash = await writeContract({
-  address: trade.transaction.to,
-  abi: contractABI,
-  functionName: 'buy',
-  args: [/* ... */]
-});
-```
-
-### Python
-
-```python
-import requests
-
-# Get token list
-response = requests.get(
-    f"{API_BASE_URL}/list-tokens",
-    params={"limit": 10, "sortBy": "volume"}
-)
-tokens = response.json()
-
-# Get OHLC data
-response = requests.get(
-    f"{API_BASE_URL}/get-ohlc/{agent_id}",
-    params={
-        "timeframe": "1h",
-        "from": "2024-01-15T00:00:00Z",
-        "to": "2024-01-15T23:59:59Z"
-    }
-)
-ohlc = response.json()
-```
+---
 
 ## Caching Recommendations
 
@@ -455,6 +479,7 @@ ohlc = response.json()
 - **Token Metadata**: Cache for 10 seconds
 - **OHLC Data**: Cache for timeframe duration
 - **Liquidity Data**: Cache for 5 seconds
+- **DEX Quotes**: Do not cache (expires in 30 seconds)
 - **Health Status**: Cache for 60 seconds
 
 ## Support
