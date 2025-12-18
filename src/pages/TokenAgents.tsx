@@ -18,11 +18,10 @@ const TokenAgents = () => {
       <Header />
       
 
-      {/* Hero Section */}
       <section className="container mx-auto px-4 py-6 md:py-12 md:pt-24">
         <div className="max-w-5xl mx-auto text-center space-y-4 md:space-y-8 animate-fade-in">
-          <div className="space-y-3 md:space-y-6">
-            <h1 className="text-[30px] md:text-6xl lg:text-7xl font-heading font-medium text-foreground leading-tight tracking-tight">
+          <div className="mt-20 md:mt-0 space-y-3 md:space-y-6">
+            <h1 className="text-6xl md:text-6xl lg:text-7xl font-heading font-medium text-foreground leading-tight tracking-tight">
               Launch Tokenized<br className="md:hidden" /> AI Agents as a<br className="md:hidden" /> Micro-SaaS Business<span className="hidden md:inline">.</span>
             </h1>
             <p className="text-[15px] md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
@@ -30,13 +29,13 @@ const TokenAgents = () => {
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-foreground text-background hover:bg-foreground/90 hover:scale-105 transition-all duration-200 h-14 px-8 text-base" asChild>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button size="default" className="bg-foreground text-background hover:bg-foreground/90 transition-all duration-200 h-10 px-4 text-sm" asChild>
               <Link to="/create">
                 Launch Your Agent
               </Link>
             </Button>
-            <Button variant="outline" size="lg" className="hidden sm:inline-flex h-14 px-8 text-base hover:scale-105 transition-all duration-200" asChild>
+            <Button variant="outline" size="default" className="hidden sm:inline-flex h-10 px-4 text-sm transition-all duration-200" asChild>
               <Link to="/learn">
                 Learn More
               </Link>
