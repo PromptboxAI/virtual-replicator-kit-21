@@ -197,7 +197,7 @@ const Index = () => {
       
       <main className="container mx-auto px-4 py-8 relative">
         {/* Hero Section */}
-        <div className="text-center mb-12 mt-20 md:mt-12 relative">
+        <div className="text-center mb-12 mt-20 relative">
           {/* Animated Background */}
           <div className="absolute inset-0 -mx-4 -my-8 overflow-hidden">
             <AnimatedBackground />
