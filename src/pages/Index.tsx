@@ -197,7 +197,7 @@ const Index = () => {
       
       <main className="container mx-auto px-4 py-8 relative">
         {/* Hero Section */}
-        <div className="text-center mb-12 mt-12 relative">
+        <div className="text-center mb-12 mt-16 md:mt-12 relative">
           {/* Animated Background */}
           <div className="absolute inset-0 -mx-4 -my-8 overflow-hidden">
             <AnimatedBackground />
@@ -206,7 +206,7 @@ const Index = () => {
             Funded. Liquid. Verifiable.
           </div>
           <div className="flex items-center justify-center gap-2 mb-4 relative z-10">
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-heading font-medium text-foreground leading-tight tracking-tight">
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-heading font-medium text-foreground leading-tight tracking-tight">
               Launch Tokenized AI Agents<br />as Micro-SaaS Businesses
             </h1>
           </div>
