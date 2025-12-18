@@ -197,7 +197,7 @@ const Index = () => {
       
       <main className="container mx-auto px-4 py-8 relative">
         {/* Hero Section */}
-        <div className="text-center mb-12 mt-16 md:mt-12 relative">
+        <div className="text-center mb-12 mt-20 md:mt-12 relative">
           {/* Animated Background */}
           <div className="absolute inset-0 -mx-4 -my-8 overflow-hidden">
             <AnimatedBackground />
@@ -214,12 +214,12 @@ const Index = () => {
             Promptbox lets you create, fund, and run tokenized AI agents with visual workflows, deep integrations, and on-chain rails - from a growing library of ready-to-launch templates.
           </p>
           <div className="flex justify-center gap-4 mb-8 relative z-10">
-            <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
+            <Button asChild size="default" className="bg-primary text-primary-foreground hover:bg-primary/90 px-5 py-2">
               <Link to="/trade/base/0xDEMO">
                 View Demo Agent →
               </Link>
             </Button>
-            <Button asChild size="lg" variant="outline">
+            <Button asChild size="default" variant="outline" className="px-5 py-2">
               <Link to="/agents">
                 Explore All Agents
               </Link>
