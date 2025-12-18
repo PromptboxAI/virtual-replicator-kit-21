@@ -21,7 +21,7 @@ const TokenAgents = () => {
       <section className="container mx-auto px-4 py-6 md:py-12 md:pt-24">
         <div className="max-w-5xl mx-auto text-center space-y-4 md:space-y-8 animate-fade-in">
           <div className="mt-16 md:mt-0 space-y-3 md:space-y-6">
-            <h1 className="text-[38px] md:text-6xl lg:text-7xl font-heading font-medium text-foreground leading-tight tracking-tight">
+            <h1 className="text-[36px] md:text-6xl lg:text-7xl font-heading font-medium text-foreground leading-tight tracking-tight">
               Launch Tokenized<br className="md:hidden" /> AI Agents as a<br className="md:hidden" /> Micro-SaaS Business<span className="hidden md:inline">.</span>
             </h1>
             <p className="text-[15px] md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
