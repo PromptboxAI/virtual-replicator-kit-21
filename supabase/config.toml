@@ -242,3 +242,13 @@ verify_jwt = false
 
 [functions.execute-dex-trade]
 verify_jwt = false
+
+# V6.1 Bonding Curve Edge Functions
+[functions.trading-engine-v6]
+verify_jwt = false
+
+[functions.graduation-manager-v6]
+verify_jwt = false
+
+[functions.claim-rewards]
+verify_jwt = false
