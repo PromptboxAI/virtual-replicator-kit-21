@@ -431,7 +431,7 @@ export default function CreateAgent() {
           prompt_raised: 0,
           is_active: false, // Not active until AI is configured
           creator_id: user.id,
-          status: deploymentMode === 'smart_contract' ? 'DEPLOYING_CONTRACT' : 'ACTIVATING',
+          status: 'ACTIVATING',
           test_mode: appIsTestMode,
           
           // ✅ V4 DYNAMIC PRICING FIELDS
