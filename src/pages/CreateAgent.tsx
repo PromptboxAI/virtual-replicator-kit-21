@@ -698,7 +698,7 @@ export default function CreateAgent() {
   if (authLoading || adminSettingsLoading) {
     console.log('Showing loading state', { authLoading, adminSettingsLoading, balanceLoading });
     return (
-      <div className="min-h-screen bg-background relative flex items-center justify-center">
+      <div className="min-h-screen relative flex items-center justify-center">
         <AnimatedBackground />
         <div className="text-center relative z-10">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
@@ -714,7 +714,7 @@ export default function CreateAgent() {
   // Show onboarding guide if user not properly set up
   if (!user || !isConnected) {
     return (
-      <div className="min-h-screen bg-background relative">
+      <div className="min-h-screen relative">
         <Header />
         <AnimatedBackground />
         <div className="container mx-auto px-4 py-8 pb-32 relative z-10">
@@ -750,7 +750,7 @@ export default function CreateAgent() {
   ];
 
   return (
-    <div className="min-h-screen bg-background relative">
+    <div className="min-h-screen relative">
       <Header />
       <AnimatedBackground />
       

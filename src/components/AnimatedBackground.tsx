@@ -91,11 +91,10 @@ export function AnimatedBackground() {
   return (
     <div 
       ref={containerRef}
-      className="absolute inset-0 overflow-hidden pointer-events-none"
-      style={{ zIndex: -1 }}
+      className="absolute inset-0 overflow-hidden pointer-events-none -z-10"
     >
       {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-green-50/30" />
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-secondary/10" />
       
       {/* Neural network-style connections */}
       <svg className="absolute inset-0 w-full h-full opacity-20">
