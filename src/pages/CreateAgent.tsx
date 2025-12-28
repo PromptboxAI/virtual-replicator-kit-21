@@ -1285,9 +1285,6 @@ export default function CreateAgent() {
                         <Coins className="h-5 w-5 text-primary" />
                         Tokenomics
                       </CardTitle>
-                      <CardDescription>
-                        Your agent follows PROMPT Agentic Framework's fair launch principles
-                      </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
                       <div className="bg-muted/50 p-6 rounded-lg border border-border">
