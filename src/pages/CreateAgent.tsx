@@ -1009,7 +1009,7 @@ export default function CreateAgent() {
                       </div>
                       
                       <div>
-                        <Label htmlFor="description">Description *</Label>
+                        <Label htmlFor="description">Card Description *</Label>
                         <Textarea
                           id="description"
                           placeholder="Describe what your AI Agent does, its capabilities, and unique features..."
