@@ -795,7 +795,7 @@ export default function CreateAgent() {
                     <div className={`flex items-center justify-center w-7 h-7 rounded-full border-2 ${
                       index <= currentStep 
                         ? 'bg-primary border-primary text-primary-foreground' 
-                        : 'border-muted-foreground/30 text-muted-foreground'
+                        : 'bg-background border-foreground/30 text-foreground'
                     }`}>
                       {index < currentStep ? (
                         <Check className="h-3 w-3" />
@@ -825,7 +825,7 @@ export default function CreateAgent() {
                     <div className={`flex items-center justify-center w-8 h-8 rounded-full border-2 ${
                       index <= currentStep 
                         ? 'bg-primary border-primary text-primary-foreground' 
-                        : 'border-muted-foreground/30 text-muted-foreground'
+                        : 'bg-background border-foreground/30 text-foreground'
                     }`}>
                       {index < currentStep ? (
                         <Check className="h-4 w-4" />
