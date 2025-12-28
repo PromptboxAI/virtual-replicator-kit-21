@@ -196,9 +196,14 @@ export function useAuth() {
     }
   };
 
+  const immediateAuthenticated = ready && authenticated && !!user;
+
   return {
-    user: stableAuthenticated ? stableUser : null,
-    session: stableAuthenticated ? { user: stableUser } : null,
+    // Prefer the raw Privy state immediately when authenticated to avoid one-render "null user" flickers
+    user: immediateAuthenticated ? user : (stableAuthenticated ? stableUser : null),
+    session: immediateAuthenticated
+      ? { user }
+      : (stableAuthenticated ? { user: stableUser } : null),
     loading: !ready || isProcessing,
     signOut: logout,
     signIn: login,
@@ -206,7 +211,7 @@ export function useAuth() {
     linkWallet,
     unlinkEmail,
     unlinkWallet,
-    authenticated: stableAuthenticated,
+    authenticated: immediateAuthenticated || stableAuthenticated,
     ready: ready && !initTimeout,
     showTermsModal,
     hasAcceptedTerms,
