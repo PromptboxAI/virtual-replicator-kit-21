@@ -318,20 +318,12 @@ export default function AIAgentsMarketplace() {
                 <p className="text-xl text-background/70 mb-10 max-w-2xl mx-auto">
                   Join thousands of creators building and monetizing AI agents on Promptbox.
                 </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <div className="flex justify-center">
                   <Button asChild size="lg" className="gap-2 px-8">
                     <Link to="/create">
                       Start Building
                       <ArrowRight className="w-5 h-5" />
                     </Link>
-                  </Button>
-                  <Button
-                    asChild
-                    size="lg"
-                    variant="outline"
-                    className="border-background/30 text-background hover:bg-background/10 px-8"
-                  >
-                    <Link to="/learn">Learn More</Link>
                   </Button>
                 </div>
               </div>
