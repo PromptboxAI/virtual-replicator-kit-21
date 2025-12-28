@@ -10,6 +10,14 @@ import { useAgents } from "@/hooks/useAgents";
 import { useAppMode } from "@/hooks/useAppMode";
 import { Link } from "react-router-dom";
 
+// Import logo assets
+import openaiLogo from "@/assets/openai-logo.png";
+import claudeLogo from "@/assets/claude-logo.png";
+import geminiLogo from "@/assets/gemini-logo.png";
+import salesforceLogo from "@/assets/salesforce-logo.png";
+import githubLogo from "@/assets/github-logo.png";
+import supabaseLogo from "@/assets/supabase-logo.png";
+
 // Category definitions
 const CATEGORIES = [
   { id: "all", label: "All", icon: "✨" },
@@ -23,12 +31,12 @@ const CATEGORIES = [
 
 // Integration stack definitions with logos
 const INTEGRATIONS = [
-  { id: "openai", name: "OpenAI", logo: "/src/assets/openai-logo.png" },
-  { id: "claude", name: "Claude", logo: "/src/assets/claude-logo.png" },
-  { id: "gemini", name: "Gemini", logo: "/src/assets/gemini-logo.png" },
-  { id: "salesforce", name: "Salesforce", logo: "/src/assets/salesforce-logo.png" },
-  { id: "github", name: "GitHub", logo: "/src/assets/github-logo.png" },
-  { id: "supabase", name: "Supabase", logo: "/src/assets/supabase-logo.png" },
+  { id: "openai", name: "OpenAI", logo: openaiLogo },
+  { id: "claude", name: "Claude", logo: claudeLogo },
+  { id: "gemini", name: "Gemini", logo: geminiLogo },
+  { id: "salesforce", name: "Salesforce", logo: salesforceLogo },
+  { id: "github", name: "GitHub", logo: githubLogo },
+  { id: "supabase", name: "Supabase", logo: supabaseLogo },
 ];
 
 // Stats for social proof
@@ -272,7 +280,7 @@ export default function AIAgentsMarketplace() {
                   <TrendingUp className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-foreground">Browse by Integration</h2>
+                  <h2 className="text-2xl font-bold text-foreground">Search by Stack</h2>
                   <p className="text-muted-foreground">Find agents that work with your stack</p>
                 </div>
               </div>
