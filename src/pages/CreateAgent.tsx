@@ -698,8 +698,9 @@ export default function CreateAgent() {
   if (authLoading || adminSettingsLoading) {
     console.log('Showing loading state', { authLoading, adminSettingsLoading, balanceLoading });
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
+      <div className="min-h-screen bg-background relative flex items-center justify-center">
+        <AnimatedBackground />
+        <div className="text-center relative z-10">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
           <p className="mt-2 text-muted-foreground">
             {authLoading ? 'Authenticating...' : 'Loading admin settings...'}
@@ -713,12 +714,17 @@ export default function CreateAgent() {
   // Show onboarding guide if user not properly set up
   if (!user || !isConnected) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background relative">
         <Header />
-        <div className="container mx-auto px-4 py-8 pb-32">
+        <AnimatedBackground />
+        <div className="container mx-auto px-4 py-8 pb-32 relative z-10">
           <div className="max-w-2xl mx-auto space-y-6">
             <div className="text-center">
-              <h1 className="text-3xl font-bold mb-4">Create AI Agent</h1>
+              <h1 className="text-3xl sm:text-5xl font-bold mb-4">
+                <span className="bg-gradient-cyber bg-clip-text text-transparent">
+                  Create AI Agent
+                </span>
+              </h1>
               <p className="text-muted-foreground mb-8">
                 Get started by setting up your account and connecting your wallet.
               </p>
