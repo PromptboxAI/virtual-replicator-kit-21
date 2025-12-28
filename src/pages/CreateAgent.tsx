@@ -1426,11 +1426,6 @@ export default function CreateAgent() {
                           <h3 className="text-base sm:text-lg font-semibold mb-2">Pre-buy Your Token (Optional)</h3>
                           <p className="text-xs sm:text-sm text-foreground/80">
                             Purchase your agent's tokens at launch price before they become available to others.
-                            {adminSettings?.deployment_mode === 'smart_contract' && (
-                              <span className="block mt-1 text-primary font-medium">
-                                Smart contract mode provides atomic MEV protection for your prebuy.
-                              </span>
-                            )}
                           </p>
                         </div>
                         
@@ -1438,10 +1433,10 @@ export default function CreateAgent() {
                           <div className="space-y-4">
                             {!user ? (
                               <div className="p-4 border border-dashed rounded-lg text-center">
-                                <p className="text-sm text-muted-foreground mb-3">
+                              <p className="text-sm text-foreground/80 mb-3">
                                   Wallet connection required for pre-buy
                                 </p>
-                                <p className="text-xs text-muted-foreground">
+                                <p className="text-xs text-foreground/80">
                                   You can connect when launching your agent
                                 </p>
                               </div>
@@ -1450,7 +1445,7 @@ export default function CreateAgent() {
                                  <div className="p-3 bg-muted rounded-lg">
                                    {appIsTestMode ? (
                                      <>
-                                       <div className="text-sm text-muted-foreground">Your $PROMPT Balance</div>
+                                       <div className="text-sm text-foreground/80">Your $PROMPT Balance</div>
                                        <div className="text-lg font-semibold">
                                          {balance.toLocaleString()} $PROMPT
                                        </div>
@@ -1465,21 +1460,21 @@ export default function CreateAgent() {
                                      </>
                                    ) : isConnected ? (
                                      <>
-                                       <div className="text-sm text-muted-foreground">Your $PROMPT Balance</div>
+                                       <div className="text-sm text-foreground/80">Your $PROMPT Balance</div>
                                        <div className="text-lg font-semibold text-green-600">
                                          {balance.toLocaleString()} $PROMPT
                                        </div>
-                                       <p className="text-sm text-muted-foreground mt-2">
+                                       <p className="text-sm text-foreground/80 mt-2">
                                          Wallet connected • Production mode
                                        </p>
                                      </>
                                    ) : (
                                      <>
-                                       <div className="text-sm text-muted-foreground">Wallet Required</div>
+                                       <div className="text-sm text-foreground/80">Wallet Required</div>
                                        <div className="text-lg font-semibold text-orange-600">
                                          Wallet Connection Required
                                        </div>
-                                       <p className="text-sm text-muted-foreground mt-2">
+                                       <p className="text-sm text-foreground/80 mt-2">
                                          Connect your wallet to use real $PROMPT tokens for agent creation.
                                        </p>
                                      </>
@@ -1519,12 +1514,17 @@ export default function CreateAgent() {
                                      min="0"
                                      max={Math.min(adminSettings?.max_prebuy_amount || 1000, Math.max(0, balance - 100))}
                                    />
-                                   <div className="text-sm text-muted-foreground">
+                                   <div className="text-sm text-foreground/80">
                                      Amount in $PROMPT (Max: {Math.min(adminSettings?.max_prebuy_amount || 1000, Math.max(0, balance - 100))})
                                   </div>
                                   {formData.prebuy_amount > 0 && (
-                                    <div className="text-sm text-muted-foreground">
+                                    <div className="text-sm text-foreground/80">
                                       You'll receive: ~{(formData.prebuy_amount / BONDING_CURVE_V3_CONFIG.P0).toLocaleString()} ${formData.symbol}
+                                      {adminSettings?.deployment_mode === 'smart_contract' && (
+                                        <span className="block mt-1 text-primary font-medium">
+                                          Smart contract mode provides atomic MEV protection for your prebuy.
+                                        </span>
+                                      )}
                                     </div>
                                   )}
                                 </div>
