@@ -308,8 +308,8 @@ export default function AIAgentsMarketplace() {
             <div className="container mx-auto px-4 py-20">
               <div className="max-w-4xl mx-auto text-center">
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-background/10 border border-background/20 mb-6">
-                  <Shield className="w-4 h-4 text-primary" />
-                  <span className="text-sm font-medium">Enterprise Ready</span>
+                  <Shield className="w-4 h-4 text-background" />
+                  <span className="text-sm font-medium">Token First</span>
                 </div>
                 <h2 className="text-4xl md:text-5xl font-bold mb-6">
                   Ready to Build Your
@@ -319,7 +319,7 @@ export default function AIAgentsMarketplace() {
                   Join thousands of creators building and monetizing AI agents on Promptbox.
                 </p>
                 <div className="flex justify-center">
-                  <Button asChild size="lg" className="gap-2 px-8">
+                  <Button asChild size="lg" variant="outline" className="gap-2 px-10 py-6 text-lg border-background/50 text-background hover:bg-background/10">
                     <Link to="/create">
                       Start Building
                       <ArrowRight className="w-5 h-5" />
