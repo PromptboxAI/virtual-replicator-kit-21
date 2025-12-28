@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -31,7 +30,6 @@ import { ExternalWalletRequiredModal } from "@/components/ExternalWalletRequired
 import { useSmartContractCreation } from "@/hooks/useSmartContractCreation";
 import { CreatorPrebuyPanel } from "@/components/CreatorPrebuyPanel";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { getPlainTextFromHTML } from "@/lib/utils";
 // import { useAgentTokens } from "@/hooks/useAgentTokens";
 import { useAccount } from 'wagmi';
 import { getCurrentPriceV3, BONDING_CURVE_V3_CONFIG } from "@/lib/bondingCurveV3";
@@ -66,7 +64,6 @@ interface AgentFormData {
   avatar_url: string;
   total_supply: number;
   short_pitch: string;
-  agent_overview: string;
   prebuy_amount: number;
   // 🔒 MEV Protection Fields
   creation_locked: boolean;
@@ -119,7 +116,6 @@ export default function CreateAgent() {
     avatar_url: "",
     total_supply: 1000000000, // Fixed at 1 billion tokens per Virtuals protocol
     short_pitch: "",
-    agent_overview: "",
     prebuy_amount: 0,
     // 🔒 MEV Protection Defaults
     creation_locked: false,
@@ -1164,33 +1160,9 @@ export default function CreateAgent() {
                         </div>
                       </div>
 
-                      <div>
-                        <Label htmlFor="agent_overview" className="flex items-center gap-1">
-                          AI Agent Whitepaper <span className="text-red-500">*</span>
-                        </Label>
-                        <div className="space-y-2 mb-4">
-                          <p className="text-sm text-muted-foreground">
-                            Provide comprehensive details about your AI Agent:
-                          </p>
-                          <ul className="text-xs text-muted-foreground space-y-1 ml-4">
-                            <li>• <strong>Capabilities:</strong> What can your agent do? What problems does it solve?</li>
-                            <li>• <strong>Technology:</strong> How does it work? What frameworks or models does it use?</li>
-                            <li>• <strong>Roadmap:</strong> What are your development plans and milestones?</li>
-                            <li>• <strong>Partnerships:</strong> Any strategic collaborations or integrations?</li>
-                            <li>• <strong>Tokenomics:</strong> How does your token create value for holders?</li>
-                            <li>• <strong>Use Cases:</strong> Real-world applications and target markets</li>
-                          </ul>
-                        </div>
-                        <RichTextEditor
-                          id="agent_overview"
-                          value={formData.agent_overview}
-                          onChange={(value) => handleInputChange('agent_overview', value)}
-                          placeholder="Provide comprehensive details about your AI Agent..."
-                          className="mt-2"
-                          maxLength={5000}
-                          showCharacterCount={true}
-                        />
-                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        You can add a detailed AI Agent Whitepaper later in the Agent Dashboard Marketing tab.
+                      </p>
                     </CardContent>
                   </Card>
 
@@ -1205,7 +1177,7 @@ export default function CreateAgent() {
                     </Button>
                     <Button
                       onClick={() => setCurrentStep(2)}
-                      disabled={!formData.short_pitch.trim() || !formData.agent_overview.trim() || getPlainTextFromHTML(formData.agent_overview).length > 5000}
+                      disabled={!formData.short_pitch.trim()}
                       className="flex-1 bg-gradient-primary hover:opacity-90"
                     >
                       Next

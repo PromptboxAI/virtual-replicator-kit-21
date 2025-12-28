@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { CalendarDays, Users, Activity, Code, Zap, Camera, BarChart3, ExternalLink, MapPin, Linkedin, Twitter, CheckCircle2, Clock, Target } from 'lucide-react';
+import { CalendarDays, Users, Activity, Code, Zap, Camera, BarChart3, ExternalLink, MapPin, Linkedin, Twitter, CheckCircle2, Clock, Target, BookOpen } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { isAgentGraduatedV3, formatPriceV3, getCurrentPriceV3, tokensSoldFromPromptRaisedV3 } from '@/lib/bondingCurveV3';
 import { useAgentRealtime } from '@/hooks/useAgentRealtime';
@@ -115,6 +115,7 @@ export function AgentMarketingTab({ agent }: AgentMarketingTabProps) {
   const hasScreenshots = marketingData?.screenshots && Array.isArray(marketingData.screenshots) && marketingData.screenshots.length > 0;
   const hasVideos = marketingData?.demo_videos && Array.isArray(marketingData.demo_videos) && marketingData.demo_videos.length > 0;
   const hasMarketingDescription = marketingData?.description;
+  const hasWhitepaperContent = marketingData?.whitepaper_content;
   const hasDescription = hasMarketingDescription || agent.description;
   
   // Real-time graduation status - Phase 3 implementation
@@ -275,7 +276,40 @@ export function AgentMarketingTab({ agent }: AgentMarketingTabProps) {
         </Card>
       )}
 
-      {/* Screenshots & Media */}
+      {/* AI Agent Whitepaper */}
+      {(hasWhitepaperContent || marketingData?.whitepaper_url) && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5" />
+              AI Agent Whitepaper
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {hasWhitepaperContent && (
+                <div 
+                  className="prose prose-sm max-w-none dark:prose-invert"
+                  dangerouslySetInnerHTML={{ __html: marketingData.whitepaper_content }}
+                />
+              )}
+              
+              {marketingData?.whitepaper_url && (
+                <a 
+                  href={marketingData.whitepaper_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  View Full Whitepaper
+                </a>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {(hasScreenshots || hasVideos) && (
         <Card>
           <CardHeader>

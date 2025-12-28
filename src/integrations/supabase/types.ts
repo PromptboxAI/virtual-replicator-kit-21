@@ -829,6 +829,7 @@ export type Database = {
           twitter_url: string | null
           updated_at: string
           website_url: string | null
+          whitepaper_content: string | null
           whitepaper_url: string | null
           youtube_url: string | null
         }
@@ -844,6 +845,7 @@ export type Database = {
           twitter_url?: string | null
           updated_at?: string
           website_url?: string | null
+          whitepaper_content?: string | null
           whitepaper_url?: string | null
           youtube_url?: string | null
         }
@@ -859,6 +861,7 @@ export type Database = {
           twitter_url?: string | null
           updated_at?: string
           website_url?: string | null
+          whitepaper_content?: string | null
           whitepaper_url?: string | null
           youtube_url?: string | null
         }

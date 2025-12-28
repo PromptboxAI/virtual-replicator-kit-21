@@ -13,7 +13,8 @@ import {
   Activity,
   TrendingUp,
   TrendingDown,
-  Play
+  Play,
+  BookOpen
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
@@ -51,6 +52,7 @@ interface MarketingData {
   discord_url?: string;
   telegram_url?: string;
   whitepaper_url?: string;
+  whitepaper_content?: string;
 }
 
 interface Trade {
@@ -126,7 +128,8 @@ export const AgentInformationSections = ({ agent }: AgentInformationSectionsProp
           twitter_url: marketing.twitter_url,
           discord_url: marketing.discord_url,
           telegram_url: marketing.telegram_url,
-          whitepaper_url: marketing.whitepaper_url
+          whitepaper_url: marketing.whitepaper_url,
+          whitepaper_content: marketing.whitepaper_content
         });
       }
 
@@ -316,28 +319,34 @@ export const AgentInformationSections = ({ agent }: AgentInformationSectionsProp
         </CardContent>
       </Card>
 
-      {/* Agent Overview (Long Description/Whitepaper) */}
-      {marketingData?.whitepaper_url && (
+      {/* AI Agent Whitepaper */}
+      {(marketingData?.whitepaper_content || marketingData?.whitepaper_url) && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <ExternalLink className="h-5 w-5" />
-              Agent Overview
+              <BookOpen className="h-5 w-5" />
+              AI Agent Whitepaper
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <p className="text-muted-foreground">
-                Detailed technical documentation and comprehensive overview of the agent's architecture, capabilities, and roadmap.
-              </p>
-              <Button 
-                variant="outline" 
-                onClick={() => window.open(marketingData.whitepaper_url, '_blank')}
-                className="gap-2"
-              >
-                <ExternalLink className="h-4 w-4" />
-                View Whitepaper
-              </Button>
+              {marketingData?.whitepaper_content && (
+                <div 
+                  className="prose prose-sm max-w-none dark:prose-invert"
+                  dangerouslySetInnerHTML={{ __html: marketingData.whitepaper_content }}
+                />
+              )}
+              
+              {marketingData?.whitepaper_url && (
+                <Button 
+                  variant="outline" 
+                  onClick={() => window.open(marketingData.whitepaper_url, '_blank')}
+                  className="gap-2"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  View External Whitepaper
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>
