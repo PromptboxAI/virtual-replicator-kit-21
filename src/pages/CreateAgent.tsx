@@ -1301,7 +1301,7 @@ export default function CreateAgent() {
                               <Check className="h-4 w-4 text-green-500" />
                               <span className="text-sm font-medium">Fixed Total Supply</span>
                             </div>
-                            <p className="text-sm text-muted-foreground ml-6">
+                            <p className="text-sm text-foreground/70 ml-6">
                               1,000,000,000 tokens (non-configurable)
                             </p>
                             
@@ -1309,7 +1309,7 @@ export default function CreateAgent() {
                               <Check className="h-4 w-4 text-green-500" />
                               <span className="text-sm font-medium">Token Allocation</span>
                             </div>
-                            <p className="text-sm text-muted-foreground ml-6">
+                            <p className="text-sm text-foreground/70 ml-6">
                               2% Vault • 10% Team (cliff vesting) • 5% Holder Rewards
                             </p>
                             
@@ -1317,7 +1317,7 @@ export default function CreateAgent() {
                               <Check className="h-4 w-4 text-green-500" />
                               <span className="text-sm font-medium">Liquidity Locked</span>
                             </div>
-                            <p className="text-sm text-muted-foreground ml-6">
+                            <p className="text-sm text-foreground/70 ml-6">
                               95% LP locked for 3 years, 5% to vault
                             </p>
                           </div>
@@ -1327,7 +1327,7 @@ export default function CreateAgent() {
                               <TrendingUp className="h-4 w-4 text-primary" />
                               <span className="text-sm font-medium">Bonding Curve</span>
                             </div>
-                            <p className="text-sm text-muted-foreground ml-6">
+                            <p className="text-sm text-foreground/70 ml-6">
                               Graduates at 42K $PROMPT raised
                             </p>
                             
@@ -1335,7 +1335,7 @@ export default function CreateAgent() {
                               <Zap className="h-4 w-4 text-primary" />
                               <span className="text-sm font-medium">Trading Fee</span>
                             </div>
-                            <p className="text-sm text-muted-foreground ml-6">
+                            <p className="text-sm text-foreground/70 ml-6">
                               5% fee (40% creator, 40% vault, 20% LP treasury)
                             </p>
                           </div>
