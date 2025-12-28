@@ -1246,7 +1246,7 @@ export default function CreateAgent() {
                           showCharacterCount={true}
                         />
                         <p className="text-xs text-muted-foreground mt-2">
-                          Use rich formatting to explain your agent's functionality. Include key features, step-by-step instructions, and any important details.
+                          Explain your agent's functionality, including key features, step-by-step instructions, and any important details.
                         </p>
                       </div>
 
