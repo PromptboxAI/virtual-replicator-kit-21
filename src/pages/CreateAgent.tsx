@@ -913,7 +913,7 @@ export default function CreateAgent() {
                         <Sparkles className="h-5 w-5 text-primary" />
                         AI Agent Details
                       </CardTitle>
-                      <CardDescription>
+                      <CardDescription className="text-foreground/80">
                         Define your AI Agent's identity and purpose
                       </CardDescription>
                     </CardHeader>
@@ -1023,7 +1023,7 @@ export default function CreateAgent() {
                           maxLength={100}
                         />
                         <div className="flex justify-end mt-1">
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-xs text-foreground/80">
                             {formData.description.length} / 100
                           </p>
                         </div>
@@ -1043,7 +1043,7 @@ export default function CreateAgent() {
                             ))}
                           </SelectContent>
                         </Select>
-                        <p className="text-xs text-muted-foreground mt-1">
+                        <p className="text-xs text-foreground/80 mt-1">
                           You can change this later in the Agent Dashboard
                         </p>
                       </div>
@@ -1057,7 +1057,7 @@ export default function CreateAgent() {
                         <Link2 className="h-5 w-5 text-primary" />
                         Socials
                       </CardTitle>
-                      <CardDescription>
+                      <CardDescription className="text-foreground/80">
                         Connect your AI Agent's social presence
                       </CardDescription>
                     </CardHeader>
@@ -1135,7 +1135,7 @@ export default function CreateAgent() {
                         <Info className="h-5 w-5 text-primary" />
                         AI Agent Preview
                       </CardTitle>
-                      <CardDescription>
+                      <CardDescription className="text-foreground/80">
                         Preview how your agent will appear in the marketplace
                       </CardDescription>
                     </CardHeader>
@@ -1169,7 +1169,7 @@ export default function CreateAgent() {
                           </h3>
 
                           {/* Description */}
-                          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                          <p className="text-sm text-foreground/80 mb-3 line-clamp-2">
                             {formData.description || "Agent description will appear here..."}
                           </p>
 
@@ -1186,13 +1186,13 @@ export default function CreateAgent() {
                                 </span>
                               </div>
                             )}
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-sm text-foreground/80">
                               ${formData.symbol || "SYMBOL"}
                             </p>
                           </div>
                         </div>
 
-                        <p className="text-xs text-muted-foreground text-center mt-3">
+                        <p className="text-xs text-foreground/80 text-center mt-3">
                           Add integrations later in the Agent Dashboard
                         </p>
                       </div>
@@ -1228,7 +1228,7 @@ export default function CreateAgent() {
                         <Info className="h-5 w-5 text-primary" />
                         Project Pitch
                       </CardTitle>
-                      <CardDescription>
+                      <CardDescription className="text-foreground/80">
                         Create a compelling pitch for your AI Agent. This will appear in the "How it works" section on your agent's showcase page.
                       </CardDescription>
                     </CardHeader>
@@ -1245,12 +1245,12 @@ export default function CreateAgent() {
                           maxLength={5000}
                           showCharacterCount={true}
                         />
-                        <p className="text-xs text-muted-foreground mt-2">
+                        <p className="text-xs text-foreground/80 mt-2">
                           Explain your agent's functionality, including key features, step-by-step instructions, and any important details.
                         </p>
                       </div>
 
-                      <p className="text-xs text-muted-foreground mt-2">
+                      <p className="text-xs text-foreground/80 mt-2">
                         You can add a detailed AI Agent Whitepaper later in the Agent Dashboard Marketing tab.
                       </p>
                     </CardContent>
@@ -1298,7 +1298,7 @@ export default function CreateAgent() {
                               <Check className="h-4 w-4 text-green-500" />
                               <span className="text-sm font-medium">Fixed Total Supply</span>
                             </div>
-                            <p className="text-sm text-foreground/70 ml-6">
+                            <p className="text-sm text-foreground/80 ml-6">
                               1,000,000,000 tokens (non-configurable)
                             </p>
                             
@@ -1306,7 +1306,7 @@ export default function CreateAgent() {
                               <Check className="h-4 w-4 text-green-500" />
                               <span className="text-sm font-medium">Token Allocation</span>
                             </div>
-                            <p className="text-sm text-foreground/70 ml-6">
+                            <p className="text-sm text-foreground/80 ml-6">
                               2% Vault • 10% Team (cliff vesting) • 5% Holder Rewards • Remainder to LP (56.5% - 88% depending on trading)
                             </p>
                             
@@ -1314,7 +1314,7 @@ export default function CreateAgent() {
                               <Check className="h-4 w-4 text-green-500" />
                               <span className="text-sm font-medium">Liquidity Locked</span>
                             </div>
-                            <p className="text-sm text-foreground/70 ml-6">
+                            <p className="text-sm text-foreground/80 ml-6">
                               95% LP locked for 3 years, 5% to vault
                             </p>
                           </div>
@@ -1324,7 +1324,7 @@ export default function CreateAgent() {
                               <TrendingUp className="h-4 w-4 text-primary" />
                               <span className="text-sm font-medium">Bonding Curve</span>
                             </div>
-                            <p className="text-sm text-foreground/70 ml-6">
+                            <p className="text-sm text-foreground/80 ml-6">
                               Graduates at 42K $PROMPT raised
                             </p>
                             
@@ -1332,7 +1332,7 @@ export default function CreateAgent() {
                               <Zap className="h-4 w-4 text-primary" />
                               <span className="text-sm font-medium">Trading Fee</span>
                             </div>
-                            <p className="text-sm text-foreground/70 ml-6">
+                            <p className="text-sm text-foreground/80 ml-6">
                               5% fee (40% creator, 40% vault, 20% LP treasury)
                             </p>
                           </div>
@@ -1379,7 +1379,7 @@ export default function CreateAgent() {
                         <TrendingUp className="h-5 w-5 text-primary" />
                         Launch
                       </CardTitle>
-                      <CardDescription>
+                      <CardDescription className="text-foreground/80">
                         Launch your AI Agent on the bonding curve
                       </CardDescription>
                     </CardHeader>
@@ -1393,7 +1393,7 @@ export default function CreateAgent() {
                           </Avatar>
                           <div className="min-w-0">
                             <h3 className="text-lg sm:text-xl font-bold truncate">{formData.name}</h3>
-                            <p className="text-muted-foreground text-sm">${formData.symbol}</p>
+                            <p className="text-foreground/80 text-sm">${formData.symbol}</p>
                             <Badge variant="secondary" className="text-xs">{formData.category}</Badge>
                           </div>
                         </div>
@@ -1401,21 +1401,21 @@ export default function CreateAgent() {
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 text-sm">
                           <div>
                             <p className="font-medium text-xs sm:text-sm">Total Supply:</p>
-                            <p className="text-muted-foreground text-xs sm:text-sm">{formData.total_supply.toLocaleString()}</p>
+                            <p className="text-foreground/80 text-xs sm:text-sm">{formData.total_supply.toLocaleString()}</p>
                           </div>
                           <div>
                             <p className="font-medium text-xs sm:text-sm">Initial Price:</p>
-                            <p className="text-muted-foreground text-xs sm:text-sm">Auto-determined</p>
+                            <p className="text-foreground/80 text-xs sm:text-sm">Auto-determined</p>
                           </div>
                           <div>
                             <p className="font-medium text-xs sm:text-sm">Pre-buy:</p>
-                            <p className="text-muted-foreground text-xs sm:text-sm">{formData.prebuy_amount} $PROMPT</p>
+                            <p className="text-foreground/80 text-xs sm:text-sm">{formData.prebuy_amount} $PROMPT</p>
                           </div>
                         </div>
 
                         <div>
                           <p className="font-medium mb-2 text-sm">Description:</p>
-                          <p className="text-xs sm:text-sm text-muted-foreground break-words">{formData.description}</p>
+                          <p className="text-xs sm:text-sm text-foreground/80 break-words">{formData.description}</p>
                         </div>
                       </div>
 
@@ -1424,7 +1424,7 @@ export default function CreateAgent() {
                       <div className="border-t pt-4 sm:pt-6">
                         <div className="mb-4">
                           <h3 className="text-base sm:text-lg font-semibold mb-2">Pre-buy Your Token (Optional)</h3>
-                          <p className="text-xs sm:text-sm text-muted-foreground">
+                          <p className="text-xs sm:text-sm text-foreground/80">
                             Purchase your agent's tokens at launch price before they become available to others.
                             {adminSettings?.deployment_mode === 'smart_contract' && (
                               <span className="block mt-1 text-primary font-medium">
@@ -1536,7 +1536,7 @@ export default function CreateAgent() {
                           <div className="space-y-4">
                             <div className="p-4 bg-muted rounded-lg">
                               <h4 className="font-medium mb-2">Pre-buy Benefits</h4>
-                              <ul className="text-sm text-muted-foreground space-y-1">
+                              <ul className="text-sm text-foreground/80 space-y-1">
                                 <li>• Get tokens at the initial launch price</li>
                                 <li>• Secure your position before public launch</li>
                                 <li>• Support your agent's initial liquidity</li>
