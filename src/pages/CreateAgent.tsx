@@ -1559,18 +1559,18 @@ export default function CreateAgent() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-12 w-12">
+                      <div className="flex items-start gap-3">
+                        <Avatar className="h-12 w-12 shrink-0">
                           <AvatarImage src={formData.avatar_url} />
                           <AvatarFallback>
                             {formData.name ? formData.name.slice(0, 2).toUpperCase() : "AG"}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold truncate">
+                          <h3 className="font-semibold text-sm leading-tight break-words">
                             {formData.name || "AI Agent Name"}
                           </h3>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-sm text-muted-foreground mt-1">
                             ${formData.symbol || "SYMBOL"}
                           </p>
                         </div>
