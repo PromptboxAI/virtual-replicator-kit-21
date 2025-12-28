@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
@@ -8,6 +8,7 @@ export const useUserRole = () => {
   const { user, ready } = useAuth();
   const [role, setRole] = useState<UserRole>('user');
   const [isLoading, setIsLoading] = useState(true);
+  const lastCheckedUserId = useRef<string | null>(null);
 
   useEffect(() => {
     const fetchUserRole = async () => {
@@ -22,10 +23,17 @@ export const useUserRole = () => {
         console.log('useUserRole - no user, setting loading false');
         setIsLoading(false);
         setRole('user');
+        lastCheckedUserId.current = null;
         return;
       }
 
-      // Reset loading state when user appears
+      // Prevent duplicate fetches for the same user
+      if (lastCheckedUserId.current === user.id) {
+        console.log('useUserRole - already checked this user');
+        return;
+      }
+
+      // Keep loading true while we fetch the role for this user
       setIsLoading(true);
       console.log('useUserRole - fetching role for user:', user.id);
 
@@ -49,6 +57,7 @@ export const useUserRole = () => {
         const newRole = data ? 'admin' : 'user';
         console.log('useUserRole - setting role to:', newRole);
         setRole(newRole);
+        lastCheckedUserId.current = user.id;
       } catch (error) {
         console.error('Error in fetchUserRole:', error);
         setRole('user');
