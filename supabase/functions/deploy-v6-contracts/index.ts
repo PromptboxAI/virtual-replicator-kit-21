@@ -329,13 +329,9 @@ Deno.serve(async (req) => {
         console.log('[deploy-v6-contracts] Skipping LPLocker (already deployed)');
       } else {
         steps[2].status = 'deploying';
-        console.log('[deploy-v6-contracts] Deploying LPLocker with owner:', wallet.address);
-        // LPLocker constructor takes initialOwner address
-        const result = await deployContract(
-          bytecodes['LPLocker'],
-          ['address'],
-          [wallet.address]
-        );
+        console.log('[deploy-v6-contracts] Deploying LPLocker...');
+        // LPLocker has no constructor parameters
+        const result = await deployContract(bytecodes['LPLocker']);
         steps[2].address = result.address;
         steps[2].txHash = result.txHash;
         steps[2].status = 'completed';
@@ -355,10 +351,10 @@ Deno.serve(async (req) => {
         console.log('[deploy-v6-contracts] Deploying GraduationManager...');
         
         // GraduationManagerV6 constructor:
-        // (promptToken, vault, uniswapFactory, uniswapRouter, rewardDistributor, teamVesting, lpLocker)
+        // (promptToken, vault, uniswapFactory, uniswapRouter, rewardDistributor, teamVesting, lpLocker, initialOwner)
         const result = await deployContract(
           bytecodes['GraduationManager'],
-          ['address', 'address', 'address', 'address', 'address', 'address', 'address'],
+          ['address', 'address', 'address', 'address', 'address', 'address', 'address', 'address'],
           [
             networkConfig.promptToken,
             networkConfig.vault,
@@ -367,6 +363,7 @@ Deno.serve(async (req) => {
             addresses.rewardDistributor,
             addresses.teamVesting,
             addresses.lpLocker,
+            wallet.address,
           ]
         );
         
