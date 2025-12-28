@@ -941,12 +941,27 @@ export default function CreateAgent() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <Label htmlFor="name">AI Agent Name *</Label>
-                          <Input
+                          <Textarea
                             id="name"
-                            placeholder="e.g. AlphaTrader"
+                            placeholder="e.g. Personal Life Manager with Telegram, Google Services & Voice-Enabled AI"
                             value={formData.name}
-                            onChange={(e) => handleInputChange('name', e.target.value)}
+                            onChange={(e) => {
+                              if (e.target.value.length <= 100) {
+                                handleInputChange('name', e.target.value);
+                              }
+                            }}
+                            rows={2}
+                            maxLength={100}
+                            className="resize-none min-h-[60px]"
                           />
+                          <div className="flex justify-between items-center mt-1">
+                            <p className="text-xs text-muted-foreground">
+                              Be descriptive - include key features & integrations
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {formData.name.length} / 100
+                            </p>
+                          </div>
                         </div>
                         <div>
                           <Label htmlFor="symbol">Token Symbol *</Label>
