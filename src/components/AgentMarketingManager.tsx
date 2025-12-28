@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { 
@@ -23,7 +24,8 @@ import {
   AlertCircle,
   Users,
   MapPin,
-  Calendar
+  Calendar,
+  BookOpen
 } from 'lucide-react';
 
 interface AgentMarketingManagerProps {
@@ -34,6 +36,7 @@ interface AgentMarketingManagerProps {
 interface MarketingData {
   description?: string;
   whitepaper_url?: string;
+  whitepaper_content?: string;
   website_url?: string;
   youtube_url?: string;
   twitter_url?: string;
@@ -95,6 +98,7 @@ export function AgentMarketingManager({ agentId, agentName }: AgentMarketingMana
         setMarketingData({
           description: marketingRes.data.description || '',
           whitepaper_url: marketingRes.data.whitepaper_url || '',
+          whitepaper_content: marketingRes.data.whitepaper_content || '',
           website_url: marketingRes.data.website_url || '',
           youtube_url: marketingRes.data.youtube_url || '',
           twitter_url: marketingRes.data.twitter_url || '',
@@ -292,7 +296,7 @@ export function AgentMarketingManager({ agentId, agentName }: AgentMarketingMana
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">Short Description</Label>
             <Textarea
               id="description"
               placeholder="Describe what your agent does, its key features, and unique capabilities..."
@@ -301,15 +305,59 @@ export function AgentMarketingManager({ agentId, agentName }: AgentMarketingMana
               className="min-h-[120px]"
             />
           </div>
+        </CardContent>
+      </Card>
+
+      {/* AI Agent Whitepaper */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BookOpen className="h-5 w-5" />
+            AI Agent Whitepaper
+          </CardTitle>
+          <CardDescription>
+            Provide comprehensive details about your AI Agent
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2 mb-4">
+            <p className="text-sm text-muted-foreground">
+              Include the following sections in your whitepaper:
+            </p>
+            <ul className="text-xs text-muted-foreground space-y-1 ml-4">
+              <li>• <strong>Capabilities:</strong> What can your agent do? What problems does it solve?</li>
+              <li>• <strong>Technology:</strong> How does it work? What frameworks or models does it use?</li>
+              <li>• <strong>Roadmap:</strong> What are your development plans and milestones?</li>
+              <li>• <strong>Partnerships:</strong> Any strategic collaborations or integrations?</li>
+              <li>• <strong>Tokenomics:</strong> How does your token create value for holders?</li>
+              <li>• <strong>Use Cases:</strong> Real-world applications and target markets</li>
+            </ul>
+          </div>
           
           <div>
-            <Label htmlFor="whitepaper">Whitepaper URL</Label>
+            <Label htmlFor="whitepaper_content">Whitepaper Content</Label>
+            <RichTextEditor
+              id="whitepaper_content"
+              value={marketingData.whitepaper_content || ''}
+              onChange={(value) => setMarketingData({ ...marketingData, whitepaper_content: value })}
+              placeholder="Provide comprehensive details about your AI Agent..."
+              className="mt-2"
+              maxLength={10000}
+              showCharacterCount={true}
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="whitepaper_url">External Whitepaper URL (Optional)</Label>
             <Input
-              id="whitepaper"
+              id="whitepaper_url"
               placeholder="https://your-domain.com/whitepaper.pdf"
               value={marketingData.whitepaper_url || ''}
               onChange={(e) => setMarketingData({ ...marketingData, whitepaper_url: e.target.value })}
             />
+            <p className="text-xs text-muted-foreground mt-1">
+              Link to an external whitepaper document (PDF or webpage)
+            </p>
           </div>
         </CardContent>
       </Card>
