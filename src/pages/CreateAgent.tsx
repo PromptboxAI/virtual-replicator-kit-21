@@ -90,9 +90,8 @@ export default function CreateAgent() {
   const { isConnected, promptBalance, hasExternalWallet } = usePrivyWallet();
   const { settings: adminSettings, isLoading: adminSettingsLoading } = useAdminSettings();
   
-  // Smart contract creation hook
-  const { deployAtomicAgent, approvePrompt, isDeploying, isApproving, promptBalance: contractPromptBalance, allowance } = useSmartContractCreation();
-  // Note: Agent token creation is handled directly in the database for now
+  // Smart contract creation hook - V6
+  const { deployAgentV6, executePrebuy, approvePrompt, isDeploying, isApproving, promptBalance: contractPromptBalance, allowance } = useSmartContractCreation();
   
   // Check if contracts are deployed (from localStorage)
   const promptTokenAddress = typeof window !== 'undefined' ? localStorage.getItem('promptTokenAddress') : null;
@@ -301,23 +300,34 @@ export default function CreateAgent() {
 
     const totalCost = CREATION_COST + formData.prebuy_amount;
     
-    // Check if user has sufficient balance (only in test mode)
-    if (appIsTestMode && balance < totalCost) {
-      const shortfall = totalCost - balance;
-      toast({
-        title: "Insufficient Balance",
-        description: `You need ${shortfall} more $PROMPT tokens. Please reduce your pre-buy amount or add more tokens to your wallet.`,
-        variant: "destructive"
-      });
-      return;
-    }
+    // Get deployment mode early
+    const deploymentMode = adminSettings?.deployment_mode || 'database';
     
-    // NOW deduct tokens after validation passes
-    let tokensDeducted = false;
-    if (appIsTestMode) {
-      const success = await deductTokens(totalCost);
-      if (!success) return;
-      tokensDeducted = true;
+    // For smart contract mode, check on-chain PROMPT balance
+    // Factory charges 100 PROMPT, prebuy handled via trading-engine-v6
+    if (deploymentMode === 'smart_contract') {
+      const onChainBalance = parseFloat(contractPromptBalance || '0');
+      const requiredPrompt = 100; // Factory fee
+      if (onChainBalance < requiredPrompt) {
+        toast({
+          title: "Insufficient PROMPT",
+          description: `You need ${requiredPrompt} PROMPT in your wallet. You have ${onChainBalance.toFixed(2)}.`,
+          variant: "destructive"
+        });
+        return;
+      }
+      console.log('[CreateAgent] Smart contract mode - PROMPT balance check passed:', onChainBalance);
+    } else {
+      // Database mode - check test mode balance
+      if (appIsTestMode && balance < totalCost) {
+        const shortfall = totalCost - balance;
+        toast({
+          title: "Insufficient Balance",
+          description: `You need ${shortfall} more $PROMPT tokens.`,
+          variant: "destructive"
+        });
+        return;
+      }
     }
     
     setIsCreating(true);
@@ -451,21 +461,16 @@ export default function CreateAgent() {
       if (error) {
         console.error('Database error:', error);
         
-        // REFUND tokens if they were deducted
-        if (tokensDeducted) {
-          await refundTokens(totalCost);
-        }
-        
         if (error.code === '23505' && error.message?.includes('symbol')) {
           toast({ 
             title: "Creation Failed", 
-            description: "This symbol is already used on the platform. Your tokens have been refunded.", 
+            description: "This symbol is already used on the platform.", 
             variant: "destructive" 
           });
         } else {
           toast({ 
             title: "Creation Failed", 
-            description: `Failed to create AI Agent${tokensDeducted ? '. Your tokens have been refunded' : ''}.`, 
+            description: "Failed to create AI Agent.", 
             variant: "destructive" 
           });
         }
@@ -474,86 +479,77 @@ export default function CreateAgent() {
 
       const agentId = data.id;
 
-      // 📈 PHASE 3.2: Smart Contract Integration
+      // 📈 V6 Smart Contract Integration
       if (deploymentMode === 'smart_contract') {
-        console.log('🔗 Smart Contract Mode: Deploying on-chain token...');
+        console.log('[CreateAgent] V6 Smart Contract Mode: Deploying via user wallet...');
         try {
-          if (deployMethod === 'atomic') {
-            // 🚀 TRUE ATOMIC DEPLOYMENT - Client-side wallet interaction
+          // V6 Flow: User wallet calls AgentFactoryV6.createAgent(name, symbol)
+          // Factory charges 100 PROMPT and deploys AgentTokenV6
+          const deployResult = await deployAgentV6({
+            name: formData.name,
+            symbol: formData.symbol.toUpperCase(),
+            id: agentId
+          });
+
+          if (deployResult.success && deployResult.tokenAddress) {
+            console.log('[CreateAgent] V6 deployment successful:', deployResult);
+            
+            // Update agent with token_contract_address
+            const { error: updateError } = await supabase
+              .from('agents')
+              .update({ 
+                token_contract_address: deployResult.tokenAddress,
+                deployment_status: 'deployed',
+                status: 'ACTIVE',
+                token_graduated: false, // Enable database trading
+                is_active: true
+              })
+              .eq('id', agentId);
+
+            if (updateError) {
+              console.error('[CreateAgent] Failed to update agent with token address:', updateError);
+            }
+
             toast({
-              title: "Deploying Smart Contract...",
-              description: "Creating agent token with atomic MEV protection via your wallet",
+              title: "Agent Token Deployed!",
+              description: `Token at: ${deployResult.tokenAddress.slice(0, 10)}...${deployResult.tokenAddress.slice(-8)}`,
             });
 
-            const atomicResult = await deployAtomicAgent({
-              ...formData,
-              id: agentId
-            });
-
-            if (atomicResult.success) {
-              // Record the deployment in database
-              const { error: recordError } = await supabase.functions.invoke(
-                'record-deployment',
-                {
-                  body: {
-                    agent_id: agentId,
-                    tx_hash: atomicResult.txHash,
-                    deployment_method: 'atomic_client'
-                  }
-                }
-              );
-
-              if (recordError) {
-                console.warn('Failed to record deployment, but contract deployed successfully:', recordError);
+            // V6: Execute prebuy via trading-engine-v6 (database mode)
+            if (formData.prebuy_amount && formData.prebuy_amount > 0) {
+              console.log('[CreateAgent] Executing V6 prebuy:', formData.prebuy_amount);
+              const prebuySuccess = await executePrebuy(agentId, formData.prebuy_amount);
+              if (prebuySuccess) {
+                toast({
+                  title: "Prebuy Successful!",
+                  description: `Purchased ${formData.prebuy_amount} PROMPT worth of ${formData.symbol}`,
+                });
               }
-
-              toast({
-                title: "Atomic Deployment Successful!",
-                description: `Contract deployed and prebuy executed in single transaction`,
-              });
             }
           } else {
-            // 🔄 SEQUENTIAL DEPLOYMENT - Edge function path
+            // Deployment failed but continue with database mode
+            console.error('[CreateAgent] V6 deployment failed:', deployResult.error);
             toast({
-              title: "Deploying Smart Contract...",
-              description: "Creating agent token with sequential deployment",
+              title: "Contract Deployment Failed",
+              description: deployResult.error || "Falling back to database mode.",
+              variant: "destructive"
             });
-
-            // Call sequential deployment function
-            const { data: deploymentData, error: deploymentError } = await supabase.functions.invoke(
-              'deploy-agent-atomic',
-              {
-                body: {
-                  agent_id: agentId,
-                  name: formData.name,
-                  symbol: formData.symbol.toUpperCase(),
-                  creator_address: user.id, // Will be mapped to wallet address
-                  prebuy_amount: formData.prebuy_amount || 0
-                }
-              }
-            );
-
-            if (deploymentError || !deploymentData?.success) {
-              console.error('Smart contract deployment failed:', deploymentError);
-              throw new Error(deploymentError?.message || 'Smart contract deployment failed');
-            }
-
-            toast({
-              title: "Smart Contract Deployed!",
-              description: `Token deployed at: ${deploymentData.contract_address}`,
-            });
-
-            if (deploymentData.tokens_received && parseFloat(deploymentData.tokens_received) > 0) {
-              toast({
-                title: "Sequential Prebuy Successful!",
-                description: `Received ${parseFloat(deploymentData.tokens_received).toLocaleString()} ${formData.symbol} tokens`,
-              });
-            }
+            
+            // Update agent to database mode on failure
+            await supabase
+              .from('agents')
+              .update({ 
+                creation_mode: 'database',
+                token_graduated: false,
+                status: 'ACTIVE',
+                is_active: true
+              })
+              .eq('id', agentId);
           }
         } catch (error) {
-          console.error('Smart contract deployment error:', error);
+          console.error('[CreateAgent] Smart contract deployment error:', error);
           toast({
-            title: "Smart Contract Deployment Failed",
+            title: "Deployment Error",
             description: "Falling back to database mode. Your agent has been created.",
             variant: "destructive"
           });
@@ -561,7 +557,12 @@ export default function CreateAgent() {
           // Update agent to database mode on failure
           await supabase
             .from('agents')
-            .update({ creation_mode: 'database' })
+            .update({ 
+              creation_mode: 'database',
+              token_graduated: false,
+              status: 'ACTIVE',
+              is_active: true
+            })
             .eq('id', agentId);
         }
       } else {
@@ -670,14 +671,9 @@ export default function CreateAgent() {
     } catch (error: any) {
       console.error('Creation error:', error);
       
-      // REFUND tokens if they were deducted
-      if (tokensDeducted) {
-        await refundTokens(totalCost);
-      }
-      
       toast({ 
         title: "Error", 
-        description: `Something went wrong${tokensDeducted ? '. Your tokens have been refunded' : ''}.`, 
+        description: "Something went wrong during agent creation.", 
         variant: "destructive" 
       });
     } finally {

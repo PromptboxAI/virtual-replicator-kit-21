@@ -47,10 +47,8 @@ export const CreatorPrebuyPanel = ({ requiredAmount, onApprovalComplete }: Creat
 
     setIsApproving(true);
     try {
-      await approvePrompt(
-        FACTORY_ADDRESS as `0x${string}`, 
-        parseEther(requiredAmount.toString())
-      );
+      // V6: approvePrompt now uses the factory address internally and accepts an optional amount
+      await approvePrompt(parseEther(requiredAmount.toString()));
       // Status will be updated by the useEffect when allowance changes
     } catch (error) {
       console.error('Approval failed:', error);

@@ -1,13 +1,19 @@
 // Contract addresses and ABIs for blockchain integration
+// Re-exports V6 addresses for backward compatibility
 
-export const PROMPT_TOKEN_ADDRESS = typeof window !== 'undefined' 
-  ? (localStorage.getItem('promptTokenAddress') || "0x3ecfc3181fa4054f1cad103973a50cf7c998eec0")
-  : "0x3ecfc3181fa4054f1cad103973a50cf7c998eec0";
+import { 
+  PROMPT_TOKEN_ADDRESS as V6_PROMPT_TOKEN,
+  AGENT_FACTORY_V6_ADDRESS,
+  AGENT_FACTORY_V6_ABI
+} from './contractsV6';
 
-export const FACTORY_ADDRESS = typeof window !== 'undefined'
-  ? (localStorage.getItem('factoryAddress') || "0x09cbe197c98070eba3707be52f552f3a50aae749")
-  : "0x09cbe197c98070eba3707be52f552f3a50aae749";
+// Use V6 PROMPT token address (deployed on Base Sepolia)
+export const PROMPT_TOKEN_ADDRESS = V6_PROMPT_TOKEN;
 
+// Use V6 Factory address
+export const FACTORY_ADDRESS = AGENT_FACTORY_V6_ADDRESS;
+
+// Standard ERC20 ABI for PROMPT token
 export const PROMPT_TOKEN_ABI = [
   {
     "inputs": [],
@@ -125,36 +131,55 @@ export const PROMPT_TOKEN_ABI = [
   }
 ] as const;
 
+// V6 Factory ABI (simple createAgent)
 export const FACTORY_ABI = [
   {
     "inputs": [
       {"internalType": "string", "name": "name", "type": "string"},
-      {"internalType": "string", "name": "symbol", "type": "string"},
-      {"internalType": "string", "name": "agentId", "type": "string"}
+      {"internalType": "string", "name": "symbol", "type": "string"}
     ],
-    "name": "createAgentToken",
-    "outputs": [{"internalType": "address", "name": "", "type": "address"}],
+    "name": "createAgent",
+    "outputs": [{"internalType": "address", "name": "agentToken", "type": "address"}],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "inputs": [
-      {"internalType": "string", "name": "name", "type": "string"},
-      {"internalType": "string", "name": "symbol", "type": "string"},
-      {"internalType": "string", "name": "agentId", "type": "string"},
-      {"internalType": "uint256", "name": "prebuyPromptAmount", "type": "uint256"},
-      {"internalType": "uint256", "name": "maxSlippage", "type": "uint256"}
-    ],
-    "name": "createAgentTokenWithPrebuy",
-    "outputs": [
-      {"internalType": "address", "name": "tokenAddress", "type": "address"},
-      {"internalType": "uint256", "name": "tokensReceived", "type": "uint256"},
-      {"internalType": "uint256", "name": "actualPromptSpent", "type": "uint256"}
-    ],
-    "stateMutability": "nonpayable",
+    "inputs": [],
+    "name": "CREATION_FEE",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
     "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "promptToken",
+    "outputs": [{"internalType": "address", "name": "", "type": "address"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "vault",
+    "outputs": [{"internalType": "address", "name": "", "type": "address"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {"indexed": true, "internalType": "address", "name": "agentToken", "type": "address"},
+      {"indexed": true, "internalType": "address", "name": "creator", "type": "address"},
+      {"indexed": false, "internalType": "string", "name": "name", "type": "string"},
+      {"indexed": false, "internalType": "string", "name": "symbol", "type": "string"},
+      {"indexed": false, "internalType": "uint256", "name": "timestamp", "type": "uint256"}
+    ],
+    "name": "AgentCreated",
+    "type": "event"
   }
 ] as const;
 
 // Default treasury address (fallback)
 export const TREASURY_ADDRESS = "0x23d03610584B0f0988A6F9C281a37094D5611388";
+
+// Re-export V6 constants
+export { AGENT_FACTORY_V6_ADDRESS, AGENT_FACTORY_V6_ABI };
