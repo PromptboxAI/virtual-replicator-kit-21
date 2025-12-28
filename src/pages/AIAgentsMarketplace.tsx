@@ -316,10 +316,10 @@ export default function AIAgentsMarketplace() {
                   <span className="text-background"> AI Agent?</span>
                 </h2>
                 <p className="text-xl text-background/70 mb-10 max-w-2xl mx-auto">
-                  Join thousands of creators building and monetizing AI agents on Promptbox.
+                  Join creators building and monetizing AI agents on Promptbox.
                 </p>
                 <div className="flex justify-center">
-                  <Button asChild size="lg" variant="outline" className="gap-2 px-10 py-6 text-lg border-background/50 text-background hover:bg-background/10">
+                  <Button asChild size="lg" variant="outline" className="gap-2 px-10 py-6 text-lg border-background/50 text-foreground bg-background hover:bg-background/90">
                     <Link to="/create">
                       Start Building
                       <ArrowRight className="w-5 h-5" />
