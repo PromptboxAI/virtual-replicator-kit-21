@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
+import { useAccount, useSignMessage } from 'wagmi';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -50,7 +51,9 @@ const NETWORKS = [
 ];
 
 export function V6DeploymentPanel() {
-  const { user, signMessage } = usePrivy();
+  const { user } = usePrivy();
+  const { address: wagmiAddress, isConnected } = useAccount();
+  const { signMessageAsync } = useSignMessage();
   const [selectedChain, setSelectedChain] = useState<number>(84532);
   const [isDeploying, setIsDeploying] = useState(false);
   const [steps, setSteps] = useState<DeploymentStep[]>([]);
@@ -58,7 +61,8 @@ export function V6DeploymentPanel() {
   const [existingContracts, setExistingContracts] = useState<ExistingContract[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const walletAddress = user?.wallet?.address;
+  // Prefer wagmi address (external wallet) over Privy embedded wallet
+  const walletAddress = wagmiAddress || user?.wallet?.address;
 
   // Fetch existing deployed contracts
   useEffect(() => {
@@ -95,8 +99,14 @@ export function V6DeploymentPanel() {
       // Create message to sign
       const message = `Deploy V6 Contracts\nChain: ${selectedChain}\nTimestamp: ${Date.now()}`;
       
-      // Request signature
-      const signature = await signMessage({ message });
+      // Request signature using wagmi (works with external wallets like MetaMask)
+      let signature: string;
+      try {
+        signature = await signMessageAsync({ message, account: wagmiAddress as `0x${string}` });
+      } catch (signError) {
+        console.error('Signature error:', signError);
+        throw new Error('Signature rejected or wallet not connected');
+      }
       
       if (!signature) {
         throw new Error('Signature rejected');
