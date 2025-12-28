@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { ethers } from 'https://esm.sh/ethers@6';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -22,6 +23,12 @@ const CONSTANTS = {
   LP_LOCKED_PERCENT: 95,
   LP_VAULT_PERCENT: 5,
 };
+
+// GraduationManagerV6 ABI (minimal for executeGraduation)
+const GRADUATION_MANAGER_ABI = [
+  'function executeGraduation(address agentToken, address[] calldata holders, uint256[] calldata holderAmounts, address[] calldata rewardRecipients, uint256[] calldata rewardAmounts, address creator) external returns (uint256 lockId)',
+  'event GraduationExecuted(address indexed agentToken, address lpPair, uint256 holdersTotal, uint256 rewardsTotal, uint256 lpTokens, uint256 lpLocked, uint256 lockId)',
+];
 
 // Calculate LP allocation: LP = 880M - 1.05X
 function calculateLPAllocation(sharesSold: number): number {
@@ -70,6 +77,11 @@ Deno.serve(async (req) => {
 
     if (agent.bonding_curve_phase === 'graduated') {
       throw new Error('Agent already graduated');
+    }
+
+    // Verify agent has a token contract address
+    if (!agent.token_contract_address) {
+      throw new Error('Agent does not have a token contract address. Deploy the agent token first.');
     }
 
     const sharesSold = agent.shares_sold || 0;
@@ -163,7 +175,7 @@ Deno.serve(async (req) => {
       console.error('[graduation-manager-v6] Failed to insert team vesting:', teamError);
     }
 
-    // Store LP info (placeholder - actual LP creation happens on-chain)
+    // Store LP info (placeholder - will be updated after on-chain execution)
     const lpLocked = lpTokens * (CONSTANTS.LP_LOCKED_PERCENT / 100);
     const lpToVault = lpTokens * (CONSTANTS.LP_VAULT_PERCENT / 100);
 
@@ -183,12 +195,11 @@ Deno.serve(async (req) => {
       console.error('[graduation-manager-v6] Failed to insert LP info:', lpError);
     }
 
-    // Update agent status
+    // Update agent status to graduating (not graduated yet - wait for on-chain)
     const { error: updateError } = await supabase
       .from('agents')
       .update({
-        bonding_curve_phase: 'graduated',
-        graduated_at: now.toISOString(),
+        bonding_curve_phase: 'graduating',
       })
       .eq('id', agentId);
 
@@ -196,14 +207,126 @@ Deno.serve(async (req) => {
       throw new Error(`Failed to update agent: ${updateError.message}`);
     }
 
+    // ============ ON-CHAIN EXECUTION ============
+    const GRADUATION_MANAGER_ADDRESS = Deno.env.get('GRADUATION_MANAGER_V6_ADDRESS');
+    const RPC_URL = Deno.env.get('BASE_SEPOLIA_RPC_URL');
+    const PLATFORM_PRIVATE_KEY = Deno.env.get('PLATFORM_PRIVATE_KEY');
+
+    let onChainResult = null;
+    let onChainError = null;
+
+    if (!GRADUATION_MANAGER_ADDRESS || !RPC_URL || !PLATFORM_PRIVATE_KEY) {
+      console.warn('[graduation-manager-v6] Missing env vars for on-chain execution. Graduation recorded in DB only.');
+      console.log('Required env vars: GRADUATION_MANAGER_V6_ADDRESS, BASE_SEPOLIA_RPC_URL, PLATFORM_PRIVATE_KEY');
+    } else if (GRADUATION_MANAGER_ADDRESS === '0x0000000000000000000000000000000000000000') {
+      console.warn('[graduation-manager-v6] GraduationManagerV6 not deployed yet. Graduation recorded in DB only.');
+    } else {
+      try {
+        console.log('[graduation-manager-v6] Executing on-chain graduation...');
+        
+        const provider = new ethers.JsonRpcProvider(RPC_URL);
+        const wallet = new ethers.Wallet(PLATFORM_PRIVATE_KEY, provider);
+        
+        const graduationManager = new ethers.Contract(
+          GRADUATION_MANAGER_ADDRESS,
+          GRADUATION_MANAGER_ABI,
+          wallet
+        );
+
+        // Prepare arrays for contract call
+        const holderAddresses = holders.map(h => h.address);
+        const holderAmounts = holders.map(h => ethers.parseEther(h.balance.toString()));
+        const rewardRecipients = holderRewards.map(h => h.address);
+        const rewardAmounts = holderRewards.map(h => ethers.parseEther(h.rewardAmount.toString()));
+
+        console.log(`[graduation-manager-v6] Calling executeGraduation with:
+          agentToken: ${agent.token_contract_address}
+          holders: ${holderAddresses.length}
+          rewardRecipients: ${rewardRecipients.length}
+          creator: ${agent.creator_wallet_address}
+        `);
+
+        // Execute on-chain graduation
+        const tx = await graduationManager.executeGraduation(
+          agent.token_contract_address,
+          holderAddresses,
+          holderAmounts,
+          rewardRecipients,
+          rewardAmounts,
+          agent.creator_wallet_address
+        );
+
+        console.log(`[graduation-manager-v6] Transaction submitted: ${tx.hash}`);
+        
+        const receipt = await tx.wait();
+        console.log(`[graduation-manager-v6] On-chain graduation confirmed in block ${receipt.blockNumber}`);
+
+        // Parse GraduationExecuted event to get LP pair and lock ID
+        const graduationEventTopic = ethers.id('GraduationExecuted(address,address,uint256,uint256,uint256,uint256,uint256)');
+        const graduationEvent = receipt.logs.find((log: { topics: string[] }) => log.topics[0] === graduationEventTopic);
+
+        if (graduationEvent) {
+          const iface = new ethers.Interface(GRADUATION_MANAGER_ABI);
+          const decoded = iface.parseLog({ topics: graduationEvent.topics, data: graduationEvent.data });
+          
+          if (decoded) {
+            const lpPairAddress = decoded.args[1]; // lpPair is 2nd arg (index 1)
+            const lockId = decoded.args[6]; // lockId is 7th arg (index 6)
+
+            console.log(`[graduation-manager-v6] LP Pair: ${lpPairAddress}, Lock ID: ${lockId}`);
+
+            // Update LP info with real values
+            await supabase
+              .from('agent_lp_info')
+              .update({
+                lp_pair_address: lpPairAddress,
+                lock_id: Number(lockId),
+              })
+              .eq('agent_id', agentId);
+
+            onChainResult = {
+              txHash: receipt.hash,
+              blockNumber: receipt.blockNumber,
+              lpPairAddress,
+              lockId: Number(lockId),
+            };
+          }
+        }
+
+        // Update agent to graduated
+        await supabase
+          .from('agents')
+          .update({
+            bonding_curve_phase: 'graduated',
+            graduated_at: now.toISOString(),
+          })
+          .eq('id', agentId);
+
+      } catch (err) {
+        console.error('[graduation-manager-v6] On-chain execution failed:', err);
+        onChainError = err.message;
+        
+        // Revert agent status to active (graduation failed)
+        await supabase
+          .from('agents')
+          .update({
+            bonding_curve_phase: 'graduation_failed',
+          })
+          .eq('id', agentId);
+      }
+    }
+
     // Create graduation event record
     await supabase
       .from('agent_graduation_events')
       .insert({
         agent_id: agentId,
-        graduation_status: 'completed',
+        graduation_status: onChainResult ? 'completed' : (onChainError ? 'failed' : 'pending_onchain'),
         graduation_timestamp: now.toISOString(),
         prompt_raised_at_graduation: promptRaised,
+        deployment_tx_hash: onChainResult?.txHash || null,
+        liquidity_pool_address: onChainResult?.lpPairAddress || null,
+        error_message: onChainError || null,
         metadata: {
           sharesSold,
           holdersCount: holders.length,
@@ -211,11 +334,12 @@ Deno.serve(async (req) => {
           totalRewards,
           teamAllocation: CONSTANTS.TEAM_ALLOCATION,
           vaultAllocation: CONSTANTS.VAULT_ALLOCATION,
+          onChainResult,
         },
       });
 
     const response = {
-      success: true,
+      success: !onChainError,
       agentId,
       graduation: {
         timestamp: now.toISOString(),
@@ -238,15 +362,21 @@ Deno.serve(async (req) => {
         teamCliff2: cliff2Time.toISOString(),
         lpUnlock: lpUnlockTime.toISOString(),
       },
-      // On-chain execution details would go here
-      onChainPending: true,
-      message: 'Graduation recorded in database. On-chain execution pending.',
+      onChain: onChainResult || null,
+      onChainPending: !onChainResult && !onChainError,
+      error: onChainError || null,
+      message: onChainResult 
+        ? 'Graduation completed successfully on-chain.'
+        : (onChainError 
+            ? `Graduation failed: ${onChainError}` 
+            : 'Graduation recorded in database. On-chain execution pending (missing env vars or contract not deployed).'),
     };
 
-    console.log(`[graduation-manager-v6] Graduation completed:`, response);
+    console.log(`[graduation-manager-v6] Graduation result:`, response);
 
     return new Response(JSON.stringify(response), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: onChainError ? 500 : 200,
     });
   } catch (error) {
     console.error('[graduation-manager-v6] Error:', error);

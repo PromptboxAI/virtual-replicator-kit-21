@@ -162,19 +162,22 @@ contract GraduationManagerV6 is Ownable {
             pair = uniswapFactory.createPair(agentToken, address(promptToken));
         }
         
-        // 7. Approve router
+        // 7. Approve router (using forceApprove for OZ v5 compatibility)
         uint256 lpTokenBalance = IERC20(agentToken).balanceOf(address(this));
-        IERC20(agentToken).safeApprove(address(uniswapRouter), lpTokenBalance);
-        promptToken.safeApprove(address(uniswapRouter), GRADUATION_THRESHOLD);
+        IERC20(agentToken).forceApprove(address(uniswapRouter), lpTokenBalance);
+        promptToken.forceApprove(address(uniswapRouter), GRADUATION_THRESHOLD);
         
-        // 8. Add liquidity
+        // 8. Add liquidity with 0.5% slippage tolerance
+        uint256 minTokens = (lpTokenBalance * 995) / 1000; // 99.5%
+        uint256 minPrompt = (GRADUATION_THRESHOLD * 995) / 1000; // 99.5%
+        
         (,, uint256 totalLpTokens) = uniswapRouter.addLiquidity(
             agentToken,
             address(promptToken),
             lpTokenBalance,
             GRADUATION_THRESHOLD,
-            lpTokenBalance,
-            GRADUATION_THRESHOLD,
+            minTokens,      // 0.5% slippage allowed
+            minPrompt,      // 0.5% slippage allowed
             address(this),
             block.timestamp + 300
         );
@@ -185,8 +188,8 @@ contract GraduationManagerV6 is Ownable {
         uint256 lpToLock = (totalLpTokens * LP_LOCK_BPS) / BASIS_POINTS;
         uint256 lpToVault = totalLpTokens - lpToLock;
         
-        // 10. Approve locker
-        IERC20(pair).safeApprove(address(lpLocker), lpToLock);
+        // 10. Approve locker (using forceApprove for OZ v5 compatibility)
+        IERC20(pair).forceApprove(address(lpLocker), lpToLock);
         
         // 11. Lock 95% for 3 years (vault is beneficiary)
         lockId = lpLocker.lock(
