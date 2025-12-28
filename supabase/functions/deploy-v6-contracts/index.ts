@@ -242,10 +242,18 @@ Deno.serve(async (req) => {
 
     const addresses: Record<string, string> = {};
 
-    // Helper to deploy a contract
-    async function deployContract(bytecode: string, args: unknown[] = []): Promise<{ address: string; txHash: string }> {
-      const factory = new ethers.ContractFactory([], bytecode, wallet);
-      const contract = await factory.deploy(...args);
+    // Helper to deploy a contract with constructor args encoded into bytecode
+    async function deployContract(bytecode: string, constructorTypes: string[] = [], constructorArgs: unknown[] = []): Promise<{ address: string; txHash: string }> {
+      let deployBytecode = bytecode;
+      
+      // If constructor args are provided, encode and append them
+      if (constructorTypes.length > 0 && constructorArgs.length > 0) {
+        const encodedArgs = ethers.AbiCoder.defaultAbiCoder().encode(constructorTypes, constructorArgs).slice(2);
+        deployBytecode = bytecode + encodedArgs;
+      }
+      
+      const factory = new ethers.ContractFactory([], deployBytecode, wallet);
+      const contract = await factory.deploy();
       await contract.waitForDeployment();
       const address = await contract.getAddress();
       const deployTx = contract.deploymentTransaction();
@@ -275,8 +283,13 @@ Deno.serve(async (req) => {
         console.log('[deploy-v6-contracts] Skipping RewardDistributor (already deployed)');
       } else {
         steps[0].status = 'deploying';
-        console.log('[deploy-v6-contracts] Deploying RewardDistributor...');
-        const result = await deployContract(bytecodes['RewardDistributor']);
+        console.log('[deploy-v6-contracts] Deploying RewardDistributor with owner:', wallet.address);
+        // RewardDistributor constructor takes initialOwner address
+        const result = await deployContract(
+          bytecodes['RewardDistributor'],
+          ['address'],
+          [wallet.address]
+        );
         steps[0].address = result.address;
         steps[0].txHash = result.txHash;
         steps[0].status = 'completed';
@@ -293,8 +306,13 @@ Deno.serve(async (req) => {
         console.log('[deploy-v6-contracts] Skipping TeamVesting (already deployed)');
       } else {
         steps[1].status = 'deploying';
-        console.log('[deploy-v6-contracts] Deploying TeamVesting...');
-        const result = await deployContract(bytecodes['TeamVesting']);
+        console.log('[deploy-v6-contracts] Deploying TeamVesting with owner:', wallet.address);
+        // TeamVesting constructor takes initialOwner address
+        const result = await deployContract(
+          bytecodes['TeamVesting'],
+          ['address'],
+          [wallet.address]
+        );
         steps[1].address = result.address;
         steps[1].txHash = result.txHash;
         steps[1].status = 'completed';
@@ -311,8 +329,13 @@ Deno.serve(async (req) => {
         console.log('[deploy-v6-contracts] Skipping LPLocker (already deployed)');
       } else {
         steps[2].status = 'deploying';
-        console.log('[deploy-v6-contracts] Deploying LPLocker...');
-        const result = await deployContract(bytecodes['LPLocker']);
+        console.log('[deploy-v6-contracts] Deploying LPLocker with owner:', wallet.address);
+        // LPLocker constructor takes initialOwner address
+        const result = await deployContract(
+          bytecodes['LPLocker'],
+          ['address'],
+          [wallet.address]
+        );
         steps[2].address = result.address;
         steps[2].txHash = result.txHash;
         steps[2].status = 'completed';
@@ -333,7 +356,8 @@ Deno.serve(async (req) => {
         
         // GraduationManagerV6 constructor:
         // (promptToken, vault, uniswapFactory, uniswapRouter, rewardDistributor, teamVesting, lpLocker)
-        const gmBytecode = bytecodes['GraduationManager'] + ethers.AbiCoder.defaultAbiCoder().encode(
+        const result = await deployContract(
+          bytecodes['GraduationManager'],
           ['address', 'address', 'address', 'address', 'address', 'address', 'address'],
           [
             networkConfig.promptToken,
@@ -344,20 +368,14 @@ Deno.serve(async (req) => {
             addresses.teamVesting,
             addresses.lpLocker,
           ]
-        ).slice(2);
-
-        const factory = new ethers.ContractFactory([], gmBytecode, wallet);
-        const contract = await factory.deploy();
-        await contract.waitForDeployment();
-        const address = await contract.getAddress();
-        const deployTx = contract.deploymentTransaction();
+        );
         
-        steps[3].address = address;
-        steps[3].txHash = deployTx?.hash || '';
+        steps[3].address = result.address;
+        steps[3].txHash = result.txHash;
         steps[3].status = 'completed';
-        addresses.graduationManager = address;
-        await saveContract('GraduationManager_V6', address, deployTx?.hash || '');
-        console.log('[deploy-v6-contracts] GraduationManager deployed:', address);
+        addresses.graduationManager = result.address;
+        await saveContract('GraduationManager_V6', result.address, result.txHash);
+        console.log('[deploy-v6-contracts] GraduationManager deployed:', result.address);
       }
 
       // Step 5: Transfer RewardDistributor ownership to GraduationManager
@@ -413,23 +431,18 @@ Deno.serve(async (req) => {
         console.log('[deploy-v6-contracts] Deploying AgentFactory...');
         
         // AgentFactoryV6 constructor: (promptToken, vault, graduationManager)
-        const afBytecode = bytecodes['AgentFactory'] + ethers.AbiCoder.defaultAbiCoder().encode(
+        const result = await deployContract(
+          bytecodes['AgentFactory'],
           ['address', 'address', 'address'],
           [networkConfig.promptToken, networkConfig.vault, addresses.graduationManager]
-        ).slice(2);
-
-        const factory = new ethers.ContractFactory([], afBytecode, wallet);
-        const contract = await factory.deploy();
-        await contract.waitForDeployment();
-        const address = await contract.getAddress();
-        const deployTx = contract.deploymentTransaction();
+        );
         
-        steps[6].address = address;
-        steps[6].txHash = deployTx?.hash || '';
+        steps[6].address = result.address;
+        steps[6].txHash = result.txHash;
         steps[6].status = 'completed';
-        addresses.agentFactory = address;
-        await saveContract('AgentFactory_V6', address, deployTx?.hash || '');
-        console.log('[deploy-v6-contracts] AgentFactory deployed:', address);
+        addresses.agentFactory = result.address;
+        await saveContract('AgentFactory_V6', result.address, result.txHash);
+        console.log('[deploy-v6-contracts] AgentFactory deployed:', result.address);
       }
 
       console.log('[deploy-v6-contracts] All V6 contracts deployed successfully!');
