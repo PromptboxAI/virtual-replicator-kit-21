@@ -108,7 +108,7 @@ export default function AIAgentsMarketplace() {
                 </div>
 
                 {/* Main headline */}
-                <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
+                <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight text-white">
                   Automate Anything with
                   <span className="block text-primary">AI Agents</span>
                 </h1>
