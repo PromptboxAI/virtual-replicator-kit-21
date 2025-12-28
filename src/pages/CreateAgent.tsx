@@ -1145,21 +1145,15 @@ export default function CreateAgent() {
                         <div className="p-5 border border-border rounded-xl bg-card">
                           {/* Integration boxes row - 4 boxes like n8n */}
                           <div className="flex items-center gap-2 mb-4">
-                            {/* Box 1 - Avatar */}
-                            {formData.avatar_url ? (
-                              <div className="w-8 h-8 rounded-lg overflow-hidden bg-muted">
-                                <img src={formData.avatar_url} alt={formData.name} className="w-full h-full object-cover" />
-                              </div>
-                            ) : (
-                              <div className="w-8 h-8 rounded-lg border-2 border-dashed border-muted-foreground/30 flex items-center justify-center">
-                                <span className="text-[10px] text-muted-foreground">1</span>
-                              </div>
-                            )}
-                            {/* Box 2 - Integration placeholder */}
+                            {/* Box 1 */}
+                            <div className="w-8 h-8 rounded-lg border-2 border-dashed border-muted-foreground/30 flex items-center justify-center">
+                              <span className="text-[10px] text-muted-foreground">1</span>
+                            </div>
+                            {/* Box 2 */}
                             <div className="w-8 h-8 rounded-lg border-2 border-dashed border-muted-foreground/30 flex items-center justify-center">
                               <span className="text-[10px] text-muted-foreground">2</span>
                             </div>
-                            {/* Box 3 - Integration placeholder */}
+                            {/* Box 3 */}
                             <div className="w-8 h-8 rounded-lg border-2 border-dashed border-muted-foreground/30 flex items-center justify-center">
                               <span className="text-[10px] text-muted-foreground">3</span>
                             </div>
@@ -1176,11 +1170,17 @@ export default function CreateAgent() {
 
                           {/* Creator with avatar */}
                           <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center">
-                              <span className="text-[10px] font-medium text-primary">
-                                {formData.symbol ? formData.symbol.slice(0, 2) : "AG"}
-                              </span>
-                            </div>
+                            {formData.avatar_url ? (
+                              <div className="w-6 h-6 rounded-full overflow-hidden">
+                                <img src={formData.avatar_url} alt={formData.name} className="w-full h-full object-cover" />
+                              </div>
+                            ) : (
+                              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center">
+                                <span className="text-[10px] font-medium text-primary">
+                                  {formData.symbol ? formData.symbol.slice(0, 2) : "AG"}
+                                </span>
+                              </div>
+                            )}
                             <p className="text-sm text-muted-foreground">
                               ${formData.symbol || "SYMBOL"}
                             </p>
