@@ -1290,7 +1290,7 @@ export default function CreateAgent() {
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
-                      <div className="bg-gradient-to-br from-primary/5 to-primary/10 p-6 rounded-lg border border-primary/20">
+                      <div className="bg-muted/50 p-6 rounded-lg border border-border">
                         <h4 className="font-semibold text-lg mb-4 flex items-center gap-2">
                           <Shield className="h-5 w-5 text-primary" />
                           Fair Launch Protocol
