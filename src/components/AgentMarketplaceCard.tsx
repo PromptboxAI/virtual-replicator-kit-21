@@ -40,7 +40,7 @@ export function AgentMarketplaceCard({
   };
 
   return (
-    <Link to={`/agents/${id}`}>
+    <Link to={`/ai-agents/${id}`}>
       <Card className="group p-5 hover:shadow-lg transition-all duration-200 hover:border-primary/40 cursor-pointer bg-card border-border rounded-xl h-full">
         {/* Integration icons row */}
         <div className="flex items-center gap-2 mb-4">

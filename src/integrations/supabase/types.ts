@@ -1906,6 +1906,7 @@ export type Database = {
           network_environment: string | null
           price_change_24h: number | null
           pricing_model: string | null
+          project_pitch: string | null
           prompt_raised: number | null
           prompt_usd_rate: number | null
           shares_sold: number | null
@@ -1972,6 +1973,7 @@ export type Database = {
           network_environment?: string | null
           price_change_24h?: number | null
           pricing_model?: string | null
+          project_pitch?: string | null
           prompt_raised?: number | null
           prompt_usd_rate?: number | null
           shares_sold?: number | null
@@ -2038,6 +2040,7 @@ export type Database = {
           network_environment?: string | null
           price_change_24h?: number | null
           pricing_model?: string | null
+          project_pitch?: string | null
           prompt_raised?: number | null
           prompt_usd_rate?: number | null
           shares_sold?: number | null

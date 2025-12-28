@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -63,7 +64,7 @@ interface AgentFormData {
   twitter_url: string;
   avatar_url: string;
   total_supply: number;
-  short_pitch: string;
+  project_pitch: string; // Rich HTML content for "How it works" section
   prebuy_amount: number;
   // 🔒 MEV Protection Fields
   creation_locked: boolean;
@@ -115,7 +116,7 @@ export default function CreateAgent() {
     twitter_url: "",
     avatar_url: "",
     total_supply: 1000000000, // Fixed at 1 billion tokens per Virtuals protocol
-    short_pitch: "",
+    project_pitch: "",
     prebuy_amount: 0,
     // 🔒 MEV Protection Defaults
     creation_locked: false,
@@ -406,6 +407,7 @@ export default function CreateAgent() {
           name: formData.name,
           symbol: formData.symbol.toUpperCase(),
           description: formData.description,
+          project_pitch: formData.project_pitch || null,
           category: formData.category,
           framework: formData.framework,
           website_url: formData.website_url || null,
@@ -1148,31 +1150,25 @@ export default function CreateAgent() {
                         Project Pitch
                       </CardTitle>
                       <CardDescription>
-                        Create a compelling pitch for your AI Agent
+                        Create a compelling pitch for your AI Agent. This will appear in the "How it works" section on your agent's showcase page.
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
                       <div>
-                        <Label htmlFor="short_pitch" className="flex items-center gap-1">
-                          Short Pitch <span className="text-red-500">*</span>
+                        <Label htmlFor="project_pitch" className="flex items-center gap-1 mb-2">
+                          Project Pitch <span className="text-red-500">*</span>
                         </Label>
-                         <Textarea
-                          id="short_pitch"
-                          placeholder="A concise, engaging summary of your AI Agent (max 500 characters)"
-                          value={formData.short_pitch}
-                          onChange={(e) => handleInputChange('short_pitch', e.target.value)}
-                          rows={8}
-                          maxLength={500}
-                          className="mt-2 min-h-[300px]"
+                        <RichTextEditor
+                          id="project_pitch"
+                          value={formData.project_pitch}
+                          onChange={(value) => handleInputChange('project_pitch', value)}
+                          placeholder="Describe how your AI Agent works, its key features, and step-by-step usage instructions..."
+                          maxLength={5000}
+                          showCharacterCount={true}
                         />
-                        <div className="flex justify-between items-center mt-1">
-                          <p className="text-xs text-muted-foreground">
-                            Keep it concise and engaging
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {formData.short_pitch.length} / 500
-                          </p>
-                        </div>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          Use rich formatting to explain your agent's functionality. Include key features, step-by-step instructions, and any important details.
+                        </p>
                       </div>
 
                       <p className="text-xs text-muted-foreground mt-2">
@@ -1192,7 +1188,7 @@ export default function CreateAgent() {
                     </Button>
                     <Button
                       onClick={() => setCurrentStep(2)}
-                      disabled={!formData.short_pitch.trim()}
+                      disabled={!formData.project_pitch.trim() || formData.project_pitch === '<p><br></p>'}
                       className="flex-1 bg-gradient-primary hover:opacity-90"
                     >
                       Next
