@@ -262,16 +262,24 @@ Deno.serve(async (req) => {
 
     // Helper to save to database
     async function saveContract(contractType: string, address: string, txHash: string) {
-      await supabase.from('deployed_contracts').upsert({
+      const { error } = await supabase.from('deployed_contracts').insert({
         contract_address: address,
         contract_type: contractType,
         version: 'v6',
         network: networkConfig.name,
         transaction_hash: txHash,
         is_active: true,
-        deployed_by: wallet.address,
+        name: contractType,
+        symbol: 'V6',
+        deployment_timestamp: new Date().toISOString(),
         created_at: new Date().toISOString(),
-      }, { onConflict: 'contract_type,version,network' });
+        updated_at: new Date().toISOString(),
+      });
+      if (error) {
+        console.error('[deploy-v6-contracts] Failed to save contract:', contractType, error.message);
+      } else {
+        console.log('[deploy-v6-contracts] Saved to DB:', contractType, address);
+      }
     }
 
     try {
