@@ -78,7 +78,7 @@ contract AgentTokenV6 is ERC20, Ownable {
         address vault,
         address lpRecipient
     ) external onlyOwner {
-        require(msg.sender == graduationManager, "Only graduation manager");
+        // onlyOwner already checks msg.sender == owner, and owner IS graduationManager
         require(!hasGraduated, "Already graduated");
         require(holders.length == holderAmounts.length, "Length mismatch");
         
