@@ -5,9 +5,25 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CheckCircle, Circle, Loader2, XCircle, Copy, ExternalLink, Rocket, AlertTriangle, RefreshCw } from 'lucide-react';
+import { CheckCircle, Circle, Loader2, XCircle, Copy, ExternalLink, Rocket, AlertTriangle, RefreshCw, Database } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import {
+  REWARD_DISTRIBUTOR_V6_ADDRESS,
+  TEAM_VESTING_V6_ADDRESS,
+  LP_LOCKER_V6_ADDRESS,
+  GRADUATION_MANAGER_V6_ADDRESS,
+  AGENT_FACTORY_V6_ADDRESS,
+} from '@/lib/contractsV6';
+
+// Deployed V6 contracts for seeding (Base Sepolia)
+const V6_DEPLOYED_CONTRACTS = [
+  { type: 'RewardDistributor_V6', address: REWARD_DISTRIBUTOR_V6_ADDRESS },
+  { type: 'TeamVesting_V6', address: TEAM_VESTING_V6_ADDRESS },
+  { type: 'LPLocker_V6', address: LP_LOCKER_V6_ADDRESS },
+  { type: 'GraduationManager_V6', address: GRADUATION_MANAGER_V6_ADDRESS },
+  { type: 'AgentFactory_V6', address: AGENT_FACTORY_V6_ADDRESS },
+];
 
 interface DeploymentStep {
   step: number;
@@ -84,6 +100,73 @@ export function V6DeploymentPanel() {
 
   const getExistingContract = (type: string) => 
     existingContracts.find(c => c.contract_type === type);
+
+  // Sync deployed contracts to database (for contracts that failed to save)
+  const [isSyncing, setIsSyncing] = useState(false);
+  const handleSyncToDatabase = async () => {
+    if (selectedChain !== 84532) {
+      toast.error('Only Base Sepolia is supported for sync');
+      return;
+    }
+    
+    setIsSyncing(true);
+    const network = 'base_sepolia';
+    let successCount = 0;
+    let skipCount = 0;
+    
+    try {
+      for (const contract of V6_DEPLOYED_CONTRACTS) {
+        // Skip if already in database
+        if (existingContracts.some(c => c.contract_type === contract.type)) {
+          skipCount++;
+          continue;
+        }
+        
+        // Skip placeholder addresses
+        if (contract.address.startsWith('0x000000')) {
+          continue;
+        }
+        
+        const { error } = await supabase.from('deployed_contracts').insert({
+          contract_address: contract.address,
+          contract_type: contract.type,
+          version: 'v6',
+          network,
+          is_active: true,
+          name: contract.type,
+          symbol: 'V6',
+          deployment_timestamp: new Date().toISOString(),
+        });
+        
+        if (error) {
+          console.error('Failed to save:', contract.type, error.message);
+        } else {
+          successCount++;
+        }
+      }
+      
+      if (successCount > 0) {
+        toast.success(`Synced ${successCount} contracts to database`);
+        // Refresh the list
+        const { data } = await supabase
+          .from('deployed_contracts')
+          .select('contract_type, contract_address, transaction_hash, created_at')
+          .eq('version', 'v6')
+          .eq('network', network)
+          .eq('is_active', true);
+        setExistingContracts((data as ExistingContract[]) || []);
+      } else if (skipCount === V6_DEPLOYED_CONTRACTS.length) {
+        toast.info('All contracts already synced');
+      } else {
+        toast.error('No contracts were synced');
+      }
+    } catch (err) {
+      console.error('Sync error:', err);
+      toast.error('Failed to sync contracts');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   const handleDeploy = async () => {
     if (!walletAddress) {
@@ -242,6 +325,28 @@ export function V6DeploymentPanel() {
                 </>
               )}
             </Button>
+
+            {/* Sync button - for contracts deployed but not saved to DB */}
+            {!allDeployed && REWARD_DISTRIBUTOR_V6_ADDRESS && !REWARD_DISTRIBUTOR_V6_ADDRESS.startsWith('0x000000') && (
+              <Button
+                onClick={handleSyncToDatabase}
+                disabled={isSyncing}
+                variant="outline"
+                className="gap-2"
+              >
+                {isSyncing ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Syncing...
+                  </>
+                ) : (
+                  <>
+                    <Database className="h-4 w-4" />
+                    Sync to DB
+                  </>
+                )}
+              </Button>
+            )}
           </div>
 
           {!walletAddress && (
