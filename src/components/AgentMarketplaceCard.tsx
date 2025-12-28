@@ -124,7 +124,7 @@ export function BuildFirstAgentCard() {
               </div>
 
               {/* Title */}
-              <h3 className="font-bold text-3xl md:text-4xl text-background group-hover:text-primary transition-colors duration-300 mb-4 leading-tight">
+              <h3 className="font-bold text-3xl md:text-4xl text-background mb-4 leading-tight">
                 Build Your First AI Agent
               </h3>
 
