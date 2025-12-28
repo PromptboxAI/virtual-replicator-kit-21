@@ -938,68 +938,68 @@ export default function CreateAgent() {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="name">AI Agent Name *</Label>
-                          <Textarea
-                            id="name"
-                            placeholder="e.g. Personal Life Manager with Telegram, Google Services & Voice-Enabled AI"
-                            value={formData.name}
-                            onChange={(e) => {
-                              if (e.target.value.length <= 100) {
-                                handleInputChange('name', e.target.value);
-                              }
-                            }}
-                            rows={2}
-                            maxLength={100}
-                            className="resize-none min-h-[60px]"
-                          />
-                          <div className="flex justify-between items-center mt-1">
-                            <p className="text-xs text-muted-foreground">
-                              Be descriptive - include key features & integrations
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {formData.name.length} / 100
-                            </p>
+                      <div>
+                        <Label htmlFor="name">AI Agent Name *</Label>
+                        <Textarea
+                          id="name"
+                          placeholder="e.g. Personal Life Manager with Telegram, Google Services & Voice-Enabled AI"
+                          value={formData.name}
+                          onChange={(e) => {
+                            if (e.target.value.length <= 100) {
+                              handleInputChange('name', e.target.value);
+                            }
+                          }}
+                          rows={2}
+                          maxLength={100}
+                          className="resize-none"
+                        />
+                        <div className="flex justify-between items-center mt-1">
+                          <p className="text-xs text-muted-foreground">
+                            Be descriptive - include key features & integrations
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {formData.name.length} / 100
+                          </p>
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="symbol">Token Symbol *</Label>
+                        <Input
+                          id="symbol"
+                          type="text"
+                          placeholder="e.g. ALPHA"
+                          value={formData.symbol}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+                            handleInputChange('symbol', value);
+                          }}
+                          maxLength={10}
+                          className="max-w-[200px]"
+                        />
+                        {/* Symbol validation feedback */}
+                        {formData.symbol && (
+                          <div className="mt-2 flex items-center gap-2">
+                            {checkingSymbol && (
+                              <>
+                                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                <p className="text-sm text-muted-foreground">Checking availability...</p>
+                              </>
+                            )}
+                            {!checkingSymbol && symbolAvailable === false && (
+                              <>
+                                <AlertCircle className="h-4 w-4 text-destructive" />
+                                <p className="text-sm text-destructive">This symbol is already used on this platform</p>
+                              </>
+                            )}
+                            {!checkingSymbol && symbolAvailable === true && (
+                              <>
+                                <Check className="h-4 w-4 text-green-500" />
+                                <p className="text-sm text-green-500">Symbol available on platform</p>
+                              </>
+                            )}
                           </div>
-                        </div>
-                        <div>
-                          <Label htmlFor="symbol">Token Symbol *</Label>
-                          <Input
-                            id="symbol"
-                            type="text"
-                            placeholder="e.g. ALPHA"
-                            value={formData.symbol}
-                            onChange={(e) => {
-                              const value = e.target.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
-                              handleInputChange('symbol', value);
-                            }}
-                           maxLength={10}
-                          />
-                          {/* Symbol validation feedback */}
-                          {formData.symbol && (
-                            <div className="mt-2 flex items-center gap-2">
-                              {checkingSymbol && (
-                                <>
-                                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                                  <p className="text-sm text-muted-foreground">Checking availability...</p>
-                                </>
-                              )}
-                              {!checkingSymbol && symbolAvailable === false && (
-                                <>
-                                  <AlertCircle className="h-4 w-4 text-destructive" />
-                                  <p className="text-sm text-destructive">This symbol is already used on this platform</p>
-                                </>
-                              )}
-                              {!checkingSymbol && symbolAvailable === true && (
-                                <>
-                                  <Check className="h-4 w-4 text-green-500" />
-                                  <p className="text-sm text-green-500">Symbol available on platform</p>
-                                </>
-                              )}
-                            </div>
-                          )}
-                        </div>
+                        )}
                       </div>
                       
                       <div>
