@@ -1,5 +1,4 @@
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 
 // Integration icon mapping
@@ -20,7 +19,6 @@ interface AgentMarketplaceCardProps {
   category: string;
   integrations?: string[];
   avatarUrl?: string;
-  isFeature?: boolean;
 }
 
 export function AgentMarketplaceCard({
@@ -30,10 +28,9 @@ export function AgentMarketplaceCard({
   category,
   integrations = [],
   avatarUrl,
-  isFeature = false,
 }: AgentMarketplaceCardProps) {
-  const displayedIntegrations = integrations.slice(0, 4);
-  const overflowCount = integrations.length - 4;
+  const displayedIntegrations = integrations.slice(0, 3);
+  const overflowCount = integrations.length - 3;
 
   const truncateAddress = (address: string) => {
     if (address.startsWith("0x") && address.length > 10) {
@@ -44,15 +41,20 @@ export function AgentMarketplaceCard({
 
   return (
     <Link to={`/agents/${id}`}>
-      <Card className={`group p-4 hover:shadow-lg transition-all duration-200 hover:border-primary/40 cursor-pointer bg-card ${isFeature ? 'border-primary/20' : ''}`}>
+      <Card className="group p-5 hover:shadow-lg transition-all duration-200 hover:border-primary/40 cursor-pointer bg-card border-border rounded-xl h-full">
         {/* Integration icons row */}
-        <div className="flex items-center gap-1.5 mb-3 h-8">
+        <div className="flex items-center gap-2 mb-4">
+          {avatarUrl && (
+            <div className="w-8 h-8 rounded-lg overflow-hidden bg-muted">
+              <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
+            </div>
+          )}
           {displayedIntegrations.map((integration, index) => {
             const integrationData = integrationIcons[integration.toLowerCase()];
             return (
               <div
                 key={index}
-                className="w-7 h-7 rounded-md bg-muted flex items-center justify-center overflow-hidden"
+                className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center overflow-hidden"
                 title={integrationData?.name || integration}
               >
                 {integrationData ? (
@@ -70,31 +72,28 @@ export function AgentMarketplaceCard({
             );
           })}
           {overflowCount > 0 && (
-            <div className="w-7 h-7 rounded-md bg-primary/10 flex items-center justify-center">
-              <span className="text-xs font-medium text-primary">+{overflowCount}</span>
-            </div>
-          )}
-          {integrations.length === 0 && avatarUrl && (
-            <div className="w-7 h-7 rounded-md overflow-hidden">
-              <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
+            <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+              <span className="text-xs font-medium text-muted-foreground">+{overflowCount}</span>
             </div>
           )}
         </div>
 
         {/* Agent name */}
-        <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors mb-1 truncate">
+        <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors mb-3 line-clamp-2">
           {name}
         </h3>
 
-        {/* Creator */}
-        <p className="text-sm text-muted-foreground mb-2 truncate">
-          by {truncateAddress(creator)}
-        </p>
-
-        {/* Category badge */}
-        <Badge variant="secondary" className="text-xs">
-          {category}
-        </Badge>
+        {/* Creator with avatar */}
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center">
+            <span className="text-[10px] font-medium text-primary">
+              {truncateAddress(creator).slice(0, 2).toUpperCase()}
+            </span>
+          </div>
+          <p className="text-sm text-muted-foreground truncate">
+            {truncateAddress(creator)}
+          </p>
+        </div>
       </Card>
     </Link>
   );
@@ -102,37 +101,76 @@ export function AgentMarketplaceCard({
 
 export function BuildFirstAgentCard() {
   return (
-    <Link to="/build-your-first-ai-agent">
-      <Card className="group p-6 hover:shadow-lg transition-all duration-200 border-2 border-dashed border-primary/30 hover:border-primary cursor-pointer bg-gradient-to-br from-primary/5 to-transparent">
-        {/* Workflow visualization */}
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-2xl">
-            🤖
+    <Link to="/build-your-first-ai-agent" className="block max-w-4xl">
+      <Card className="group relative overflow-hidden p-6 md:p-8 hover:shadow-xl transition-all duration-300 cursor-pointer bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-primary/20 hover:border-primary/40 rounded-2xl">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          {/* Left content */}
+          <div className="flex-1">
+            {/* Integration icons */}
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 rounded-lg bg-muted/80 flex items-center justify-center">
+                <span className="text-sm">📄</span>
+              </div>
+              <div className="w-8 h-8 rounded-lg bg-muted/80 flex items-center justify-center">
+                <span className="text-sm">🤖</span>
+              </div>
+              <div className="w-8 h-8 rounded-lg bg-muted/80 flex items-center justify-center">
+                <span className="text-sm">📊</span>
+              </div>
+              <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+                <span className="text-xs font-medium text-primary">+2</span>
+              </div>
+            </div>
+
+            {/* Title */}
+            <h3 className="font-bold text-xl md:text-2xl text-foreground group-hover:text-primary transition-colors mb-3">
+              Build Your First AI Agent
+            </h3>
+
+            {/* Creator */}
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-full overflow-hidden">
+                <img 
+                  src="/lovable-uploads/promptbox-logo-new.png" 
+                  alt="Promptbox" 
+                  className="w-full h-full object-contain"
+                />
+              </div>
+              <p className="text-sm text-muted-foreground">Promptbox Team</p>
+              <span className="text-primary">✓</span>
+            </div>
           </div>
-          <div className="h-0.5 w-4 bg-primary/30" />
-          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-2xl">
-            🔧
-          </div>
-          <div className="h-0.5 w-4 bg-primary/30" />
-          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-2xl">
-            📊
+
+          {/* Right - Workflow visualization */}
+          <div className="hidden md:block">
+            <div className="relative bg-card/50 rounded-xl p-4 border border-border">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground text-xs">→</span>
+                </div>
+                <div className="bg-primary/20 rounded-lg px-4 py-3 border border-primary/30">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">🤖</span>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">Your First</p>
+                      <p className="text-sm font-medium text-foreground">AI Agent</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-around mt-3 text-[10px] text-muted-foreground">
+                <span>Chat Model*</span>
+                <span>Memory</span>
+                <span>Tool</span>
+              </div>
+              <div className="flex justify-around mt-1">
+                <div className="w-1.5 h-1.5 rounded-full bg-primary/60" />
+                <div className="w-1.5 h-1.5 rounded-full bg-primary/40" />
+                <div className="w-1.5 h-1.5 rounded-full bg-primary/40" />
+              </div>
+            </div>
           </div>
         </div>
-
-        {/* Title */}
-        <h3 className="font-bold text-lg text-foreground group-hover:text-primary transition-colors mb-2">
-          Build Your First AI Agent
-        </h3>
-
-        {/* Description */}
-        <p className="text-sm text-muted-foreground">
-          Learn how to create, configure, and deploy your first AI agent on Promptbox
-        </p>
-
-        {/* Badge */}
-        <Badge className="mt-3 bg-primary text-primary-foreground">
-          Get Started
-        </Badge>
       </Card>
     </Link>
   );
