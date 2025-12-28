@@ -1022,6 +1022,9 @@ export default function CreateAgent() {
                             ))}
                           </SelectContent>
                         </Select>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          You can change this later in the Agent Dashboard
+                        </p>
                       </div>
                     </CardContent>
                   </Card>
