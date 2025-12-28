@@ -313,7 +313,7 @@ export default function AIAgentsMarketplace() {
                 </div>
                 <h2 className="text-4xl md:text-5xl font-bold mb-6">
                   Ready to Build Your
-                  <span className="text-primary"> AI Agent?</span>
+                  <span className="text-background"> AI Agent?</span>
                 </h2>
                 <p className="text-xl text-background/70 mb-10 max-w-2xl mx-auto">
                   Join thousands of creators building and monetizing AI agents on Promptbox.
