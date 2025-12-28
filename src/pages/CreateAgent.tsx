@@ -901,9 +901,8 @@ export default function CreateAgent() {
             </div>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
-            {/* Form */}
-            <div className={`${currentStep === 0 ? 'lg:col-span-2' : 'lg:col-span-3'} space-y-4 sm:space-y-6`}>
+          {/* Form - full width centered */}
+          <div className="space-y-4 sm:space-y-6">
               
               {/* Step 0: AI Agent Details */}
               {currentStep === 0 && (
@@ -1125,6 +1124,72 @@ export default function CreateAgent() {
                             </div>
                           )}
                         </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* AI Agent Preview - Inline after Socials */}
+                  <Card className="border-primary/20 bg-card/80 backdrop-blur-sm shadow-lg">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Info className="h-5 w-5 text-primary" />
+                        AI Agent Preview
+                      </CardTitle>
+                      <CardDescription>
+                        Preview how your agent will appear in the marketplace
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="max-w-sm mx-auto">
+                        {/* Preview Card matching AgentMarketplaceCard style */}
+                        <div className="p-5 border border-border rounded-xl bg-card">
+                          {/* Integration boxes row - 4 boxes like n8n */}
+                          <div className="flex items-center gap-2 mb-4">
+                            {/* Box 1 - Avatar */}
+                            {formData.avatar_url ? (
+                              <div className="w-8 h-8 rounded-lg overflow-hidden bg-muted">
+                                <img src={formData.avatar_url} alt={formData.name} className="w-full h-full object-cover" />
+                              </div>
+                            ) : (
+                              <div className="w-8 h-8 rounded-lg border-2 border-dashed border-muted-foreground/30 flex items-center justify-center">
+                                <span className="text-[10px] text-muted-foreground">1</span>
+                              </div>
+                            )}
+                            {/* Box 2 - Integration placeholder */}
+                            <div className="w-8 h-8 rounded-lg border-2 border-dashed border-muted-foreground/30 flex items-center justify-center">
+                              <span className="text-[10px] text-muted-foreground">2</span>
+                            </div>
+                            {/* Box 3 - Integration placeholder */}
+                            <div className="w-8 h-8 rounded-lg border-2 border-dashed border-muted-foreground/30 flex items-center justify-center">
+                              <span className="text-[10px] text-muted-foreground">3</span>
+                            </div>
+                            {/* Box 4 - Overflow indicator */}
+                            <div className="w-8 h-8 rounded-lg border-2 border-dashed border-muted-foreground/30 flex items-center justify-center">
+                              <span className="text-[10px] text-muted-foreground">+X</span>
+                            </div>
+                          </div>
+
+                          {/* Agent name */}
+                          <h3 className="font-semibold text-foreground mb-3 line-clamp-2">
+                            {formData.name || "AI Agent Name"}
+                          </h3>
+
+                          {/* Creator with avatar */}
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center">
+                              <span className="text-[10px] font-medium text-primary">
+                                {formData.symbol ? formData.symbol.slice(0, 2) : "AG"}
+                              </span>
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              ${formData.symbol || "SYMBOL"}
+                            </p>
+                          </div>
+                        </div>
+
+                        <p className="text-xs text-muted-foreground text-center mt-3">
+                          Add integrations later in the Agent Dashboard
+                        </p>
                       </div>
                     </CardContent>
                   </Card>
@@ -1550,54 +1615,9 @@ export default function CreateAgent() {
                  </>
                )}
 
-            </div>
-
-            {/* Preview - Only show on step 0 */}
-            {currentStep === 0 && (
-              <div className="lg:col-span-1">
-                <Card className="sticky top-8 border-primary/20 bg-card/80 backdrop-blur-sm shadow-lg">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Info className="h-5 w-5" />
-                      AI Agent Preview
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="flex items-start gap-3">
-                        <Avatar className="h-12 w-12 shrink-0">
-                          <AvatarImage src={formData.avatar_url} />
-                          <AvatarFallback>
-                            {formData.name ? formData.name.slice(0, 2).toUpperCase() : "AG"}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-sm leading-tight break-words">
-                            {formData.name || "AI Agent Name"}
-                          </h3>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            ${formData.symbol || "SYMBOL"}
-                          </p>
-                        </div>
-                      </div>
-
-                      {formData.category && (
-                        <Badge variant="secondary" className="w-fit">
-                          {formData.category}
-                        </Badge>
-                      )}
-
-                      <p className="text-sm text-muted-foreground break-words">
-                        {formData.description || "AI Agent description will appear here..."}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
-          </div>
           </div>
         </div>
+      </div>
 
       {/* External Wallet Required Modal */}
       <ExternalWalletRequiredModal 
