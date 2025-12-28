@@ -26,6 +26,7 @@ import { usePrivyWallet } from "@/hooks/usePrivyWallet";
 import { useAdminSettings } from "@/hooks/useAdminSettings";
 // Framework SDK removed - now model agnostic
 import { OnboardingGuide } from "@/components/OnboardingGuide";
+import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { ExternalWalletRequired } from "@/components/ExternalWalletRequired";
 import { ExternalWalletRequiredModal } from "@/components/ExternalWalletRequiredModal";
 import { useSmartContractCreation } from "@/hooks/useSmartContractCreation";
@@ -743,19 +744,21 @@ export default function CreateAgent() {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative">
       <Header />
-        <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
+      <AnimatedBackground />
+      
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 relative z-10">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-6 sm:mb-8">
-            <h1 className="text-2xl sm:text-4xl font-bold mb-2 sm:mb-4">
-              <span className="bg-gradient-cyber bg-clip-text text-transparent">
-                Create New AI Agent on Base
+            <h1 className="text-2xl sm:text-5xl font-bold mb-2 sm:mb-4">
+              <span className="bg-gradient-cyber bg-clip-text text-transparent drop-shadow-sm">
+                Create New AI Agent
               </span>
             </h1>
             <p className="text-base sm:text-xl text-muted-foreground flex items-center justify-center gap-2">
-              Create your AI Agent on Base
+              Launch your AI Agent on Base
               <img 
                 src="/lovable-uploads/653131a0-191a-4ba3-9126-6f9aef2d6a80.png" 
                 alt="Base logo" 
@@ -899,7 +902,7 @@ export default function CreateAgent() {
               {/* Step 0: AI Agent Details */}
               {currentStep === 0 && (
                 <>
-                  <Card>
+                  <Card className="border-primary/20 bg-card/80 backdrop-blur-sm shadow-lg">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Sparkles className="h-5 w-5 text-primary" />
@@ -1043,7 +1046,7 @@ export default function CreateAgent() {
                   </Card>
 
                   {/* Socials */}
-                  <Card>
+                  <Card className="border-primary/20 bg-card/80 backdrop-blur-sm shadow-lg">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Link2 className="h-5 w-5 text-primary" />
@@ -1143,7 +1146,7 @@ export default function CreateAgent() {
               {/* Step 1: Project Pitch */}
               {currentStep === 1 && (
                 <>
-                  <Card>
+                  <Card className="border-primary/20 bg-card/80 backdrop-blur-sm shadow-lg">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Info className="h-5 w-5 text-primary" />
@@ -1200,7 +1203,7 @@ export default function CreateAgent() {
               {/* Step 2: Tokenomics */}
               {currentStep === 2 && (
                 <>
-                  <Card>
+                  <Card className="border-primary/20 bg-card/80 backdrop-blur-sm shadow-lg">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Coins className="h-5 w-5 text-primary" />
@@ -1297,7 +1300,7 @@ export default function CreateAgent() {
               {/* Step 3: Launch */}
               {currentStep === 3 && (
                 <>
-                  <Card>
+                  <Card className="border-primary/20 bg-card/80 backdrop-blur-sm shadow-lg">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <TrendingUp className="h-5 w-5 text-primary" />
@@ -1546,7 +1549,7 @@ export default function CreateAgent() {
             {/* Preview - Only show on step 0 */}
             {currentStep === 0 && (
               <div className="lg:col-span-1">
-                <Card className="sticky top-8">
+                <Card className="sticky top-8 border-primary/20 bg-card/80 backdrop-blur-sm shadow-lg">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Info className="h-5 w-5" />
