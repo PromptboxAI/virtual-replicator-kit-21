@@ -2,7 +2,6 @@ import { useState, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { AgentMarketplaceCard, BuildFirstAgentCard } from "@/components/AgentMarketplaceCard";
@@ -11,10 +10,10 @@ import { useAgents } from "@/hooks/useAgents";
 // Category definitions
 const CATEGORIES = [
   { id: "all", label: "All" },
-  { id: "Marketing", label: "Marketing" },
+  { id: "AI", label: "AI" },
   { id: "Sales", label: "Sales" },
-  { id: "Trading", label: "Trading" },
   { id: "IT Ops", label: "IT Ops" },
+  { id: "Marketing", label: "Marketing" },
   { id: "Dev Ops", label: "Dev Ops" },
   { id: "Other", label: "Other" },
 ];
@@ -48,15 +47,13 @@ export default function AIAgentsMarketplace() {
         selectedCategory === "all" ||
         agent.category?.toLowerCase() === selectedCategory.toLowerCase();
 
-      // For now, integration filtering would need the integrations field on agents
-      // This is a placeholder that can be enhanced when agent integrations are stored
-      const matchesIntegration = !selectedIntegration; // TODO: implement when integrations are available
+      const matchesIntegration = !selectedIntegration;
 
       return matchesSearch && matchesCategory && matchesIntegration;
     });
   }, [agents, searchQuery, selectedCategory, selectedIntegration]);
 
-  // Group agents by category
+  // Group agents by category for display
   const agentsByCategory = useMemo(() => {
     const grouped: Record<string, typeof agents> = {};
     CATEGORIES.filter((c) => c.id !== "all").forEach((cat) => {
@@ -83,106 +80,130 @@ export default function AIAgentsMarketplace() {
         <Header />
 
         <main className="flex-1">
-          {/* Hero Section */}
-          <section className="border-b border-border bg-muted/30">
-            <div className="container mx-auto px-4 py-12">
-              <div className="max-w-3xl mx-auto text-center mb-8">
-                <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-                  {totalAgents} AI Agent Templates
+          {/* Hero Section - Centered */}
+          <section className="border-b border-border">
+            <div className="container mx-auto px-4 py-16 md:py-20">
+              <div className="flex flex-col items-center text-center">
+                {/* Title */}
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-2">
+                  <span className="text-primary">{totalAgents}</span>{" "}
+                  <span className="text-muted-foreground font-normal">AI Agent</span>
                 </h1>
-                <p className="text-lg text-muted-foreground">
-                  Discover and deploy AI agents built by the community
+                <p className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-8">
+                  Templates
                 </p>
-              </div>
 
-              {/* Search Bar */}
-              <div className="max-w-xl mx-auto mb-8">
-                <div className="relative">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                  <Input
-                    placeholder="Search agents, categories, integrations..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-12 h-12 text-base bg-background"
-                  />
+                {/* Search Bar */}
+                <div className="w-full max-w-2xl mb-8">
+                  <div className="relative">
+                    <Input
+                      placeholder="Search apps, roles, usecases..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="h-14 pl-5 pr-14 text-base rounded-full bg-muted/50 border-border focus:border-primary"
+                    />
+                    <Search className="absolute right-5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  </div>
                 </div>
-              </div>
 
-              {/* Category Pills */}
-              <div className="flex flex-wrap justify-center gap-2">
-                {CATEGORIES.map((category) => (
-                  <button
-                    key={category.id}
-                    onClick={() => setSelectedCategory(category.id)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                      selectedCategory === category.id
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-muted-foreground hover:bg-muted/80"
-                    }`}
-                  >
-                    {category.label}
-                  </button>
-                ))}
+                {/* Category Pills */}
+                <div className="flex flex-wrap justify-center gap-2">
+                  {CATEGORIES.map((category) => (
+                    <button
+                      key={category.id}
+                      onClick={() => setSelectedCategory(category.id)}
+                      className={`px-4 py-2 rounded-full text-sm font-medium border transition-all ${
+                        selectedCategory === category.id
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-transparent text-muted-foreground border-border hover:border-primary/50 hover:text-foreground"
+                      }`}
+                    >
+                      {category.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </section>
 
-          {/* Build Your First Agent - Featured */}
-          <section className="container mx-auto px-4 py-8">
-            <div className="max-w-sm">
+          {/* Newcomer Essentials Section */}
+          <section className="container mx-auto px-4 py-12">
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+              <span className="text-muted-foreground font-normal">Newcomer</span> essentials:{" "}
+              <span className="text-muted-foreground font-normal">learn by doing</span>
+            </h2>
+            <div className="mt-8">
               <BuildFirstAgentCard />
             </div>
           </section>
 
-          {/* Browse by Category */}
+          {/* Agent Grid */}
           <section className="container mx-auto px-4 py-8">
-            <h2 className="text-2xl font-bold text-foreground mb-6">Browse by Category</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-              {CATEGORIES.filter((c) => c.id !== "all").map((category) => (
-                <button
-                  key={category.id}
-                  onClick={() => setSelectedCategory(category.id)}
-                  className={`p-4 rounded-xl border transition-all text-center ${
-                    selectedCategory === category.id
-                      ? "border-primary bg-primary/5"
-                      : "border-border hover:border-primary/50 hover:bg-muted/50"
-                  }`}
-                >
-                  <span className="font-medium text-foreground">{category.label}</span>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {agentsByCategory[category.id]?.length || 0} agents
-                  </p>
-                </button>
-              ))}
-            </div>
-          </section>
-
-          {/* Category Sections with Agent Grids */}
-          {loading ? (
-            <section className="container mx-auto px-4 py-8">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {[...Array(8)].map((_, i) => (
+            {loading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[...Array(6)].map((_, i) => (
                   <div
                     key={i}
-                    className="h-40 rounded-lg bg-muted animate-pulse"
+                    className="h-48 rounded-xl bg-muted animate-pulse"
                   />
                 ))}
               </div>
-            </section>
-          ) : selectedCategory === "all" ? (
-            // Show all categories
-            CATEGORIES.filter((c) => c.id !== "all").map((category) => {
-              const categoryAgents = agentsByCategory[category.id] || [];
-              if (categoryAgents.length === 0) return null;
+            ) : selectedCategory === "all" ? (
+              // Show agents grouped by category
+              <>
+                {CATEGORIES.filter((c) => c.id !== "all").map((category) => {
+                  const categoryAgents = agentsByCategory[category.id] || [];
+                  if (categoryAgents.length === 0) return null;
 
-              return (
-                <section key={category.id} className="container mx-auto px-4 py-8">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold text-foreground">{category.label}</h2>
-                    <Badge variant="secondary">{categoryAgents.length} agents</Badge>
+                  return (
+                    <div key={category.id} className="mb-12">
+                      <div className="flex items-center gap-3 mb-6">
+                        <h3 className="text-xl font-semibold text-foreground">
+                          {category.label}
+                        </h3>
+                        <span className="text-sm text-muted-foreground">
+                          {categoryAgents.length} templates
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {categoryAgents.map((agent) => (
+                          <AgentMarketplaceCard
+                            key={agent.id}
+                            id={agent.id}
+                            name={agent.name}
+                            creator={agent.creator_id || "Unknown"}
+                            category={agent.category || "Other"}
+                            avatarUrl={agent.avatar_url || undefined}
+                            integrations={[]}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+                {filteredAgents.length === 0 && (
+                  <div className="text-center py-16">
+                    <p className="text-muted-foreground text-lg">No agents found</p>
+                    <p className="text-muted-foreground/70 mt-2">
+                      Be the first to create an AI agent!
+                    </p>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {categoryAgents.map((agent) => (
+                )}
+              </>
+            ) : (
+              // Show filtered category
+              <>
+                <div className="flex items-center gap-3 mb-6">
+                  <h3 className="text-xl font-semibold text-foreground">
+                    {CATEGORIES.find((c) => c.id === selectedCategory)?.label}
+                  </h3>
+                  <span className="text-sm text-muted-foreground">
+                    {filteredAgents.length} templates
+                  </span>
+                </div>
+                {filteredAgents.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {filteredAgents.map((agent) => (
                       <AgentMarketplaceCard
                         key={agent.id}
                         id={agent.id}
@@ -190,51 +211,28 @@ export default function AIAgentsMarketplace() {
                         creator={agent.creator_id || "Unknown"}
                         category={agent.category || "Other"}
                         avatarUrl={agent.avatar_url || undefined}
-                        integrations={[]} // TODO: Add when available
+                        integrations={[]}
                       />
                     ))}
                   </div>
-                </section>
-              );
-            })
-          ) : (
-            // Show filtered category
-            <section className="container mx-auto px-4 py-8">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-foreground">
-                  {CATEGORIES.find((c) => c.id === selectedCategory)?.label}
-                </h2>
-                <Badge variant="secondary">{filteredAgents.length} agents</Badge>
-              </div>
-              {filteredAgents.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {filteredAgents.map((agent) => (
-                    <AgentMarketplaceCard
-                      key={agent.id}
-                      id={agent.id}
-                      name={agent.name}
-                      creator={agent.creator_id || "Unknown"}
-                      category={agent.category || "Other"}
-                      avatarUrl={agent.avatar_url || undefined}
-                      integrations={[]}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <p className="text-muted-foreground">No agents found in this category</p>
-                </div>
-              )}
-            </section>
-          )}
+                ) : (
+                  <div className="text-center py-16">
+                    <p className="text-muted-foreground text-lg">No agents in this category</p>
+                  </div>
+                )}
+              </>
+            )}
+          </section>
 
           {/* Search by Stack */}
           <section className="container mx-auto px-4 py-12 border-t border-border">
-            <h2 className="text-2xl font-bold text-foreground mb-6">Search by Stack</h2>
+            <h2 className="text-2xl font-bold text-foreground mb-2">
+              Search by Stack
+            </h2>
             <p className="text-muted-foreground mb-8">
               Find agents that use your preferred integrations
             </p>
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-7 gap-4">
+            <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-7 gap-3">
               {INTEGRATIONS.map((integration) => (
                 <button
                   key={integration.id}
@@ -243,18 +241,18 @@ export default function AIAgentsMarketplace() {
                       selectedIntegration === integration.id ? null : integration.id
                     )
                   }
-                  className={`p-4 rounded-xl border transition-all flex flex-col items-center gap-2 ${
+                  className={`p-4 rounded-xl border transition-all flex flex-col items-center gap-2 aspect-square ${
                     selectedIntegration === integration.id
                       ? "border-primary bg-primary/5"
-                      : "border-border hover:border-primary/50 hover:bg-muted/50"
+                      : "border-border hover:border-primary/50 bg-card hover:bg-muted/50"
                   }`}
                 >
                   <img
                     src={integration.logo}
                     alt={integration.name}
-                    className="w-10 h-10 object-contain"
+                    className="w-8 h-8 object-contain"
                   />
-                  <span className="text-sm font-medium text-foreground">
+                  <span className="text-xs font-medium text-foreground text-center">
                     {integration.name}
                   </span>
                 </button>
