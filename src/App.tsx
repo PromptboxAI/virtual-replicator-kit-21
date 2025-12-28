@@ -45,6 +45,8 @@ import AIAgentsHub from "./pages/platform/AIAgentsHub";
 import AIAgentDetail from "./pages/platform/AIAgentDetail";
 import AdminSEO from "./pages/AdminSEO";
 import PressReleases from "./pages/PressReleases";
+import AIAgentsMarketplace from "./pages/AIAgentsMarketplace";
+import BuildYourFirstAgent from "./pages/BuildYourFirstAgent";
 
 const queryClient = new QueryClient();
 
@@ -116,7 +118,8 @@ const App = () => {
             <DynamicSEO />
             <Routes>
               <Route path="/" element={<TokenAgents />} />
-              <Route path="/ai-agents" element={<Index />} />
+              <Route path="/ai-agents" element={<AIAgentsMarketplace />} />
+              <Route path="/build-your-first-ai-agent" element={<BuildYourFirstAgent />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/about" element={<About />} />
               <Route path="/learn" element={<Learn />} />

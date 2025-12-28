@@ -46,8 +46,11 @@ export function Header() {
               
               {/* Navigation */}
               <nav className="hidden md:flex items-center space-x-8">
-                <a href="https://trade.promptbox.com" className="text-foreground hover:text-primary transition-colors font-medium" target="_blank" rel="noopener noreferrer">
+                <Link to="/ai-agents" className="text-foreground hover:text-primary transition-colors font-medium">
                   AI Agents
+                </Link>
+                <a href="https://trade.promptbox.com" className="text-foreground hover:text-primary transition-colors font-medium" target="_blank" rel="noopener noreferrer">
+                  Trade
                 </a>
                 <DropdownMenu>
                   <DropdownMenuTrigger className="flex items-center text-foreground hover:text-primary transition-colors font-medium focus:outline-none">
@@ -243,6 +246,13 @@ export function Header() {
                     
                     {/* Navigation Links */}
                     <nav className="flex flex-col flex-1 p-6 space-y-6 overflow-y-auto">
+                    <Link 
+                      to="/ai-agents" 
+                      className="text-lg font-medium text-foreground hover:text-primary transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      AI Agents
+                    </Link>
                     <a 
                       href="https://trade.promptbox.com" 
                       className="text-lg font-medium text-foreground hover:text-primary transition-colors"
@@ -250,7 +260,7 @@ export function Header() {
                       rel="noopener noreferrer"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      AI Agents
+                      Trade
                     </a>
                     
                     <div className="flex flex-col space-y-3">
