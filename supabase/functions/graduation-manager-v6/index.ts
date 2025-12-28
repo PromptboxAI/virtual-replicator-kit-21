@@ -208,16 +208,35 @@ Deno.serve(async (req) => {
     }
 
     // ============ ON-CHAIN EXECUTION ============
-    const GRADUATION_MANAGER_ADDRESS = Deno.env.get('GRADUATION_MANAGER_V6_ADDRESS');
-    const RPC_URL = Deno.env.get('BASE_SEPOLIA_RPC_URL');
-    const PLATFORM_PRIVATE_KEY = Deno.env.get('PLATFORM_PRIVATE_KEY');
+    // Try to get GraduationManager address from database first, fallback to env var
+    let GRADUATION_MANAGER_ADDRESS: string | undefined;
+    
+    const { data: deployedContract } = await supabase
+      .from('deployed_contracts')
+      .select('contract_address')
+      .eq('contract_type', 'GraduationManager_V6')
+      .eq('version', 'v6')
+      .eq('network', 'base_sepolia')
+      .eq('is_active', true)
+      .single();
+    
+    if (deployedContract?.contract_address) {
+      GRADUATION_MANAGER_ADDRESS = deployedContract.contract_address;
+      console.log('[graduation-manager-v6] Using GraduationManager from DB:', GRADUATION_MANAGER_ADDRESS);
+    } else {
+      GRADUATION_MANAGER_ADDRESS = Deno.env.get('GRADUATION_MANAGER_V6_ADDRESS');
+      console.log('[graduation-manager-v6] Using GraduationManager from env:', GRADUATION_MANAGER_ADDRESS);
+    }
+    
+    const RPC_URL = Deno.env.get('BASE_SEPOLIA_RPC_URL') || Deno.env.get('PRIMARY_RPC_URL');
+    const PLATFORM_PRIVATE_KEY = Deno.env.get('PLATFORM_PRIVATE_KEY') || Deno.env.get('DEPLOYER_PRIVATE_KEY');
 
     let onChainResult = null;
     let onChainError = null;
 
     if (!GRADUATION_MANAGER_ADDRESS || !RPC_URL || !PLATFORM_PRIVATE_KEY) {
-      console.warn('[graduation-manager-v6] Missing env vars for on-chain execution. Graduation recorded in DB only.');
-      console.log('Required env vars: GRADUATION_MANAGER_V6_ADDRESS, BASE_SEPOLIA_RPC_URL, PLATFORM_PRIVATE_KEY');
+      console.warn('[graduation-manager-v6] Missing config for on-chain execution. Graduation recorded in DB only.');
+      console.log('Required: GRADUATION_MANAGER_V6_ADDRESS (or in DB), RPC_URL, PLATFORM_PRIVATE_KEY');
     } else if (GRADUATION_MANAGER_ADDRESS === '0x0000000000000000000000000000000000000000') {
       console.warn('[graduation-manager-v6] GraduationManagerV6 not deployed yet. Graduation recorded in DB only.');
     } else {

@@ -252,3 +252,6 @@ verify_jwt = false
 
 [functions.claim-rewards]
 verify_jwt = false
+
+[functions.deploy-v6-contracts]
+verify_jwt = false

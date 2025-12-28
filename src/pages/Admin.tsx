@@ -51,6 +51,7 @@ import {
 import { TGERunbook } from "@/components/TGERunbook";
 import { AdminSystemValidator } from "@/components/AdminSystemValidator";
 import { TestingGuide } from "@/components/TestingGuide";
+import { V6DeploymentPanel } from "@/components/V6DeploymentPanel";
 
 type AdminSection = 
   | 'system-settings'
@@ -522,6 +523,9 @@ const Admin = () => {
       case 'treasury-contracts':
         return (
           <div className="space-y-6">
+            {/* V6 Contract Deployment */}
+            <V6DeploymentPanel />
+
             {/* Treasury Management */}
             <Card>
               <CardHeader>
