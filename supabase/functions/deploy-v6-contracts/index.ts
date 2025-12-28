@@ -52,13 +52,13 @@ const CONTRACT_TYPES = [
 
 type ContractType = typeof CONTRACT_TYPES[number];
 
-// Bytecode file names in storage bucket
+// Bytecode file names in storage bucket (must match exact uploaded filenames)
 const BYTECODE_FILES: Record<string, string> = {
   'RewardDistributor': 'bytecode_RewardDistributor.txt',
   'TeamVesting': 'bytecode_TeamVesting.txt',
   'LPLocker': 'bytecode_LPLocker.txt',
-  'GraduationManager': 'bytecode_GraduationManager.txt',
-  'AgentFactory': 'bytecode_AgentFactory.txt',
+  'GraduationManager': 'bytecode_GraduationManagerV6.txt',
+  'AgentFactory': 'bytecode_AgentFactoryV6.txt',
 };
 
 // Ownable ABI for ownership transfer
@@ -80,74 +80,29 @@ interface DeploymentStep {
 
 // Fetch bytecode from Supabase Storage
 async function fetchBytecode(supabase: SupabaseClient, contractName: string): Promise<string> {
-  const expectedFileName = BYTECODE_FILES[contractName];
-  if (!expectedFileName) {
+  const fileName = BYTECODE_FILES[contractName];
+  if (!fileName) {
     throw new Error(`Unknown contract: ${contractName}`);
   }
 
-  const bucket = 'contract-bytecode';
+  console.log(`[deploy-v6-contracts] Fetching bytecode for ${contractName}: ${fileName}`);
 
-  const downloadAndValidate = async (path: string): Promise<string> => {
-    const { data, error } = await supabase.storage.from(bucket).download(path);
+  const { data, error } = await supabase.storage
+    .from('contract-bytecode')
+    .download(fileName);
 
-    if (error || !data) {
-      const errMsg =
-        (error as any)?.message || (error as any)?.error || JSON.stringify(error) || 'No data returned';
-      throw new Error(`Failed to fetch bytecode file '${path}': ${errMsg}`);
-    }
-
-    const bytecode = (await data.text()).trim();
-    if (!/^0x[0-9a-fA-F]+$/.test(bytecode)) {
-      throw new Error(
-        `Invalid bytecode format in '${path}'. Must be 0x followed by hex characters only.`
-      );
-    }
-
-    return bytecode;
-  };
-
-  console.log(`[deploy-v6-contracts] Fetching bytecode for ${contractName} from storage: ${bucket}/${expectedFileName}`);
-
-  try {
-    const bytecode = await downloadAndValidate(expectedFileName);
-    console.log(`[deploy-v6-contracts] ✅ Loaded bytecode for ${contractName} (${bytecode.length} chars)`);
-    return bytecode;
-  } catch (primaryErr) {
-    // If the expected file isn't found (or any download error), list the bucket root
-    // and try to auto-detect a close match to reduce naming friction.
-    console.error(`[deploy-v6-contracts] Primary bytecode download failed for ${contractName}:`, (primaryErr as Error).message);
-
-    const { data: files, error: listError } = await supabase.storage.from(bucket).list('', {
-      limit: 100,
-      sortBy: { column: 'name', order: 'asc' },
-    });
-
-    if (listError) {
-      const listMsg =
-        (listError as any)?.message || (listError as any)?.error || JSON.stringify(listError) || 'Unknown list error';
-      throw new Error(
-        `Could not list bucket '${bucket}' to locate '${expectedFileName}'. ${listMsg}`
-      );
-    }
-
-    const available = (files || []).map((f) => f.name);
-    const candidates = available.filter((n) =>
-      n.toLowerCase().includes(`bytecode_${contractName}`.toLowerCase())
-    );
-
-    if (candidates.length === 1) {
-      console.log(`[deploy-v6-contracts] Found close match for ${contractName}: ${candidates[0]}`);
-      const bytecode = await downloadAndValidate(candidates[0]);
-      console.log(`[deploy-v6-contracts] ✅ Loaded bytecode for ${contractName} from ${candidates[0]} (${bytecode.length} chars)`);
-      return bytecode;
-    }
-
-    throw new Error(
-      `Bytecode file not found for ${contractName}. Expected '${expectedFileName}'. ` +
-        `Available files: ${available.join(', ') || '(none)'}. ` +
-        (candidates.length ? `Close matches: ${candidates.join(', ')}.` : '')
-    );
+  if (error || !data) {
+    throw new Error(`Failed to fetch bytecode for ${contractName} (${fileName}): ${error?.message || 'No data'}`);
   }
+
+  const bytecode = (await data.text()).trim();
+
+  if (!/^0x[0-9a-fA-F]+$/.test(bytecode)) {
+    throw new Error(`Invalid bytecode format for ${contractName}. Must be 0x followed by hex only.`);
+  }
+
+  console.log(`[deploy-v6-contracts] ✅ Loaded ${contractName} bytecode (${bytecode.length} chars)`);
+  return bytecode;
 }
 
 Deno.serve(async (req) => {
