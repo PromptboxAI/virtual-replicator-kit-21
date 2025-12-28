@@ -66,8 +66,8 @@ export function AgentCard({ agent }: AgentCardProps) {
             alt={agent.name}
             className="w-12 h-12 rounded-full border-2 border-primary/30 group-hover:border-primary/60 transition-colors"
           />
-          <div>
-            <h4 className="font-semibold text-foreground group-hover:text-primary transition-colors">
+          <div className="min-w-0 flex-1">
+            <h4 className="font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-tight">
               {agent.name}
             </h4>
             <div className="flex items-center gap-2">
