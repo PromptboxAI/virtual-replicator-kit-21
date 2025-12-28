@@ -763,7 +763,7 @@ export default function CreateAgent() {
                 Create New AI Agent
               </span>
             </h1>
-            <p className="text-base sm:text-xl text-muted-foreground flex items-center justify-center gap-2">
+            <p className="text-base sm:text-xl text-foreground flex items-center justify-center gap-2">
               Launch your AI Agent on Base
               <img 
                 src="/lovable-uploads/653131a0-191a-4ba3-9126-6f9aef2d6a80.png" 
