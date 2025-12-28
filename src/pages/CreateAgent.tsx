@@ -1310,7 +1310,7 @@ export default function CreateAgent() {
                               <span className="text-sm font-medium">Token Allocation</span>
                             </div>
                             <p className="text-sm text-foreground/70 ml-6">
-                              2% Vault • 10% Team (cliff vesting) • 5% Holder Rewards
+                              2% Vault • 10% Team (cliff vesting) • 5% Holder Rewards • Remainder to LP (56.5% - 88% depending on trading)
                             </p>
                             
                             <div className="flex items-center gap-2">
