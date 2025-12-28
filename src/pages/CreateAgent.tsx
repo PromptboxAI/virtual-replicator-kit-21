@@ -1168,6 +1168,11 @@ export default function CreateAgent() {
                             {formData.name || "AI Agent Name"}
                           </h3>
 
+                          {/* Description */}
+                          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                            {formData.description || "Agent description will appear here..."}
+                          </p>
+
                           {/* Creator with avatar */}
                           <div className="flex items-center gap-2">
                             {formData.avatar_url ? (
