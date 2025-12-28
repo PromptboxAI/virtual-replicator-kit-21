@@ -1307,10 +1307,10 @@ export default function CreateAgent() {
                             
                             <div className="flex items-center gap-2">
                               <Check className="h-4 w-4 text-green-500" />
-                              <span className="text-sm font-medium">No Pre-Mine</span>
+                              <span className="text-sm font-medium">Token Allocation</span>
                             </div>
                             <p className="text-sm text-muted-foreground ml-6">
-                              All tokens added to liquidity pool
+                              2% Vault • 10% Team (cliff vesting) • 5% Holder Rewards
                             </p>
                             
                             <div className="flex items-center gap-2">
@@ -1318,7 +1318,7 @@ export default function CreateAgent() {
                               <span className="text-sm font-medium">Liquidity Locked</span>
                             </div>
                             <p className="text-sm text-muted-foreground ml-6">
-                              10-year lock for stability
+                              95% LP locked for 3 years, 5% to vault
                             </p>
                           </div>
                           
@@ -1328,15 +1328,15 @@ export default function CreateAgent() {
                               <span className="text-sm font-medium">Bonding Curve</span>
                             </div>
                             <p className="text-sm text-muted-foreground ml-6">
-                              Graduates at 42k $PROMPT volume
+                              Graduates at 42K $PROMPT raised
                             </p>
                             
                             <div className="flex items-center gap-2">
                               <Zap className="h-4 w-4 text-primary" />
-                              <span className="text-sm font-medium">Trading Tax</span>
+                              <span className="text-sm font-medium">Trading Fee</span>
                             </div>
                             <p className="text-sm text-muted-foreground ml-6">
-                              1% fee (70% to creator, 30% to protocol)
+                              5% fee (40% creator, 40% vault, 20% LP treasury)
                             </p>
                           </div>
                         </div>
@@ -1347,8 +1347,8 @@ export default function CreateAgent() {
                         <Info className="h-4 w-4" />
                         <AlertDescription>
                           <strong>PROMPT PROTOCOL:</strong> Your agent launches with a fixed 1B token supply on a bonding curve. 
-                          Graduates at 42k $PROMPT volume. 
-                          All launches are fair with no insider allocations.
+                          Graduates at 42K $PROMPT raised. 
+                          Fair launch with transparent token allocation.
                         </AlertDescription>
                       </Alert>
                     </CardContent>
