@@ -30,7 +30,7 @@ import GraduationTest from "./pages/GraduationTest";
 import { FeeTest } from "./pages/FeeTest";
 import PriceAuditDashboard from "./pages/PriceAuditDashboard";
 import HealthCheck from "./pages/HealthCheck";
-import TestSepoliaToken from "./pages/TestSepoliaToken";
+
 import { LegacyTradeRedirect } from "./components/LegacyRedirect";
 import { useUserRole } from "./hooks/useUserRole";
 import { Header } from "./components/Header";
@@ -149,7 +149,7 @@ const App = () => {
                 </div>
               } />
               <Route path="/test-lab" element={<AdminProtectedRoute><TestLab /></AdminProtectedRoute>} />
-              <Route path="/test-sepolia-token" element={<AdminProtectedRoute><TestSepoliaToken /></AdminProtectedRoute>} />
+              
               <Route path="/graduation-test" element={
                 <div>
                   <h1>Graduation Test Route Reached</h1>
