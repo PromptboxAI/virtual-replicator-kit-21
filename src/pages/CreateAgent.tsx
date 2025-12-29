@@ -1507,7 +1507,7 @@ export default function CreateAgent() {
                                     <Button 
                                       variant="outline" 
                                       size="sm"
-                                      onClick={() => handleInputChange('prebuy_amount', Math.min(1000, Math.max(0, balance - 100)))}
+                                      onClick={() => handleInputChange('prebuy_amount', Math.min(adminSettings?.max_prebuy_amount || 1000, Math.max(0, balance - 100)))}
                                     >
                                       Max
                                     </Button>
