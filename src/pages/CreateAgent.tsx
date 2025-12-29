@@ -483,6 +483,20 @@ export default function CreateAgent() {
       // 📈 V6 Smart Contract Integration
       if (deploymentMode === 'smart_contract') {
         console.log('[CreateAgent] V6 Smart Contract Mode: Deploying via user wallet...');
+        
+        // 🛡️ IMMEDIATELY mark as 'deploying' BEFORE wallet dialogs
+        // This prevents cleanup job from marking agent as FAILED during wallet confirmation
+        const { error: deployingError } = await supabase
+          .from('agents')
+          .update({ deployment_status: 'deploying' })
+          .eq('id', agentId);
+        
+        if (deployingError) {
+          console.warn('[CreateAgent] Failed to set deployment_status:', deployingError);
+        } else {
+          console.log('[CreateAgent] Set deployment_status=deploying for agent:', agentId);
+        }
+        
         try {
           // V6 Flow: User wallet calls AgentFactoryV6.createAgent(name, symbol)
           // Factory charges 100 PROMPT and deploys AgentTokenV6
@@ -538,13 +552,14 @@ export default function CreateAgent() {
               variant: "destructive"
             });
             
-            // Update agent to database mode on failure
+            // Update agent to database mode on failure - clear deployment_status
             await supabase
               .from('agents')
               .update({ 
                 creation_mode: 'database',
                 token_graduated: false,
                 status: 'ACTIVE',
+                deployment_status: 'failed',
                 is_active: true
               })
               .eq('id', agentId);
@@ -557,13 +572,14 @@ export default function CreateAgent() {
             variant: "destructive"
           });
           
-          // Update agent to database mode on failure
+          // Update agent to database mode on failure - clear deployment_status
           await supabase
             .from('agents')
             .update({ 
               creation_mode: 'database',
               token_graduated: false,
               status: 'ACTIVE',
+              deployment_status: 'failed',
               is_active: true
             })
             .eq('id', agentId);

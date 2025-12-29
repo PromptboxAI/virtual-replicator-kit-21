@@ -53,6 +53,7 @@ Deno.serve(async (req) => {
     const twentyMinutesAgo = new Date(Date.now() - 20 * 60 * 1000).toISOString();
 
     // (A) Agents still ACTIVATING after 5m with NO tx hash recorded
+    // IMPORTANT: Exclude agents with deployment_status='deploying' (user is in wallet confirmation)
     const { data: stuckNoTxAgents, error: markNoTxError } = await supabase
       .from('agents')
       .update({
@@ -62,6 +63,7 @@ Deno.serve(async (req) => {
         failure_reason: 'Deployment stalled: no transaction hash was saved after 5 minutes'
       })
       .eq('status', 'ACTIVATING')
+      .neq('deployment_status', 'deploying')  // 🛡️ Don't touch actively-deploying agents
       .is('deployment_tx_hash', null)
       .is('token_contract_address', null)
       .lt('created_at', fiveMinutesAgo)
@@ -73,6 +75,7 @@ Deno.serve(async (req) => {
     }
 
     // (B) Agents still ACTIVATING after 20m WITH tx hash but NO contract address
+    // IMPORTANT: Exclude agents with deployment_status='deploying' (user is in wallet confirmation)
     const { data: stuckWithTxAgents, error: markWithTxError } = await supabase
       .from('agents')
       .update({
@@ -82,6 +85,7 @@ Deno.serve(async (req) => {
         failure_reason: 'Deployment pending too long (20m). Tx hash recorded; investigate confirmation/RPC.'
       })
       .eq('status', 'ACTIVATING')
+      .neq('deployment_status', 'deploying')  // 🛡️ Don't touch actively-deploying agents
       .not('deployment_tx_hash', 'is', null)
       .is('token_contract_address', null)
       .lt('created_at', twentyMinutesAgo)
