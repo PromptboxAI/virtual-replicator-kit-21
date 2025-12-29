@@ -453,6 +453,7 @@ export default function CreateAgent() {
           
           // 🎓 Graduation should ONLY occur after threshold is reached
           token_graduated: false,
+        }])
         .select()
         .single();
 
