@@ -1424,11 +1424,11 @@ export default function CreateAgent() {
                             <p className="text-foreground/80 text-xs sm:text-sm">{formData.total_supply.toLocaleString()}</p>
                           </div>
                           <div>
-                            <p className="font-medium text-xs sm:text-sm">Initial Price:</p>
+                            <p className="font-medium text-xs sm:text-sm">Initial Price (per token):</p>
                             <p className="text-foreground/80 text-xs sm:text-sm">0.00004 PROMPT</p>
                           </div>
                           <div>
-                            <p className="font-medium text-xs sm:text-sm">Graduation Price:</p>
+                            <p className="font-medium text-xs sm:text-sm">Graduation Price (per token):</p>
                             <p className="text-foreground/80 text-xs sm:text-sm">0.0001 PROMPT</p>
                           </div>
                         </div>
