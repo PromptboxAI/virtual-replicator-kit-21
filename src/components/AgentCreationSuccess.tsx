@@ -40,7 +40,7 @@ export default function AgentCreationSuccess() {
             </h1>
             
             <p className="text-xl text-foreground/80 mb-2">
-              <span className="font-semibold">{agentName}</span> ({agentSymbol}) is now live
+              <span className="font-semibold">{agentName}</span> is now live
             </p>
             
             {prebuyAmount && prebuyAmount > 0 && (
