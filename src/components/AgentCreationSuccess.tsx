@@ -1,10 +1,9 @@
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { CheckCircle2, TrendingUp, Settings, ArrowRight, ExternalLink } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { CheckCircle2, TrendingUp, Settings, ArrowRight, ExternalLink, Rocket } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
-import { AnimatedBackground } from '@/components/AnimatedBackground';
 
 interface LocationState {
   agentName?: string;
@@ -25,133 +24,137 @@ export default function AgentCreationSuccess() {
   const prebuyAmount = state?.prebuyAmount;
 
   return (
-    <div className="min-h-screen relative">
+    <div className="min-h-screen bg-background">
       <Header />
-      <AnimatedBackground />
       
-      <div className="container mx-auto px-4 py-12 pb-32 relative z-10">
-        <div className="max-w-2xl mx-auto">
+      <main className="container mx-auto px-4 py-16 pb-32">
+        <div className="max-w-3xl mx-auto">
           {/* Success Header */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-500/10 border-2 border-green-500 mb-6">
-              <CheckCircle2 className="h-10 w-10 text-green-500" />
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-emerald-500/10 mb-8">
+              <CheckCircle2 className="h-12 w-12 text-emerald-500" />
             </div>
-            <h1 className="text-3xl sm:text-4xl font-bold mb-3">
-              <span className="bg-gradient-cyber bg-clip-text text-transparent">
-                Agent Created Successfully!
-              </span>
+            
+            <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-4 tracking-tight">
+              Agent Created Successfully
             </h1>
-            <p className="text-muted-foreground text-lg">
-              <span className="font-semibold text-foreground">{agentName}</span> ({agentSymbol}) is now live
-              {prebuyAmount && prebuyAmount > 0 && (
-                <span className="block mt-1 text-sm">
-                  Pre-buy of {prebuyAmount} PROMPT executed
-                </span>
-              )}
+            
+            <p className="text-xl text-foreground/80 mb-2">
+              <span className="font-semibold">{agentName}</span> ({agentSymbol}) is now live
             </p>
-            {tokenAddress && (
-              <p className="text-xs text-muted-foreground mt-2 font-mono">
-                Contract: {tokenAddress.slice(0, 10)}...{tokenAddress.slice(-8)}
+            
+            {prebuyAmount && prebuyAmount > 0 && (
+              <p className="text-base text-foreground/70">
+                Pre-buy of {prebuyAmount} PROMPT executed
               </p>
+            )}
+            
+            {tokenAddress && (
+              <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-muted rounded-lg">
+                <span className="text-sm text-foreground/70">Contract:</span>
+                <code className="text-sm font-mono text-foreground">
+                  {tokenAddress.slice(0, 10)}...{tokenAddress.slice(-8)}
+                </code>
+                <button
+                  onClick={() => window.open(`https://sepolia.basescan.org/address/${tokenAddress}`, '_blank')}
+                  className="text-primary hover:text-primary/80 transition-colors"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                </button>
+              </div>
             )}
           </div>
 
-          {/* Choice Cards */}
-          <div className="grid gap-4 md:grid-cols-2">
+          {/* Action Cards */}
+          <div className="grid gap-6 md:grid-cols-2 mb-12">
             {/* Trade Card */}
             <Card 
-              className="group cursor-pointer border-2 hover:border-primary transition-all duration-300 hover:shadow-lg hover:shadow-primary/10"
+              className="group cursor-pointer border-2 border-border hover:border-primary bg-card transition-all duration-200 hover:shadow-xl"
               onClick={() => navigate(`/agent/${agentId}`)}
             >
-              <CardHeader className="pb-3">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 rounded-xl bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                    <TrendingUp className="h-6 w-6 text-primary" />
+              <CardContent className="p-8">
+                <div className="flex items-start gap-5 mb-6">
+                  <div className="p-4 rounded-2xl bg-primary/10 group-hover:bg-primary/15 transition-colors">
+                    <TrendingUp className="h-8 w-8 text-primary" />
                   </div>
-                  <div>
-                    <CardTitle className="text-lg">Start Trading</CardTitle>
-                    <CardDescription>View chart & buy/sell tokens</CardDescription>
+                  <div className="flex-1">
+                    <h2 className="text-xl font-semibold text-foreground mb-1">Start Trading</h2>
+                    <p className="text-foreground/70">View chart & trade tokens</p>
                   </div>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Go to the trading platform to view the bonding curve, price chart, and trade {agentSymbol}.
+                
+                <p className="text-foreground/80 mb-6 leading-relaxed">
+                  Access the trading platform to view the bonding curve, price chart, and buy or sell {agentSymbol} tokens.
                 </p>
-                <Button className="w-full group-hover:bg-primary/90">
-                  Start Trading
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                
+                <Button size="lg" className="w-full text-base font-medium">
+                  Go to Trading
+                  <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </CardContent>
             </Card>
 
             {/* Configure Agent Card */}
             <Card 
-              className="group cursor-pointer border-2 hover:border-secondary transition-all duration-300 hover:shadow-lg hover:shadow-secondary/10"
+              className="group cursor-pointer border-2 border-border hover:border-violet-500 bg-card transition-all duration-200 hover:shadow-xl"
               onClick={() => navigate(`/dashboard/${agentId}`)}
             >
-              <CardHeader className="pb-3">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 rounded-xl bg-secondary/10 group-hover:bg-secondary/20 transition-colors">
-                    <Settings className="h-6 w-6 text-secondary-foreground" />
+              <CardContent className="p-8">
+                <div className="flex items-start gap-5 mb-6">
+                  <div className="p-4 rounded-2xl bg-violet-500/10 group-hover:bg-violet-500/15 transition-colors">
+                    <Settings className="h-8 w-8 text-violet-500" />
                   </div>
-                  <div>
-                    <CardTitle className="text-lg">Start Building</CardTitle>
-                    <CardDescription>Configure your AI agent</CardDescription>
+                  <div className="flex-1">
+                    <h2 className="text-xl font-semibold text-foreground mb-1">Configure Agent</h2>
+                    <p className="text-foreground/70">Set up AI & marketing</p>
                   </div>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Set up {agentName}'s AI personality, marketing materials, team info, and roadmap.
+                
+                <p className="text-foreground/80 mb-6 leading-relaxed">
+                  Configure {agentName}'s AI personality, marketing materials, team information, and project roadmap.
                 </p>
-                <Button variant="secondary" className="w-full">
-                  Start Building
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                
+                <Button size="lg" variant="outline" className="w-full text-base font-medium border-2 hover:bg-violet-500/5 hover:border-violet-500 hover:text-violet-600">
+                  Go to Dashboard
+                  <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </CardContent>
             </Card>
           </div>
 
-          {/* Quick Links */}
-          <div className="mt-8 text-center">
-            <p className="text-sm text-muted-foreground mb-3">Quick links</p>
+          {/* Quick Navigation */}
+          <div className="border-t border-border pt-8">
             <div className="flex flex-wrap justify-center gap-3">
               <Button 
                 variant="ghost" 
-                size="sm"
+                size="lg"
+                className="text-foreground/70 hover:text-foreground"
                 onClick={() => navigate('/my-agents')}
               >
+                <Rocket className="mr-2 h-4 w-4" />
                 My Agents
               </Button>
               <Button 
                 variant="ghost" 
-                size="sm"
+                size="lg"
+                className="text-foreground/70 hover:text-foreground"
                 onClick={() => navigate('/market')}
               >
+                <TrendingUp className="mr-2 h-4 w-4" />
                 Market
               </Button>
               <Button 
                 variant="ghost" 
-                size="sm"
+                size="lg"
+                className="text-foreground/70 hover:text-foreground"
                 onClick={() => navigate('/create-agent')}
               >
-                Create Another
+                Create Another Agent
               </Button>
-              {tokenAddress && (
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => window.open(`https://sepolia.basescan.org/address/${tokenAddress}`, '_blank')}
-                >
-                  View on Basescan
-                  <ExternalLink className="ml-1 h-3 w-3" />
-                </Button>
-              )}
             </div>
           </div>
         </div>
-      </div>
+      </main>
       
       <Footer />
     </div>
