@@ -3,10 +3,11 @@ import { useAccount, useWriteContract, useReadContract, usePublicClient } from '
 import { parseEther, formatEther, Address, decodeEventLog, keccak256, toHex } from 'viem';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { 
-  PROMPT_TOKEN_ADDRESS, 
-  AGENT_FACTORY_V6_ADDRESS, 
-  AGENT_FACTORY_V6_ABI 
+import {
+  PROMPT_TOKEN_ADDRESS,
+  VAULT_ADDRESS,
+  AGENT_FACTORY_V6_ADDRESS,
+  AGENT_FACTORY_V6_ABI,
 } from '@/lib/contractsV6';
 
 // Standard ERC20 ABI for PROMPT token
@@ -34,6 +35,16 @@ const PROMPT_TOKEN_ABI = [
       {"internalType": "uint256", "name": "amount", "type": "uint256"}
     ],
     "name": "approve",
+    "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "address", "name": "to", "type": "address"},
+      {"internalType": "uint256", "name": "amount", "type": "uint256"}
+    ],
+    "name": "transfer",
     "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -219,6 +230,20 @@ export const useSmartContractCreation = () => {
 
       console.log('[V6] Step 4: Transaction sent:', tx);
 
+      // IMPORTANT: persist tx hash immediately (pre-confirmation) to prevent cleanup deleting agent
+      if (agentData.id) {
+        const { error: txUpdateError } = await supabase
+          .from('agents')
+          .update({ deployment_tx_hash: tx })
+          .eq('id', agentData.id);
+
+        if (txUpdateError) {
+          console.warn('[V6] Failed to persist deployment tx hash pre-confirmation:', txUpdateError);
+        } else {
+          console.log('[V6] Updated agent with tx hash (pre-confirmation):', tx);
+        }
+      }
+
       toast({
         title: "Transaction Sent",
         description: "Waiting for confirmation...",
@@ -304,25 +329,45 @@ export const useSmartContractCreation = () => {
   };
 
   /**
-   * Execute prebuy via trading-engine-v6 (database mode)
+   * Execute prebuy (on-chain PROMPT transfer + database trade record)
    * Called after successful agent creation
    */
   const executePrebuy = async (agentId: string, promptAmount: number): Promise<boolean> => {
-    if (!address || promptAmount <= 0) {
-      console.log('[V6] Skipping prebuy: no address or amount');
+    if (!address || !writeContractAsync || !publicClient || !isConnected || promptAmount <= 0) {
+      console.log('[V6] Skipping prebuy: missing wallet client or amount');
       return true;
     }
 
     console.log('[V6] Executing prebuy:', {
       agentId,
       walletAddress: address,
-      promptAmount
+      promptAmount,
+      vault: VAULT_ADDRESS,
     });
 
     try {
+      // Step 1: Transfer PROMPT to vault (on-chain)
       toast({
         title: "Processing Prebuy",
-        description: `Purchasing ${promptAmount} PROMPT worth of tokens...`,
+        description: "Confirm PROMPT transfer in your wallet...",
+      });
+
+      const transferTx = await writeContractAsync({
+        address: PROMPT_TOKEN_ADDRESS as Address,
+        abi: PROMPT_TOKEN_ABI,
+        functionName: 'transfer',
+        args: [VAULT_ADDRESS as Address, parseEther(promptAmount.toString())],
+        account: address,
+        chain,
+      });
+
+      await publicClient.waitForTransactionReceipt({ hash: transferTx });
+      console.log('[V6] Prebuy transfer confirmed:', transferTx);
+
+      // Step 2: Record position in database
+      toast({
+        title: "Recording Prebuy",
+        description: "Finalizing your prebuy...",
       });
 
       const { data, error } = await supabase.functions.invoke('trading-engine-v6', {
@@ -334,31 +379,20 @@ export const useSmartContractCreation = () => {
         }
       });
 
-      if (error) {
-        console.error('[V6] Prebuy error:', error);
-        toast({
-          title: "Prebuy Failed",
-          description: error.message || "Failed to execute prebuy",
-          variant: "destructive"
-        });
-        return false;
+      if (error || !data?.success) {
+        throw new Error(error?.message || data?.error || 'Failed to record prebuy');
       }
 
-      console.log('[V6] Prebuy result:', data);
-      
-      if (data?.success) {
-        toast({
-          title: "Prebuy Successful!",
-          description: `Received ${data.sharesReceived?.toLocaleString() || 'your'} shares`,
-        });
-        return true;
-      }
-
-      return false;
-    } catch (error) {
-      console.error('[V6] Prebuy exception:', error);
       toast({
-        title: "Prebuy Error",
+        title: "Prebuy Successful!",
+        description: `Received ${data.result?.sharesOut?.toLocaleString() || 'your'} shares`,
+      });
+
+      return true;
+    } catch (error) {
+      console.error('[V6] Prebuy failed:', error);
+      toast({
+        title: "Prebuy Failed",
         description: error instanceof Error ? error.message : "Unknown error",
         variant: "destructive"
       });
