@@ -69,8 +69,11 @@ serve(async (req) => {
       .from(tableName)
       .select('*', { count: 'exact' });
 
+    // Always exclude FAILED agents - they shouldn't show anywhere
+    query = query.neq('status', 'FAILED');
+
     // Market pages should only show active agents.
-    // "My Agents" should also be able to see deploying/failed agents.
+    // "My Agents" (creatorId set) can see ACTIVATING/PENDING agents but not FAILED.
     if (useMarketView || !creatorId) {
       query = query.eq('is_active', true);
     }
