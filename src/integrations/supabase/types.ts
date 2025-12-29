@@ -4315,6 +4315,7 @@ export type Database = {
           telegram_url: string | null
           test_mode: boolean | null
           token_address: string | null
+          token_contract_address: string | null
           token_graduated: boolean | null
           token_holders: number | null
           twitter_url: string | null
