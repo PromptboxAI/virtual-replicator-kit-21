@@ -432,15 +432,15 @@ export default function CreateAgent() {
           status: 'ACTIVATING',
           test_mode: appIsTestMode,
           
-          // ✅ V4 DYNAMIC PRICING FIELDS
+          // ✅ V6.1 PRICING FIELDS
           created_prompt_usd_rate: currentPromptUsdRate,
           created_p0: P0,
           created_p1: P1,
           graduation_mode: graduationMode,
           target_market_cap_usd: targetMarketCapUsd,
           
-          // ✅ V4 BONDING CURVE FIELDS
-          pricing_model: 'linear_v4',
+          // ✅ V6.1 BONDING CURVE
+          pricing_model: 'linear_v6_1',
           bonding_curve_supply: 0,
           migration_validated: true,
           
@@ -449,10 +449,10 @@ export default function CreateAgent() {
           creation_expires_at: creationExpiresAt,
           creator_prebuy_amount: formData.creator_prebuy_amount,
           creation_mode: deploymentMode,
+          deployment_status: deploymentMode === 'smart_contract' ? 'deploying' : 'not_deployed',
           
-          // 🚫 Block database trading in smart_contract mode
-          token_graduated: deploymentMode === 'smart_contract', // Treat as "graduated" to block DB trades
-        }])
+          // 🎓 Graduation should ONLY occur after threshold is reached
+          token_graduated: false,
         .select()
         .single();
 
@@ -481,20 +481,6 @@ export default function CreateAgent() {
       // 📈 V6 Smart Contract Integration
       if (deploymentMode === 'smart_contract') {
         console.log('[CreateAgent] V6 Smart Contract Mode: Deploying via user wallet...');
-        
-        // 🛡️ IMMEDIATELY mark as 'deploying' BEFORE wallet dialogs
-        // This prevents cleanup job from marking agent as FAILED during wallet confirmation
-        const { error: deployingError } = await supabase
-          .from('agents')
-          .update({ deployment_status: 'deploying' })
-          .eq('id', agentId);
-        
-        if (deployingError) {
-          console.warn('[CreateAgent] Failed to set deployment_status:', deployingError);
-        } else {
-          console.log('[CreateAgent] Set deployment_status=deploying for agent:', agentId);
-        }
-        
         try {
           // V6 Flow: User wallet calls AgentFactoryV6.createAgent(name, symbol)
           // Factory charges 100 PROMPT and deploys AgentTokenV6
@@ -508,15 +494,16 @@ export default function CreateAgent() {
             console.log('[CreateAgent] V6 deployment successful:', deployResult);
             deployedTokenAddress = deployResult.tokenAddress;
             
-            // Update agent with token_contract_address AND deployment_tx_hash
+            // Update agent with token address + tx hash
             const { error: updateError } = await supabase
               .from('agents')
               .update({ 
                 token_contract_address: deployResult.tokenAddress,
+                token_address: deployResult.tokenAddress, // legacy compatibility
                 deployment_tx_hash: deployResult.txHash, // Critical: prevents cleanup from deleting
                 deployment_status: 'deployed',
                 status: 'ACTIVE',
-                token_graduated: false, // Enable database trading
+                token_graduated: false,
                 is_active: true
               })
               .eq('id', agentId);
