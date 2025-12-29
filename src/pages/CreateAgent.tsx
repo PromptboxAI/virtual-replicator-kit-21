@@ -1542,7 +1542,7 @@ export default function CreateAgent() {
                                     const percentOfTradeable = (buyResult.sharesOut / BONDING_CURVE_V6_1_CONSTANTS.DATABASE_TRADEABLE_CAP) * 100;
                                     return (
                                       <div className="text-sm text-foreground/80 space-y-1">
-                                        <div>You'll receive: ~{Math.floor(buyResult.sharesOut).toLocaleString()} ${formData.symbol || 'tokens'}</div>
+                                        <div className="font-bold text-foreground">You'll receive: ~{Math.floor(buyResult.sharesOut).toLocaleString()} ${formData.symbol || 'tokens'}</div>
                                         <div className="text-xs text-muted-foreground">
                                           ({percentOfTradeable.toFixed(2)}% of tradeable supply • 5% fee: {buyResult.fee.toFixed(2)} PROMPT)
                                         </div>
