@@ -34,8 +34,7 @@ import { CreatorPrebuyPanel } from "@/components/CreatorPrebuyPanel";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 // import { useAgentTokens } from "@/hooks/useAgentTokens";
 import { useAccount } from 'wagmi';
-import { getCurrentPriceV3, BONDING_CURVE_V3_CONFIG } from "@/lib/bondingCurveV3";
-import { createDynamicBondingConfig } from "@/lib/bondingCurveV4";
+import { calculateBuyReturn, BONDING_CURVE_V6_1_CONSTANTS } from "@/lib/bondingCurveV6_1";
 
 // Hook for debounced value
 function useDebounce<T>(value: T, delay: number): T {
@@ -361,8 +360,8 @@ export default function CreateAgent() {
         }
       }
 
-      // Calculate initial bonding curve price
-      const initialPrice = getCurrentPriceV3(0); // Start at bonding curve beginning
+      // Calculate initial bonding curve price using V6.1 constants
+      const initialPrice = BONDING_CURVE_V6_1_CONSTANTS.DEFAULT_P0; // Start at bonding curve beginning
       
       // Calculate creation expiry time if locked
       let creationExpiresAt = null;
@@ -400,11 +399,10 @@ export default function CreateAgent() {
       const graduationMode = graduationConfig?.graduation_mode || 'database';
       const targetMarketCapUsd = graduationMode === 'smart_contract' ? 65000 : null;
       
-      // 🎯 Use centralized bonding config - single source of truth
-      const bondingConfig = createDynamicBondingConfig(currentPromptUsdRate, graduationMode);
-      const P0 = bondingConfig.P0;
-      const P1 = bondingConfig.P1;
-      const graduationThreshold = bondingConfig.GRADUATION_PROMPT_AMOUNT;
+      // 🎯 Use V6.1 bonding curve constants - single source of truth
+      const P0 = BONDING_CURVE_V6_1_CONSTANTS.DEFAULT_P0;
+      const P1 = BONDING_CURVE_V6_1_CONSTANTS.DEFAULT_P1;
+      const graduationThreshold = BONDING_CURVE_V6_1_CONSTANTS.GRADUATION_THRESHOLD_PROMPT;
       
       // Get deployment mode early
       const deploymentMode = adminSettings?.deployment_mode || 'database';
@@ -1539,16 +1537,23 @@ export default function CreateAgent() {
                                    <div className="text-sm text-foreground/80">
                                      Amount in $PROMPT (Max: {Math.min(adminSettings?.max_prebuy_amount || 1000, Math.max(0, balance - 100))})
                                   </div>
-                                  {formData.prebuy_amount > 0 && (
-                                    <div className="text-sm text-foreground/80">
-                                      You'll receive: ~{(formData.prebuy_amount / BONDING_CURVE_V3_CONFIG.P0).toLocaleString()} ${formData.symbol}
-                                      {adminSettings?.deployment_mode === 'smart_contract' && (
-                                        <span className="block mt-1 text-primary font-medium">
-                                          Smart contract mode provides atomic MEV protection for your prebuy.
-                                        </span>
-                                      )}
-                                    </div>
-                                  )}
+                                  {formData.prebuy_amount > 0 && (() => {
+                                    const buyResult = calculateBuyReturn(0, formData.prebuy_amount);
+                                    const percentOfTradeable = (buyResult.sharesOut / BONDING_CURVE_V6_1_CONSTANTS.DATABASE_TRADEABLE_CAP) * 100;
+                                    return (
+                                      <div className="text-sm text-foreground/80 space-y-1">
+                                        <div>You'll receive: ~{Math.floor(buyResult.sharesOut).toLocaleString()} ${formData.symbol || 'tokens'}</div>
+                                        <div className="text-xs text-muted-foreground">
+                                          ({percentOfTradeable.toFixed(2)}% of tradeable supply • 5% fee: {buyResult.fee.toFixed(2)} PROMPT)
+                                        </div>
+                                        {adminSettings?.deployment_mode === 'smart_contract' && (
+                                          <span className="block mt-1 text-primary font-medium">
+                                            Smart contract mode provides atomic MEV protection for your prebuy.
+                                          </span>
+                                        )}
+                                      </div>
+                                    );
+                                  })()}
                                 </div>
                               </div>
                             )}
