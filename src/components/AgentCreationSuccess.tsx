@@ -1,9 +1,11 @@
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { CheckCircle2, TrendingUp, Settings, ArrowRight, ExternalLink, Rocket } from 'lucide-react';
+import { CheckCircle2, TrendingUp, Settings, ArrowRight, ExternalLink, Rocket, Loader2 } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
+import { supabase } from '@/integrations/supabase/client';
 
 interface LocationState {
   agentName?: string;
@@ -12,16 +14,80 @@ interface LocationState {
   prebuyAmount?: number;
 }
 
+interface AgentData {
+  name: string;
+  symbol: string;
+  token_address: string | null;
+  prebuy_amount?: number;
+}
+
 export default function AgentCreationSuccess() {
   const navigate = useNavigate();
   const { agentId } = useParams<{ agentId: string }>();
   const location = useLocation();
   const state = location.state as LocationState | null;
 
-  const agentName = state?.agentName || 'Your Agent';
-  const agentSymbol = state?.agentSymbol || 'TOKEN';
-  const tokenAddress = state?.tokenAddress;
-  const prebuyAmount = state?.prebuyAmount;
+  const [agentData, setAgentData] = useState<AgentData | null>(null);
+  const [loading, setLoading] = useState(!state?.agentName);
+
+  // Fetch agent data from database if not passed via state
+  useEffect(() => {
+    if (state?.agentName) {
+      // We have state, use it
+      setAgentData({
+        name: state.agentName,
+        symbol: state.agentSymbol || 'TOKEN',
+        token_address: state.tokenAddress || null,
+        prebuy_amount: state.prebuyAmount,
+      });
+      setLoading(false);
+      return;
+    }
+
+    // Fetch from database
+    const fetchAgent = async () => {
+      if (!agentId) return;
+
+      const { data, error } = await supabase
+        .from('agents')
+        .select('name, symbol, token_address')
+        .eq('id', agentId)
+        .single();
+
+      if (error) {
+        console.error('Failed to fetch agent:', error);
+        setLoading(false);
+        return;
+      }
+
+      if (data) {
+        setAgentData({
+          name: data.name,
+          symbol: data.symbol,
+          token_address: data.token_address,
+        });
+      }
+      setLoading(false);
+    };
+
+    fetchAgent();
+  }, [agentId, state]);
+
+  const agentName = agentData?.name || 'Your Agent';
+  const tokenAddress = agentData?.token_address;
+  const prebuyAmount = agentData?.prebuy_amount;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="container mx-auto px-4 py-16 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -84,7 +150,7 @@ export default function AgentCreationSuccess() {
                 </div>
                 
                 <p className="text-foreground/80 mb-6 leading-relaxed">
-                  Access the trading platform to view the bonding curve, price chart, and buy or sell {agentSymbol} tokens.
+                  Access the trading platform to view the bonding curve, price chart, and buy or sell tokens.
                 </p>
                 
                 <Button size="lg" className="w-full text-base font-medium">
