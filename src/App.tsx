@@ -48,6 +48,7 @@ import PressReleases from "./pages/PressReleases";
 import AIAgentsMarketplace from "./pages/AIAgentsMarketplace";
 import BuildYourFirstAgent from "./pages/BuildYourFirstAgent";
 import AgentShowcase from "./pages/AgentShowcase";
+import AgentCreationSuccess from "./components/AgentCreationSuccess";
 
 const queryClient = new QueryClient();
 
@@ -127,6 +128,7 @@ const App = () => {
               <Route path="/learn" element={<Learn />} />
               <Route path="/faucet" element={<WagmiWrapper><Faucet /></WagmiWrapper>} />
               <Route path="/create" element={<WagmiWrapper><CreateAgent /></WagmiWrapper>} />
+              <Route path="/agent-created/:agentId" element={<AgentCreationSuccess />} />
               <Route path="/dashboard" element={<MyAgents />} />
               <Route path="/my-agents" element={<Navigate to="/dashboard" replace />} />
               <Route path="/dashboard/:agentId" element={<CreatorAgentDashboard />} />
