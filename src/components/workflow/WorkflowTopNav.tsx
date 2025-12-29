@@ -26,16 +26,17 @@ export function WorkflowTopNav({
 }: WorkflowTopNavProps) {
   return (
     <header className="h-14 border-b bg-card/50 backdrop-blur-sm flex items-center justify-between px-6">
-      {/* Left Side - Tabs */}
-      <div className="flex items-center gap-6">
-        <div className="flex items-center gap-3">
-          {hasUnsavedChanges && (
-            <Badge variant="destructive" className="text-xs">
-              Unsaved
-            </Badge>
-          )}
-        </div>
-        
+      {/* Left Side - Status badges only */}
+      <div className="flex items-center gap-3 w-96">
+        {hasUnsavedChanges && (
+          <Badge variant="destructive" className="text-xs">
+            Unsaved
+          </Badge>
+        )}
+      </div>
+      
+      {/* Center/Right - Tabs */}
+      <div className="flex-1 flex items-center">
         <Tabs value={activeTab} onValueChange={(value) => onTabChange(value as WorkflowTab)}>
           <TabsList className="h-10 bg-transparent border">
             <TabsTrigger 
