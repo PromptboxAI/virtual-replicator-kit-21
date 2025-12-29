@@ -1548,7 +1548,7 @@ export default function CreateAgent() {
                                         </div>
                                         {adminSettings?.deployment_mode === 'smart_contract' && (
                                           <span className="block mt-1 text-primary font-medium">
-                                            Smart contract mode provides atomic MEV protection for your prebuy.
+                                            Promptbox provides atomic MEV protection for your pre-buy.
                                           </span>
                                         )}
                                       </div>
