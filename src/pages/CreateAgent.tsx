@@ -1546,11 +1546,6 @@ export default function CreateAgent() {
                                         <div className="text-xs text-muted-foreground">
                                           ({percentOfTradeable.toFixed(2)}% of tradeable supply • 5% fee: {buyResult.fee.toFixed(2)} PROMPT)
                                         </div>
-                                        {adminSettings?.deployment_mode === 'smart_contract' && (
-                                          <span className="block mt-1 text-primary font-medium">
-                                            Promptbox provides atomic MEV protection for your pre-buy.
-                                          </span>
-                                        )}
                                       </div>
                                     );
                                   })()}
