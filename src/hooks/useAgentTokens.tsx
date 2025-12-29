@@ -121,14 +121,14 @@ export function useAgentTokens(tokenAddress?: string) {
     });
 
     try {
-      // Use V4 trading engine with dynamic pricing
-      const { data, error } = await supabase.functions.invoke('execute-bonding-curve-trade-v4', {
+      // Use execute-trade (database RPC) for bonding curve trades
+      const { data, error } = await supabase.functions.invoke('execute-trade', {
         body: {
           agentId: agent.id,
           userId: user.id,
           promptAmount: promptAmountNum,
           tradeType: 'buy',
-          expectedPrice: agent.current_price || 30,
+          expectedPrice: agent.current_price || 0,
           slippage: parseFloat(slippage)
         }
       });
@@ -184,13 +184,14 @@ export function useAgentTokens(tokenAddress?: string) {
     });
 
     try {
-      // Use V4 trading engine with dynamic pricing
-      const { data, error } = await supabase.functions.invoke('execute-bonding-curve-trade-v4', {
+      // Use execute-trade (database RPC) for bonding curve trades
+      const { data, error } = await supabase.functions.invoke('execute-trade', {
         body: {
           agentId: agent.id,
           userId: user.id,
           tokenAmount: tokenAmountNum,
           tradeType: 'sell',
+          expectedPrice: agent.current_price || 0,
           slippage: parseFloat(slippage)
         }
       });
