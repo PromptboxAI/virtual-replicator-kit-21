@@ -166,7 +166,7 @@ export default function AgentCreationSuccess() {
             {/* Configure Agent Card */}
             <Card 
               className="group cursor-pointer border-2 border-border hover:border-violet-500 bg-card transition-all duration-200 hover:shadow-xl flex flex-col"
-              onClick={() => navigate(`/dashboard/${agentId}`)}
+              onClick={() => navigate('/my-agents')}
             >
               <CardContent className="p-8 flex flex-col h-full">
                 <div className="flex items-start gap-5 mb-6">
