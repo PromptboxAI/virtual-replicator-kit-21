@@ -95,21 +95,21 @@ export function UniversalAgentDashboard({ agent, onAgentUpdated, isCreatorView =
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="text-center space-y-4 pb-8">
+      <div className="text-center space-y-4 pb-8 mb-4">
         <div className="flex items-center justify-center gap-4">
-          <Avatar className="h-16 w-16">
+          <Avatar className="h-16 w-16 flex-shrink-0">
             <AvatarImage src={agent.avatar_url} alt={agent.name} />
             <AvatarFallback>
               {agent.name.slice(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <div className="text-left">
-            <h1 className="text-3xl font-bold">{agent.name}</h1>
+          <div className="text-left min-w-0">
+            <h1 className="text-3xl font-bold break-words">{agent.name}</h1>
             <p className="text-muted-foreground">{agent.symbol} • {agent.category || 'AI Agent'}</p>
           </div>
         </div>
         {agent.description && (
-          <p className="text-muted-foreground max-w-2xl mx-auto mt-2">{agent.description}</p>
+          <p className="text-muted-foreground max-w-2xl mx-auto mt-4">{agent.description}</p>
         )}
       </div>
 
