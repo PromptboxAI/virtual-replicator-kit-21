@@ -95,7 +95,7 @@ export function UniversalAgentDashboard({ agent, onAgentUpdated, isCreatorView =
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="text-center space-y-4 pb-4">
+      <div className="text-center space-y-4 pb-8">
         <div className="flex items-center justify-center gap-4">
           <Avatar className="h-16 w-16">
             <AvatarImage src={agent.avatar_url} alt={agent.name} />
