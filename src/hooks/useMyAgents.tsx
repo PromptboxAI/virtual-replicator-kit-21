@@ -36,9 +36,7 @@ export function useMyAgents(userId: string | undefined, options: UseMyAgentsOpti
         // Configure params based on view mode
         switch (viewMode) {
           case 'database':
-            // Database-only agents (no contract deployed)
-            params.set('testMode', 'true');
-            // Don't require contract
+            // Show all of the user's agents regardless of test_mode.
             break;
           case 'testnet':
             // Testnet deployed agents
@@ -88,7 +86,6 @@ export function useMyAgents(userId: string | undefined, options: UseMyAgentsOpti
 
       switch (viewMode) {
         case 'database':
-          params.set('testMode', 'true');
           break;
         case 'testnet':
           params.set('testMode', 'true');

@@ -18,6 +18,7 @@ interface AgentData {
   name: string;
   symbol: string;
   token_address: string | null;
+  token_contract_address?: string | null;
   prebuy_amount?: number;
 }
 
@@ -50,9 +51,9 @@ export default function AgentCreationSuccess() {
 
       const { data, error } = await supabase
         .from('agents')
-        .select('name, symbol, token_address')
+        .select('name, symbol, token_address, token_contract_address, creator_prebuy_amount')
         .eq('id', agentId)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Failed to fetch agent:', error);
@@ -65,6 +66,8 @@ export default function AgentCreationSuccess() {
           name: data.name,
           symbol: data.symbol,
           token_address: data.token_address,
+          token_contract_address: data.token_contract_address,
+          prebuy_amount: (data.creator_prebuy_amount ?? undefined) as number | undefined,
         });
       }
       setLoading(false);
@@ -74,7 +77,7 @@ export default function AgentCreationSuccess() {
   }, [agentId, state]);
 
   const agentName = agentData?.name || 'Your Agent';
-  const tokenAddress = agentData?.token_address;
+  const tokenAddress = agentData?.token_contract_address || agentData?.token_address || null;
   const prebuyAmount = agentData?.prebuy_amount;
 
   if (loading) {

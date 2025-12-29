@@ -67,8 +67,13 @@ serve(async (req) => {
     // Build query
     let query = supabase
       .from(tableName)
-      .select('*', { count: 'exact' })
-      .eq('is_active', true); // Only active agents for market view
+      .select('*', { count: 'exact' });
+
+    // Market pages should only show active agents.
+    // "My Agents" should also be able to see deploying/failed agents.
+    if (useMarketView || !creatorId) {
+      query = query.eq('is_active', true);
+    }
 
     // Apply filters
     if (testMode !== null) {
@@ -96,7 +101,8 @@ serve(async (req) => {
     }
 
     if (hasContract === 'true' && !useMarketView) {
-      query = query.not('token_address', 'is', null);
+      // V6 uses token_contract_address, older code uses token_address
+      query = query.or('token_address.not.is.null,token_contract_address.not.is.null');
     }
 
     if (creatorId && !useMarketView) {

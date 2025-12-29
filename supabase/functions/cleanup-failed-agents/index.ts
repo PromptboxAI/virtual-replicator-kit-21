@@ -45,95 +45,80 @@ Deno.serve(async (req) => {
     }
 
     // ============================================================
-    // Step 1: Mark stuck agents as FAILED
-    // Agents in ACTIVATING for >5 minutes without deployment_tx_hash
-    // (Increased from 2 minutes to allow for slow RPC responses)
+    // Step 1: Mark stuck agents as FAILED (NO DELETION)
+    // Rationale: funds/tx may have occurred on-chain; deleting the row
+    // makes recovery + user support impossible.
     // ============================================================
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    const twentyMinutesAgo = new Date(Date.now() - 20 * 60 * 1000).toISOString();
 
-    const { data: stuckAgents, error: markError } = await supabase
+    // (A) Agents still ACTIVATING after 5m with NO tx hash recorded
+    const { data: stuckNoTxAgents, error: markNoTxError } = await supabase
       .from('agents')
       .update({
         status: 'FAILED',
         is_active: false,
         failed_at: new Date().toISOString(),
-        failure_reason: 'Deployment timeout after 5 minutes - likely network or RPC failure'
+        failure_reason: 'Deployment stalled: no transaction hash was saved after 5 minutes'
       })
       .eq('status', 'ACTIVATING')
       .is('deployment_tx_hash', null)
-      .is('token_contract_address', null) // Also check for token address
+      .is('token_contract_address', null)
       .lt('created_at', fiveMinutesAgo)
       .select('id, name, symbol, created_at');
 
-    if (markError) {
-      console.error('❌ Error marking stuck agents:', markError);
-      throw markError;
+    if (markNoTxError) {
+      console.error('❌ Error marking stuck agents (no tx hash):', markNoTxError);
+      throw markNoTxError;
     }
 
-    const markedCount = stuckAgents?.length || 0;
+    // (B) Agents still ACTIVATING after 20m WITH tx hash but NO contract address
+    const { data: stuckWithTxAgents, error: markWithTxError } = await supabase
+      .from('agents')
+      .update({
+        status: 'FAILED',
+        is_active: false,
+        failed_at: new Date().toISOString(),
+        failure_reason: 'Deployment pending too long (20m). Tx hash recorded; investigate confirmation/RPC.'
+      })
+      .eq('status', 'ACTIVATING')
+      .not('deployment_tx_hash', 'is', null)
+      .is('token_contract_address', null)
+      .lt('created_at', twentyMinutesAgo)
+      .select('id, name, symbol, created_at, deployment_tx_hash');
+
+    if (markWithTxError) {
+      console.error('❌ Error marking stuck agents (with tx hash):', markWithTxError);
+      throw markWithTxError;
+    }
+
+    const stuckAgents = [...(stuckNoTxAgents || []), ...(stuckWithTxAgents || [])];
+    const markedCount = stuckAgents.length;
+
     console.log(`✅ Marked ${markedCount} stuck agents as FAILED`);
 
     // ============================================================
-    // Step 2: Fetch all FAILED agent IDs
+    // Step 2: Return summary (no deletions)
     // ============================================================
-    const { data: failedAgents } = await supabase
-      .from('agents')
-      .select('id')
-      .eq('status', 'FAILED');
+    const deletedAgents: any[] = [];
+    const deletedCount = 0;
 
-    const failedAgentIds = failedAgents?.map(a => a.id) || [];
-    console.log(`📋 Found ${failedAgentIds.length} FAILED agents to clean up`);
-
-    // ============================================================
-    // Step 3: Delete deployed_contracts for FAILED agents
-    // This prevents foreign key constraint violations
-    // ============================================================
-    if (failedAgentIds.length > 0) {
-      const { error: deleteContractsError } = await supabase
-        .from('deployed_contracts')
-        .delete()
-        .in('agent_id', failedAgentIds);
-
-      if (deleteContractsError) {
-        console.warn('⚠️ Error deleting deployed contracts:', deleteContractsError);
-      } else {
-        console.log(`✅ Deleted deployed_contracts for ${failedAgentIds.length} agents`);
-      }
-    }
-
-    // ============================================================
-    // Step 4: Delete ALL FAILED agents
-    // Name/symbol now available for retry
-    // ============================================================
-    const { data: deletedAgents, error: deleteError } = await supabase
-      .from('agents')
-      .delete()
-      .eq('status', 'FAILED')
-      .select('id, name, symbol, failed_at, failure_reason');
-
-    if (deleteError) {
-      console.error('❌ Error deleting failed agents:', deleteError);
-      throw deleteError;
-    }
-
-    const deletedCount = deletedAgents?.length || 0;
-    console.log(`🗑️ Deleted ${deletedCount} FAILED agents`);
+    console.log(`🗑️ Deleted ${deletedCount} FAILED agents (deletion disabled)`);
 
     // ============================================================
     // Step 5: Log cleanup actions to system_alerts
     // ============================================================
-    if (markedCount > 0 || deletedCount > 0) {
-      const alertData = {
-        type: 'cleanup',
-        severity: 'info',
-        message: `Marked ${markedCount} stuck agents as FAILED, deleted ${deletedCount} failed agents`,
-        is_resolved: true,
-        metadata: {
-          marked_agents: stuckAgents?.map(a => ({ id: a.id, name: a.name, symbol: a.symbol })),
-          deleted_agents: deletedAgents?.map(a => ({ id: a.id, name: a.name, symbol: a.symbol, reason: a.failure_reason })),
-          cleanup_timestamp: new Date().toISOString()
-        }
-      };
+     if (markedCount > 0) {
+       const alertData = {
+         type: 'cleanup',
+         severity: 'warn',
+         message: `Marked ${markedCount} stuck agents as FAILED (no deletions performed)`,
+         is_resolved: true,
+         metadata: {
+           marked_agents: stuckAgents.map(a => ({ id: a.id, name: a.name, symbol: a.symbol })),
+           cleanup_timestamp: new Date().toISOString()
+         }
+       };
 
       const { error: alertError } = await supabase
         .from('system_alerts')
