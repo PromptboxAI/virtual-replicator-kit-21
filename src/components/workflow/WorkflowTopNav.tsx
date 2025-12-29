@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Play, Share, Rocket, Save, MoreHorizontal, History } from 'lucide-react';
+import { Play, Share, Rocket, Save, History } from 'lucide-react';
 import { WorkflowTab } from './WorkflowBuilderLayout';
 
 interface WorkflowTopNavProps {
@@ -137,10 +137,6 @@ export function WorkflowTopNav({
         >
           <Rocket className="w-4 h-4" />
           Publish
-        </Button>
-        
-        <Button variant="ghost" size="sm">
-          <MoreHorizontal className="w-4 h-4" />
         </Button>
       </div>
     </header>
