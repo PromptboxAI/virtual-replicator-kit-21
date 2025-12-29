@@ -26,13 +26,9 @@ export function WorkflowTopNav({
 }: WorkflowTopNavProps) {
   return (
     <header className="h-14 border-b bg-card/50 backdrop-blur-sm flex items-center justify-between px-6">
-      {/* Left Side - Workflow Name & Tabs */}
+      {/* Left Side - Tabs */}
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-3">
-          <h1 className="font-semibold text-lg">{agentName}</h1>
-          <Badge variant="secondary" className="text-xs">
-            Workflow
-          </Badge>
           {hasUnsavedChanges && (
             <Badge variant="destructive" className="text-xs">
               Unsaved
