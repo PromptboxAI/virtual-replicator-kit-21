@@ -105,7 +105,7 @@ export function UniversalAgentDashboard({ agent, onAgentUpdated, isCreatorView =
           <h1 className="text-3xl font-bold break-words">{agent.name}</h1>
           <p className="text-muted-foreground">{agent.symbol} • {agent.category || 'AI Agent'}</p>
           {agent.description && (
-            <p className="text-muted-foreground mt-2 max-w-2xl">{agent.description}</p>
+            <p className="text-foreground mt-2 max-w-2xl">{agent.description}</p>
           )}
         </div>
       </div>
