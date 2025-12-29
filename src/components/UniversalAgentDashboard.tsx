@@ -109,7 +109,7 @@ export function UniversalAgentDashboard({ agent, onAgentUpdated, isCreatorView =
           </div>
         </div>
         {agent.description && (
-          <p className="text-muted-foreground max-w-2xl mx-auto mt-4">{agent.description}</p>
+          <p className="text-muted-foreground max-w-2xl mx-auto mt-4 text-left">{agent.description}</p>
         )}
       </div>
 
