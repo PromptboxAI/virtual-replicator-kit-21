@@ -25,7 +25,7 @@ export function useLiquidityData(agentId: string | undefined) {
       if (!agentId) return null;
 
       const { data, error } = await supabase.functions.invoke('get-liquidity', {
-        body: { agent_id: agentId }
+        body: { agentId }
       });
 
       if (error) {
