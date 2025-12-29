@@ -12,7 +12,7 @@ interface WorkflowBuilderLayoutProps {
   onComplete?: (workflowId: string) => void;
 }
 
-export type WorkflowTab = 'workflow' | 'export' | 'analytics' | 'manager' | 'marketing';
+export type WorkflowTab = 'workflow' | 'export' | 'analytics' | 'manager' | 'marketing' | 'settings' | 'logs';
 
 export function WorkflowBuilderLayout({ agentId, agentName, onComplete }: WorkflowBuilderLayoutProps) {
   const [activeTab, setActiveTab] = useState<WorkflowTab>('workflow');

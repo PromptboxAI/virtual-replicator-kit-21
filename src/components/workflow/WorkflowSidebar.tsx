@@ -190,6 +190,8 @@ export function WorkflowSidebar({ activeTab, onChange, onAddNode, agentId, agent
             {activeTab === 'export' && 'Export your workflow as JSON, share links, or generate embed codes.'}
             {activeTab === 'analytics' && 'View execution history, performance metrics, and usage statistics.'}
             {activeTab === 'manager' && 'Manage workflow settings, versions, and collaboration.'}
+            {activeTab === 'settings' && 'Configure agent settings, API keys, and environment variables.'}
+            {activeTab === 'logs' && 'View execution logs, debug information, and error traces.'}
           </div>
         </div>
       </div>
