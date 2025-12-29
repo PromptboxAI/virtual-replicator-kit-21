@@ -478,6 +478,7 @@ export default function CreateAgent() {
       }
 
       const agentId = data.id;
+      let deployedTokenAddress: string | undefined;
 
       // 📈 V6 Smart Contract Integration
       if (deploymentMode === 'smart_contract') {
@@ -493,6 +494,7 @@ export default function CreateAgent() {
 
           if (deployResult.success && deployResult.tokenAddress) {
             console.log('[CreateAgent] V6 deployment successful:', deployResult);
+            deployedTokenAddress = deployResult.tokenAddress;
             
             // Update agent with token_contract_address
             const { error: updateError } = await supabase
@@ -662,11 +664,18 @@ export default function CreateAgent() {
 
       toast({ 
         title: "Token Created Successfully!", 
-        description: `${formData.name} token has been created${formData.prebuy_amount > 0 ? ' and pre-buy executed' : ''}. Now configure your AI agent.`,
+        description: `${formData.name} token has been created${formData.prebuy_amount > 0 ? ' and pre-buy executed' : ''}.`,
       });
       
-      // Navigate to agent page to configure AI
-      navigate(`/agent/${agentId}`);
+      // Navigate to success page with options
+      navigate(`/agent-created/${agentId}`, {
+        state: {
+          agentName: formData.name,
+          agentSymbol: formData.symbol.toUpperCase(),
+          tokenAddress: deployedTokenAddress,
+          prebuyAmount: formData.prebuy_amount
+        }
+      });
       
     } catch (error: any) {
       console.error('Creation error:', error);
