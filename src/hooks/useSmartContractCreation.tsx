@@ -237,8 +237,13 @@ export const useSmartContractCreation = () => {
           .update({ deployment_tx_hash: tx })
           .eq('id', agentData.id);
 
-        if (txUpdateError) {
-          console.warn('[V6] Failed to persist deployment tx hash pre-confirmation:', txUpdateError);
+      if (txUpdateError) {
+          console.error('[V6] CRITICAL: Failed to persist deployment tx hash:', txUpdateError);
+          toast({
+            title: "Warning",
+            description: "Transaction submitted but failed to save. Note your tx: " + tx.slice(0, 20) + "...",
+            variant: "destructive"
+          });
         } else {
           console.log('[V6] Updated agent with tx hash (pre-confirmation):', tx);
         }
