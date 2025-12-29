@@ -69,17 +69,17 @@ export default function AgentCreationSuccess() {
                     <TrendingUp className="h-6 w-6 text-primary" />
                   </div>
                   <div>
-                    <CardTitle className="text-lg">Trade {agentSymbol}</CardTitle>
-                    <CardDescription>View chart & start trading</CardDescription>
+                    <CardTitle className="text-lg">Start Trading</CardTitle>
+                    <CardDescription>View chart & buy/sell tokens</CardDescription>
                   </div>
                 </div>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Go to the trading platform to view the bonding curve, price chart, and trade your new token.
+                  Go to the trading platform to view the bonding curve, price chart, and trade {agentSymbol}.
                 </p>
                 <Button className="w-full group-hover:bg-primary/90">
-                  Go to Trading
+                  Start Trading
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </CardContent>
@@ -88,7 +88,7 @@ export default function AgentCreationSuccess() {
             {/* Configure Agent Card */}
             <Card 
               className="group cursor-pointer border-2 hover:border-secondary transition-all duration-300 hover:shadow-lg hover:shadow-secondary/10"
-              onClick={() => navigate(`/creator/${agentId}`)}
+              onClick={() => navigate(`/dashboard/${agentId}`)}
             >
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-3">
@@ -96,17 +96,17 @@ export default function AgentCreationSuccess() {
                     <Settings className="h-6 w-6 text-secondary-foreground" />
                   </div>
                   <div>
-                    <CardTitle className="text-lg">Configure Agent</CardTitle>
-                    <CardDescription>Set up AI capabilities</CardDescription>
+                    <CardTitle className="text-lg">Start Building</CardTitle>
+                    <CardDescription>Configure your AI agent</CardDescription>
                   </div>
                 </div>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Configure your agent's AI personality, marketing materials, team info, and roadmap.
+                  Set up {agentName}'s AI personality, marketing materials, team info, and roadmap.
                 </p>
                 <Button variant="secondary" className="w-full">
-                  Open Dashboard
+                  Start Building
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </CardContent>
