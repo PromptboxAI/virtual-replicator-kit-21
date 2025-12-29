@@ -46,9 +46,10 @@ Deno.serve(async (req) => {
 
     // ============================================================
     // Step 1: Mark stuck agents as FAILED
-    // Agents in ACTIVATING for >2 minutes without deployment_tx_hash
+    // Agents in ACTIVATING for >5 minutes without deployment_tx_hash
+    // (Increased from 2 minutes to allow for slow RPC responses)
     // ============================================================
-    const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString();
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
 
     const { data: stuckAgents, error: markError } = await supabase
       .from('agents')
@@ -56,11 +57,12 @@ Deno.serve(async (req) => {
         status: 'FAILED',
         is_active: false,
         failed_at: new Date().toISOString(),
-        failure_reason: 'Deployment timeout after 2 minutes - likely network or RPC failure'
+        failure_reason: 'Deployment timeout after 5 minutes - likely network or RPC failure'
       })
       .eq('status', 'ACTIVATING')
       .is('deployment_tx_hash', null)
-      .lt('created_at', twoMinutesAgo)
+      .is('token_contract_address', null) // Also check for token address
+      .lt('created_at', fiveMinutesAgo)
       .select('id, name, symbol, created_at');
 
     if (markError) {

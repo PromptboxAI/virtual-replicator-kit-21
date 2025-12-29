@@ -496,11 +496,12 @@ export default function CreateAgent() {
             console.log('[CreateAgent] V6 deployment successful:', deployResult);
             deployedTokenAddress = deployResult.tokenAddress;
             
-            // Update agent with token_contract_address
+            // Update agent with token_contract_address AND deployment_tx_hash
             const { error: updateError } = await supabase
               .from('agents')
               .update({ 
                 token_contract_address: deployResult.tokenAddress,
+                deployment_tx_hash: deployResult.txHash, // Critical: prevents cleanup from deleting
                 deployment_status: 'deployed',
                 status: 'ACTIVE',
                 token_graduated: false, // Enable database trading
