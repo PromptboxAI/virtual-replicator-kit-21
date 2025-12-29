@@ -114,7 +114,7 @@ export default function AgentCreationSuccess() {
                   Configure {agentName}'s AI personality, marketing materials, team information, and project roadmap.
                 </p>
                 
-                <Button size="lg" variant="outline" className="w-full text-base font-medium border-2 hover:bg-violet-500/5 hover:border-violet-500 hover:text-violet-600">
+                <Button size="lg" className="w-full text-base font-medium bg-foreground text-background hover:bg-foreground/90">
                   Go to Dashboard
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
