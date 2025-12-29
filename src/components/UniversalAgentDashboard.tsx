@@ -94,23 +94,20 @@ export function UniversalAgentDashboard({ agent, onAgentUpdated, isCreatorView =
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div className="text-center space-y-4 pb-8 mb-4">
-        <div className="flex items-center justify-center gap-4">
-          <Avatar className="h-16 w-16 flex-shrink-0">
-            <AvatarImage src={agent.avatar_url} alt={agent.name} />
-            <AvatarFallback>
-              {agent.name.slice(0, 2).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div className="text-left min-w-0">
-            <h1 className="text-3xl font-bold break-words">{agent.name}</h1>
-            <p className="text-muted-foreground">{agent.symbol} • {agent.category || 'AI Agent'}</p>
-          </div>
+      <div className="flex items-start justify-center gap-4 pb-8 mb-4">
+        <Avatar className="h-16 w-16 flex-shrink-0">
+          <AvatarImage src={agent.avatar_url} alt={agent.name} />
+          <AvatarFallback>
+            {agent.name.slice(0, 2).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+        <div className="text-left min-w-0">
+          <h1 className="text-3xl font-bold break-words">{agent.name}</h1>
+          <p className="text-muted-foreground">{agent.symbol} • {agent.category || 'AI Agent'}</p>
+          {agent.description && (
+            <p className="text-muted-foreground mt-2 max-w-2xl">{agent.description}</p>
+          )}
         </div>
-        {agent.description && (
-          <p className="text-muted-foreground max-w-2xl mx-auto mt-4 text-left">{agent.description}</p>
-        )}
       </div>
 
       {/* Show workflow builder for creator, tabs interface for public */}
