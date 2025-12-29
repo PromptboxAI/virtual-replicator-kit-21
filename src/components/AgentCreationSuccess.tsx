@@ -135,13 +135,13 @@ export default function AgentCreationSuccess() {
           </div>
 
           {/* Action Cards */}
-          <div className="grid gap-6 md:grid-cols-2 mb-8">
+          <div className="grid gap-6 md:grid-cols-2 mb-12">
             {/* Trade Card */}
             <Card 
-              className="group cursor-pointer border-2 border-border hover:border-primary bg-card transition-all duration-200 hover:shadow-xl"
+              className="group cursor-pointer border-2 border-border hover:border-primary bg-card transition-all duration-200 hover:shadow-xl flex flex-col"
               onClick={() => navigate(`/agent/${agentId}`)}
             >
-              <CardContent className="p-8">
+              <CardContent className="p-8 flex flex-col h-full">
                 <div className="flex items-start gap-5 mb-6">
                   <div className="p-4 rounded-2xl bg-primary/10 group-hover:bg-primary/15 transition-colors">
                     <TrendingUp className="h-8 w-8 text-primary" />
@@ -152,18 +152,23 @@ export default function AgentCreationSuccess() {
                   </div>
                 </div>
                 
-                <p className="text-foreground/80 leading-relaxed">
+                <p className="text-foreground/80 leading-relaxed flex-1">
                   Access the trading platform to view the bonding curve, price chart, and buy or sell tokens.
                 </p>
+                
+                <Button size="lg" className="w-full text-base font-medium mt-6">
+                  Go to Trading
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
               </CardContent>
             </Card>
 
             {/* Configure Agent Card */}
             <Card 
-              className="group cursor-pointer border-2 border-border hover:border-violet-500 bg-card transition-all duration-200 hover:shadow-xl"
+              className="group cursor-pointer border-2 border-border hover:border-violet-500 bg-card transition-all duration-200 hover:shadow-xl flex flex-col"
               onClick={() => navigate(`/dashboard/${agentId}`)}
             >
-              <CardContent className="p-8">
+              <CardContent className="p-8 flex flex-col h-full">
                 <div className="flex items-start gap-5 mb-6">
                   <div className="p-4 rounded-2xl bg-violet-500/10 group-hover:bg-violet-500/15 transition-colors">
                     <Settings className="h-8 w-8 text-violet-500" />
@@ -174,31 +179,16 @@ export default function AgentCreationSuccess() {
                   </div>
                 </div>
                 
-                <p className="text-foreground/80 leading-relaxed">
+                <p className="text-foreground/80 leading-relaxed flex-1">
                   Configure {agentName}'s AI personality, marketing materials, team information, and project roadmap.
                 </p>
+                
+                <Button size="lg" className="w-full text-base font-medium mt-6">
+                  Go to Dashboard
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
               </CardContent>
             </Card>
-          </div>
-
-          {/* Action Buttons - Same Line */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Button 
-              size="lg" 
-              className="text-base font-medium min-w-[200px]"
-              onClick={() => navigate(`/agent/${agentId}`)}
-            >
-              Go to Trading
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-            <Button 
-              size="lg" 
-              className="text-base font-medium min-w-[200px] bg-foreground text-background hover:bg-foreground/90"
-              onClick={() => navigate(`/dashboard/${agentId}`)}
-            >
-              Go to Dashboard
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
           </div>
 
           {/* Quick Navigation */}
