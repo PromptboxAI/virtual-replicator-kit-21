@@ -1431,10 +1431,6 @@ export default function CreateAgent() {
                             <p className="font-medium text-xs sm:text-sm">Graduation Price:</p>
                             <p className="text-foreground/80 text-xs sm:text-sm">0.0001 PROMPT</p>
                           </div>
-                          <div>
-                            <p className="font-medium text-xs sm:text-sm">Pre-buy:</p>
-                            <p className="text-foreground/80 text-xs sm:text-sm">{formData.prebuy_amount} $PROMPT</p>
-                          </div>
                         </div>
 
                         <div>
