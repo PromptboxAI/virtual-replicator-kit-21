@@ -37,28 +37,24 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
 );
 
+// V6 PROMPT Token on Base Sepolia - uses env var for testnet/mainnet flexibility
+const DEFAULT_PROMPT_TOKEN_ADDRESS = '0x04d30a1697FdaDAFd647B46ef2253F4Dccf17673';
+
 async function getPromptTokenAddress(): Promise<string | null> {
   try {
-    // First try to get from environment or localStorage equivalent
+    // First try to get from environment variable
     const envAddress = Deno.env.get('PROMPT_TOKEN_ADDRESS');
     if (envAddress && isAddress(envAddress)) {
+      console.log('Using PROMPT_TOKEN_ADDRESS from environment:', envAddress);
       return envAddress;
     }
 
-    // Fall back to database lookup for deployed contracts
-    // This would contain actual deployed addresses
-    const { data: contracts } = await supabase
-      .from('deployed_contracts')
-      .select('contract_address')
-      .eq('contract_type', 'PROMPT')
-      .eq('network', 'base_sepolia')
-      .eq('is_active', true)
-      .maybeSingle();
-
-    return contracts?.contract_address || null;
+    // Fall back to hardcoded V6 address
+    console.log('Using default V6 PROMPT token address:', DEFAULT_PROMPT_TOKEN_ADDRESS);
+    return DEFAULT_PROMPT_TOKEN_ADDRESS;
   } catch (error) {
     console.warn('Could not fetch prompt token address:', error);
-    return null;
+    return DEFAULT_PROMPT_TOKEN_ADDRESS;
   }
 }
 

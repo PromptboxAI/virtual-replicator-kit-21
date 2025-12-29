@@ -27,8 +27,8 @@ const PROMPT_TOKEN_ABI = [
   }
 ] as const;
 
-// This will be updated after the real token is deployed
-const PROMPT_TOKEN_ADDRESS = "0x62fa50ce04dd11d2be35f1dee04063e63118c727" as `0x${string}`;
+// V6 PROMPT Token on Base Sepolia - uses env var for testnet/mainnet flexibility
+const PROMPT_TOKEN_ADDRESS = (Deno.env.get('PROMPT_TOKEN_ADDRESS') || '0x04d30a1697FdaDAFd647B46ef2253F4Dccf17673') as `0x${string}`;
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
