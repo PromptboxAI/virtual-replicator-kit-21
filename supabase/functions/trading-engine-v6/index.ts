@@ -1,5 +1,10 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { checkRateLimit, getClientIdentifier, getRateLimitHeaders } from '../_shared/rateLimit.ts';
+import { 
+  checkRateLimit, 
+  getClientIdentifier, 
+  rateLimitExceededResponse, 
+  getRateLimitConfig 
+} from '../_shared/rateLimitV2.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -123,32 +128,20 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Rate limiting: 50 trades per minute per client
-  const clientId = getClientIdentifier(req);
-  const rateCheck = checkRateLimit(clientId, 50, 60000);
-  
-  if (!rateCheck.allowed) {
-    console.warn(`[trading-engine-v6] Rate limit exceeded for ${clientId}`);
-    return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: 'Rate limit exceeded. Please wait before making more trades.' 
-      }),
-      { 
-        status: 429, 
-        headers: { 
-          ...corsHeaders, 
-          ...getRateLimitHeaders(50, rateCheck.remaining, rateCheck.resetAt),
-          'Content-Type': 'application/json'
-        } 
-      }
-    );
-  }
-
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // DB-backed rate limiting: 50 trades per minute per client (persistent across instances)
+    const clientId = getClientIdentifier(req);
+    const config = getRateLimitConfig('trading-engine-v6');
+    const rateCheck = await checkRateLimit(supabase, clientId, 'trading-engine-v6', config.maxRequests, config.windowSeconds);
+    
+    if (!rateCheck.allowed) {
+      console.warn(`[trading-engine-v6] Rate limit exceeded for ${clientId}`);
+      return rateLimitExceededResponse(rateCheck, corsHeaders, config.maxRequests);
+    }
 
     const body: TradeRequest = await req.json();
     const { agentId, walletAddress, promptAmount, sharesAmount, action } = body;

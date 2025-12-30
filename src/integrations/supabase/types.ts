@@ -3345,6 +3345,36 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limits: {
+        Row: {
+          created_at: string | null
+          endpoint: string
+          id: string
+          identifier: string
+          request_count: number | null
+          updated_at: string | null
+          window_start: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          endpoint: string
+          id?: string
+          identifier: string
+          request_count?: number | null
+          updated_at?: string | null
+          window_start?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          endpoint?: string
+          id?: string
+          identifier?: string
+          request_count?: number | null
+          updated_at?: string | null
+          window_start?: string | null
+        }
+        Relationships: []
+      }
       revenue_config: {
         Row: {
           agent_id: string
@@ -4382,10 +4412,20 @@ export type Database = {
           stored_price: number
         }[]
       }
+      check_rate_limit: {
+        Args: {
+          p_endpoint: string
+          p_identifier: string
+          p_max_requests?: number
+          p_window_seconds?: number
+        }
+        Returns: Json
+      }
       check_trading_permission: {
         Args: { p_agent_id: string; p_amount: number }
         Returns: boolean
       }
+      cleanup_old_rate_limits: { Args: never; Returns: number }
       complete_agent_graduation: {
         Args: {
           p_graduation_event_id: string
