@@ -28,7 +28,7 @@ export const BONDING_CURVE_V6_1_CONSTANTS = {
   
   // Pricing
   DEFAULT_P0: 0.00004,
-  DEFAULT_P1: 0.0001,
+  DEFAULT_P1: 0.00024, // Adjusted so curve max = 42K PROMPT graduation
   
   // Fees (5% total)
   TRADING_FEE_BPS: 500,

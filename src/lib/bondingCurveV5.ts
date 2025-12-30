@@ -24,7 +24,7 @@ export const BONDING_CURVE_V5_CONSTANTS = {
   
   // Default parameters
   DEFAULT_P0: 0.00004, // Starting price in PROMPT
-  DEFAULT_P1: 0.0001, // Ending price in PROMPT
+  DEFAULT_P1: 0.00024, // Ending price in PROMPT (adjusted for 42K graduation)
   DEFAULT_GRADUATION_THRESHOLD: 42000, // PROMPT reserves needed to graduate
 } as const;
 
