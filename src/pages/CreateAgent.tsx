@@ -35,6 +35,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 // import { useAgentTokens } from "@/hooks/useAgentTokens";
 import { useAccount } from 'wagmi';
 import { calculateBuyReturn, BONDING_CURVE_V6_1_CONSTANTS } from "@/lib/bondingCurveV6_1";
+import { retrySupabaseUpdate } from "@/lib/retryUtils";
 
 // Hook for debounced value
 function useDebounce<T>(value: T, delay: number): T {
@@ -495,28 +496,58 @@ export default function CreateAgent() {
             console.log('[CreateAgent] V6 deployment successful:', deployResult);
             deployedTokenAddress = deployResult.tokenAddress;
             
-            // Update agent with token address + tx hash
-            const { error: updateError } = await supabase
-              .from('agents')
-              .update({ 
-                token_contract_address: deployResult.tokenAddress,
-                token_address: deployResult.tokenAddress, // legacy compatibility
-                deployment_tx_hash: deployResult.txHash, // Critical: prevents cleanup from deleting
-                deployment_status: 'deployed',
-                status: 'ACTIVE',
-                token_graduated: false,
-                is_active: true
-              })
-              .eq('id', agentId);
+            // CRITICAL: Update agent with token address + tx hash
+            // Uses retry logic to ensure database sync succeeds
+            const { error: updateError } = await retrySupabaseUpdate(
+              async () => {
+                const result = await supabase
+                  .from('agents')
+                  .update({ 
+                    token_contract_address: deployResult.tokenAddress,
+                    token_address: deployResult.tokenAddress,
+                    deployment_tx_hash: deployResult.txHash,
+                    deployment_status: 'deployed',
+                    status: 'ACTIVE',
+                    token_graduated: false,
+                    is_active: true
+                  })
+                  .eq('id', agentId);
+                return result;
+              },
+              { maxRetries: 5, initialDelayMs: 500 }
+            );
 
             if (updateError) {
-              console.error('[CreateAgent] Failed to update agent with token address:', updateError);
-            }
+              console.error('[CreateAgent] CRITICAL: Failed to update agent after all retries:', updateError);
 
-            toast({
-              title: "Agent Token Deployed!",
-              description: `Token at: ${deployResult.tokenAddress.slice(0, 10)}...${deployResult.tokenAddress.slice(-8)}`,
-            });
+              // Last resort: Call sync function to recover
+              try {
+                console.log('[CreateAgent] Attempting recovery via sync-agent-deployment...');
+                await supabase.functions.invoke('sync-agent-deployment', {
+                  body: {
+                    agentId,
+                    txHash: deployResult.txHash,
+                    tokenAddress: deployResult.tokenAddress
+                  }
+                });
+                console.log('[CreateAgent] Recovery sync initiated');
+              } catch (syncError) {
+                console.error('[CreateAgent] Recovery sync also failed:', syncError);
+              }
+
+              // Show user the contract address so they can recover manually if needed
+              toast({
+                title: "Database Sync Issue",
+                description: `Contract deployed at ${deployResult.tokenAddress}. If issues persist, contact support with this address.`,
+                variant: "destructive",
+                duration: 30000,
+              });
+            } else {
+              toast({
+                title: "Agent Token Deployed!",
+                description: `Token at: ${deployResult.tokenAddress.slice(0, 10)}...${deployResult.tokenAddress.slice(-8)}`,
+              });
+            }
 
             // V6: Execute prebuy via trading-engine-v6 (database mode)
             if (formData.prebuy_amount && formData.prebuy_amount > 0) {
