@@ -12,7 +12,7 @@ const BONDING_CURVE_V5_CONSTANTS = {
   SELL_FEE_BPS: 500, // 5%
   BASIS_POINTS: 10000,
   DEFAULT_P0: 0.00004,
-  DEFAULT_P1: 0.0001,
+  DEFAULT_P1: 0.00024, // Adjusted for 42K PROMPT graduation threshold
 };
 
 function calculateCurrentPrice(p0: number, p1: number, tokensSold: number): number {
