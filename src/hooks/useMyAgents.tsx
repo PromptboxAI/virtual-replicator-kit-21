@@ -36,20 +36,16 @@ export function useMyAgents(userId: string | undefined, options: UseMyAgentsOpti
         // Configure params based on view mode
         switch (viewMode) {
           case 'database':
-            // Show all of the user's agents regardless of test_mode.
+            // Only show agents created in database-only mode (no blockchain deployment)
+            params.set('creationMode', 'database');
             break;
           case 'testnet':
-            // Testnet deployed agents
-            params.set('testMode', 'true');
-            params.set('hasContract', 'true');
-            params.set('deploymentStatus', 'deployed');
+            // Show ALL testnet agents - deployed, pending, or failed
+            // Don't require hasContract or deploymentStatus - let users see their in-progress agents
             params.set('networkEnvironment', 'testnet');
             break;
           case 'mainnet':
-            // Mainnet deployed agents
-            params.set('testMode', 'false');
-            params.set('hasContract', 'true');
-            params.set('deploymentStatus', 'deployed');
+            // Show ALL mainnet agents - deployed, pending, or failed
             params.set('networkEnvironment', 'mainnet');
             break;
         }
@@ -86,17 +82,12 @@ export function useMyAgents(userId: string | undefined, options: UseMyAgentsOpti
 
       switch (viewMode) {
         case 'database':
+          params.set('creationMode', 'database');
           break;
         case 'testnet':
-          params.set('testMode', 'true');
-          params.set('hasContract', 'true');
-          params.set('deploymentStatus', 'deployed');
           params.set('networkEnvironment', 'testnet');
           break;
         case 'mainnet':
-          params.set('testMode', 'false');
-          params.set('hasContract', 'true');
-          params.set('deploymentStatus', 'deployed');
           params.set('networkEnvironment', 'mainnet');
           break;
       }

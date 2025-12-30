@@ -32,6 +32,7 @@ serve(async (req) => {
     const networkEnvironment = url.searchParams.get('networkEnvironment'); // 'testnet', 'mainnet'
     const hasContract = url.searchParams.get('hasContract'); // 'true' to only show agents with token_address
     const creatorId = url.searchParams.get('creatorId');
+    const creationMode = url.searchParams.get('creationMode'); // 'database', 'smart_contract', etc.
 
     // Sort parameters
     const sortBy = url.searchParams.get('sortBy') || 'created_at';
@@ -51,6 +52,7 @@ serve(async (req) => {
       networkEnvironment,
       hasContract,
       creatorId,
+      creationMode,
       sortBy, 
       sortOrder,
       useMarketView
@@ -110,6 +112,16 @@ serve(async (req) => {
 
     if (creatorId && !useMarketView) {
       query = query.eq('creator_id', creatorId);
+    }
+
+    // Filter by creation mode (database-only vs smart contract)
+    if (creationMode && !useMarketView) {
+      if (creationMode === 'database') {
+        // Database mode: show agents with creation_mode='database' OR network_environment is null
+        query = query.or('creation_mode.eq.database,network_environment.is.null');
+      } else {
+        query = query.eq('creation_mode', creationMode);
+      }
     }
 
     // Apply sorting - use market-optimized fields
@@ -303,7 +315,8 @@ serve(async (req) => {
           deploymentStatus: deploymentStatus || null,
           networkEnvironment: networkEnvironment || null,
           hasContract: hasContract === 'true' || null,
-          creatorId: creatorId || null
+          creatorId: creatorId || null,
+          creationMode: creationMode || null
         },
         sort: {
           by: sortField,
