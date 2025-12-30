@@ -138,7 +138,7 @@ serve(async (req) => {
 
     const createdPromptUsdRate = Number(fxRows[0].fx);
     const createdP0 = agent.created_p0 || 0.00004;
-    const createdP1 = agent.created_p1 || 0.0001;
+    const createdP1 = agent.created_p1 || 0.00024;
 
     // Calculate graduation threshold dynamically
     let graduationThreshold: number;
