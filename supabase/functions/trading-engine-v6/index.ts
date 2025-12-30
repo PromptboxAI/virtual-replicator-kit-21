@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { checkRateLimit, getClientIdentifier, getRateLimitHeaders } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -122,6 +123,28 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Rate limiting: 50 trades per minute per client
+  const clientId = getClientIdentifier(req);
+  const rateCheck = checkRateLimit(clientId, 50, 60000);
+  
+  if (!rateCheck.allowed) {
+    console.warn(`[trading-engine-v6] Rate limit exceeded for ${clientId}`);
+    return new Response(
+      JSON.stringify({ 
+        success: false, 
+        error: 'Rate limit exceeded. Please wait before making more trades.' 
+      }),
+      { 
+        status: 429, 
+        headers: { 
+          ...corsHeaders, 
+          ...getRateLimitHeaders(50, rateCheck.remaining, rateCheck.resetAt),
+          'Content-Type': 'application/json'
+        } 
+      }
+    );
+  }
+
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -130,7 +153,7 @@ Deno.serve(async (req) => {
     const body: TradeRequest = await req.json();
     const { agentId, walletAddress, promptAmount, sharesAmount, action } = body;
 
-    console.log(`[trading-engine-v6] ${action} request for agent ${agentId} from ${walletAddress}`);
+    console.log(`[trading-engine-v6] ${action} request for agent ${agentId} from ${walletAddress} (remaining: ${rateCheck.remaining})`);
 
     // Get agent data
     const { data: agent, error: agentError } = await supabase
