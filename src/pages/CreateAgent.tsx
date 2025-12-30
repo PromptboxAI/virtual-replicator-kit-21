@@ -759,10 +759,8 @@ export default function CreateAgent() {
         <div className="container mx-auto px-4 py-8 pb-32 relative z-10">
           <div className="max-w-2xl mx-auto space-y-6">
             <div className="text-center">
-              <h1 className="text-3xl sm:text-5xl font-bold mb-4">
-                <span className="bg-gradient-cyber bg-clip-text text-transparent">
-                  Create AI Agent
-                </span>
+              <h1 className="text-3xl sm:text-5xl font-bold mb-4 text-foreground">
+                Create A New AI Agent
               </h1>
               <p className="text-muted-foreground mb-8">
                 Get started by setting up your account and connecting your wallet.
@@ -797,10 +795,8 @@ export default function CreateAgent() {
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-6 sm:mb-8">
-            <h1 className="text-2xl sm:text-5xl font-bold mb-2 sm:mb-4">
-              <span className="bg-gradient-cyber bg-clip-text text-transparent drop-shadow-sm">
-                Create New AI Agent
-              </span>
+            <h1 className="text-2xl sm:text-5xl font-bold mb-2 sm:mb-4 text-foreground">
+              Create A New AI Agent
             </h1>
             <p className="text-base sm:text-xl text-foreground flex items-center justify-center gap-2">
               Launch your AI Agent on Base
