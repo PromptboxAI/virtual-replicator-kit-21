@@ -428,9 +428,10 @@ export default function CreateAgent() {
           market_cap: 0,
           creation_cost: CREATION_COST,
           prompt_raised: 0,
-          is_active: false, // Not active until AI is configured
+          // Database mode agents are active immediately; smart contract mode waits for deployment
+          is_active: deploymentMode === 'database',
           creator_id: user.id,
-          status: 'ACTIVATING',
+          status: deploymentMode === 'database' ? 'ACTIVE' : 'ACTIVATING',
           test_mode: appIsTestMode,
           
           // ✅ V6.1 PRICING FIELDS
