@@ -4505,6 +4505,10 @@ export type Database = {
         Args: { p_agent_id: string }
         Returns: string
       }
+      get_agent_current_price_v6_1: {
+        Args: { p_agent_id: string }
+        Returns: number
+      }
       get_agent_ohlcv_data: {
         Args: {
           p_agent_id: string
@@ -4590,6 +4594,10 @@ export type Database = {
       }
       get_current_linear_price_v4: {
         Args: { p_tokens_sold: number }
+        Returns: number
+      }
+      get_current_linear_price_v6_1: {
+        Args: { p_p0?: number; p_p1?: number; p_shares_sold: number }
         Returns: number
       }
       get_current_reserves: {
