@@ -169,8 +169,6 @@ Deno.serve(async (req) => {
     const p1 = agent.created_p1 || CONSTANTS.DEFAULT_P1;
 
     let result;
-    let newSharesSold: number;
-    let newPromptRaised: number;
     let userSharesDelta: number;
 
     if (action === 'buy') {
@@ -179,8 +177,6 @@ Deno.serve(async (req) => {
       }
 
       result = calculateBuyReturn(sharesSold, promptAmount, p0, p1);
-      newSharesSold = result.newSharesSold;
-      newPromptRaised = promptRaised + result.promptAfterFee;
       userSharesDelta = result.sharesOut;
 
       console.log(`[trading-engine-v6] Buy: ${promptAmount} PROMPT -> ${result.sharesOut} shares`);
@@ -212,54 +208,35 @@ Deno.serve(async (req) => {
       throw new Error('Invalid action');
     }
 
-    // Update agent state
-    const { error: updateError } = await supabase
-      .from('agents')
-      .update({
-        shares_sold: newSharesSold,
-        prompt_raised: newPromptRaised,
-        current_price: result.newPrice,
-      })
-      .eq('id', agentId);
+    // ============================================
+    // ATOMIC STATE UPDATES (prevents race conditions)
+    // ============================================
 
-    if (updateError) {
-      throw new Error(`Failed to update agent: ${updateError.message}`);
+    // 1. Atomically update agent state
+    const { data: agentUpdate, error: agentUpdateError } = await supabase.rpc('atomic_update_agent_state', {
+      p_agent_id: agentId,
+      p_shares_delta: action === 'buy' ? result.sharesOut : -sharesAmount!,
+      p_prompt_delta: action === 'buy' ? result.promptAfterFee : -result.promptOut,
+      p_new_price: result.newPrice
+    });
+
+    if (agentUpdateError || !agentUpdate?.success) {
+      throw new Error(`Failed to update agent state: ${agentUpdateError?.message || agentUpdate?.error}`);
     }
 
-    // Update user position
-    const { data: existingPosition } = await supabase
-      .from('agent_database_positions')
-      .select('token_balance')
-      .eq('agent_id', agentId)
-      .eq('holder_address', walletAddress.toLowerCase())
-      .single();
+    // 2. Atomically update user position
+    const { data: positionUpdate, error: positionError } = await supabase.rpc('atomic_update_position', {
+      p_agent_id: agentId,
+      p_holder_address: walletAddress.toLowerCase(),
+      p_delta: userSharesDelta
+    });
 
-    const currentBalance = existingPosition?.token_balance || 0;
-    const newBalance = currentBalance + userSharesDelta;
-
-    if (newBalance > 0) {
-      const { error: positionError } = await supabase
-        .from('agent_database_positions')
-        .upsert({
-          agent_id: agentId,
-          holder_address: walletAddress.toLowerCase(),
-          token_balance: newBalance,
-          last_updated: new Date().toISOString(),
-        }, {
-          onConflict: 'agent_id,holder_address',
-        });
-
-      if (positionError) {
-        throw new Error(`Failed to update position: ${positionError.message}`);
-      }
-    } else if (existingPosition) {
-      // Remove position if balance is 0
-      await supabase
-        .from('agent_database_positions')
-        .delete()
-        .eq('agent_id', agentId)
-        .eq('holder_address', walletAddress.toLowerCase());
+    if (positionError || !positionUpdate?.success) {
+      console.error('[trading-engine-v6] Position update failed after agent state update - potential inconsistency');
+      throw new Error(`Failed to update position: ${positionError?.message || positionUpdate?.error}`);
     }
+
+    const newBalance = positionUpdate.new_balance;
 
     // Record trade
     const tradeRecord = {
@@ -277,17 +254,10 @@ Deno.serve(async (req) => {
       await supabase.from('agent_token_sell_trades').insert(tradeRecord);
     }
 
-    // Check graduation threshold
-    let shouldGraduate = false;
-    if (newPromptRaised >= CONSTANTS.GRADUATION_THRESHOLD_PROMPT) {
+    // Check graduation (from atomic function result)
+    const shouldGraduate = agentUpdate.should_graduate || false;
+    if (shouldGraduate) {
       console.log(`[trading-engine-v6] Agent ${agentId} reached graduation threshold!`);
-      shouldGraduate = true;
-      
-      // Mark as pending graduation
-      await supabase
-        .from('agents')
-        .update({ bonding_curve_phase: 'graduating' })
-        .eq('id', agentId);
     }
 
     const response = {
@@ -297,13 +267,13 @@ Deno.serve(async (req) => {
       walletAddress,
       result: {
         ...result,
-        newSharesSold,
-        newPromptRaised,
+        newSharesSold: agentUpdate.shares_sold,
+        newPromptRaised: agentUpdate.prompt_raised,
         userNewBalance: newBalance,
       },
       shouldGraduate,
       graduationThreshold: CONSTANTS.GRADUATION_THRESHOLD_PROMPT,
-      progressPercent: (newPromptRaised / CONSTANTS.GRADUATION_THRESHOLD_PROMPT) * 100,
+      progressPercent: (agentUpdate.prompt_raised / CONSTANTS.GRADUATION_THRESHOLD_PROMPT) * 100,
     };
 
     console.log(`[trading-engine-v6] Trade completed:`, response);

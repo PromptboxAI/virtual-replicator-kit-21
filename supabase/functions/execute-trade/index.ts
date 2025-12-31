@@ -1,5 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import {
+  checkRateLimit,
+  getClientIdentifier,
+  rateLimitExceededResponse,
+  getRateLimitConfig
+} from '../_shared/rateLimitV2.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -29,6 +35,16 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
+
+    // DB-backed rate limiting: 30 trades per minute per client
+    const clientId = getClientIdentifier(req);
+    const config = getRateLimitConfig('execute-trade');
+    const rateCheck = await checkRateLimit(supabase, clientId, 'execute-trade', config.maxRequests, config.windowSeconds);
+    
+    if (!rateCheck.allowed) {
+      console.warn(`[execute-trade] Rate limit exceeded for ${clientId}`);
+      return rateLimitExceededResponse(rateCheck, corsHeaders, config.maxRequests);
+    }
 
     // Parse request body
     const requestBody = await req.json()

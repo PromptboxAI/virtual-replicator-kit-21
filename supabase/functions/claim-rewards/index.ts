@@ -1,4 +1,9 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import {
+  checkRateLimit,
+  getClientIdentifier,
+  rateLimitExceededResponse
+} from '../_shared/rateLimitV2.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -21,178 +26,71 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // Rate limiting - strict for financial operations (10 claims per minute)
+    const clientId = getClientIdentifier(req);
+    const rateCheck = await checkRateLimit(supabase, clientId, 'claim-rewards', 10, 60);
+
+    if (!rateCheck.allowed) {
+      console.warn(`[claim-rewards] Rate limit exceeded for ${clientId}`);
+      return rateLimitExceededResponse(rateCheck, corsHeaders, 10);
+    }
+
     const body: ClaimRequest = await req.json();
     const { agentId, walletAddress, claimType } = body;
 
+    if (!agentId || !walletAddress || !claimType) {
+      throw new Error('Missing required parameters: agentId, walletAddress, claimType');
+    }
+
     console.log(`[claim-rewards] ${claimType} claim for agent ${agentId} by ${walletAddress}`);
 
-    const now = new Date();
+    // Use atomic RPC function (prevents race condition / double-claim)
+    const { data: result, error } = await supabase.rpc('atomic_claim_reward', {
+      p_agent_id: agentId,
+      p_holder_address: walletAddress,
+      p_claim_type: claimType
+    });
 
-    if (claimType === 'holder_reward') {
-      // Get holder reward info
-      const { data: reward, error: rewardError } = await supabase
-        .from('agent_holder_rewards')
-        .select('*')
-        .eq('agent_id', agentId)
-        .eq('holder_address', walletAddress.toLowerCase())
-        .single();
-
-      if (rewardError || !reward) {
-        throw new Error('No rewards found for this holder');
-      }
-
-      const startTime = new Date(reward.start_time);
-      const vestEndTime = new Date(reward.vest_end_time);
-      const totalReward = reward.total_reward_amount;
-      const alreadyClaimed = reward.claimed_amount || 0;
-
-      // Calculate vested amount (linear vesting)
-      let vestedAmount: number;
-      if (now >= vestEndTime) {
-        vestedAmount = totalReward;
-      } else if (now <= startTime) {
-        vestedAmount = 0;
-      } else {
-        const elapsed = now.getTime() - startTime.getTime();
-        const vestDuration = vestEndTime.getTime() - startTime.getTime();
-        vestedAmount = totalReward * (elapsed / vestDuration);
-      }
-
-      const claimableAmount = vestedAmount - alreadyClaimed;
-
-      if (claimableAmount <= 0) {
-        return new Response(JSON.stringify({
-          success: false,
-          error: 'No rewards available to claim',
-          details: {
-            totalReward,
-            vestedAmount,
-            alreadyClaimed,
-            claimableAmount: 0,
-            vestProgress: Math.min(100, ((now.getTime() - startTime.getTime()) / (vestEndTime.getTime() - startTime.getTime())) * 100),
-          },
-        }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-
-      // Update claimed amount
-      const { error: updateError } = await supabase
-        .from('agent_holder_rewards')
-        .update({ claimed_amount: alreadyClaimed + claimableAmount })
-        .eq('agent_id', agentId)
-        .eq('holder_address', walletAddress.toLowerCase());
-
-      if (updateError) {
-        throw new Error(`Failed to update claim: ${updateError.message}`);
-      }
-
-      console.log(`[claim-rewards] Holder claimed ${claimableAmount} tokens`);
-
-      return new Response(JSON.stringify({
-        success: true,
-        claimType: 'holder_reward',
-        agentId,
-        walletAddress,
-        claimedAmount: claimableAmount,
-        totalReward,
-        remainingToClaim: totalReward - alreadyClaimed - claimableAmount,
-        vestProgress: Math.min(100, ((now.getTime() - startTime.getTime()) / (vestEndTime.getTime() - startTime.getTime())) * 100),
-        fullyVested: now >= vestEndTime,
-        // On-chain execution would happen here
-        onChainPending: true,
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-
-    } else if (claimType === 'team_vesting') {
-      // Get team vesting info
-      const { data: vesting, error: vestingError } = await supabase
-        .from('agent_team_vesting')
-        .select('*')
-        .eq('agent_id', agentId)
-        .single();
-
-      if (vestingError || !vesting) {
-        throw new Error('No team vesting found for this agent');
-      }
-
-      // Check authorization
-      if (vesting.beneficiary_address.toLowerCase() !== walletAddress.toLowerCase()) {
-        throw new Error('Not authorized to claim team tokens');
-      }
-
-      const cliff1Time = new Date(vesting.cliff_1_time);
-      const cliff2Time = new Date(vesting.cliff_2_time);
-      const totalAmount = vesting.total_amount;
-      const alreadyClaimed = vesting.claimed_amount || 0;
-
-      // Calculate claimable based on cliffs
-      let vestedAmount = 0;
-      if (now >= cliff2Time) {
-        vestedAmount = totalAmount; // 100% after 6 months
-      } else if (now >= cliff1Time) {
-        vestedAmount = totalAmount * 0.5; // 50% after 3 months
-      }
-
-      const claimableAmount = vestedAmount - alreadyClaimed;
-
-      if (claimableAmount <= 0) {
-        const nextCliff = now < cliff1Time ? cliff1Time : cliff2Time;
-        return new Response(JSON.stringify({
-          success: false,
-          error: 'No team tokens available to claim',
-          details: {
-            totalAmount,
-            vestedAmount,
-            alreadyClaimed,
-            claimableAmount: 0,
-            nextCliffDate: nextCliff.toISOString(),
-            cliff1Reached: now >= cliff1Time,
-            cliff2Reached: now >= cliff2Time,
-          },
-        }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-
-      // Update claimed amount
-      const { error: updateError } = await supabase
-        .from('agent_team_vesting')
-        .update({ claimed_amount: alreadyClaimed + claimableAmount })
-        .eq('agent_id', agentId);
-
-      if (updateError) {
-        throw new Error(`Failed to update claim: ${updateError.message}`);
-      }
-
-      console.log(`[claim-rewards] Team claimed ${claimableAmount} tokens`);
-
-      return new Response(JSON.stringify({
-        success: true,
-        claimType: 'team_vesting',
-        agentId,
-        walletAddress,
-        claimedAmount: claimableAmount,
-        totalAmount,
-        remainingToClaim: totalAmount - alreadyClaimed - claimableAmount,
-        cliff1Reached: now >= cliff1Time,
-        cliff2Reached: now >= cliff2Time,
-        fullyVested: now >= cliff2Time,
-        // On-chain execution would happen here
-        onChainPending: true,
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-
-    } else {
-      throw new Error('Invalid claim type');
+    if (error) {
+      console.error(`[claim-rewards] RPC error: ${error.message}`);
+      throw new Error(`Claim failed: ${error.message}`);
     }
+
+    if (!result.success) {
+      console.warn(`[claim-rewards] Claim rejected: ${result.error}`);
+      return new Response(JSON.stringify({
+        success: false,
+        error: result.error,
+        details: result,
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    console.log(`[claim-rewards] Successfully claimed ${result.claimed_amount} tokens`);
+
+    return new Response(JSON.stringify({
+      success: true,
+      claimType,
+      agentId,
+      walletAddress,
+      claimedAmount: result.claimed_amount,
+      totalReward: result.total_reward,
+      remainingToClaim: result.remaining,
+      // On-chain execution would happen here
+      onChainPending: true,
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+
   } catch (error) {
     console.error('[claim-rewards] Error:', error);
-    return new Response(
-      JSON.stringify({ success: false, error: error.message }),
-      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify({
+      success: false,
+      error: error.message,
+    }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 });
