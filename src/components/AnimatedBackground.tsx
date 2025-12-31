@@ -93,8 +93,7 @@ export function AnimatedBackground() {
       ref={containerRef}
       className="absolute inset-0 overflow-hidden pointer-events-none -z-10"
     >
-      {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-secondary/10" />
+      {/* Clean background - no gradient */}
       
       {/* Neural network-style connections */}
       <svg className="absolute inset-0 w-full h-full opacity-20">
