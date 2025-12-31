@@ -254,6 +254,29 @@ Deno.serve(async (req) => {
       await supabase.from('agent_token_sell_trades').insert(tradeRecord);
     }
 
+    // Update token_holders count on agents table
+    const { count: holderCount } = await supabase
+      .from('agent_database_positions')
+      .select('*', { count: 'exact', head: true })
+      .eq('agent_id', agentId)
+      .gt('token_balance', 0);
+
+    await supabase
+      .from('agents')
+      .update({ token_holders: holderCount || 0 })
+      .eq('id', agentId);
+
+    // Also sync to agent_token_holders for compatibility with other views
+    await supabase
+      .from('agent_token_holders')
+      .upsert({
+        agent_id: agentId,
+        user_id: walletAddress.toLowerCase(),
+        token_balance: newBalance,
+        total_invested: action === 'buy' ? promptAmount : 0,
+        average_buy_price: result.avgPrice,
+      }, { onConflict: 'agent_id,user_id' });
+
     // Check graduation (from atomic function result)
     const shouldGraduate = agentUpdate.should_graduate || false;
     if (shouldGraduate) {
