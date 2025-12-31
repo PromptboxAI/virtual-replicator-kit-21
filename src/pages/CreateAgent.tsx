@@ -87,7 +87,7 @@ export default function CreateAgent() {
   const { connectTwitter, disconnectTwitter, isConnecting, connectedAccount, setConnectedAccount } = useTwitterAuth();
   const { isTestMode: appIsTestMode } = useAppMode();
   const { isAdmin } = useUserRole();
-  const { isConnected, promptBalance, hasExternalWallet } = usePrivyWallet();
+  const { isConnected, promptBalance, hasExternalWallet, address: walletAddress } = usePrivyWallet();
   const { settings: adminSettings, isLoading: adminSettingsLoading } = useAdminSettings();
   
   // Smart contract creation hook - V6
@@ -453,6 +453,10 @@ export default function CreateAgent() {
           creation_mode: deploymentMode,
           deployment_status: deploymentMode === 'smart_contract' ? 'deploying' : 'not_deployed',
           
+          // ✅ Creator & Deployment Info
+          creator_wallet_address: walletAddress || null,
+          deployment_method: deploymentMode === 'smart_contract' ? 'v6_factory' : null,
+          
           // 🎓 Graduation should ONLY occur after threshold is reached
           token_graduated: false,
         }])
@@ -508,6 +512,9 @@ export default function CreateAgent() {
                     token_address: deployResult.tokenAddress,
                     deployment_tx_hash: deployResult.txHash,
                     deployment_status: 'deployed',
+                    deployment_method: 'v6_factory',
+                    deployed_at: new Date().toISOString(),
+                    creator_wallet_address: walletAddress || null,
                     status: 'ACTIVE',
                     token_graduated: false,
                     is_active: true
