@@ -455,7 +455,7 @@ export default function CreateAgent() {
           
           // ✅ Creator & Deployment Info
           creator_wallet_address: walletAddress || null,
-          deployment_method: deploymentMode === 'smart_contract' ? 'v6_factory' : null,
+          deployment_method: deploymentMode === 'smart_contract' ? 'factory' : null,
           
           // 🎓 Graduation should ONLY occur after threshold is reached
           token_graduated: false,
@@ -512,7 +512,7 @@ export default function CreateAgent() {
                     token_address: deployResult.tokenAddress,
                     deployment_tx_hash: deployResult.txHash,
                     deployment_status: 'deployed',
-                    deployment_method: 'v6_factory',
+                    deployment_method: 'factory',
                     deployed_at: new Date().toISOString(),
                     creator_wallet_address: walletAddress || null,
                     status: 'ACTIVE',
