@@ -21,8 +21,11 @@ const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
   'trading-engine-v6': { maxRequests: 50, windowSeconds: 60 },
   'execute-trade': { maxRequests: 30, windowSeconds: 60 },
   'execute-bonding-curve-trade-v4': { maxRequests: 30, windowSeconds: 60 },
+  'claim-rewards': { maxRequests: 10, windowSeconds: 60 },  // Lower - financial
   'get-quote': { maxRequests: 100, windowSeconds: 60 },
+  'get-dex-quote': { maxRequests: 60, windowSeconds: 60 },
   'get-ohlc': { maxRequests: 100, windowSeconds: 60 },
+  'get-token-metadata': { maxRequests: 100, windowSeconds: 60 },
   'default': { maxRequests: 100, windowSeconds: 60 }
 };
 

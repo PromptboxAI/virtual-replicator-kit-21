@@ -4360,6 +4360,27 @@ export type Database = {
       }
     }
     Functions: {
+      atomic_claim_reward: {
+        Args: {
+          p_agent_id: string
+          p_claim_type: string
+          p_holder_address: string
+        }
+        Returns: Json
+      }
+      atomic_update_agent_state: {
+        Args: {
+          p_agent_id: string
+          p_new_price: number
+          p_prompt_delta: number
+          p_shares_delta: number
+        }
+        Returns: Json
+      }
+      atomic_update_position: {
+        Args: { p_agent_id: string; p_delta: number; p_holder_address: string }
+        Returns: Json
+      }
       calculate_deployment_cost_usd: {
         Args: {
           eth_price_usd_param?: number
