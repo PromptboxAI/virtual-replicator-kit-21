@@ -1444,7 +1444,7 @@ export default function CreateAgent() {
                           </div>
                           <div>
                             <p className="font-medium text-xs sm:text-sm">Graduation Price (per token):</p>
-                            <p className="text-foreground/80 text-xs sm:text-sm">0.0001 PROMPT</p>
+                            <p className="text-foreground/80 text-xs sm:text-sm">0.00024 PROMPT</p>
                           </div>
                         </div>
 
