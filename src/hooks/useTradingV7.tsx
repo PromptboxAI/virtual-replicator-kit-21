@@ -78,7 +78,7 @@ export function useTradingV7(agentId: string, walletAddress?: string) {
     queryFn: async (): Promise<AgentState | null> => {
       const { data, error } = await supabase
         .from('agents')
-        .select('id, name, token_symbol, shares_sold, prompt_raised, created_p0, created_p1, is_graduated, creator_wallet')
+        .select('id, name, symbol, shares_sold, prompt_raised, created_p0, created_p1, token_graduated, creator_wallet_address')
         .eq('id', agentId)
         .single();
 
@@ -87,13 +87,13 @@ export function useTradingV7(agentId: string, walletAddress?: string) {
       return {
         id: data.id,
         name: data.name,
-        ticker: data.token_symbol ?? '',
+        ticker: data.symbol ?? '',
         sharesSold: data.shares_sold ?? 0,
         promptRaised: data.prompt_raised ?? 0,
         p0: data.created_p0 ?? V7_CONSTANTS.DEFAULT_P0,
         p1: data.created_p1 ?? V7_CONSTANTS.DEFAULT_P1,
-        isGraduated: data.is_graduated ?? false,
-        creatorWallet: data.creator_wallet ?? '',
+        isGraduated: data.token_graduated ?? false,
+        creatorWallet: data.creator_wallet_address ?? '',
       };
     },
     enabled: !!agentId,
