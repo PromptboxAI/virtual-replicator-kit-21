@@ -258,3 +258,10 @@ verify_jwt = false
 
 [functions.sync-agent-deployment]
 verify_jwt = false
+
+# V7 Bonding Curve Edge Functions
+[functions.trading-engine-v7]
+verify_jwt = false
+
+[functions.get-quote-v7]
+verify_jwt = false
