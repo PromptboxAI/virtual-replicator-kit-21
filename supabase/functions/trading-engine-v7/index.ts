@@ -317,7 +317,7 @@ Deno.serve(async (req) => {
       const { error: positionError } = await supabase.rpc('atomic_update_position', {
         p_agent_id: agentId,
         p_holder_address: walletAddress.toLowerCase(),
-        p_balance_delta: result.sharesOut,
+        p_delta: result.sharesOut,
       });
 
       if (positionError) {
@@ -459,7 +459,7 @@ Deno.serve(async (req) => {
       await supabase.rpc('atomic_update_position', {
         p_agent_id: agentId,
         p_holder_address: walletAddress.toLowerCase(),
-        p_balance_delta: -tokenAmount,
+        p_delta: -tokenAmount,
       });
 
       // Record trade
