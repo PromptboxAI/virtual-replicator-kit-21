@@ -75,7 +75,7 @@ Deno.serve(async (req) => {
           promptRaised,
           threshold: V7.GRADUATION_THRESHOLD,
           remaining: Math.max(0, V7.GRADUATION_THRESHOLD - promptRaised),
-          isGraduated: agent.is_graduated ?? false,
+          isGraduated: agent.token_graduated ?? false,
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -84,7 +84,7 @@ Deno.serve(async (req) => {
     // ============ INITIATE GRADUATION ============
     if (action === 'graduate') {
       // Check if already graduated
-      if (agent.is_graduated) {
+      if (agent.token_graduated) {
         return new Response(
           JSON.stringify({ error: 'Agent already graduated' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -178,7 +178,7 @@ Deno.serve(async (req) => {
       const { error: updateError } = await supabase
         .from('agents')
         .update({ 
-          is_graduated: true,
+          token_graduated: true,
           graduated_at: new Date().toISOString(),
         })
         .eq('id', agentId);
