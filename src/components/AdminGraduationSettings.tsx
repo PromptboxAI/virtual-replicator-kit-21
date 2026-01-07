@@ -151,7 +151,7 @@ export function AdminGraduationSettings() {
   }
 
   const calculatedGraduationThreshold = graduationMode === 'database' 
-    ? 42000 
+    ? 42160 // V7 default
     : targetMarketCapUsd / parseFloat(promptUsdRate);
 
   return (

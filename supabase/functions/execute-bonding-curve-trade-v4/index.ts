@@ -138,7 +138,7 @@ serve(async (req) => {
 
     const createdPromptUsdRate = Number(fxRows[0].fx);
     const createdP0 = agent.created_p0 || 0.00004;
-    const createdP1 = agent.created_p1 || 0.00024;
+    const createdP1 = agent.created_p1 || 0.0003; // V7 default
 
     // Calculate graduation threshold dynamically
     let graduationThreshold: number;
@@ -146,8 +146,8 @@ serve(async (req) => {
       // USD-based: graduationThreshold = targetMarketCapUSD / createdPromptUsdRate
       graduationThreshold = targetMarketCapUSD / createdPromptUsdRate;
     } else {
-      // Database mode: fixed 42K PROMPT
-      graduationThreshold = 42000;
+      // Database mode: V7 fixed 42.16K PROMPT
+      graduationThreshold = 42160;
     }
 
     console.log(`🎓 Agent ${agent.name} graduation config:`, {

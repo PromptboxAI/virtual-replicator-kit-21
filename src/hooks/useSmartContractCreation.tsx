@@ -375,7 +375,7 @@ export const useSmartContractCreation = () => {
         description: "Finalizing your prebuy...",
       });
 
-      const { data, error } = await supabase.functions.invoke('trading-engine-v6', {
+      const { data, error } = await supabase.functions.invoke('trading-engine-v7', {
         body: {
           agentId,
           walletAddress: address,

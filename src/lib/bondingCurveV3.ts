@@ -18,7 +18,7 @@ export const BONDING_CURVE_V3_CONFIG = {
   P1: 0.000104, // Ending price at graduation
   
   // Graduation & Economics
-  GRADUATION_PROMPT_AMOUNT: 42000, // 42k PROMPT to graduate
+  GRADUATION_PROMPT_AMOUNT: 42160, // V7: 42.16K PROMPT to graduate
   AGENT_CREATION_COST: 100, // 100 PROMPT creation fee (separate from curve)
   
   // Trading fees (virtuals.io standard)

@@ -23,12 +23,12 @@ export const BONDING_CURVE_V6_1_CONSTANTS = {
   DATABASE_TRADEABLE_CAP: 300_000_000,
   
   // Graduation
-  GRADUATION_THRESHOLD_PROMPT: 42_000,
+  GRADUATION_THRESHOLD_PROMPT: 42_160, // V7: Updated graduation threshold
   TARGET_FDV_AT_GRADUATION: 74_000,
   
   // Pricing
   DEFAULT_P0: 0.00004,
-  DEFAULT_P1: 0.00024, // Adjusted so curve max = 42K PROMPT graduation
+  DEFAULT_P1: 0.0003, // V7: Adjusted for 42.16K graduation
   
   // Fees (5% total)
   TRADING_FEE_BPS: 500,
