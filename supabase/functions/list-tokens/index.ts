@@ -152,8 +152,8 @@ serve(async (req) => {
 
     console.log(`✅ Retrieved ${data?.length || 0} tokens (page ${page}/${totalPages})`);
 
-    // Default graduation threshold (fallback if not set on agent)
-    const DEFAULT_GRADUATION_THRESHOLD = 42000;
+    // Default graduation threshold (fallback if not set on agent) - V7
+    const DEFAULT_GRADUATION_THRESHOLD = 42160;
 
     // Get agent IDs for additional queries
     const agentIds = (data || []).map(t => useMarketView ? t.agent_id : t.id).filter(Boolean);

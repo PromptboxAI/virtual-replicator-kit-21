@@ -124,7 +124,7 @@ export function useBondingCurveV6_1({ agentId, walletAddress }: UseBondingCurveV
         body: {
           agentId,
           walletAddress,
-          sharesAmount,
+          tokenAmount: sharesAmount,
           action: 'sell',
         },
       });

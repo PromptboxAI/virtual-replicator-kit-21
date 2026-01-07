@@ -176,7 +176,7 @@ serve(async (req) => {
     }
 
     // Calculate real LP economics (70/30 split)
-    const finalPromptRaised = parseFloat(graduationEvent.prompt_raised_at_graduation || '42000')
+    const finalPromptRaised = parseFloat(graduationEvent.prompt_raised_at_graduation || '42160')
     const lpPromptAmount = finalPromptRaised * LP_PROMPT_ALLOCATION_PERCENT // 70% to LP
     const platformKeepAmount = finalPromptRaised * (1 - LP_PROMPT_ALLOCATION_PERCENT) // 30% to platform
     const lpTokenAmount = 196000000 // 196M tokens for LP (200M - 4M platform allocation)

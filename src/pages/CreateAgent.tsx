@@ -560,7 +560,7 @@ export default function CreateAgent() {
 
             // V7: Execute prebuy via trading-engine-v7 (database mode)
             if (formData.prebuy_amount && formData.prebuy_amount > 0) {
-              console.log('[CreateAgent] Executing V6 prebuy:', formData.prebuy_amount);
+              console.log('[CreateAgent] Executing V7 prebuy:', formData.prebuy_amount);
               const prebuySuccess = await executePrebuy(agentId, formData.prebuy_amount);
               if (prebuySuccess) {
                 toast({

@@ -113,7 +113,7 @@ serve(async (req) => {
         .from('agent_graduation_events')
         .insert({
           agent_id: agentId,
-          prompt_raised_at_graduation: agent.prompt_raised || 42000,
+          prompt_raised_at_graduation: agent.prompt_raised || 42160,
           graduation_status: 'initiated',
           metadata: {
             forced: force,
