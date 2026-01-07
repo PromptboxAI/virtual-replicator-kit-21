@@ -18,7 +18,7 @@ export const BONDING_CURVE_CONFIG = {
   P1: 0.000104, // Ending price at graduation (PROMPT per token)
   
   // Graduation threshold
-  GRADUATION_PROMPT_AMOUNT: 42000, // 42k PROMPT to graduate
+  GRADUATION_PROMPT_AMOUNT: 42160, // 42,160 PROMPT to graduate (V7)
   
   // Trading fees (virtuals.io: 1% total split 70%/30%)
   TRADING_FEE_PERCENTAGE: 0.01, // 1% total trading fee

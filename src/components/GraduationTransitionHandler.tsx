@@ -25,7 +25,7 @@ export function GraduationTransitionHandler({
   const { toast } = useToast();
   const [wasGraduated, setWasGraduated] = useState(isGraduated);
   const [nearingGraduation, setNearingGraduation] = useState(false);
-  const [threshold, setThreshold] = useState<number>(42000);
+  const [threshold, setThreshold] = useState<number>(42160);
 
   // Fetch graduation threshold
   useEffect(() => {

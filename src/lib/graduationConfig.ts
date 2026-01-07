@@ -10,7 +10,7 @@ export const getGraduationThreshold = (config: GraduationConfig): number => {
 
   if (mode === 'database') {
     // Test/Demo mode: Fixed amount, no USD dependency (test tokens only)
-    return 42000; // 42K PROMPT test tokens
+    return 42160; // 42,160 PROMPT (V7 threshold)
   } else {
     // Production mode: Dynamic USD-pegged targeting $50K-$75K
     // Target: $65,000 market cap at graduation (middle of $50K-$75K range)

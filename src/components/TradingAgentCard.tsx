@@ -29,7 +29,7 @@ interface AgentCardProps {
 
 export function TradingAgentCard({ agent }: AgentCardProps) {
   const navigate = useNavigate();
-  const [graduationThreshold, setGraduationThreshold] = useState<number>(42000);
+  const [graduationThreshold, setGraduationThreshold] = useState<number>(42160);
   
   // Real-time graduation status - Phase 3 implementation
   const { isGraduated } = useAgentRealtime(agent.id, {

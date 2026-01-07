@@ -79,7 +79,7 @@ export const useAdminSettings = () => {
         creation_fee: 100,
         test_mode_enabled: true,
         trading_fee_percent: 1,
-        graduation_threshold: 42000,
+        graduation_threshold: 42160,
         mev_protection_enabled: false,
         emergency_pause: false,
       };

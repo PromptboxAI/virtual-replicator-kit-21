@@ -23,7 +23,7 @@ export function GraduationProgressBar({
   fx,
   className 
 }: GraduationProgressBarProps) {
-  const [threshold, setThreshold] = useState<number>(42000);
+  const [threshold, setThreshold] = useState<number>(42160);
   const [progress, setProgress] = useState<number>(0);
 
   useEffect(() => {
