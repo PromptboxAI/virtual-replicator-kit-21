@@ -122,13 +122,13 @@ export function EnhancedTradingInterface({ agent, onAgentUpdated }: EnhancedTrad
   // MEV Protection - Agent Lock Status
   const { isLocked, canTrade, timeLeft, isCreator } = useAgentLockStatus(agent?.id);
 
-  // Note: Fee configuration will be integrated with useAgentTokens hook when available
+  // Fee configuration (V7: 5% total, 50%/50% split)
   const defaultFeeConfig = {
-    feePercent: 0.01,
-    creatorSplit: 0.7,
-    platformSplit: 0.3
+    feePercent: 0.05,
+    creatorSplit: 0.5,
+    platformSplit: 0.5
   };
-  console.log('[EnhancedTradingInterface] Using default fee config');
+  console.log('[EnhancedTradingInterface] Using V7 fee config');
 
   // DERIVED STATE FROM PROPS (with safe defaults for when agent is null)
   const promptRaised = agent?.prompt_raised || 0;

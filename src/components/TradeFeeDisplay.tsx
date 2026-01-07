@@ -16,9 +16,9 @@ interface TradeFeeDisplayProps {
 
 export const TradeFeeDisplay: React.FC<TradeFeeDisplayProps> = ({
   tradeAmount,
-  feePercent = 0.01, // Default 1%
-  creatorSplit = 0.7, // Default 70%
-  platformSplit = 0.3, // Default 30%
+  feePercent = 0.05, // Default 5%
+  creatorSplit = 0.5, // Default 50%
+  platformSplit = 0.5, // Default 50%
   agentName = 'Agent',
   showBreakdown = true,
   className = ''

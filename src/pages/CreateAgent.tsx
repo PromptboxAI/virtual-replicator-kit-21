@@ -1351,7 +1351,7 @@ export default function CreateAgent() {
                               <span className="text-sm font-medium">Token Allocation</span>
                             </div>
                             <p className="text-sm text-foreground/80 ml-6">
-                              2% Vault • 10% Team (cliff vesting) • 5% Holder Rewards • Remainder to LP (56.5% - 88% depending on trading)
+                              14% LP (locked 3 years) • 45% Team (vesting & milestone unlocks) • 5% Ecosystem • 36% Variable Pool
                             </p>
                             
                             <div className="flex items-center gap-2">
@@ -1359,7 +1359,7 @@ export default function CreateAgent() {
                               <span className="text-sm font-medium">Liquidity Locked</span>
                             </div>
                             <p className="text-sm text-foreground/80 ml-6">
-                              95% LP locked for 3 years, 5% to vault
+                              LP locked for 3 years
                             </p>
                           </div>
                           
@@ -1377,7 +1377,7 @@ export default function CreateAgent() {
                               <span className="text-sm font-medium">Trading Fee</span>
                             </div>
                             <p className="text-sm text-foreground/80 ml-6">
-                              5% fee (40% creator, 40% vault, 20% LP treasury)
+                              5% fee (50% Creator, 50% Platform)
                             </p>
                           </div>
                         </div>
