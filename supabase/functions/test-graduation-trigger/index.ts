@@ -72,17 +72,17 @@ serve(async (req) => {
     })
 
     // Check if agent should graduate
-    const shouldGraduate = forceGraduation || agent.prompt_raised >= 42000
+    const shouldGraduate = forceGraduation || agent.prompt_raised >= 42160
 
     if (!shouldGraduate) {
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: `Agent has only raised ${agent.prompt_raised} PROMPT. Needs 42,000 to graduate.`,
+          error: `Agent has only raised ${agent.prompt_raised} PROMPT. Needs 42,160 to graduate.`,
           currentStatus: {
             promptRaised: agent.prompt_raised,
-            graduationThreshold: 42000,
-            percentComplete: ((agent.prompt_raised / 42000) * 100).toFixed(2)
+            graduationThreshold: 42160,
+            percentComplete: ((agent.prompt_raised / 42160) * 100).toFixed(2)
           }
         }),
         { 
@@ -93,7 +93,7 @@ serve(async (req) => {
     }
 
     // Force graduation for testing if specified
-    if (forceGraduation && agent.prompt_raised < 42000) {
+    if (forceGraduation && agent.prompt_raised < 42160) {
       console.log('⚠️ FORCE GRADUATING AGENT FOR TESTING');
       
       // Create a test graduation event
@@ -132,7 +132,7 @@ serve(async (req) => {
         .update({
           token_graduated: true,
           graduation_event_id: graduationEvent.id,
-          prompt_raised: 42000, // Set to graduation threshold for testing
+          prompt_raised: 42160, // V7 graduation threshold for testing
           updated_at: new Date().toISOString()
         })
         .eq('id', agentId)
@@ -215,7 +215,7 @@ serve(async (req) => {
         data: {
           agentId,
           promptRaised: agent.prompt_raised,
-          graduationThreshold: 42000,
+          graduationThreshold: 42160,
           readyToGraduate: true
         }
       }),

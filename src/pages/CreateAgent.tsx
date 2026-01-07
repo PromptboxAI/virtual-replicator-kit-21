@@ -34,7 +34,8 @@ import { CreatorPrebuyPanel } from "@/components/CreatorPrebuyPanel";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 // import { useAgentTokens } from "@/hooks/useAgentTokens";
 import { useAccount } from 'wagmi';
-import { calculateBuyReturn, BONDING_CURVE_V6_1_CONSTANTS } from "@/lib/bondingCurveV6_1";
+import { calculateBuyReturn } from "@/lib/bondingCurveV6_1";
+import { V7_CONSTANTS } from "@/lib/constants";
 import { retrySupabaseUpdate } from "@/lib/retryUtils";
 
 // Hook for debounced value
@@ -361,8 +362,8 @@ export default function CreateAgent() {
         }
       }
 
-      // Calculate initial bonding curve price using V6.1 constants
-      const initialPrice = BONDING_CURVE_V6_1_CONSTANTS.DEFAULT_P0; // Start at bonding curve beginning
+      // Calculate initial bonding curve price using V7 constants
+      const initialPrice = V7_CONSTANTS.DEFAULT_P0; // Start at bonding curve beginning
       
       // Calculate creation expiry time if locked
       let creationExpiresAt = null;
@@ -400,10 +401,10 @@ export default function CreateAgent() {
       const graduationMode = graduationConfig?.graduation_mode || 'database';
       const targetMarketCapUsd = graduationMode === 'smart_contract' ? 65000 : null;
       
-      // 🎯 Use V6.1 bonding curve constants - single source of truth
-      const P0 = BONDING_CURVE_V6_1_CONSTANTS.DEFAULT_P0;
-      const P1 = BONDING_CURVE_V6_1_CONSTANTS.DEFAULT_P1;
-      const graduationThreshold = BONDING_CURVE_V6_1_CONSTANTS.GRADUATION_THRESHOLD_PROMPT;
+      // 🎯 Use V7 bonding curve constants - single source of truth
+      const P0 = V7_CONSTANTS.DEFAULT_P0;
+      const P1 = V7_CONSTANTS.DEFAULT_P1;
+      const graduationThreshold = V7_CONSTANTS.GRADUATION_THRESHOLD;
       
       // Get deployment mode early
       const deploymentMode = adminSettings?.deployment_mode || 'database';
@@ -441,8 +442,8 @@ export default function CreateAgent() {
           graduation_mode: graduationMode,
           target_market_cap_usd: targetMarketCapUsd,
           
-          // ✅ V6.1 BONDING CURVE
-          pricing_model: 'linear_v6_1',
+          // ✅ V7 BONDING CURVE
+          pricing_model: 'linear_v7',
           bonding_curve_supply: 0,
           migration_validated: true,
           
@@ -557,7 +558,7 @@ export default function CreateAgent() {
               });
             }
 
-            // V6: Execute prebuy via trading-engine-v6 (database mode)
+            // V7: Execute prebuy via trading-engine-v7 (database mode)
             if (formData.prebuy_amount && formData.prebuy_amount > 0) {
               console.log('[CreateAgent] Executing V6 prebuy:', formData.prebuy_amount);
               const prebuySuccess = await executePrebuy(agentId, formData.prebuy_amount);
@@ -1452,7 +1453,7 @@ export default function CreateAgent() {
                           </div>
                           <div>
                             <p className="font-medium text-xs sm:text-sm">Graduation Price (per token):</p>
-                            <p className="text-foreground/80 text-xs sm:text-sm">0.00024 PROMPT</p>
+                            <p className="text-foreground/80 text-xs sm:text-sm">0.0003 PROMPT</p>
                           </div>
                         </div>
 
@@ -1562,7 +1563,7 @@ export default function CreateAgent() {
                                   </div>
                                   {formData.prebuy_amount > 0 && (() => {
                                     const buyResult = calculateBuyReturn(0, formData.prebuy_amount);
-                                    const percentOfTradeable = (buyResult.sharesOut / BONDING_CURVE_V6_1_CONSTANTS.DATABASE_TRADEABLE_CAP) * 100;
+                                    const percentOfTradeable = (buyResult.sharesOut / V7_CONSTANTS.TRADEABLE_CAP) * 100;
                                     return (
                                       <div className="text-sm text-foreground/80 space-y-1">
                                         <div className="font-bold text-foreground">You'll receive: ~{Math.floor(buyResult.sharesOut).toLocaleString()} ${formData.symbol || 'tokens'}</div>

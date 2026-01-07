@@ -37,7 +37,7 @@ export async function getAgentGraduationThreshold(agentId: string): Promise<numb
 
     if (error || !agent) {
       console.error('Failed to fetch agent graduation config:', error);
-      return 42000; // Fallback to database mode default
+      return 42160; // V7: Fallback to updated default
     }
 
     const config: GraduationConfig = {
@@ -58,7 +58,7 @@ export async function getAgentGraduationThreshold(agentId: string): Promise<numb
     return threshold;
   } catch (error) {
     console.error('Error calculating graduation threshold:', error);
-    return 42000; // Fallback to database mode default
+    return 42160; // V7: Fallback to updated default
   }
 }
 

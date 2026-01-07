@@ -7,10 +7,10 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Constants matching bonding curve V5
+// Constants matching bonding curve V7
 const BONDING_CURVE_CONSTANTS = {
   GRADUATION_SUPPLY: 1_000_000, // 1M tokens max
-  DEFAULT_GRADUATION_THRESHOLD: 42000, // PROMPT reserves needed
+  DEFAULT_GRADUATION_THRESHOLD: 42160, // V7: Updated PROMPT reserves needed
 };
 
 serve(async (req) => {

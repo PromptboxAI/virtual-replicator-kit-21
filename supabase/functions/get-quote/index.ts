@@ -11,18 +11,18 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// ✅ V6.1 Constants - CORRECT VALUES (was V5 with 1M cap)
-const BONDING_CURVE_V6_CONSTANTS = {
-  DATABASE_TRADEABLE_CAP: 300_000_000,  // 300M tradeable supply (NOT 1M!)
+// ✅ V7 Constants - Updated values
+const BONDING_CURVE_V7_CONSTANTS = {
+  DATABASE_TRADEABLE_CAP: 248_000_000,  // V7: 248M tradeable supply
   BUY_FEE_BPS: 500,   // 5%
   SELL_FEE_BPS: 500,  // 5%
   BASIS_POINTS: 10000,
   DEFAULT_P0: 0.00004,
-  DEFAULT_P1: 0.00024,  // Adjusted for 42K graduation
+  DEFAULT_P1: 0.0003,  // V7: Updated for 42.16K graduation
 };
 
 function calculateCurrentPrice(p0: number, p1: number, tokensSold: number): number {
-  const { DATABASE_TRADEABLE_CAP } = BONDING_CURVE_V6_CONSTANTS;
+  const { DATABASE_TRADEABLE_CAP } = BONDING_CURVE_V7_CONSTANTS;
   const priceRange = p1 - p0;
   return p0 + (priceRange * tokensSold) / DATABASE_TRADEABLE_CAP;
 }
@@ -33,7 +33,7 @@ function calculateBuyReturn(
   tokensSold: number,
   promptIn: number
 ): { tokensOut: number; fee: number; priceAtEnd: number; avgPrice: number } {
-  const { BUY_FEE_BPS, BASIS_POINTS, DATABASE_TRADEABLE_CAP } = BONDING_CURVE_V6_CONSTANTS;
+  const { BUY_FEE_BPS, BASIS_POINTS, DATABASE_TRADEABLE_CAP } = BONDING_CURVE_V7_CONSTANTS;
 
   const fee = (promptIn * BUY_FEE_BPS) / BASIS_POINTS;
   const promptAfterFee = promptIn - fee;
@@ -71,7 +71,7 @@ function calculateSellReturn(
   tokensSold: number,
   tokensIn: number
 ): { promptOut: number; fee: number; priceAtEnd: number; avgPrice: number } {
-  const { SELL_FEE_BPS, BASIS_POINTS, DATABASE_TRADEABLE_CAP } = BONDING_CURVE_V6_CONSTANTS;
+  const { SELL_FEE_BPS, BASIS_POINTS, DATABASE_TRADEABLE_CAP } = BONDING_CURVE_V7_CONSTANTS;
 
   const priceAtStart = calculateCurrentPrice(p0, p1, tokensSold);
 
@@ -212,9 +212,9 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Get bonding curve params - use shares_sold for V6
-    const p0 = Number(agent.created_p0) || BONDING_CURVE_V6_CONSTANTS.DEFAULT_P0;
-    const p1 = Number(agent.created_p1) || BONDING_CURVE_V6_CONSTANTS.DEFAULT_P1;
+    // Get bonding curve params - use shares_sold for V7
+    const p0 = Number(agent.created_p0) || BONDING_CURVE_V7_CONSTANTS.DEFAULT_P0;
+    const p1 = Number(agent.created_p1) || BONDING_CURVE_V7_CONSTANTS.DEFAULT_P1;
     const tokensSold = Number(agent.shares_sold) || Number(agent.bonding_curve_supply) || Number(agent.circulating_supply) || 0;
     const currentPrice = calculateCurrentPrice(p0, p1, tokensSold);
 
@@ -291,7 +291,7 @@ Deno.serve(async (req) => {
           sharesSold: tokensSold,
           p0,
           p1,
-          cap: BONDING_CURVE_V6_CONSTANTS.DATABASE_TRADEABLE_CAP,
+          cap: BONDING_CURVE_V7_CONSTANTS.DATABASE_TRADEABLE_CAP,
         },
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

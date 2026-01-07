@@ -124,7 +124,7 @@ function IndexAgentCard({ agent }: { agent: Agent }) {
             <div 
               className="h-full bg-gradient-to-r from-primary/60 to-primary transition-all"
               style={{ 
-                width: `${Math.min(((agent.prompt_raised || 0) / 42000) * 100, 100)}%` 
+                width: `${Math.min(((agent.prompt_raised || 0) / 42160) * 100, 100)}%` 
               }}
             />
           )}

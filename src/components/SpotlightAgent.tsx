@@ -30,7 +30,7 @@ interface SpotlightAgentProps {
 
 export function SpotlightAgent({ agent }: SpotlightAgentProps) {
   const navigate = useNavigate();
-  const [graduationThreshold, setGraduationThreshold] = useState<number>(42000);
+  const [graduationThreshold, setGraduationThreshold] = useState<number>(42160); // V7 default
   
   // Real-time graduation status - Phase 3 implementation
   const { isGraduated } = useAgentRealtime(agent.id, {
