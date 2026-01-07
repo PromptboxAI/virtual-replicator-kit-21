@@ -235,7 +235,7 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({
           agentId,
-          isGraduated: agent.is_graduated ?? false,
+          isGraduated: agent.token_graduated ?? false,
           graduatedAt: agent.graduated_at,
           event: gradEvent,
           status: gradStatus,
