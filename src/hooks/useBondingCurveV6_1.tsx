@@ -87,7 +87,7 @@ export function useBondingCurveV6_1({ agentId, walletAddress }: UseBondingCurveV
     mutationFn: async ({ promptAmount }: { promptAmount: number }) => {
       if (!walletAddress) throw new Error('Wallet not connected');
 
-      const { data, error } = await supabase.functions.invoke('trading-engine-v6', {
+      const { data, error } = await supabase.functions.invoke('trading-engine-v7', {
         body: {
           agentId,
           walletAddress,
@@ -120,7 +120,7 @@ export function useBondingCurveV6_1({ agentId, walletAddress }: UseBondingCurveV
     mutationFn: async ({ sharesAmount }: { sharesAmount: number }) => {
       if (!walletAddress) throw new Error('Wallet not connected');
 
-      const { data, error } = await supabase.functions.invoke('trading-engine-v6', {
+      const { data, error } = await supabase.functions.invoke('trading-engine-v7', {
         body: {
           agentId,
           walletAddress,

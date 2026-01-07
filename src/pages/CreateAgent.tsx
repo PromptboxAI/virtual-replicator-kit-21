@@ -305,7 +305,7 @@ export default function CreateAgent() {
     const deploymentMode = adminSettings?.deployment_mode || 'database';
     
     // For smart contract mode, check on-chain PROMPT balance
-    // Factory charges 100 PROMPT, prebuy handled via trading-engine-v6
+    // Factory charges 100 PROMPT, prebuy handled via trading-engine-v7
     if (deploymentMode === 'smart_contract') {
       const onChainBalance = parseFloat(contractPromptBalance || '0');
       const requiredPrompt = 100; // Factory fee

@@ -37,7 +37,7 @@ export const GraduationStatusDisplay: React.FC<GraduationStatusDisplayProps> = (
 }) => {
   const [graduationEvent, setGraduationEvent] = useState<GraduationEvent | null>(null);
   const [loading, setLoading] = useState(true);
-  const [graduationThreshold, setGraduationThreshold] = useState<number>(42000);
+  const [graduationThreshold, setGraduationThreshold] = useState<number>(42160);
 
   useEffect(() => {
     const loadGraduationData = async () => {

@@ -74,7 +74,7 @@ export function TradingInterface({
   const [sellAmount, setSellAmount] = useState('');
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('buy');
-  const [graduationThreshold, setGraduationThreshold] = useState<number>(42000);
+  const [graduationThreshold, setGraduationThreshold] = useState<number>(42160);
   const { toast } = useToast();
   const { mode: appMode } = useAppMode(); // ✅ Move hook to top level
   const { user } = useAuth();
