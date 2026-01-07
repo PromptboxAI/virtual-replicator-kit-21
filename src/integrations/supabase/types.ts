@@ -1892,6 +1892,7 @@ export type Database = {
           failed_at: string | null
           failure_reason: string | null
           framework: string | null
+          graduated_at: string | null
           graduation_event_id: string | null
           graduation_mode: string | null
           graduation_threshold: number | null
@@ -1959,6 +1960,7 @@ export type Database = {
           failed_at?: string | null
           failure_reason?: string | null
           framework?: string | null
+          graduated_at?: string | null
           graduation_event_id?: string | null
           graduation_mode?: string | null
           graduation_threshold?: number | null
@@ -2026,6 +2028,7 @@ export type Database = {
           failed_at?: string | null
           failure_reason?: string | null
           framework?: string | null
+          graduated_at?: string | null
           graduation_event_id?: string | null
           graduation_mode?: string | null
           graduation_threshold?: number | null

@@ -265,3 +265,6 @@ verify_jwt = false
 
 [functions.get-quote-v7]
 verify_jwt = false
+
+[functions.graduation-manager-v7]
+verify_jwt = false
