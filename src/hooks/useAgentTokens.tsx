@@ -34,11 +34,11 @@ export function useAgentTokens(tokenAddress?: string) {
   const { toast } = useToast();
   const { user } = useAuth();
 
-  // Fee configuration (matching virtuals.io: 1% total, 70%/30% split)
+  // Fee configuration (V7: 5% total, 50%/50% split)
   const feeConfig = {
-    feePercent: 0.01,      // 1% total trading fee
-    creatorSplit: 0.7,     // 70% goes to agent creator
-    platformSplit: 0.3     // 30% goes to platform
+    feePercent: 0.05,      // 5% total trading fee
+    creatorSplit: 0.5,     // 50% goes to agent creator
+    platformSplit: 0.5     // 50% goes to platform
   };
 
   const calculateFees = (amount: number): FeeBreakdown => {

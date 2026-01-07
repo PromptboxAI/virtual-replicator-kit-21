@@ -162,11 +162,11 @@ export const TokenTradingInterface = ({ agent, onTradeComplete }: TokenTradingIn
     };
   }, [user?.id, agent.id, agent.symbol]);
   
-  // Fee configuration (default values until integrated with useAgentTokens)
+  // Fee configuration (V7: 5% total, 50%/50% split)
   const feeConfig = {
-    feePercent: 0.01,
-    creatorSplit: 0.7,
-    platformSplit: 0.3
+    feePercent: 0.05,
+    creatorSplit: 0.5,
+    platformSplit: 0.5
   };
 
   // Real-time graduation status and data - Phase 3 & 4 implementation
