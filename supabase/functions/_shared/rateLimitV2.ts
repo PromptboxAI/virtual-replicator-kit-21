@@ -18,6 +18,7 @@ export interface RateLimitConfig {
 
 // Default configs per endpoint
 const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
+  'trading-engine-v7': { maxRequests: 50, windowSeconds: 60 },
   'trading-engine-v6': { maxRequests: 50, windowSeconds: 60 },
   'execute-trade': { maxRequests: 30, windowSeconds: 60 },
   'execute-bonding-curve-trade-v4': { maxRequests: 30, windowSeconds: 60 },
