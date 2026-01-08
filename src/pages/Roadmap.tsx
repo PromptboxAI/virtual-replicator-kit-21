@@ -235,12 +235,27 @@ export default function Roadmap() {
 
         {/* Vision Section */}
         <section className="py-16 relative overflow-hidden">
-          {/* Black background with white microdots */}
+          {/* Black background with layered microdots */}
+          <div className="absolute inset-0 bg-foreground" />
           <div 
-            className="absolute inset-0 bg-foreground"
+            className="absolute inset-0"
             style={{
-              backgroundImage: `radial-gradient(circle, hsl(var(--background)) 1px, transparent 1px)`,
-              backgroundSize: '20px 20px',
+              backgroundImage: 'radial-gradient(circle, hsl(var(--background) / 0.08) 1px, transparent 1px)',
+              backgroundSize: '8px 8px',
+            }}
+          />
+          <div 
+            className="absolute inset-0"
+            style={{
+              backgroundImage: 'radial-gradient(circle, hsl(var(--background) / 0.05) 0.8px, transparent 0.8px)',
+              backgroundSize: '12px 12px',
+            }}
+          />
+          <div 
+            className="absolute inset-0"
+            style={{
+              backgroundImage: 'radial-gradient(circle, hsl(var(--background) / 0.03) 1.5px, transparent 1.5px)',
+              backgroundSize: '24px 24px',
             }}
           />
           
@@ -258,7 +273,7 @@ export default function Roadmap() {
               <h2 className="text-3xl md:text-4xl font-heading font-medium text-background mb-6">
                 Our Vision
               </h2>
-              <p className="text-lg text-background/70 mb-8 leading-relaxed">
+              <p className="text-lg text-background mb-8 leading-relaxed">
                 We're building the infrastructure for a new economy of autonomous AI agents. 
                 Our goal is to make it simple for anyone to create, fund, and deploy AI agents 
                 that can operate independently, generate value, and evolve with their communities.
