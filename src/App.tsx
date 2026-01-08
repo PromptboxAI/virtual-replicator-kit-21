@@ -49,6 +49,7 @@ import AIAgentsMarketplace from "./pages/AIAgentsMarketplace";
 import BuildYourFirstAgent from "./pages/BuildYourFirstAgent";
 import AgentShowcase from "./pages/AgentShowcase";
 import AgentCreationSuccess from "./components/AgentCreationSuccess";
+import Roadmap from "./pages/Roadmap";
 
 const queryClient = new QueryClient();
 
@@ -168,6 +169,7 @@ const App = () => {
               <Route path="/status" element={<Status />} />
               <Route path="/api-reference" element={<ApiReference />} />
               <Route path="/press-releases" element={<PressReleases />} />
+              <Route path="/roadmap" element={<Roadmap />} />
               <Route path="/platform/ai-agents" element={<AIAgentsHub />} />
               <Route path="/platform/ai-agents/:agentId" element={<AIAgentDetail />} />
               {/* Legacy redirect for old trade routes */}
