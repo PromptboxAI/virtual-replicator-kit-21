@@ -210,16 +210,16 @@ const Index = () => {
               Launch Tokenized AI Agents<br />as Micro-SaaS Businesses
             </h1>
           </div>
-          <p className="text-lg md:text-xl max-w-2xl mx-auto mb-6 relative z-10" style={{ color: '#1f2937' }}>
+          <p className="text-lg md:text-xl max-w-2xl mx-auto mb-6 relative z-10 !text-gray-800">
             Promptbox lets you create, fund, and run tokenized AI agents with visual workflows, deep integrations, and on-chain rails - from a growing library of ready-to-launch templates.
           </p>
-          <div className="flex justify-center gap-3 mb-8 relative z-10">
-            <Button asChild size="lg" className="bg-foreground text-background hover:bg-foreground/90 rounded-full px-14 py-5 h-auto text-base font-medium">
+          <div className="flex justify-center gap-4 mb-8 relative z-10">
+            <Button asChild className="bg-foreground text-background hover:bg-foreground/90 rounded-full px-12 py-4 h-auto text-lg font-medium">
               <Link to="/create">
                 Launch Your Agent
               </Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="rounded-full px-14 py-5 h-auto text-base font-medium border-border hover:bg-muted">
+            <Button asChild variant="outline" className="rounded-full px-12 py-4 h-auto text-lg font-medium border-border hover:bg-muted bg-muted/50">
               <Link to="/learn">
                 Learn More
               </Link>
