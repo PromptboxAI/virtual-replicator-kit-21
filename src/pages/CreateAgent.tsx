@@ -34,7 +34,7 @@ import { CreatorPrebuyPanel } from "@/components/CreatorPrebuyPanel";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 // import { useAgentTokens } from "@/hooks/useAgentTokens";
 import { useAccount } from 'wagmi';
-import { calculateBuyReturn } from "@/lib/bondingCurveV6_1";
+import { calculateBuyReturn } from "@/lib/bondingCurveV7";
 import { V7_CONSTANTS } from "@/lib/constants";
 import { retrySupabaseUpdate } from "@/lib/retryUtils";
 
