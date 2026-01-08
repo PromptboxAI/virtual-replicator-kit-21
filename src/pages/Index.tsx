@@ -206,11 +206,11 @@ const Index = () => {
             Funded. Liquid. Verifiable.
           </div>
           <div className="flex items-center justify-center gap-2 mb-4 relative z-10">
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-heading font-medium text-foreground leading-tight tracking-tight">
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-heading font-semibold text-foreground leading-tight tracking-tight">
               Launch Tokenized AI Agents<br />as Micro-SaaS Businesses
             </h1>
           </div>
-          <p className="text-lg md:text-xl text-foreground font-medium max-w-2xl mx-auto mb-6 relative z-10">
+          <p className="text-lg md:text-xl text-neutral-700 max-w-2xl mx-auto mb-6 relative z-10">
             Promptbox lets you create, fund, and run tokenized AI agents with visual workflows, deep integrations, and on-chain rails - from a growing library of ready-to-launch templates.
           </p>
           <div className="flex justify-center gap-3 mb-8 relative z-10">
