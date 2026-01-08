@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { ArrowRight, Bot, Coins, TrendingUp, Users, Zap } from "lucide-react";
+import { ArrowRight, Bot, Coins, TrendingUp, Users, Zap, CheckCircle2, Shield, Wallet } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -13,6 +13,9 @@ import { IntegrationsSection } from "@/components/IntegrationsSection";
 import { SecuritySection } from "@/components/SecuritySection";
 import { FounderSection } from "@/components/FounderSection";
 import baseLogo from "@/assets/base-logo.png";
+import graduationProtocolImg from "@/assets/graduation-protocol.png";
+import verifiableReceiptsImg from "@/assets/verifiable-receipts.png";
+import tokenBoundAccountsImg from "@/assets/token-bound-accounts.png";
 const TokenAgents = () => {
   return <div className="min-h-screen bg-background">
       <Header />
@@ -182,109 +185,127 @@ const TokenAgents = () => {
       {/* Platform Features with Visuals */}
       <section className="py-32 bg-muted/30">
         <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center mb-20">
+            <p className="text-sm font-mono text-muted-foreground mb-4 tracking-wider uppercase inline-block border-b-2 border-foreground/30 pb-1">
+              PROTOCOL
+            </p>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-heading font-medium text-foreground mb-4 tracking-tight">
+              Built for Trust & Transparency
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              Every layer of Promptbox is designed for verifiability, from token economics to agent outputs.
+            </p>
+          </div>
+
           <div className="max-w-6xl mx-auto space-y-32">
             
             {/* Feature 1: Agent Graduation Protocol */}
-            <div className="grid md:grid-cols-2 gap-16 items-center">
+            <div className="grid md:grid-cols-2 gap-12 lg:gap-16 items-center">
               <div className="space-y-6 order-2 md:order-1">
-                <Badge className="mb-2">Agent Graduation Protocol</Badge>
+                <Badge variant="outline" className="mb-2 border-foreground/30">Graduation Protocol</Badge>
                 <h3 className="text-3xl md:text-4xl font-heading font-medium text-foreground tracking-tight">
-                  Launch with Proof of Demand
+                  Proof of Demand Launch
                 </h3>
-                <p className="text-lg text-muted-foreground">
-                  Agents start on a transparent bonding curve. Reach the 42K threshold to graduate, 
-                  unlock full capabilities, and automatically deploy to Uniswap V3 with permanent liquidity.
+                <p className="text-lg text-muted-foreground leading-relaxed">
+                  Every agent starts on a bonding curve. When 42,000 $PROMPT is raised, the agent graduates — 
+                  deploying to Uniswap V3 with locked liquidity and unlocking full platform capabilities.
                 </p>
-                <ul className="space-y-3 text-muted-foreground">
+                <ul className="space-y-4 text-muted-foreground">
                   <li className="flex items-start gap-3">
-                    <Zap className="h-5 w-5 text-foreground mt-1 flex-shrink-0" />
-                    <span>Transparent pricing via bonding curve mechanics</span>
+                    <CheckCircle2 className="h-5 w-5 text-emerald-500 mt-0.5 flex-shrink-0" />
+                    <span><strong className="text-foreground">Bonding curve pricing</strong> — transparent, predictable token economics</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <Zap className="h-5 w-5 text-foreground mt-1 flex-shrink-0" />
-                    <span>Automatic DEX listing upon graduation</span>
+                    <CheckCircle2 className="h-5 w-5 text-emerald-500 mt-0.5 flex-shrink-0" />
+                    <span><strong className="text-foreground">Auto DEX deployment</strong> — instant Uniswap V3 listing on graduation</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <Zap className="h-5 w-5 text-foreground mt-1 flex-shrink-0" />
-                    <span>Milestone-gated governance and features</span>
+                    <CheckCircle2 className="h-5 w-5 text-emerald-500 mt-0.5 flex-shrink-0" />
+                    <span><strong className="text-foreground">3-year LP lock</strong> — permanent liquidity, no rug pulls</span>
                   </li>
                 </ul>
               </div>
               <div className="order-1 md:order-2 group">
-                <div className="relative aspect-video bg-foreground/5 rounded-2xl overflow-hidden border border-border/50 hover:border-border transition-all duration-300 hover:shadow-xl">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <TrendingUp className="h-24 w-24 text-foreground/20 group-hover:text-foreground/30 transition-colors group-hover:scale-110 duration-300" />
-                  </div>
+                <div className="relative aspect-video rounded-2xl overflow-hidden border border-border/50 hover:border-border transition-all duration-300 hover:shadow-2xl shadow-lg">
+                  <img 
+                    src={graduationProtocolImg} 
+                    alt="Agent Graduation Protocol - Bonding curve to DEX launch visualization" 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
                 </div>
               </div>
             </div>
 
             {/* Feature 2: Verifiable Output Receipts */}
-            <div className="grid md:grid-cols-2 gap-16 items-center">
+            <div className="grid md:grid-cols-2 gap-12 lg:gap-16 items-center">
               <div className="group">
-                <div className="relative aspect-video bg-foreground/5 rounded-2xl overflow-hidden border border-border/50 hover:border-border transition-all duration-300 hover:shadow-xl">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Bot className="h-24 w-24 text-foreground/20 group-hover:text-foreground/30 transition-colors group-hover:scale-110 duration-300" />
-                  </div>
+                <div className="relative aspect-video rounded-2xl overflow-hidden border border-border/50 hover:border-border transition-all duration-300 hover:shadow-2xl shadow-lg">
+                  <img 
+                    src={verifiableReceiptsImg} 
+                    alt="Verifiable Output Receipts - Merkle tree verification system" 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
                 </div>
               </div>
               <div className="space-y-6">
-                <Badge className="mb-2">Verifiable Output Receipts</Badge>
+                <Badge variant="outline" className="mb-2 border-foreground/30">Output Verification</Badge>
                 <h3 className="text-3xl md:text-4xl font-heading font-medium text-foreground tracking-tight">
-                  Cryptographically Auditable
+                  Cryptographic Receipts
                 </h3>
-                <p className="text-lg text-muted-foreground">
-                  Every monetized agent action generates a signed receipt. Receipts are batched into Merkle trees 
-                  with roots anchored on-chain, making all revenue and usage tamper-evident.
+                <p className="text-lg text-muted-foreground leading-relaxed">
+                  Every agent action generates a signed receipt. Receipts are batched into Merkle trees 
+                  with roots anchored on-chain — making all revenue and usage fully auditable.
                 </p>
-                <ul className="space-y-3 text-muted-foreground">
+                <ul className="space-y-4 text-muted-foreground">
                   <li className="flex items-start gap-3">
-                    <Zap className="h-5 w-5 text-foreground mt-1 flex-shrink-0" />
-                    <span>Structured receipts for every inference and action</span>
+                    <Shield className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
+                    <span><strong className="text-foreground">Signed receipts</strong> — cryptographic proof for every inference</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <Zap className="h-5 w-5 text-foreground mt-1 flex-shrink-0" />
-                    <span>Merkle-tree batching for efficient verification</span>
+                    <Shield className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
+                    <span><strong className="text-foreground">Merkle batching</strong> — efficient on-chain verification</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <Zap className="h-5 w-5 text-foreground mt-1 flex-shrink-0" />
-                    <span>On-chain anchoring via VorLedger contract</span>
+                    <Shield className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
+                    <span><strong className="text-foreground">VorLedger anchoring</strong> — tamper-evident usage logs</span>
                   </li>
                 </ul>
               </div>
             </div>
 
             {/* Feature 3: Token-Bound Agent Accounts */}
-            <div className="grid md:grid-cols-2 gap-16 items-center">
+            <div className="grid md:grid-cols-2 gap-12 lg:gap-16 items-center">
               <div className="space-y-6 order-2 md:order-1">
-                <Badge className="mb-2">Token-Bound Agent Accounts</Badge>
+                <Badge variant="outline" className="mb-2 border-foreground/30">Agent Economics</Badge>
                 <h3 className="text-3xl md:text-4xl font-heading font-medium text-foreground tracking-tight">
-                  Agents as Economic Objects
+                  Token-Bound Accounts
                 </h3>
-                <p className="text-lg text-muted-foreground">
-                  Each agent is linked to an on-chain controller defining creator, platform permissions, 
-                  and revenue split policies. Agents become composable DeFi primitives.
+                <p className="text-lg text-muted-foreground leading-relaxed">
+                  Each agent is linked to an on-chain controller that defines ownership, permissions, 
+                  and revenue splits. Agents become composable economic primitives in DeFi.
                 </p>
-                <ul className="space-y-3 text-muted-foreground">
+                <ul className="space-y-4 text-muted-foreground">
                   <li className="flex items-start gap-3">
-                    <Zap className="h-5 w-5 text-foreground mt-1 flex-shrink-0" />
-                    <span>On-chain registry for ownership and policies</span>
+                    <Wallet className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
+                    <span><strong className="text-foreground">On-chain registry</strong> — verifiable ownership and policies</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <Zap className="h-5 w-5 text-foreground mt-1 flex-shrink-0" />
-                    <span>Configurable revenue splits (platform/creator/holders)</span>
+                    <Wallet className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
+                    <span><strong className="text-foreground">5% trading fee</strong> — split 50/50 between creator and platform</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <Zap className="h-5 w-5 text-foreground mt-1 flex-shrink-0" />
-                    <span>Composable with DeFi protocols and integrations</span>
+                    <Wallet className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
+                    <span><strong className="text-foreground">DeFi composable</strong> — integrate with protocols and wallets</span>
                   </li>
                 </ul>
               </div>
               <div className="order-1 md:order-2 group">
-                <div className="relative aspect-video bg-foreground/5 rounded-2xl overflow-hidden border border-border/50 hover:border-border transition-all duration-300 hover:shadow-xl">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Users className="h-24 w-24 text-foreground/20 group-hover:text-foreground/30 transition-colors group-hover:scale-110 duration-300" />
-                  </div>
+                <div className="relative aspect-video rounded-2xl overflow-hidden border border-border/50 hover:border-border transition-all duration-300 hover:shadow-2xl shadow-lg">
+                  <img 
+                    src={tokenBoundAccountsImg} 
+                    alt="Token-Bound Agent Accounts - Revenue split visualization" 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
                 </div>
               </div>
             </div>
