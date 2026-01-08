@@ -166,8 +166,8 @@ export default function Roadmap() {
         {/* Timeline Section */}
         <section className="py-16 relative">
           <div className="container mx-auto px-4">
-            {/* Central timeline line */}
-            <div className="absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-border to-transparent hidden lg:block" />
+            {/* Central timeline dashed line */}
+            <div className="absolute left-1/2 top-0 bottom-0 w-px border-l-2 border-dashed border-border hidden lg:block" />
 
             <div className="space-y-12 lg:space-y-24">
               {roadmapData.map((phase, index) => (
