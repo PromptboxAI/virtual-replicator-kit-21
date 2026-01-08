@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AnimatedBackground } from '@/components/AnimatedBackground';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -139,6 +139,10 @@ const Index = () => {
   const { showTermsModal, handleAcceptTerms } = useAuth();
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState<'all' | 'trending' | 'new' | 'active'>('all');
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   console.log("Index page - agents loaded:", agents.length, "agents");
   console.log("Index page - sample agent:", agents[0]);
