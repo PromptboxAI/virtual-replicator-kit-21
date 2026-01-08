@@ -29,13 +29,13 @@ const TokenAgents = () => {
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button size="default" className="bg-foreground text-background hover:bg-foreground/90 transition-all duration-200 h-10 px-4 text-sm" asChild>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Button size="lg" className="bg-foreground text-background hover:bg-foreground/90 transition-all duration-200 h-12 px-8 text-base" asChild>
               <Link to="/create">
                 Launch Your Agent
               </Link>
             </Button>
-            <Button variant="outline" size="default" className="hidden sm:inline-flex h-10 px-4 text-sm transition-all duration-200" asChild>
+            <Button variant="outline" size="lg" className="hidden sm:inline-flex h-12 px-8 text-base transition-all duration-200" asChild>
               <Link to="/learn">
                 Learn More
               </Link>
