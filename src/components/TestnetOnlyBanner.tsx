@@ -16,7 +16,7 @@ export default function TestnetOnlyBanner() {
       <div className="container mx-auto px-4 py-2 flex justify-center items-center text-sm sm:text-base text-white">
         <span>
           This app is running on Base Sepolia.{' '}
-          <a href="/learn" className="underline inline-flex items-center gap-1">
+          <a href="/roadmap" className="underline inline-flex items-center gap-1">
             Read More <ArrowRight className="h-4 w-4 inline" />
           </a>
         </span>
