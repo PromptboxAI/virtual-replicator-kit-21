@@ -180,7 +180,7 @@ serve(async (req) => {
         graduation = {
           status: graduationEvent.graduation_status,
           dex_pair_address: graduationEvent.liquidity_pool_address || null,
-          dex_type: 'uniswap_v3',
+          dex_type: 'uniswap_v2',
           v2_contract_address: graduationEvent.v2_contract_address || null,
           graduation_tx_hash: graduationEvent.deployment_tx_hash || null,
           liquidity_tx_hash: graduationEvent.liquidity_tx_hash || null,

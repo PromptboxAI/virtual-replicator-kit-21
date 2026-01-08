@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.3';
-import { createPublicClient, http, parseEther, formatUnits, encodeFunctionData } from 'https://esm.sh/viem@2.7.0';
+import { createPublicClient, http, parseEther, formatUnits } from 'https://esm.sh/viem@2.7.0';
 import { baseSepolia, base } from 'https://esm.sh/viem@2.7.0/chains';
 
 const corsHeaders = {
@@ -8,42 +8,60 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Uniswap V3 Quoter V2 contract addresses
-const UNISWAP_QUOTER_V2: Record<number, string> = {
-  84532: '0xEd1f6473345F45b75F8179591dd5bA1888cf2FB3', // Base Sepolia
-  8453: '0x3d4e44Eb1374240CE5F1B871ab261CD16335B76a',  // Base Mainnet
+// Uniswap V2 Router addresses
+const UNISWAP_V2_ROUTER: Record<number, string> = {
+  84532: '0x4752ba5dbc23f44d87826276bf6fd6b1c372ad24', // Base Sepolia
+  8453: '0x4752ba5DBc23f44d87826276BF6Fd6b1C372aD24',  // Base Mainnet
 };
 
-// Uniswap V3 pool fees (in hundredths of a bip, i.e., 1e-6)
-const POOL_FEES = [500, 3000, 10000]; // 0.05%, 0.3%, 1%
-
-// QuoterV2 ABI for quoteExactInputSingle
-const QUOTER_V2_ABI = [
+// V2 Router ABI for getAmountsOut
+const V2_ROUTER_ABI = [
   {
     inputs: [
-      {
-        components: [
-          { name: 'tokenIn', type: 'address' },
-          { name: 'tokenOut', type: 'address' },
-          { name: 'amountIn', type: 'uint256' },
-          { name: 'fee', type: 'uint24' },
-          { name: 'sqrtPriceLimitX96', type: 'uint160' }
-        ],
-        name: 'params',
-        type: 'tuple'
-      }
+      { name: 'amountIn', type: 'uint256' },
+      { name: 'path', type: 'address[]' }
     ],
-    name: 'quoteExactInputSingle',
-    outputs: [
+    name: 'getAmountsOut',
+    outputs: [{ name: 'amounts', type: 'uint256[]' }],
+    stateMutability: 'view',
+    type: 'function'
+  },
+  {
+    inputs: [
       { name: 'amountOut', type: 'uint256' },
-      { name: 'sqrtPriceX96After', type: 'uint160' },
-      { name: 'initializedTicksCrossed', type: 'uint32' },
-      { name: 'gasEstimate', type: 'uint256' }
+      { name: 'path', type: 'address[]' }
     ],
-    stateMutability: 'nonpayable',
+    name: 'getAmountsIn',
+    outputs: [{ name: 'amounts', type: 'uint256[]' }],
+    stateMutability: 'view',
     type: 'function'
   }
 ] as const;
+
+// V2 Pair ABI for reserves
+const V2_PAIR_ABI = [
+  {
+    inputs: [],
+    name: 'getReserves',
+    outputs: [
+      { name: 'reserve0', type: 'uint112' },
+      { name: 'reserve1', type: 'uint112' },
+      { name: 'blockTimestampLast', type: 'uint32' }
+    ],
+    stateMutability: 'view',
+    type: 'function'
+  },
+  {
+    inputs: [],
+    name: 'token0',
+    outputs: [{ name: '', type: 'address' }],
+    stateMutability: 'view',
+    type: 'function'
+  }
+] as const;
+
+// Fixed V2 fee: 0.3%
+const V2_FEE_PERCENT = 0.3;
 
 interface DEXQuoteRequest {
   agentId: string;
@@ -67,7 +85,6 @@ interface QuoteResult {
   liquidity_pool: string | null;
   dex_type: string;
   route: string[];
-  pool_fee_tier: number;
   expires_at: number;
   slippage_tolerance: number;
 }
@@ -177,89 +194,91 @@ serve(async (req) => {
     // Get liquidity pool address from graduation event
     const liquidityPoolAddress = agent.agent_graduation_events?.liquidity_pool_address || null;
 
-    // Try to get quote from Uniswap V3 Quoter
-    let bestQuote: {
-      amountOut: bigint;
-      gasEstimate: bigint;
-      fee: number;
-    } | null = null;
-
-    const quoterAddress = UNISWAP_QUOTER_V2[chainId];
-    
-    if (quoterAddress) {
-      // Try each fee tier to find the best quote
-      for (const fee of POOL_FEES) {
-        try {
-          console.log(`🔍 Trying fee tier ${fee / 10000}%...`);
-          
-          const quoteParams = {
-            tokenIn: tokenIn as `0x${string}`,
-            tokenOut: tokenOut as `0x${string}`,
-            amountIn,
-            fee,
-            sqrtPriceLimitX96: BigInt(0),
-          };
-
-          // Use staticCall to simulate the quote
-          const result = await publicClient.simulateContract({
-            address: quoterAddress as `0x${string}`,
-            abi: QUOTER_V2_ABI,
-            functionName: 'quoteExactInputSingle',
-            args: [quoteParams],
-          });
-
-          const [amountOut, , , gasEstimate] = result.result as [bigint, bigint, number, bigint];
-
-          if (!bestQuote || amountOut > bestQuote.amountOut) {
-            bestQuote = { amountOut, gasEstimate, fee };
-            console.log(`✅ Found quote at ${fee / 10000}% fee: ${formatUnits(amountOut, 18)} tokens`);
-          }
-        } catch (err) {
-          console.log(`⚠️ No liquidity at ${fee / 10000}% fee tier`);
-        }
-      }
-    }
-
-    // If no on-chain quote available, calculate estimated quote
+    // Try to get quote from Uniswap V2 Router
     let outputAmount: bigint;
-    let gasEstimate: bigint;
-    let poolFeeTier: number;
     let priceImpact: number;
+    let gasEstimate = BigInt(120000); // V2 swaps typically use ~120k gas
 
-    if (bestQuote) {
-      outputAmount = bestQuote.amountOut;
-      gasEstimate = bestQuote.gasEstimate;
-      poolFeeTier = bestQuote.fee;
-      
-      // Calculate price impact (simplified)
-      const spotPrice = agent.current_price || 0.0001;
-      const executedPrice = parseFloat(formatUnits(outputAmount, 18)) / amount;
-      priceImpact = Math.abs((executedPrice - spotPrice) / spotPrice) * 100;
+    const routerAddress = UNISWAP_V2_ROUTER[chainId];
+    
+    if (routerAddress) {
+      try {
+        console.log(`🔍 Getting V2 quote from router...`);
+        
+        const path = [tokenIn as `0x${string}`, tokenOut as `0x${string}`];
+        
+        // Use getAmountsOut for exact input
+        const amounts = await publicClient.readContract({
+          address: routerAddress as `0x${string}`,
+          abi: V2_ROUTER_ABI,
+          functionName: 'getAmountsOut',
+          args: [amountIn, path],
+        }) as bigint[];
+
+        outputAmount = amounts[1];
+        console.log(`✅ V2 quote: ${formatUnits(outputAmount, 18)} tokens out`);
+
+        // Calculate price impact from reserves if we have the LP address
+        if (liquidityPoolAddress) {
+          try {
+            const reserves = await publicClient.readContract({
+              address: liquidityPoolAddress as `0x${string}`,
+              abi: V2_PAIR_ABI,
+              functionName: 'getReserves',
+            }) as [bigint, bigint, number];
+
+            const token0 = await publicClient.readContract({
+              address: liquidityPoolAddress as `0x${string}`,
+              abi: V2_PAIR_ABI,
+              functionName: 'token0',
+            }) as string;
+
+            // Calculate price impact based on trade size vs reserves
+            const inputReserve = token0.toLowerCase() === tokenIn.toLowerCase() 
+              ? reserves[0] : reserves[1];
+            priceImpact = (Number(amountIn) / Number(inputReserve)) * 100;
+          } catch {
+            // Fallback price impact calculation
+            priceImpact = Math.min(amount * 0.1, 10);
+          }
+        } else {
+          priceImpact = Math.min(amount * 0.1, 10);
+        }
+
+      } catch (err) {
+        console.log(`⚠️ Failed to get V2 quote:`, err);
+        // Fallback to estimated pricing
+        const spotPrice = agent.current_price || 0.0001;
+        const estimatedSlippage = Math.min(amount * 0.001, 5);
+        
+        if (side === 'buy') {
+          const tokensReceived = amount / spotPrice * (1 - estimatedSlippage / 100);
+          outputAmount = parseEther(tokensReceived.toFixed(18));
+        } else {
+          const promptReceived = amount * spotPrice * (1 - estimatedSlippage / 100);
+          outputAmount = parseEther(promptReceived.toFixed(18));
+        }
+        priceImpact = estimatedSlippage;
+      }
     } else {
-      // Fallback: estimate based on current price with simulated slippage
-      console.log('⚠️ No on-chain quote available, using estimated pricing');
+      // No router available, use estimated pricing
+      console.log('⚠️ No V2 router available, using estimated pricing');
       
       const spotPrice = agent.current_price || 0.0001;
-      const estimatedSlippage = Math.min(amount * 0.001, 5); // 0.1% per unit, max 5%
+      const estimatedSlippage = Math.min(amount * 0.001, 5);
       
       if (side === 'buy') {
-        // Buying agent tokens with PROMPT
         const tokensReceived = amount / spotPrice * (1 - estimatedSlippage / 100);
         outputAmount = parseEther(tokensReceived.toFixed(18));
       } else {
-        // Selling agent tokens for PROMPT
         const promptReceived = amount * spotPrice * (1 - estimatedSlippage / 100);
         outputAmount = parseEther(promptReceived.toFixed(18));
       }
-      
-      gasEstimate = BigInt(150000); // Estimated gas for Uniswap V3 swap
-      poolFeeTier = 3000; // Default 0.3% fee
       priceImpact = estimatedSlippage;
     }
 
-    // Calculate fee amount
-    const feePercent = poolFeeTier / 10000;
-    const feeAmount = amount * (feePercent / 100);
+    // Calculate fee amount (fixed 0.3% for V2)
+    const feeAmount = amount * (V2_FEE_PERCENT / 100);
 
     // Calculate min output with slippage
     const slippageMultiplier = 1 - (slippage / 100);
@@ -267,11 +286,11 @@ serve(async (req) => {
       Math.floor(Number(outputAmount) * slippageMultiplier)
     );
 
-    // Estimate gas cost in USD (assuming ~$2000 ETH price and typical gas prices)
+    // Estimate gas cost in USD
     const gasPrice = BigInt(1000000); // 0.001 gwei for L2
     const gasCostWei = gasEstimate * gasPrice;
     const gasCostEth = parseFloat(formatUnits(gasCostWei, 18));
-    const ethPrice = 2500; // Could fetch real price from oracle
+    const ethPrice = 2500;
     const gasCostUsd = gasCostEth * ethPrice;
 
     // Calculate effective price
@@ -287,16 +306,15 @@ serve(async (req) => {
       output_amount: formatUnits(outputAmount, 18),
       output_amount_raw: outputAmount.toString(),
       price_impact_percent: Math.round(priceImpact * 100) / 100,
-      fee_percent: feePercent,
+      fee_percent: V2_FEE_PERCENT,
       fee_amount: feeAmount.toFixed(6),
       gas_estimate: formatUnits(gasEstimate, 0),
       gas_estimate_usd: Math.round(gasCostUsd * 100) / 100,
       effective_price: Math.round(effectivePrice * 1000000) / 1000000,
       min_output_amount: formatUnits(minOutputAmount, 18),
       liquidity_pool: liquidityPoolAddress,
-      dex_type: 'uniswap_v3',
+      dex_type: 'uniswap_v2',
       route: [tokenIn, tokenOut],
-      pool_fee_tier: poolFeeTier,
       expires_at: Date.now() + 30000, // Quote valid for 30 seconds
       slippage_tolerance: slippage,
     };

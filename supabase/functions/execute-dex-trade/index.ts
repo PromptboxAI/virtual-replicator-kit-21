@@ -17,10 +17,10 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Uniswap V3 SwapRouter02 addresses
-const UNISWAP_SWAP_ROUTER: Record<number, string> = {
-  84532: '0x94cC0AaC535CCDB3C01d6787D6413C739ae12bc4', // Base Sepolia SwapRouter02
-  8453: '0x2626664c2603336E57B271c5C0b26F421741e481',  // Base Mainnet SwapRouter02
+// Uniswap V2 Router addresses
+const UNISWAP_V2_ROUTER: Record<number, string> = {
+  84532: '0x4752ba5dbc23f44d87826276bf6fd6b1c372ad24', // Base Sepolia
+  8453: '0x4752ba5DBc23f44d87826276BF6Fd6b1C372aD24',  // Base Mainnet
 };
 
 // ERC20 ABI for approvals
@@ -47,27 +47,29 @@ const ERC20_ABI = [
   }
 ] as const;
 
-// SwapRouter02 ABI for exactInputSingle
-const SWAP_ROUTER_ABI = [
+// V2 Router ABI for swapExactTokensForTokens
+const V2_ROUTER_ABI = [
   {
     inputs: [
-      {
-        components: [
-          { name: 'tokenIn', type: 'address' },
-          { name: 'tokenOut', type: 'address' },
-          { name: 'fee', type: 'uint24' },
-          { name: 'recipient', type: 'address' },
-          { name: 'amountIn', type: 'uint256' },
-          { name: 'amountOutMinimum', type: 'uint256' },
-          { name: 'sqrtPriceLimitX96', type: 'uint160' }
-        ],
-        name: 'params',
-        type: 'tuple'
-      }
+      { name: 'amountIn', type: 'uint256' },
+      { name: 'amountOutMin', type: 'uint256' },
+      { name: 'path', type: 'address[]' },
+      { name: 'to', type: 'address' },
+      { name: 'deadline', type: 'uint256' }
     ],
-    name: 'exactInputSingle',
-    outputs: [{ name: 'amountOut', type: 'uint256' }],
-    stateMutability: 'payable',
+    name: 'swapExactTokensForTokens',
+    outputs: [{ name: 'amounts', type: 'uint256[]' }],
+    stateMutability: 'nonpayable',
+    type: 'function'
+  },
+  {
+    inputs: [
+      { name: 'amountIn', type: 'uint256' },
+      { name: 'path', type: 'address[]' }
+    ],
+    name: 'getAmountsOut',
+    outputs: [{ name: 'amounts', type: 'uint256[]' }],
+    stateMutability: 'view',
     type: 'function'
   }
 ] as const;
@@ -80,7 +82,6 @@ interface DEXTradeRequest {
   tokenAmount?: number;
   slippage?: number;
   minOutputAmount?: string;
-  poolFee?: number;
 }
 
 serve(async (req) => {
@@ -102,7 +103,6 @@ serve(async (req) => {
       tokenAmount = 0,
       slippage = 0.5,
       minOutputAmount,
-      poolFee = 3000, // Default 0.3% fee tier
     }: DEXTradeRequest = await req.json();
 
     console.log(`🔄 DEX Trade Request: ${tradeType} for graduated agent ${agentId}`);
@@ -188,6 +188,7 @@ serve(async (req) => {
     const tokenIn = tradeType === 'buy' ? PROMPT_TOKEN : AGENT_TOKEN;
     const tokenOut = tradeType === 'buy' ? AGENT_TOKEN : PROMPT_TOKEN;
     const amountIn = parseEther(inputAmount.toString());
+    const path = [tokenIn as `0x${string}`, tokenOut as `0x${string}`];
 
     // Get chain configuration
     const chainId = agent.chain_id || 84532;
@@ -199,17 +200,17 @@ serve(async (req) => {
     // Get deployer key for server-side execution
     const deployerKey = Deno.env.get('DEPLOYER_PRIVATE_KEY');
     
+    const routerAddress = UNISWAP_V2_ROUTER[chainId];
+    if (!routerAddress) {
+      return new Response(
+        JSON.stringify({ success: false, error: `Uniswap V2 not supported on chain ${chainId}` }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
+    }
+
     if (!deployerKey) {
       // If no deployer key, return transaction data for client-side signing
       console.log('📝 No deployer key - returning transaction data for client signing');
-      
-      const swapRouterAddress = UNISWAP_SWAP_ROUTER[chainId];
-      if (!swapRouterAddress) {
-        return new Response(
-          JSON.stringify({ success: false, error: `Uniswap not supported on chain ${chainId}` }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-        );
-      }
 
       // Calculate minimum output with slippage
       const estimatedOutput = parseEther((inputAmount * 0.95).toString()); // Rough estimate
@@ -217,26 +218,20 @@ serve(async (req) => {
         ? BigInt(minOutputAmount)
         : BigInt(Math.floor(Number(estimatedOutput) * (1 - slippage / 100)));
 
-      // Encode swap transaction
+      const deadline = BigInt(Math.floor(Date.now() / 1000) + 1800); // 30 minutes
+
+      // Encode swap transaction for V2
       const swapData = encodeFunctionData({
-        abi: SWAP_ROUTER_ABI,
-        functionName: 'exactInputSingle',
-        args: [{
-          tokenIn: tokenIn as `0x${string}`,
-          tokenOut: tokenOut as `0x${string}`,
-          fee: poolFee,
-          recipient: userId as `0x${string}`,
-          amountIn,
-          amountOutMinimum: minOutput,
-          sqrtPriceLimitX96: BigInt(0),
-        }],
+        abi: V2_ROUTER_ABI,
+        functionName: 'swapExactTokensForTokens',
+        args: [amountIn, minOutput, path, userId as `0x${string}`, deadline],
       });
 
       // Encode approval transaction
       const approvalData = encodeFunctionData({
         abi: ERC20_ABI,
         functionName: 'approve',
-        args: [swapRouterAddress as `0x${string}`, amountIn],
+        args: [routerAddress as `0x${string}`, amountIn],
       });
 
       return new Response(
@@ -253,7 +248,7 @@ serve(async (req) => {
             },
             {
               step: 'swap',
-              to: swapRouterAddress,
+              to: routerAddress,
               data: swapData,
               value: '0',
               description: `Swap ${inputAmount} ${tradeType === 'buy' ? 'PROMPT' : agent.symbol} for ${tradeType === 'buy' ? agent.symbol : 'PROMPT'}`,
@@ -263,9 +258,9 @@ serve(async (req) => {
             amountIn: amountIn.toString(),
             minAmountOut: minOutput.toString(),
             slippage,
-            poolFee,
             tokenIn,
             tokenOut,
+            path,
           }
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
@@ -273,7 +268,7 @@ serve(async (req) => {
     }
 
     // Server-side execution with deployer key
-    console.log('🔐 Executing server-side swap with deployer key');
+    console.log('🔐 Executing server-side V2 swap with deployer key');
 
     const account = privateKeyToAccount(deployerKey as `0x${string}`);
     
@@ -288,14 +283,6 @@ serve(async (req) => {
       transport: http(rpcUrl),
     });
 
-    const swapRouterAddress = UNISWAP_SWAP_ROUTER[chainId];
-    if (!swapRouterAddress) {
-      return new Response(
-        JSON.stringify({ success: false, error: `Uniswap not supported on chain ${chainId}` }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-      );
-    }
-
     // Step 1: Check and set approval if needed
     console.log('🔍 Checking token allowance...');
     
@@ -303,7 +290,7 @@ serve(async (req) => {
       address: tokenIn as `0x${string}`,
       abi: ERC20_ABI,
       functionName: 'allowance',
-      args: [account.address, swapRouterAddress as `0x${string}`],
+      args: [account.address, routerAddress as `0x${string}`],
     });
 
     let approvalTxHash: string | null = null;
@@ -315,7 +302,7 @@ serve(async (req) => {
         address: tokenIn as `0x${string}`,
         abi: ERC20_ABI,
         functionName: 'approve',
-        args: [swapRouterAddress as `0x${string}`, amountIn * BigInt(2)], // Approve 2x for future trades
+        args: [routerAddress as `0x${string}`, amountIn * BigInt(2)], // Approve 2x for future trades
       });
 
       console.log(`✅ Approval tx: ${approvalHash}`);
@@ -325,28 +312,38 @@ serve(async (req) => {
       await publicClient.waitForTransactionReceipt({ hash: approvalHash });
     }
 
-    // Step 2: Calculate minimum output
-    const estimatedOutput = parseEther((inputAmount * (agent.current_price || 0.95)).toString());
-    const minOutput = minOutputAmount 
-      ? BigInt(minOutputAmount)
-      : BigInt(Math.floor(Number(estimatedOutput) * (1 - slippage / 100)));
+    // Step 2: Get expected output from router
+    let minOutput: bigint;
+    try {
+      const amounts = await publicClient.readContract({
+        address: routerAddress as `0x${string}`,
+        abi: V2_ROUTER_ABI,
+        functionName: 'getAmountsOut',
+        args: [amountIn, path],
+      }) as bigint[];
+      
+      const expectedOutput = amounts[1];
+      minOutput = minOutputAmount 
+        ? BigInt(minOutputAmount)
+        : BigInt(Math.floor(Number(expectedOutput) * (1 - slippage / 100)));
+    } catch {
+      // Fallback calculation
+      const estimatedOutput = parseEther((inputAmount * (agent.current_price || 0.95)).toString());
+      minOutput = minOutputAmount 
+        ? BigInt(minOutputAmount)
+        : BigInt(Math.floor(Number(estimatedOutput) * (1 - slippage / 100)));
+    }
 
-    // Step 3: Execute swap
-    console.log('🔄 Executing swap...');
+    const deadline = BigInt(Math.floor(Date.now() / 1000) + 1800); // 30 minutes
+
+    // Step 3: Execute V2 swap
+    console.log('🔄 Executing V2 swap...');
     
     const swapHash = await walletClient.writeContract({
-      address: swapRouterAddress as `0x${string}`,
-      abi: SWAP_ROUTER_ABI,
-      functionName: 'exactInputSingle',
-      args: [{
-        tokenIn: tokenIn as `0x${string}`,
-        tokenOut: tokenOut as `0x${string}`,
-        fee: poolFee,
-        recipient: userId as `0x${string}`, // Send to user's wallet
-        amountIn,
-        amountOutMinimum: minOutput,
-        sqrtPriceLimitX96: BigInt(0),
-      }],
+      address: routerAddress as `0x${string}`,
+      abi: V2_ROUTER_ABI,
+      functionName: 'swapExactTokensForTokens',
+      args: [amountIn, minOutput, path, userId as `0x${string}`, deadline],
     });
 
     console.log(`✅ Swap tx: ${swapHash}`);
@@ -432,14 +429,16 @@ serve(async (req) => {
   } catch (error) {
     console.error('❌ DEX trade execution failed:', error);
     
-    // Check for common Uniswap errors
+    // Check for common V2 errors
     let errorMessage = error.message;
-    if (error.message?.includes('STF')) {
-      errorMessage = 'Swap failed: Insufficient liquidity or slippage too low';
-    } else if (error.message?.includes('TF')) {
+    if (error.message?.includes('INSUFFICIENT_OUTPUT_AMOUNT')) {
+      errorMessage = 'Swap failed: Output amount is less than minimum. Try increasing slippage.';
+    } else if (error.message?.includes('INSUFFICIENT_LIQUIDITY')) {
+      errorMessage = 'Swap failed: Insufficient liquidity in pool';
+    } else if (error.message?.includes('EXPIRED')) {
+      errorMessage = 'Swap failed: Transaction deadline expired';
+    } else if (error.message?.includes('TRANSFER_FAILED')) {
       errorMessage = 'Transfer failed: Check token balance and approvals';
-    } else if (error.message?.includes('SPL')) {
-      errorMessage = 'Price limit exceeded: Try a smaller trade or higher slippage';
     }
     
     return new Response(
@@ -504,12 +503,12 @@ async function updateBalances(
         .eq('user_id', userId)
         .single();
 
-      if (balance) {
-        await supabase
-          .from('user_token_balances')
-          .update({ balance: balance.balance + outputAmount })
-          .eq('user_id', userId);
-      }
+      await supabase
+        .from('user_token_balances')
+        .upsert({
+          user_id: userId,
+          balance: (balance?.balance || 0) + outputAmount,
+        });
 
       // Update agent token holdings
       const { data: holding } = await supabase
@@ -520,11 +519,20 @@ async function updateBalances(
         .single();
 
       if (holding) {
-        await supabase
-          .from('agent_token_holders')
-          .update({ token_balance: Math.max(0, holding.token_balance - inputAmount) })
-          .eq('agent_id', agentId)
-          .eq('user_id', userId);
+        const newBalance = Math.max(0, holding.token_balance - inputAmount);
+        if (newBalance > 0) {
+          await supabase
+            .from('agent_token_holders')
+            .update({ token_balance: newBalance })
+            .eq('agent_id', agentId)
+            .eq('user_id', userId);
+        } else {
+          await supabase
+            .from('agent_token_holders')
+            .delete()
+            .eq('agent_id', agentId)
+            .eq('user_id', userId);
+        }
       }
     }
   } catch (err) {
