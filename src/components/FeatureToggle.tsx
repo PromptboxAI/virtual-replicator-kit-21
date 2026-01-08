@@ -71,7 +71,7 @@ export function FeatureToggle() {
     <section className="py-6 pb-16 md:py-16 px-4">
       <div className="max-w-6xl mx-auto flex flex-col-reverse md:flex-col gap-4 md:gap-0">
         {/* Toggle Buttons */}
-        <div className="flex md:flex-wrap md:justify-center gap-4 md:gap-6 md:mb-10 overflow-x-auto pb-2 md:pb-0 snap-x snap-mandatory scrollbar-hide">
+        <div className="flex md:flex-wrap md:justify-center gap-6 md:gap-10 md:mb-10 overflow-x-auto pb-2 md:pb-0 snap-x snap-mandatory scrollbar-hide">
           {features.map((feature) => {
             const Icon = feature.icon;
             const isActive = activeFeature === feature.id;
@@ -81,20 +81,28 @@ export function FeatureToggle() {
                 key={feature.id}
                 onClick={() => setActiveFeature(feature.id)}
                 className={cn(
-                  "flex flex-col items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",
+                  "flex flex-col items-center gap-3 transition-all duration-200",
                   "flex-shrink-0 snap-center min-w-[80px]",
-                  isActive
-                    ? "bg-foreground text-background"
-                    : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
+                  isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
                 )}
               >
+                {/* Active indicator line */}
                 <div className={cn(
-                  "w-10 h-10 rounded-lg flex items-center justify-center",
-                  isActive ? "bg-background/20" : "bg-background"
+                  "w-6 h-0.5 rounded-full transition-all duration-200",
+                  isActive ? "bg-foreground" : "bg-transparent"
+                )} />
+                
+                {/* Icon container */}
+                <div className={cn(
+                  "w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-200",
+                  isActive 
+                    ? "bg-foreground text-background" 
+                    : "bg-muted/60 text-foreground hover:bg-muted"
                 )}>
                   <Icon className="h-5 w-5" />
                 </div>
-                {feature.label}
+                
+                <span className="text-sm font-medium">{feature.label}</span>
               </button>
             );
           })}
