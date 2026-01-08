@@ -167,7 +167,7 @@ export function FeaturesSection() {
           <p className="text-sm font-mono text-muted-foreground mb-3 tracking-wider uppercase inline-block border-b-2 border-foreground/30 pb-1">
             FEATURES
           </p>
-          <h2 className="text-3xl md:text-4xl font-heading font-medium text-foreground mb-4 tracking-tight">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-heading font-medium text-foreground mb-4 tracking-tight">
             The Promptbox Protocol
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">

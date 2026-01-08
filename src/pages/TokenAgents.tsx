@@ -75,7 +75,7 @@ const TokenAgents = () => {
             <p className="text-sm font-mono text-muted-foreground mb-4 tracking-wider uppercase inline-block border-b-2 border-foreground/30 pb-1">
               AUDIENCE
             </p>
-            <h2 className="text-3xl md:text-4xl font-heading font-medium text-foreground mb-4 tracking-tight">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-heading font-medium text-foreground mb-4 tracking-tight">
               Built for Everyone
             </h2>
             <p className="text-lg text-muted-foreground">
