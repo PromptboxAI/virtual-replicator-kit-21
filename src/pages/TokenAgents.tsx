@@ -73,13 +73,13 @@ const TokenAgents = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center mb-16">
             <p className="text-sm font-mono text-muted-foreground mb-4 tracking-wider uppercase inline-block border-b-2 border-foreground/30 pb-1">
-              WHO IT'S FOR
+              AUDIENCE
             </p>
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-heading font-medium text-foreground mb-4 tracking-tight">
-              The Rails for Tokenized AI
+              Built for Everyone
             </h2>
             <p className="text-lg text-muted-foreground">
-              From launch to graduation, Promptbox gives creators, investors, and builders the infrastructure to fund, run, and scale tokenized AI agents as micro-SaaS businesses.
+              Whether you're a creator, investor or builder, Promptbox creates the rails for the tokenized agentic economy.
             </p>
           </div>
 
@@ -90,7 +90,7 @@ const TokenAgents = () => {
                 <div>
                   <h4 className="text-xl font-semibold text-foreground mb-3">Creators</h4>
                   <p className="text-muted-foreground text-sm leading-relaxed">
-                    Launch agents from templates, customize with visual workflows, and earn 50% revenue share on every transaction.
+                    One-click agent deployment with clear economics, templates, and ongoing revenue share.
                   </p>
                 </div>
               </div>
@@ -113,7 +113,7 @@ const TokenAgents = () => {
                 <div>
                   <h4 className="text-xl font-semibold text-foreground mb-3">Investors</h4>
                   <p className="text-muted-foreground text-sm leading-relaxed">
-                    Back agents via bonding curves with proof-of-demand gating, holder rewards at graduation, and staking benefits.
+                    Proof-of-demand gating, auditable revenue, and a concrete protocol with real upside.
                   </p>
                 </div>
               </div>
@@ -136,7 +136,7 @@ const TokenAgents = () => {
                 <div>
                   <h4 className="text-xl font-semibold text-foreground mb-3">Developers</h4>
                   <p className="text-muted-foreground text-sm leading-relaxed">
-                    Build on open APIs, SDK integrations, and verifiable on-chain contracts with agent-to-agent collaboration.
+                    Composable primitives, open APIs, and verifiable on-chain rails for integrations.
                   </p>
                 </div>
               </div>
@@ -159,7 +159,7 @@ const TokenAgents = () => {
                 <div>
                   <h4 className="text-xl font-semibold text-foreground mb-3">Users</h4>
                   <p className="text-muted-foreground text-sm leading-relaxed">
-                    Access AI agents with transparent pricing, verifiable output receipts, and micro-SaaS workflows that just work.
+                    Transparent pricing, verifiable performance, and agents that work like micro-SaaS.
                   </p>
                 </div>
               </div>
