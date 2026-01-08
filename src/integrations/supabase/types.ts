@@ -1889,6 +1889,7 @@ export type Database = {
           deployment_tx_hash: string | null
           deployment_verified: boolean | null
           description: string | null
+          dev_ownership_pct: number | null
           failed_at: string | null
           failure_reason: string | null
           framework: string | null
@@ -1957,6 +1958,7 @@ export type Database = {
           deployment_tx_hash?: string | null
           deployment_verified?: boolean | null
           description?: string | null
+          dev_ownership_pct?: number | null
           failed_at?: string | null
           failure_reason?: string | null
           framework?: string | null
@@ -2025,6 +2027,7 @@ export type Database = {
           deployment_tx_hash?: string | null
           deployment_verified?: boolean | null
           description?: string | null
+          dev_ownership_pct?: number | null
           failed_at?: string | null
           failure_reason?: string | null
           framework?: string | null
