@@ -69,9 +69,9 @@ const TokenAgents = () => {
       <SecuritySection />
 
       {/* Use Cases Section */}
-      <section className="py-32">
+      <section className="py-32 bg-muted/20">
         <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center mb-24">
+          <div className="max-w-4xl mx-auto text-center mb-16">
             <p className="text-sm font-mono text-muted-foreground mb-4 tracking-wider uppercase inline-block border-b-2 border-foreground/30 pb-1">
               AUDIENCE
             </p>
@@ -83,52 +83,96 @@ const TokenAgents = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
-            <Card className="p-8 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-              <div className="space-y-4">
-                <div className="w-10 h-10 bg-foreground/5 rounded-lg flex items-center justify-center">
-                  <Users className="h-5 w-5 text-foreground" />
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+            {/* Creators Card */}
+            <Card className="relative p-6 pt-8 pb-8 min-h-[320px] hover:shadow-lg transition-all duration-300 overflow-hidden bg-card border-border/50">
+              <div className="relative z-10 flex flex-col h-full">
+                <div>
+                  <h4 className="text-xl font-semibold text-foreground mb-3">Creators</h4>
+                  <p className="text-muted-foreground text-sm leading-relaxed">
+                    One-click agent deployment with clear economics, templates, and ongoing revenue share.
+                  </p>
                 </div>
-                <h4 className="text-xl font-semibold">Creators</h4>
-                <p className="text-muted-foreground text-sm leading-relaxed">
-                  One-click agent deployment with clear economics, templates, and ongoing revenue share.
-                </p>
+              </div>
+              {/* Dotted pattern background */}
+              <div className="absolute bottom-0 right-0 w-32 h-32 opacity-10">
+                <div className="w-full h-full" style={{
+                  backgroundImage: 'radial-gradient(circle, currentColor 1px, transparent 1px)',
+                  backgroundSize: '8px 8px'
+                }} />
+              </div>
+              {/* Large icon */}
+              <div className="absolute bottom-6 right-6">
+                <Users className="h-12 w-12 text-foreground" strokeWidth={1.5} />
               </div>
             </Card>
 
-            <Card className="p-8 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-              <div className="space-y-4">
-                <div className="w-10 h-10 bg-foreground/5 rounded-lg flex items-center justify-center">
-                  <TrendingUp className="h-5 w-5 text-foreground" />
+            {/* Investors Card */}
+            <Card className="relative p-6 pt-8 pb-8 min-h-[320px] hover:shadow-lg transition-all duration-300 overflow-hidden bg-card border-border/50">
+              <div className="relative z-10 flex flex-col h-full">
+                <div>
+                  <h4 className="text-xl font-semibold text-foreground mb-3">Investors</h4>
+                  <p className="text-muted-foreground text-sm leading-relaxed">
+                    Proof-of-demand gating, auditable revenue, and a concrete protocol with real upside.
+                  </p>
                 </div>
-                <h4 className="text-xl font-semibold">Investors</h4>
-                <p className="text-muted-foreground text-sm leading-relaxed">
-                  Proof-of-demand gating, auditable revenue, and a concrete protocol with real upside.
-                </p>
+              </div>
+              {/* Dotted pattern background */}
+              <div className="absolute bottom-0 right-0 w-32 h-32 opacity-10">
+                <div className="w-full h-full" style={{
+                  backgroundImage: 'radial-gradient(circle, currentColor 1px, transparent 1px)',
+                  backgroundSize: '8px 8px'
+                }} />
+              </div>
+              {/* Large icon */}
+              <div className="absolute bottom-6 right-6">
+                <TrendingUp className="h-12 w-12 text-foreground" strokeWidth={1.5} />
               </div>
             </Card>
 
-            <Card className="p-8 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-              <div className="space-y-4">
-                <div className="w-10 h-10 bg-foreground/5 rounded-lg flex items-center justify-center">
-                  <Bot className="h-5 w-5 text-foreground" />
+            {/* Developers Card */}
+            <Card className="relative p-6 pt-8 pb-8 min-h-[320px] hover:shadow-lg transition-all duration-300 overflow-hidden bg-card border-border/50">
+              <div className="relative z-10 flex flex-col h-full">
+                <div>
+                  <h4 className="text-xl font-semibold text-foreground mb-3">Developers</h4>
+                  <p className="text-muted-foreground text-sm leading-relaxed">
+                    Composable primitives, open APIs, and verifiable on-chain rails for integrations.
+                  </p>
                 </div>
-                <h4 className="text-xl font-semibold">Developers</h4>
-                <p className="text-muted-foreground text-sm leading-relaxed">
-                  Composable primitives, open APIs, and verifiable on-chain rails for integrations.
-                </p>
+              </div>
+              {/* Dotted pattern background */}
+              <div className="absolute bottom-0 right-0 w-32 h-32 opacity-10">
+                <div className="w-full h-full" style={{
+                  backgroundImage: 'radial-gradient(circle, currentColor 1px, transparent 1px)',
+                  backgroundSize: '8px 8px'
+                }} />
+              </div>
+              {/* Large icon */}
+              <div className="absolute bottom-6 right-6">
+                <Bot className="h-12 w-12 text-foreground" strokeWidth={1.5} />
               </div>
             </Card>
 
-            <Card className="p-8 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-              <div className="space-y-4">
-                <div className="w-10 h-10 bg-foreground/5 rounded-lg flex items-center justify-center">
-                  <Coins className="h-5 w-5 text-foreground" />
+            {/* Users Card */}
+            <Card className="relative p-6 pt-8 pb-8 min-h-[320px] hover:shadow-lg transition-all duration-300 overflow-hidden bg-card border-border/50">
+              <div className="relative z-10 flex flex-col h-full">
+                <div>
+                  <h4 className="text-xl font-semibold text-foreground mb-3">Users</h4>
+                  <p className="text-muted-foreground text-sm leading-relaxed">
+                    Transparent pricing, verifiable performance, and agents that work like micro-SaaS.
+                  </p>
                 </div>
-                <h4 className="text-xl font-semibold">Users</h4>
-                <p className="text-muted-foreground text-sm leading-relaxed">
-                  Transparent pricing, verifiable performance, and agents that work like micro-SaaS.
-                </p>
+              </div>
+              {/* Dotted pattern background */}
+              <div className="absolute bottom-0 right-0 w-32 h-32 opacity-10">
+                <div className="w-full h-full" style={{
+                  backgroundImage: 'radial-gradient(circle, currentColor 1px, transparent 1px)',
+                  backgroundSize: '8px 8px'
+                }} />
+              </div>
+              {/* Large icon */}
+              <div className="absolute bottom-6 right-6">
+                <Coins className="h-12 w-12 text-foreground" strokeWidth={1.5} />
               </div>
             </Card>
           </div>
