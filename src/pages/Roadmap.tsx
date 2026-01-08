@@ -253,7 +253,11 @@ export default function Roadmap() {
                 >
                   {/* Timeline node */}
                   <div className="absolute left-1/2 top-8 -translate-x-1/2 hidden lg:flex items-center justify-center">
-                    <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${phase.color} flex items-center justify-center shadow-lg shadow-primary/20`}>
+                    <div className={`w-16 h-16 rounded-full flex items-center justify-center shadow-lg ${
+                      phase.status === "completed" 
+                        ? "bg-foreground text-background shadow-foreground/20" 
+                        : `bg-gradient-to-br ${phase.color} shadow-primary/20`
+                    }`}>
                       {phase.icon}
                     </div>
                   </div>
@@ -264,7 +268,11 @@ export default function Roadmap() {
                       {/* Header */}
                       <div className="flex items-start justify-between mb-6">
                         <div className="flex items-center gap-4">
-                          <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${phase.color} flex items-center justify-center lg:hidden`}>
+                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center lg:hidden ${
+                            phase.status === "completed"
+                              ? "bg-foreground text-background"
+                              : `bg-gradient-to-br ${phase.color}`
+                          }`}>
                             {phase.icon}
                           </div>
                           <div>
