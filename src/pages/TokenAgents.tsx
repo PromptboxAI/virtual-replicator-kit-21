@@ -208,7 +208,7 @@ const TokenAgents = () => {
                 </h3>
                 <p className="text-lg text-muted-foreground leading-relaxed">
                   Every agent starts on a bonding curve. When 42,000 $PROMPT is raised, the agent graduates — 
-                  deploying to Uniswap V3 with locked liquidity and unlocking full platform capabilities.
+                  deploying to Uniswap V2 with locked liquidity and unlocking full platform capabilities.
                 </p>
                 <ul className="space-y-4 text-muted-foreground">
                   <li className="flex items-start gap-3">
@@ -217,7 +217,7 @@ const TokenAgents = () => {
                   </li>
                   <li className="flex items-start gap-3">
                     <CheckCircle2 className="h-5 w-5 text-emerald-500 mt-0.5 flex-shrink-0" />
-                    <span><strong className="text-foreground">Auto DEX deployment</strong> — instant Uniswap V3 listing on graduation</span>
+                    <span><strong className="text-foreground">Auto DEX deployment</strong> — instant Uniswap V2 listing on graduation</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <CheckCircle2 className="h-5 w-5 text-emerald-500 mt-0.5 flex-shrink-0" />
