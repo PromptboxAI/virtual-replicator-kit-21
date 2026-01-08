@@ -139,9 +139,6 @@ export default function Roadmap() {
         
         {/* Hero Section */}
         <section className="relative pt-24 pb-16 overflow-hidden">
-          {/* Background gradient */}
-          <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent" />
-          
           <div className="container mx-auto px-4 relative z-10">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
@@ -153,11 +150,10 @@ export default function Roadmap() {
                 ROADMAP
               </p>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-heading font-medium text-foreground mb-6 tracking-tight">
-                Building the Future of AI Agents
+                From Token Launchpad to Agent Economy
               </h1>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                From concept to reality — follow our journey as we create the infrastructure 
-                for the next generation of tokenized AI agents.
+              <p className="text-lg text-foreground/70 max-w-2xl mx-auto">
+                See how Promptbox is rolling out the rails for tokenized AI agents, micro-SaaS workflows, and the communities that back them.
               </p>
             </motion.div>
           </div>
@@ -238,8 +234,17 @@ export default function Roadmap() {
         </section>
 
         {/* Vision Section */}
-        <section className="py-16 bg-muted/30">
-          <div className="container mx-auto px-4">
+        <section className="py-16 relative overflow-hidden">
+          {/* Black background with white microdots */}
+          <div 
+            className="absolute inset-0 bg-foreground"
+            style={{
+              backgroundImage: `radial-gradient(circle, hsl(var(--background)) 1px, transparent 1px)`,
+              backgroundSize: '20px 20px',
+            }}
+          />
+          
+          <div className="container mx-auto px-4 relative z-10">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -247,20 +252,20 @@ export default function Roadmap() {
               viewport={{ once: true }}
               className="max-w-4xl mx-auto text-center"
             >
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary/60 mb-6">
-                <Bot className="h-8 w-8 text-primary-foreground" />
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-background mb-6">
+                <Bot className="h-8 w-8 text-foreground" />
               </div>
-              <h2 className="text-3xl md:text-4xl font-heading font-medium text-foreground mb-6">
+              <h2 className="text-3xl md:text-4xl font-heading font-medium text-background mb-6">
                 Our Vision
               </h2>
-              <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
+              <p className="text-lg text-background/70 mb-8 leading-relaxed">
                 We're building the infrastructure for a new economy of autonomous AI agents. 
                 Our goal is to make it simple for anyone to create, fund, and deploy AI agents 
                 that can operate independently, generate value, and evolve with their communities.
               </p>
               <a 
                 href="/create" 
-                className="inline-flex items-center gap-2 px-6 py-3 bg-foreground text-background rounded-full font-medium hover:bg-foreground/90 transition-colors"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-background text-foreground rounded-full font-medium hover:bg-background/90 transition-colors"
               >
                 Start Building <ArrowRight className="h-4 w-4" />
               </a>
