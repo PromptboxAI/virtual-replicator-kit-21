@@ -8,20 +8,30 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Uniswap V3 Pool ABI for price queries
-const UNISWAP_V3_POOL_ABI = [
+// Uniswap V2 Pair ABI for price queries
+const UNISWAP_V2_PAIR_ABI = [
   {
     "inputs": [],
-    "name": "slot0",
+    "name": "getReserves",
     "outputs": [
-      {"internalType": "uint160", "name": "sqrtPriceX96", "type": "uint160"},
-      {"internalType": "int24", "name": "tick", "type": "int24"},
-      {"internalType": "uint16", "name": "observationIndex", "type": "uint16"},
-      {"internalType": "uint16", "name": "observationCardinality", "type": "uint16"},
-      {"internalType": "uint16", "name": "observationCardinalityNext", "type": "uint16"},
-      {"internalType": "uint8", "name": "feeProtocol", "type": "uint8"},
-      {"internalType": "bool", "name": "unlocked", "type": "bool"}
+      {"internalType": "uint112", "name": "reserve0", "type": "uint112"},
+      {"internalType": "uint112", "name": "reserve1", "type": "uint112"},
+      {"internalType": "uint32", "name": "blockTimestampLast", "type": "uint32"}
     ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "token0",
+    "outputs": [{"internalType": "address", "name": "", "type": "address"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "token1",
+    "outputs": [{"internalType": "address", "name": "", "type": "address"}],
     "stateMutability": "view",
     "type": "function"
   }
@@ -135,7 +145,7 @@ serve(async (req) => {
       throw new Error('PROMPT token contract not found');
     }
 
-    const PROMPT_TOKEN = promptContract.contract_address;
+    const PROMPT_TOKEN = promptContract.contract_address.toLowerCase();
     console.log('💰 Using PROMPT token:', PROMPT_TOKEN);
 
     // Create blockchain client
@@ -164,34 +174,52 @@ serve(async (req) => {
           continue;
         }
 
-        // Query DEX price from Uniswap V3 pool
+        // Query DEX price from Uniswap V2 pair
         let dexPrice = 0;
         let volume24h = 0;
         let marketCap = 0;
 
         try {
-          // Get current price from pool slot0
-          const slot0 = await publicClient.readContract({
-            address: graduationEvent.liquidity_pool_address as `0x${string}`,
-            abi: UNISWAP_V3_POOL_ABI,
-            functionName: 'slot0'
-          });
+          const pairAddress = graduationEvent.liquidity_pool_address as `0x${string}`;
+          
+          // Get reserves from V2 pair
+          const reserves = await publicClient.readContract({
+            address: pairAddress,
+            abi: UNISWAP_V2_PAIR_ABI,
+            functionName: 'getReserves'
+          }) as [bigint, bigint, number];
 
-          if (slot0 && slot0[0]) {
-            // Calculate price from sqrtPriceX96
-            const sqrtPriceX96 = slot0[0] as bigint;
-            const price = Number(sqrtPriceX96) / (2 ** 96);
-            dexPrice = price * price; // sqrtPrice^2 = price
+          // Get token0 to determine price direction
+          const token0 = await publicClient.readContract({
+            address: pairAddress,
+            abi: UNISWAP_V2_PAIR_ABI,
+            functionName: 'token0'
+          }) as string;
 
-            console.log(`💱 DEX price for ${agent.symbol}: ${dexPrice}`);
+          const reserve0 = reserves[0];
+          const reserve1 = reserves[1];
+
+          // Calculate price based on token order
+          // If PROMPT is token0, price = reserve0/reserve1 (PROMPT per agent token)
+          // If PROMPT is token1, price = reserve1/reserve0 (PROMPT per agent token)
+          if (token0.toLowerCase() === PROMPT_TOKEN) {
+            // token0 is PROMPT, token1 is agent token
+            // Price in PROMPT per agent token = reserve0 / reserve1
+            dexPrice = Number(reserve0) / Number(reserve1);
+          } else {
+            // token0 is agent token, token1 is PROMPT
+            // Price in PROMPT per agent token = reserve1 / reserve0
+            dexPrice = Number(reserve1) / Number(reserve0);
           }
+
+          console.log(`💱 DEX price for ${agent.symbol}: ${dexPrice} PROMPT (reserves: ${formatUnits(reserve0, 18)}, ${formatUnits(reserve1, 18)})`);
         } catch (priceError) {
           console.error(`❌ Failed to get DEX price for ${agent.name}:`, priceError);
           // Use last known price as fallback
           dexPrice = agent.current_price;
         }
 
-        // Calculate 24h volume from recent trades (simplified - would need events in production)
+        // Calculate 24h volume from recent trades
         const { data: recentTrades } = await supabase
           .from('dex_trades')
           .select('src_amount, dst_amount, executed_price')

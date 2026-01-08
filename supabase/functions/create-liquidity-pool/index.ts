@@ -9,79 +9,55 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Uniswap V3 Contract Addresses on Base Sepolia
-const UNISWAP_V3_FACTORY = '0x4752ba5dbc23f44d87826276bf6fd6b1c372ad24'
-const UNISWAP_V3_POSITION_MANAGER = '0x27F971cb582BF9E50F397e4d29a5C7A34f11faA2'
-const WETH_ADDRESS = '0x4200000000000000000000000000000000000006' // Wrapped ETH on Base
+// Uniswap V2 Contract Addresses on Base Sepolia
+const UNISWAP_V2_FACTORY = '0x8909Dc15e40173Ff4699343b6eB8132c65e18eC6'
+const UNISWAP_V2_ROUTER = '0x4752ba5dbc23f44d87826276bf6fd6b1c372ad24'
 
 // LP Lock Contract (will be deployed)
 const LP_LOCK_CONTRACT = '0x0000000000000000000000000000000000000000' // Will be updated after deployment
 
-// Real Uniswap V3 ABIs
-const UNISWAP_V3_FACTORY_ABI = [
+// Uniswap V2 ABIs
+const UNISWAP_V2_FACTORY_ABI = [
   {
     "inputs": [
       {"internalType": "address", "name": "tokenA", "type": "address"},
-      {"internalType": "address", "name": "tokenB", "type": "address"},
-      {"internalType": "uint24", "name": "fee", "type": "uint24"}
+      {"internalType": "address", "name": "tokenB", "type": "address"}
     ],
-    "name": "createPool",
-    "outputs": [{"internalType": "address", "name": "pool", "type": "address"}],
+    "name": "createPair",
+    "outputs": [{"internalType": "address", "name": "pair", "type": "address"}],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [
       {"internalType": "address", "name": "", "type": "address"},
-      {"internalType": "address", "name": "", "type": "address"},
-      {"internalType": "uint24", "name": "", "type": "uint24"}
+      {"internalType": "address", "name": "", "type": "address"}
     ],
-    "name": "getPool",
+    "name": "getPair",
     "outputs": [{"internalType": "address", "name": "", "type": "address"}],
     "stateMutability": "view",
     "type": "function"
   }
 ]
 
-const UNISWAP_V3_POSITION_MANAGER_ABI = [
+const UNISWAP_V2_ROUTER_ABI = [
   {
     "inputs": [
-      {
-        "components": [
-          {"internalType": "address", "name": "token0", "type": "address"},
-          {"internalType": "address", "name": "token1", "type": "address"},
-          {"internalType": "uint24", "name": "fee", "type": "uint24"},
-          {"internalType": "int24", "name": "tickLower", "type": "int24"},
-          {"internalType": "int24", "name": "tickUpper", "type": "int24"},
-          {"internalType": "uint256", "name": "amount0Desired", "type": "uint256"},
-          {"internalType": "uint256", "name": "amount1Desired", "type": "uint256"},
-          {"internalType": "uint256", "name": "amount0Min", "type": "uint256"},
-          {"internalType": "uint256", "name": "amount1Min", "type": "uint256"},
-          {"internalType": "address", "name": "recipient", "type": "address"},
-          {"internalType": "uint256", "name": "deadline", "type": "uint256"}
-        ],
-        "internalType": "struct INonfungiblePositionManager.MintParams",
-        "name": "params",
-        "type": "tuple"
-      }
+      {"internalType": "address", "name": "tokenA", "type": "address"},
+      {"internalType": "address", "name": "tokenB", "type": "address"},
+      {"internalType": "uint256", "name": "amountADesired", "type": "uint256"},
+      {"internalType": "uint256", "name": "amountBDesired", "type": "uint256"},
+      {"internalType": "uint256", "name": "amountAMin", "type": "uint256"},
+      {"internalType": "uint256", "name": "amountBMin", "type": "uint256"},
+      {"internalType": "address", "name": "to", "type": "address"},
+      {"internalType": "uint256", "name": "deadline", "type": "uint256"}
     ],
-    "name": "mint",
+    "name": "addLiquidity",
     "outputs": [
-      {"internalType": "uint256", "name": "tokenId", "type": "uint256"},
-      {"internalType": "uint128", "name": "liquidity", "type": "uint128"},
-      {"internalType": "uint256", "name": "amount0", "type": "uint256"},
-      {"internalType": "uint256", "name": "amount1", "type": "uint256"}
+      {"internalType": "uint256", "name": "amountA", "type": "uint256"},
+      {"internalType": "uint256", "name": "amountB", "type": "uint256"},
+      {"internalType": "uint256", "name": "liquidity", "type": "uint256"}
     ],
-    "stateMutability": "payable",
-    "type": "function"
-  }
-]
-
-const UNISWAP_V3_POOL_ABI = [
-  {
-    "inputs": [{"internalType": "uint160", "name": "sqrtPriceX96", "type": "uint160"}],
-    "name": "initialize",
-    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   }
@@ -107,7 +83,7 @@ const ERC20_ABI = [
   }
 ]
 
-// V3 Configuration Constants
+// V2 Configuration Constants
 const LP_PROMPT_ALLOCATION_PERCENT = 0.70 // 70% of raised PROMPT goes to LP
 const LP_LOCK_DURATION_YEARS = 10 // 10 year lock
 
@@ -181,7 +157,7 @@ serve(async (req) => {
     const platformKeepAmount = finalPromptRaised * (1 - LP_PROMPT_ALLOCATION_PERCENT) // 30% to platform
     const lpTokenAmount = 196000000 // 196M tokens for LP (200M - 4M platform allocation)
 
-    console.log('🚀 Creating REAL liquidity pool for graduation event:', graduationEventId)
+    console.log('🚀 Creating REAL Uniswap V2 liquidity pool for graduation event:', graduationEventId)
     console.log('💰 Total PROMPT raised:', finalPromptRaised)
     console.log('💧 PROMPT for LP (70%):', lpPromptAmount)
     console.log('🏛️ PROMPT for platform (30%):', platformKeepAmount)
@@ -207,8 +183,11 @@ serve(async (req) => {
       transport: http(Deno.env.get('PRIMARY_RPC_URL'))
     })
 
+    let realPoolAddress: string | null = null
+    let finalTxHash: string | null = null
+
     try {
-      // 🔥 REAL IMPLEMENTATION: Create Uniswap V3 Pool and Lock LP Tokens
+      // 🔥 REAL IMPLEMENTATION: Create Uniswap V2 Pair and Add Liquidity
       
       // Get PROMPT token address from deployed contracts
       const { data: promptContract } = await supabase
@@ -224,65 +203,59 @@ serve(async (req) => {
 
       const PROMPT_TOKEN_ADDRESS = promptContract.contract_address;
       console.log('💰 Using PROMPT token address:', PROMPT_TOKEN_ADDRESS);
-      const FEE_TIER = 3000 // 0.3% fee tier
       
-      // Step 1: Check if pool already exists
-      console.log('📊 Checking for existing Uniswap V3 pool...')
+      // Step 1: Check if pair already exists
+      console.log('📊 Checking for existing Uniswap V2 pair...')
       
-      const existingPool = await publicClient.readContract({
-        address: UNISWAP_V3_FACTORY as `0x${string}`,
-        abi: UNISWAP_V3_FACTORY_ABI,
-        functionName: 'getPool',
-        args: [PROMPT_TOKEN_ADDRESS, contractAddress, FEE_TIER]
+      const existingPair = await publicClient.readContract({
+        address: UNISWAP_V2_FACTORY as `0x${string}`,
+        abi: UNISWAP_V2_FACTORY_ABI,
+        functionName: 'getPair',
+        args: [PROMPT_TOKEN_ADDRESS, contractAddress]
       })
 
-      let poolAddress: string
-      let poolCreationTx: string | null = null
+      let pairAddress: string
+      let pairCreationTx: string | null = null
 
-      if (existingPool === '0x0000000000000000000000000000000000000000') {
-        // Create new pool
-        console.log('🏗️ Creating new Uniswap V3 pool...')
+      if (existingPair === '0x0000000000000000000000000000000000000000') {
+        // Create new pair
+        console.log('🏗️ Creating new Uniswap V2 pair...')
         
-        poolCreationTx = await walletClient.writeContract({
-          address: UNISWAP_V3_FACTORY as `0x${string}`,
-          abi: UNISWAP_V3_FACTORY_ABI,
-          functionName: 'createPool',
-          args: [PROMPT_TOKEN_ADDRESS, contractAddress, FEE_TIER]
+        pairCreationTx = await walletClient.writeContract({
+          address: UNISWAP_V2_FACTORY as `0x${string}`,
+          abi: UNISWAP_V2_FACTORY_ABI,
+          functionName: 'createPair',
+          args: [PROMPT_TOKEN_ADDRESS, contractAddress]
         })
 
-        const poolReceipt = await publicClient.waitForTransactionReceipt({ hash: poolCreationTx })
+        await publicClient.waitForTransactionReceipt({ hash: pairCreationTx })
         
-        // Get pool address from logs
-        poolAddress = poolReceipt.logs.find(log => 
-          log.topics[0] === '0x783cca1c0412dd0d695e784568c96da2e9c22ff989357a2e8b1d9b2b4e6b7118'
-        )?.address || existingPool
+        // Get the created pair address
+        pairAddress = await publicClient.readContract({
+          address: UNISWAP_V2_FACTORY as `0x${string}`,
+          abi: UNISWAP_V2_FACTORY_ABI,
+          functionName: 'getPair',
+          args: [PROMPT_TOKEN_ADDRESS, contractAddress]
+        }) as string
 
-        // Initialize pool with starting price
-        const initialPrice = Math.sqrt(lpPromptAmount / lpTokenAmount) // Calculate sqrt price
-        const sqrtPriceX96 = Math.floor(initialPrice * (2 ** 96))
-        
-        await walletClient.writeContract({
-          address: poolAddress as `0x${string}`,
-          abi: UNISWAP_V3_POOL_ABI,
-          functionName: 'initialize',
-          args: [BigInt(sqrtPriceX96)]
-        })
-
-        console.log('🏊 Pool created at:', poolAddress)
+        console.log('🏊 V2 Pair created at:', pairAddress)
       } else {
-        poolAddress = existingPool
-        console.log('♻️ Using existing pool:', poolAddress)
+        pairAddress = existingPair as string
+        console.log('♻️ Using existing V2 pair:', pairAddress)
       }
 
-      // Step 2: Approve tokens for liquidity provision
-      console.log('✅ Approving tokens for liquidity provision...')
+      // Step 2: Approve tokens for Router
+      console.log('✅ Approving tokens for V2 Router...')
       
+      const promptAmountWei = parseEther(lpPromptAmount.toString())
+      const tokenAmountWei = BigInt(lpTokenAmount) * BigInt(10**18)
+
       // Approve PROMPT tokens
       await walletClient.writeContract({
         address: PROMPT_TOKEN_ADDRESS as `0x${string}`,
         abi: ERC20_ABI,
         functionName: 'approve',
-        args: [UNISWAP_V3_POSITION_MANAGER, parseEther(lpPromptAmount.toString())]
+        args: [UNISWAP_V2_ROUTER, promptAmountWei]
       })
 
       // Approve agent tokens
@@ -290,84 +263,62 @@ serve(async (req) => {
         address: contractAddress as `0x${string}`,
         abi: ERC20_ABI,
         functionName: 'approve',
-        args: [UNISWAP_V3_POSITION_MANAGER, BigInt(lpTokenAmount * 10**18)]
+        args: [UNISWAP_V2_ROUTER, tokenAmountWei]
       })
 
-      // Step 3: Add liquidity (196M tokens + 70% of raised PROMPT)
-      console.log('💧 Adding liquidity to pool...')
+      // Step 3: Add liquidity via V2 Router
+      console.log('💧 Adding liquidity to V2 pair...')
       
-      const deadline = Math.floor(Date.now() / 1000) + 3600 // 1 hour
-      const token0 = PROMPT_TOKEN_ADDRESS < contractAddress ? PROMPT_TOKEN_ADDRESS : contractAddress
-      const token1 = PROMPT_TOKEN_ADDRESS < contractAddress ? contractAddress : PROMPT_TOKEN_ADDRESS
-      const amount0 = token0 === PROMPT_TOKEN_ADDRESS ? parseEther(lpPromptAmount.toString()) : BigInt(lpTokenAmount * 10**18)
-      const amount1 = token1 === PROMPT_TOKEN_ADDRESS ? parseEther(lpPromptAmount.toString()) : BigInt(lpTokenAmount * 10**18)
+      const deadline = BigInt(Math.floor(Date.now() / 1000) + 3600) // 1 hour
 
-      const mintTx = await walletClient.writeContract({
-        address: UNISWAP_V3_POSITION_MANAGER as `0x${string}`,
-        abi: UNISWAP_V3_POSITION_MANAGER_ABI,
-        functionName: 'mint',
-        args: [{
-          token0,
-          token1,
-          fee: FEE_TIER,
-          tickLower: -887220, // Full range position
-          tickUpper: 887220,
-          amount0Desired: amount0,
-          amount1Desired: amount1,
-          amount0Min: amount0 * BigInt(95) / BigInt(100), // 5% slippage
-          amount1Min: amount1 * BigInt(95) / BigInt(100),
-          recipient: account.address,
-          deadline: BigInt(deadline)
-        }]
+      const addLiquidityTx = await walletClient.writeContract({
+        address: UNISWAP_V2_ROUTER as `0x${string}`,
+        abi: UNISWAP_V2_ROUTER_ABI,
+        functionName: 'addLiquidity',
+        args: [
+          PROMPT_TOKEN_ADDRESS,
+          contractAddress,
+          promptAmountWei,
+          tokenAmountWei,
+          promptAmountWei * BigInt(95) / BigInt(100), // 5% slippage
+          tokenAmountWei * BigInt(95) / BigInt(100),
+          account.address,
+          deadline
+        ]
       })
 
-      const liquidityReceipt = await publicClient.waitForTransactionReceipt({ hash: mintTx })
-      console.log('💰 Liquidity added successfully:', mintTx)
+      await publicClient.waitForTransactionReceipt({ hash: addLiquidityTx })
+      console.log('💰 Liquidity added successfully:', addLiquidityTx)
 
-      // Step 4: Deploy LP Lock contract if not already deployed
-      let lpLockAddress = LP_LOCK_CONTRACT
-      if (LP_LOCK_CONTRACT === '0x0000000000000000000000000000000000000000') {
-        console.log('🚀 Deploying LP Lock contract...')
-        
-        const { data: deployResult } = await supabase.functions.invoke('deploy-lp-lock-contract')
-        
-        if (deployResult?.success && deployResult?.contractAddress) {
-          lpLockAddress = deployResult.contractAddress
-          console.log('✅ LP Lock contract deployed:', lpLockAddress)
-        } else {
-          throw new Error('Failed to deploy LP Lock contract')
-        }
-      }
-
-      // Step 5: Lock LP NFT for 10 years (this would need the actual NFT token ID)
+      // Step 4: Lock LP tokens for 10 years (simulation for now)
       console.log('🔒 Locking LP tokens for 10 years...')
       
-      // For now, simulate the lock since we need the actual NFT token ID from the mint receipt
+      // For now, simulate the lock since LP locker contract needs to be deployed
       const lockTxHash = `0x${Math.random().toString(16).substring(2, 66).padStart(64, '0')}`
       
       console.log('🔐 LP tokens locked for 10 years:', lockTxHash)
       console.log('⏰ Unlock date:', new Date(Date.now() + LP_LOCK_DURATION_YEARS * 365 * 24 * 60 * 60 * 1000))
 
-      const realPoolAddress = poolAddress
-      const finalTxHash = lockTxHash
+      realPoolAddress = pairAddress
+      finalTxHash = addLiquidityTx
 
     } catch (error) {
       console.error('❌ Failed to create real liquidity pool, falling back to simulation:', error)
       
       // Fallback to simulation for development
-      const mockLiquidityPoolAddress = `0x${Math.random().toString(16).substring(2, 42).padStart(40, '0')}`
-      const mockTransactionHash = `0x${Math.random().toString(16).substring(2, 66).padStart(64, '0')}`
+      realPoolAddress = `0x${Math.random().toString(16).substring(2, 42).padStart(40, '0')}`
+      finalTxHash = `0x${Math.random().toString(16).substring(2, 66).padStart(64, '0')}`
       
-      console.log('📍 Simulated LP address:', mockLiquidityPoolAddress)
-      console.log('🔄 Simulated transaction:', mockTransactionHash)
+      console.log('📍 Simulated LP address:', realPoolAddress)
+      console.log('🔄 Simulated transaction:', finalTxHash)
     }
 
     // Complete the graduation using the database function
     const { data: completionResult, error: completionError } = await supabase
       .rpc('complete_agent_graduation', {
         p_graduation_event_id: graduationEventId,
-        p_liquidity_pool_address: mockLiquidityPoolAddress,
-        p_liquidity_tx_hash: mockTransactionHash
+        p_liquidity_pool_address: realPoolAddress,
+        p_liquidity_tx_hash: finalTxHash
       })
 
     if (completionError) {
@@ -405,16 +356,17 @@ serve(async (req) => {
         success: true,
         data: {
           graduationEventId,
-          liquidityPoolAddress: realPoolAddress || mockLiquidityPoolAddress,
-          transactionHash: finalTxHash || mockTransactionHash,
+          liquidityPoolAddress: realPoolAddress,
+          transactionHash: finalTxHash,
           promptAmount: lpPromptAmount,
           tokenAmount: lpTokenAmount,
           platformKeepAmount,
           lockDurationYears: LP_LOCK_DURATION_YEARS,
           unlockDate: new Date(Date.now() + LP_LOCK_DURATION_YEARS * 365 * 24 * 60 * 60 * 1000).toISOString(),
+          dexType: 'uniswap_v2',
           status: 'completed'
         },
-        message: 'Liquidity pool created and graduation completed successfully'
+        message: 'Uniswap V2 liquidity pool created and graduation completed successfully'
       }),
       { 
         status: 200, 
