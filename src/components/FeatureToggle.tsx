@@ -83,7 +83,7 @@ export function FeatureToggle() {
                 className={cn(
                   "flex flex-col items-center gap-3 transition-all duration-200",
                   "flex-shrink-0 snap-center min-w-[80px]",
-                  isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                  "text-foreground"
                 )}
               >
                 {/* Active indicator line */}
