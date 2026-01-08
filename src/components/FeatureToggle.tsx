@@ -71,7 +71,7 @@ export function FeatureToggle() {
     <section className="py-6 pb-16 md:py-16 px-4">
       <div className="max-w-6xl mx-auto flex flex-col-reverse md:flex-col gap-4 md:gap-0">
         {/* Toggle Buttons */}
-        <div className="flex md:flex-wrap md:justify-center gap-2 md:mb-10 overflow-x-auto pb-2 md:pb-0 snap-x snap-mandatory scrollbar-hide">
+        <div className="flex md:flex-wrap md:justify-center gap-4 md:gap-6 md:mb-10 overflow-x-auto pb-2 md:pb-0 snap-x snap-mandatory scrollbar-hide">
           {features.map((feature) => {
             const Icon = feature.icon;
             const isActive = activeFeature === feature.id;
@@ -81,14 +81,19 @@ export function FeatureToggle() {
                 key={feature.id}
                 onClick={() => setActiveFeature(feature.id)}
                 className={cn(
-                  "flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200",
-                  "border flex-shrink-0 snap-center",
+                  "flex flex-col items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",
+                  "flex-shrink-0 snap-center min-w-[80px]",
                   isActive
-                    ? "bg-foreground text-background border-foreground"
-                    : "bg-transparent text-muted-foreground border-border hover:bg-foreground hover:text-background hover:border-foreground"
+                    ? "bg-foreground text-background"
+                    : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}
               >
-                <Icon className="h-4 w-4" />
+                <div className={cn(
+                  "w-10 h-10 rounded-lg flex items-center justify-center",
+                  isActive ? "bg-background/20" : "bg-background"
+                )}>
+                  <Icon className="h-5 w-5" />
+                </div>
                 {feature.label}
               </button>
             );

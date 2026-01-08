@@ -213,15 +213,15 @@ const Index = () => {
           <p className="text-lg md:text-xl text-foreground max-w-2xl mx-auto mb-6 relative z-10">
             Promptbox lets you create, fund, and run tokenized AI agents with visual workflows, deep integrations, and on-chain rails - from a growing library of ready-to-launch templates.
           </p>
-          <div className="flex justify-center gap-4 mb-8 relative z-10">
-            <Button asChild size="default" className="bg-primary text-primary-foreground hover:bg-primary/90 px-5 py-2">
-              <Link to="/trade/base/0xDEMO">
-                View Demo Agent →
+          <div className="flex justify-center gap-3 mb-8 relative z-10">
+            <Button asChild size="default" className="bg-foreground text-background hover:bg-foreground/90 rounded-full px-6 py-2.5 h-auto font-medium">
+              <Link to="/create">
+                Launch Your Agent
               </Link>
             </Button>
-            <Button asChild size="default" variant="outline" className="px-5 py-2">
-              <Link to="/agents">
-                Explore All Agents
+            <Button asChild size="default" variant="outline" className="rounded-full px-6 py-2.5 h-auto font-medium border-border hover:bg-muted">
+              <Link to="/learn">
+                Learn More
               </Link>
             </Button>
           </div>
