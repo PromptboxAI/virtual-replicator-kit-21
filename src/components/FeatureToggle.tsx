@@ -94,15 +94,15 @@ export function FeatureToggle() {
                 
                 {/* Icon container */}
                 <div className={cn(
-                  "w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-200",
+                  "w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-200 border",
                   isActive 
-                    ? "bg-foreground text-background" 
-                    : "bg-muted/60 text-foreground hover:bg-muted"
+                    ? "bg-foreground text-background border-foreground" 
+                    : "bg-muted/60 text-foreground border-neutral-300 hover:bg-muted"
                 )}>
                   <Icon className="h-5 w-5" />
                 </div>
                 
-                <span className="text-sm font-medium">{feature.label}</span>
+                <span className="text-sm font-semibold">{feature.label}</span>
               </button>
             );
           })}
