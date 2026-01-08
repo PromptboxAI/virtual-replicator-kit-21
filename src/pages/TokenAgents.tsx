@@ -79,7 +79,7 @@ const TokenAgents = () => {
               Built for Everyone
             </h2>
             <p className="text-lg text-muted-foreground">
-              Whether you're a creator, investor, or builder, Promptbox offers clear value.
+              Whether you're a creator, investor or builder, Promptbox creates the rails for the tokenized agentic economy.
             </p>
           </div>
 
