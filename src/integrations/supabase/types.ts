@@ -1862,6 +1862,7 @@ export type Database = {
       }
       agents: {
         Row: {
+          airdrop_batches_completed: number | null
           allow_automated_trading: boolean | null
           avatar_url: string | null
           block_number: number | null
@@ -1892,10 +1893,12 @@ export type Database = {
           dev_ownership_pct: number | null
           failed_at: string | null
           failure_reason: string | null
+          final_token_address: string | null
           framework: string | null
           graduated_at: string | null
           graduation_event_id: string | null
           graduation_mode: string | null
+          graduation_phase: string | null
           graduation_threshold: number | null
           id: string
           is_active: boolean | null
@@ -1906,12 +1909,17 @@ export type Database = {
           migration_validated: boolean | null
           name: string
           network_environment: string | null
+          on_chain_reserve: number | null
+          on_chain_supply: number | null
           price_change_24h: number | null
           pricing_model: string | null
           project_pitch: string | null
           prompt_raised: number | null
           prompt_usd_rate: number | null
+          prototype_token_address: string | null
           shares_sold: number | null
+          snapshot_block_number: number | null
+          snapshot_hash: string | null
           status: string | null
           symbol: string
           target_market_cap_usd: number | null
@@ -1931,6 +1939,7 @@ export type Database = {
           website_url: string | null
         }
         Insert: {
+          airdrop_batches_completed?: number | null
           allow_automated_trading?: boolean | null
           avatar_url?: string | null
           block_number?: number | null
@@ -1961,10 +1970,12 @@ export type Database = {
           dev_ownership_pct?: number | null
           failed_at?: string | null
           failure_reason?: string | null
+          final_token_address?: string | null
           framework?: string | null
           graduated_at?: string | null
           graduation_event_id?: string | null
           graduation_mode?: string | null
+          graduation_phase?: string | null
           graduation_threshold?: number | null
           id?: string
           is_active?: boolean | null
@@ -1975,12 +1986,17 @@ export type Database = {
           migration_validated?: boolean | null
           name: string
           network_environment?: string | null
+          on_chain_reserve?: number | null
+          on_chain_supply?: number | null
           price_change_24h?: number | null
           pricing_model?: string | null
           project_pitch?: string | null
           prompt_raised?: number | null
           prompt_usd_rate?: number | null
+          prototype_token_address?: string | null
           shares_sold?: number | null
+          snapshot_block_number?: number | null
+          snapshot_hash?: string | null
           status?: string | null
           symbol: string
           target_market_cap_usd?: number | null
@@ -2000,6 +2016,7 @@ export type Database = {
           website_url?: string | null
         }
         Update: {
+          airdrop_batches_completed?: number | null
           allow_automated_trading?: boolean | null
           avatar_url?: string | null
           block_number?: number | null
@@ -2030,10 +2047,12 @@ export type Database = {
           dev_ownership_pct?: number | null
           failed_at?: string | null
           failure_reason?: string | null
+          final_token_address?: string | null
           framework?: string | null
           graduated_at?: string | null
           graduation_event_id?: string | null
           graduation_mode?: string | null
+          graduation_phase?: string | null
           graduation_threshold?: number | null
           id?: string
           is_active?: boolean | null
@@ -2044,12 +2063,17 @@ export type Database = {
           migration_validated?: boolean | null
           name?: string
           network_environment?: string | null
+          on_chain_reserve?: number | null
+          on_chain_supply?: number | null
           price_change_24h?: number | null
           pricing_model?: string | null
           project_pitch?: string | null
           prompt_raised?: number | null
           prompt_usd_rate?: number | null
+          prototype_token_address?: string | null
           shares_sold?: number | null
+          snapshot_block_number?: number | null
+          snapshot_hash?: string | null
           status?: string | null
           symbol?: string
           target_market_cap_usd?: number | null
@@ -2830,6 +2854,72 @@ export type Database = {
           },
         ]
       }
+      graduation_batches: {
+        Row: {
+          agent_id: string | null
+          batch_index: number
+          created_at: string | null
+          holders_count: number
+          id: string
+          tokens_distributed: number
+          transaction_hash: string
+        }
+        Insert: {
+          agent_id?: string | null
+          batch_index: number
+          created_at?: string | null
+          holders_count: number
+          id?: string
+          tokens_distributed: number
+          transaction_hash: string
+        }
+        Update: {
+          agent_id?: string | null
+          batch_index?: number
+          created_at?: string | null
+          holders_count?: number
+          id?: string
+          tokens_distributed?: number
+          transaction_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "graduation_batches_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_metrics_normalized"
+            referencedColumns: ["agent_id"]
+          },
+          {
+            foreignKeyName: "graduation_batches_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_prices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "graduation_batches_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_prices_latest"
+            referencedColumns: ["agent_id"]
+          },
+          {
+            foreignKeyName: "graduation_batches_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "graduation_batches_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "token_metadata_cache"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       graduation_policies: {
         Row: {
           created_at: string | null
@@ -2901,6 +2991,72 @@ export type Database = {
           },
         ]
       }
+      indexed_holder_balances: {
+        Row: {
+          agent_id: string | null
+          id: string
+          last_block_indexed: number | null
+          token_balance: number
+          token_type: string
+          updated_at: string | null
+          wallet_address: string
+        }
+        Insert: {
+          agent_id?: string | null
+          id?: string
+          last_block_indexed?: number | null
+          token_balance?: number
+          token_type: string
+          updated_at?: string | null
+          wallet_address: string
+        }
+        Update: {
+          agent_id?: string | null
+          id?: string
+          last_block_indexed?: number | null
+          token_balance?: number
+          token_type?: string
+          updated_at?: string | null
+          wallet_address?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "indexed_holder_balances_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_metrics_normalized"
+            referencedColumns: ["agent_id"]
+          },
+          {
+            foreignKeyName: "indexed_holder_balances_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_prices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "indexed_holder_balances_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_prices_latest"
+            referencedColumns: ["agent_id"]
+          },
+          {
+            foreignKeyName: "indexed_holder_balances_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "indexed_holder_balances_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "token_metadata_cache"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leaderboards_cache: {
         Row: {
           id: string
@@ -2954,6 +3110,93 @@ export type Database = {
           validation_results?: Json | null
         }
         Relationships: []
+      }
+      on_chain_trades: {
+        Row: {
+          agent_id: string | null
+          block_number: number
+          created_at: string | null
+          fee: number
+          id: string
+          is_buy: boolean
+          price: number
+          prompt_amount_gross: number
+          prompt_amount_net: number
+          reserve_after: number
+          supply_after: number
+          token_amount: number
+          trader_address: string
+          transaction_hash: string
+        }
+        Insert: {
+          agent_id?: string | null
+          block_number: number
+          created_at?: string | null
+          fee: number
+          id?: string
+          is_buy: boolean
+          price: number
+          prompt_amount_gross: number
+          prompt_amount_net: number
+          reserve_after: number
+          supply_after: number
+          token_amount: number
+          trader_address: string
+          transaction_hash: string
+        }
+        Update: {
+          agent_id?: string | null
+          block_number?: number
+          created_at?: string | null
+          fee?: number
+          id?: string
+          is_buy?: boolean
+          price?: number
+          prompt_amount_gross?: number
+          prompt_amount_net?: number
+          reserve_after?: number
+          supply_after?: number
+          token_amount?: number
+          trader_address?: string
+          transaction_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "on_chain_trades_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_metrics_normalized"
+            referencedColumns: ["agent_id"]
+          },
+          {
+            foreignKeyName: "on_chain_trades_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_prices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "on_chain_trades_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_prices_latest"
+            referencedColumns: ["agent_id"]
+          },
+          {
+            foreignKeyName: "on_chain_trades_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "on_chain_trades_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "token_metadata_cache"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       pending_trades: {
         Row: {
@@ -4713,6 +4956,15 @@ export type Database = {
           p_key: string
           p_reason?: string
           p_value: Json
+        }
+        Returns: undefined
+      }
+      update_indexed_balance: {
+        Args: {
+          p_agent_id: string
+          p_block: number
+          p_delta: number
+          p_wallet: string
         }
         Returns: undefined
       }
