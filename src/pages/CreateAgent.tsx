@@ -78,6 +78,10 @@ export default function CreateAgent() {
   const { toast } = useToast();
 
   const navigate = useNavigate();
+
+  // Persist form progress so accidental refreshes don't wipe user input
+  const DRAFT_KEY = 'create_agent_draft_v1';
+
   const [currentStep, setCurrentStep] = useState(0);
   const [isCreating, setIsCreating] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
@@ -124,6 +128,54 @@ export default function CreateAgent() {
     lock_duration_minutes: 60, // Default 1 hour
     creator_prebuy_amount: 0
   });
+
+  // Restore draft on first mount
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+
+      const parsed = JSON.parse(raw) as { formData?: Partial<AgentFormData>; currentStep?: number };
+      if (!parsed?.formData) return;
+
+      setFormData((prev) => ({
+        ...prev,
+        ...parsed.formData,
+        // A local File can't be restored after refresh, so force re-upload.
+        avatar_url: '',
+      }));
+      setAvatarFile(null);
+      if (typeof parsed.currentStep === 'number') setCurrentStep(parsed.currentStep);
+
+      toast({
+        title: 'Draft restored',
+        description: 'Your inputs were restored. Please re-upload the avatar before submitting.',
+      });
+    } catch {
+      // ignore corrupt drafts
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Save draft continuously (cheap + prevents lost work)
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(
+        DRAFT_KEY,
+        JSON.stringify({
+          formData: {
+            ...formData,
+            // Never persist object URLs; they won't survive a refresh anyway.
+            avatar_url: '',
+          },
+          currentStep,
+          updatedAt: Date.now(),
+        })
+      );
+    } catch {
+      // ignore quota / private mode
+    }
+  }, [formData, currentStep]);
 
   // Symbol validation states (after formData is declared)
   const [symbolAvailable, setSymbolAvailable] = useState<boolean | null>(null);
@@ -709,6 +761,13 @@ export default function CreateAgent() {
         title: "Token Created Successfully!", 
         description: `${formData.name} token has been created${formData.prebuy_amount > 0 ? ' and pre-buy executed' : ''}.`,
       });
+
+      // Clear draft now that creation finished successfully
+      try {
+        sessionStorage.removeItem(DRAFT_KEY);
+      } catch {
+        // ignore
+      }
       
       // Navigate to success page with options
       navigate(`/agent-created/${agentId}`, {
