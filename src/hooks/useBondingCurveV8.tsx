@@ -181,6 +181,7 @@ export function useBondingCurveV8(agentId: string) {
 
       // First approve PROMPT token spending
       const approveHash = await walletClient.writeContract({
+        chain: baseSepolia,
         address: PROMPT_TOKEN_ADDRESS,
         abi: PROTOTYPE_TOKEN_ABI,
         functionName: 'approve',
@@ -191,6 +192,7 @@ export function useBondingCurveV8(agentId: string) {
 
       // Execute buy on BondingCurveV8
       const buyHash = await walletClient.writeContract({
+        chain: baseSepolia,
         address: V8_CONTRACTS.BONDING_CURVE as Address,
         abi: BONDING_CURVE_V8_ABI,
         functionName: 'buy',
@@ -244,6 +246,7 @@ export function useBondingCurveV8(agentId: string) {
 
       // Approve prototype token for BondingCurve
       const approveHash = await walletClient.writeContract({
+        chain: baseSepolia,
         address: agentState.prototypeTokenAddress as Address,
         abi: PROTOTYPE_TOKEN_ABI,
         functionName: 'approve',
@@ -254,6 +257,7 @@ export function useBondingCurveV8(agentId: string) {
 
       // Execute sell on BondingCurveV8
       const sellHash = await walletClient.writeContract({
+        chain: baseSepolia,
         address: V8_CONTRACTS.BONDING_CURVE as Address,
         abi: BONDING_CURVE_V8_ABI,
         functionName: 'sell',
