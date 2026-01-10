@@ -1,192 +1,163 @@
-# Phases 4-7 Implementation & Verification
+# V8 On-Chain Trading Implementation — COMPLETE
 
-## ✅ Day 4 Implementation — COMPLETE
+## Overview
 
-All 5 requirements successfully implemented and validated.
-
-### Implementation Summary:
-
-#### ✅ Requirement 1: Lock Mock/Real Toggle
-- Created `src/hooks/useDataMode.tsx` hook
-- Updated `src/services/chartDataService.ts` with mock data generation
-- Updated `src/pages/HealthCheck.tsx` to show real-time mode
-- **Validation:** `/healthz` correctly shows "Mock Data" or "Real Chain" based on `VITE_USE_MOCK_DATAFEED`
-
-#### ✅ Requirement 2: Real TX Builder Edge Function  
-- Created `supabase/functions/build-trade-tx/index.ts`
-- Returns valid EVM transaction params: `{ to, data, value, gasLimit, from }`
-- Fetches contract address from `deployed_contracts` table
-- Uses frozen ABI from `contracts/PromptTestToken.json`
-- **Validation:** Edge function deployed and returns properly encoded calldata
-
-#### ✅ Requirement 3: Read Contract Address from DB Only
-- Already implemented (no changes needed)
-- All functions query `deployed_contracts` table
-- No runtime address generation
-- **Validation:** Confirmed database-first approach throughout codebase
-
-#### ✅ Requirement 4: Add /test-sepolia-token Page
-- Created `src/pages/TestSepoliaToken.tsx` 
-- Hardcoded PROMPT token address for testing
-- Displays balance, price, price impact calculator
-- Calls `build-trade-tx` and displays transaction parameters
-- Added route in `src/App.tsx` (admin-protected)
-- **Validation:** Page loads at `/test-sepolia-token` and shows all required info
-
-#### ✅ Requirement 5: Freeze ABI/Bytecode in Repo
-- Created `contracts/PromptTestToken.json` with full ABI and bytecode
-- Created `contracts/README.md` with documentation
-- Updated edge functions to import from frozen file
-- **Validation:** JSON tracked in git, no runtime compilation
+V8 implementation complete. All phases from the V8_IMPLEMENTATION_GUIDE-2.md have been implemented.
 
 ---
 
-## Phase 4 — Chart Parity & Labels ✅
+## ✅ Phase 1: Database Schema Updates — COMPLETE
 
-### Implemented:
-- ✅ Created `src/lib/chartAdapter.ts` with `adaptBucketsForChart()` function
-- ✅ Uses OHLC hook + per-bucket FX rates
-- ✅ Correctly picks supply (total pre-grad, circulating post-grad)
-- ✅ Adapts data for both price and market cap views
-
-### Verification:
-```bash
-# Check implementation
-cat src/lib/chartAdapter.ts
-
-# Verify chart uses correct supply based on graduation status
-# Latest chart close (price view) should equal top-right price
-# Latest market-cap point should equal card's FDV (or circulating cap if graduated)
-```
-
-### Labels to Update in Components:
-- Pre-grad: "FDV (Fully Diluted)"
-- Post-grad: "Market Cap (Circulating)"
+Migration created with:
+- `agents` table: Added `prototype_token_address`, `final_token_address`, `graduation_phase`, `airdrop_batches_completed`, `on_chain_supply`, `on_chain_reserve`, `snapshot_block_number`, `snapshot_hash`
+- `on_chain_trades` table: Tracks all V8 on-chain trades
+- `indexed_holder_balances` table: Source of truth for graduation snapshots
+- `graduation_batches` table: Tracks airdrop batch execution
+- `update_indexed_balance` SQL function: Atomic balance updates
 
 ---
 
-## Phase 5 — Guardrails ✅
+## ✅ Phase 2: Edge Functions — COMPLETE
 
-### Implemented:
-- ✅ ESLint rule to block `PROMPT_USD_RATE` usage
-- ✅ GitHub Actions workflow for CI checks
-- ✅ Auto-fails if hardcoded FX rates detected
+### Created:
+1. **`get-quote-v8/index.ts`** - Reads price quotes from BondingCurveV8 contract
+   - `quoteBuy(agentId, promptIn)` → tokens out, fee, price after
+   - `quoteSell(agentId, tokensIn)` → PROMPT out, fee, price after
+   - `getState(agentId)` → full agent curve state
 
-### Verification:
-```bash
-# Run lint check
-npm run lint
-
-# Run CI check locally
-! grep -R "PROMPT_USD_RATE" src --include="*.ts" --include="*.tsx"
-
-# Should output: (no matches found) = PASS
-```
+2. **`graduation-orchestrator-v8/index.ts`** - Multi-step graduation with snapshot provenance
+   - `getSnapshot` → computes `snapshotBlockNumber` and `snapshotHash`
+   - `initializeGraduation` → passes provenance to contract
+   - `airdropBatch` → executes 100 holders per tx
 
 ---
 
-## Phase 6 — Tests ✅
+## ✅ Phase 3: Event Indexer — COMPLETE
 
-### Implemented:
-- ✅ Vitest setup with test config
-- ✅ Pricing parity tests (`src/test/pricing-parity.test.ts`)
-- ✅ Graduation policy tests
-- ✅ Tests compare live endpoints (no hardcoded values)
-
-### Run Tests:
-```bash
-# Run all tests
-npm test
-
-# Run with UI
-npm run test:ui
-
-# Set test agent ID
-export VITE_TEST_AGENT_ID="<your-test-agent-uuid>"
-npm test
-```
-
-### Test Coverage:
-1. ✅ Latest chart close equals card price (USD) within 8 decimals
-2. ✅ Market-cap series matches card cap (FDV or circulating)
-3. ✅ Does not graduate below $80K USD raised
-4. ✅ Graduates at $80K USD threshold
+### Created:
+- **`index-prototype-events/index.ts`** - Populates `indexed_holder_balances` from PrototypeToken Transfer events
 
 ---
 
-## Phase 7 — Monitoring 🔄
+## ✅ Phase 4: Environment Secrets — COMPLETE
 
-### Implemented:
-- 🔄 SQL function `check_pricing_consistency()` (needs migration approval)
-- 📝 Optional pg_cron schedule for nightly checks
+Secrets configured:
+- `BONDING_CURVE_V8_ADDRESS`
+- `AGENT_FACTORY_V8_ADDRESS`
+- `GRADUATION_MANAGER_V8_ADDRESS`
+- `TRADING_ROUTER_V8_ADDRESS`
+- `BASE_SEPOLIA_RPC`
+- `DEPLOYER_PRIVATE_KEY`
 
-### To Complete:
-1. Run the migration to create monitoring function
-2. Optionally enable pg_cron scheduling
+---
 
-### Verification Query:
-```sql
--- Check for pricing inconsistencies
-SELECT * FROM check_pricing_consistency() 
-WHERE NOT ok OR fdv_diff_pct > 0.1;
+## ✅ Phase 5: Updated Existing Endpoints — COMPLETE
 
--- Should return empty if all agents have consistent pricing
+### Modified:
+1. **`get-token-metadata/index.ts`** - Added V8 fields:
+   - `prototype_token_address`, `final_token_address`
+   - `graduation_phase`, `airdrop_batches_completed`
+   - `on_chain_supply`, `on_chain_reserve`
+   - `snapshot_block_number`, `snapshot_hash`
+   - `is_v8` flag
+
+2. **`list-tokens/index.ts`** - Added V8 fields to response
+
+3. **`get-ohlc/index.ts`** - V8 agents read from `on_chain_trades` table
+
+---
+
+## ✅ Phase 6: Trade Event Listener — COMPLETE
+
+### Created:
+- **`sync-on-chain-trades/index.ts`** - Syncs BondingCurveV8 Trade events to database
+  - Populates `on_chain_trades` table
+  - Updates `agents.on_chain_supply` and `agents.on_chain_reserve`
+  - Enables OHLC generation from on-chain data
+
+---
+
+## ✅ Phase 7: V7 Deprecation — COMPLETE
+
+### Documentation:
+- Created `supabase/functions/_archive/V7_DEPRECATED.md`
+- Lists all deprecated functions and migration path
+
+### Deprecated (kept for legacy support):
+- `trading-engine-v7/`
+- `execute-trade/`
+- `execute-bonding-curve-trade-v4/`
+- `deploy-bonding-curve-v5/`
+- `deploy-agent-factory-v5/`
+- `graduation-manager-v6/`
+- `graduation-manager-v7/`
+
+---
+
+## V8 Contract Addresses (Base Sepolia)
+
+```typescript
+BONDING_CURVE_V8 = '0xc511a151b0E04D5Ba87968900eE90d310530D5fB'
+AGENT_FACTORY_V8 = '0xe8214F54e4a670A92B8A6Fc2Da1DB70b091A4a79'
+GRADUATION_MANAGER_V8 = '0x3c6878857FB1d1a1155b016A4b904c479395B2D9'
+TRADING_ROUTER_V8 = '0xce81D37B4f2855Ce1081D172dF7013b8beAE79B0'
+
+// Reused from V7
+LP_LOCKER = '0xB8028c5Bf3Eb648279740A1B41387d7a854D48B2'
+TEAM_MILESTONE_VESTING = '0xB204ce88f4a18a62b3D02C2598605a6c55186E05'
+TEAM_TIME_VESTING = '0xf0C530f3308714Aa28B8199EB7f41B6CD8386f29'
+ECOSYSTEM_REWARDS = '0xce11297AD83e1A6cF3635226a2348B8Ed7a6C925'
 ```
 
 ---
 
-## Quick Verification Commands
+## Frontend Hook
 
-### No hardcoded FX:
-```bash
-grep -R "PROMPT_USD_RATE" src --include="*.ts" --include="*.tsx" || echo "✅ PASS"
-```
-
-### Test Metrics vs OHLC parity:
-```bash
-# Replace <AGENT_UUID> and <PROJECT_ID>
-curl -s -X POST -H "content-type: application/json" \
-  -d '{"agentId":"<AGENT_UUID>"}' \
-  https://<PROJECT_ID>.supabase.co/functions/v1/get-agent-metrics | jq
-
-curl -s -X POST -H "content-type: application/json" \
-  -d '{"agentId":"<AGENT_UUID>","timeframe":"5m","limit":1}' \
-  https://<PROJECT_ID>.supabase.co/functions/v1/get-ohlc | jq
-```
-
-Compare:
-- `metrics.price.usd` ≈ `ohlc.buckets[0].close_prompt * ohlc.buckets[0].fx_rate`
-- If pre-grad: `metrics.fdv.usd` ≈ `price_usd * total_supply`
-- If graduated: `metrics.marketCap.usd` ≈ `price_usd * circulating_supply`
+Created `src/hooks/useBondingCurveV8.tsx`:
+- On-chain buy/sell via wagmi
+- Real-time quotes from contract
+- Graduation progress tracking
 
 ---
 
-## Exit Criteria Summary
+## Files Created/Modified
 
-- ✅ Zero hardcoded PROMPT_USD_RATE in frontend (ESLint enforced)
-- 🔄 Chart close = card price (implement adapter in chart component)
-- 🔄 Pre-grad: "FDV" label with total supply (update component labels)
-- 🔄 Post-grad: "Market Cap (Circulating)" with circulating supply
-- 🔄 Graduation triggers at $80K USD raised (verify with tests)
-- ✅ Tooltips show both units without double $ (Units.formatTooltip)
-- ✅ All tests pass (run `npm test`)
-- ✅ CI green (GitHub Actions workflow)
-
----
-
-## Next Steps
-
-1. **Update EnhancedTradingViewChart.tsx** to use `adaptBucketsForChart` from the new adapter
-2. **Update card labels** to show correct FDV/Market Cap based on graduation status
-3. **Run tests** with `VITE_TEST_AGENT_ID` environment variable
-4. **Approve migration** for Phase 7 monitoring function
-5. **Verify CI** passes on next push
+| File | Action |
+|------|--------|
+| `src/hooks/useBondingCurveV8.tsx` | CREATE |
+| `src/lib/contractsV8.ts` | CREATE |
+| `supabase/functions/get-quote-v8/index.ts` | CREATE |
+| `supabase/functions/graduation-orchestrator-v8/index.ts` | CREATE |
+| `supabase/functions/index-prototype-events/index.ts` | CREATE |
+| `supabase/functions/sync-on-chain-trades/index.ts` | CREATE |
+| `supabase/functions/get-token-metadata/index.ts` | UPDATE |
+| `supabase/functions/list-tokens/index.ts` | UPDATE |
+| `supabase/functions/get-ohlc/index.ts` | UPDATE |
+| `supabase/functions/_archive/V7_DEPRECATED.md` | CREATE |
 
 ---
 
-## Notes
+## Testing Checklist
 
-- Chart adapter is ready but needs integration into EnhancedTradingViewChart
-- ESLint will now block any new PROMPT_USD_RATE usage
-- Tests require `VITE_TEST_AGENT_ID` env var to run
-- Monitoring function awaits migration approval
+- [ ] `get-quote-v8` returns correct buy/sell quotes
+- [ ] `graduation-orchestrator-v8` computes snapshot hash correctly
+- [ ] `index-prototype-events` populates `indexed_holder_balances`
+- [ ] `sync-on-chain-trades` syncs Trade events to database
+- [ ] `get-ohlc` returns V8 OHLC from `on_chain_trades`
+- [ ] `get-token-metadata` includes V8 fields
+- [ ] `list-tokens` includes V8 fields
+- [ ] Graduation initialization with provenance succeeds
+- [ ] Airdrop batches execute correctly
+- [ ] Trading auto-enables after all batches complete
+
+---
+
+## Snapshot Provenance
+
+Anyone can verify airdrop fairness:
+1. Query on-chain `snapshotBlockNumber` for the graduated agent
+2. Fetch PrototypeToken Transfer events up to that block
+3. Compute holder balances from events
+4. Compute `keccak256(abi.encode(recipients, amounts))`
+5. Compare to on-chain `snapshotHash`
+6. Match = fair airdrop ✅

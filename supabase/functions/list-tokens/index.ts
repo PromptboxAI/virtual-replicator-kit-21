@@ -276,6 +276,18 @@ serve(async (req) => {
       // Get holder changes
       const holdersChange = holderChanges[id] || { change_4h: 0, change_24h: 0 };
 
+      // V8 fields
+      const isV8 = !!token.prototype_token_address;
+      const v8Fields = isV8 ? {
+        is_v8: true,
+        prototype_token_address: token.prototype_token_address,
+        final_token_address: token.final_token_address,
+        graduation_phase: token.graduation_phase || 'not_started',
+        airdrop_batches_completed: token.airdrop_batches_completed || 0,
+        on_chain_supply: token.on_chain_supply || 0,
+        on_chain_reserve: token.on_chain_reserve || 0,
+      } : { is_v8: false };
+
       return {
         ...token,
         graduation_threshold: threshold,
@@ -290,7 +302,9 @@ serve(async (req) => {
         liquidity_usd: liquidityUsd,
         dev_ownership_pct: parseFloat(devOwnershipPct.toFixed(2)),
         holders_change_4h: holdersChange.change_4h,
-        holders_change_24h: holdersChange.change_24h
+        holders_change_24h: holdersChange.change_24h,
+        // V8 FIELDS
+        ...v8Fields,
       };
     });
 
