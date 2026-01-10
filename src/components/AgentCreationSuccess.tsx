@@ -216,7 +216,7 @@ export default function AgentCreationSuccess() {
                 variant="ghost" 
                 size="lg"
                 className="text-foreground/70 hover:text-foreground"
-                onClick={() => navigate('/create-agent')}
+                onClick={() => navigate('/create')}
               >
                 Create Another Agent
               </Button>
