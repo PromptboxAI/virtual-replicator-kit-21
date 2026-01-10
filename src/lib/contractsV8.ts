@@ -17,8 +17,8 @@ export const V8_CONTRACTS = {
   TRADING_ROUTER: '0xce81D37B4f2855Ce1081D172dF7013b8beAE79B0',
 } as const;
 
-// PROMPT Token Address (Base Sepolia) - Single source of truth
-export const PROMPT_TOKEN_ADDRESS = '0x3D6AfE2fB73fFEcDfE66a0c5BF878e77051Bb4fd' as const;
+// PROMPT Token Address (Base Sepolia) - Single source of truth for V8
+export const PROMPT_TOKEN_ADDRESS = '0x04d30a1697FdaDAFd647B46ef2253F4Dccf17673' as const;
 
 // Reuse V7 contracts (DO NOT recreate)
 export const V7_REUSED_CONTRACTS = {
