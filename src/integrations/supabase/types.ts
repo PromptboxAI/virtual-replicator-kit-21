@@ -1863,6 +1863,7 @@ export type Database = {
       agents: {
         Row: {
           airdrop_batches_completed: number | null
+          airdrop_batches_total: number | null
           allow_automated_trading: boolean | null
           avatar_url: string | null
           block_number: number | null
@@ -1902,6 +1903,8 @@ export type Database = {
           graduation_threshold: number | null
           id: string
           is_active: boolean | null
+          is_v8: boolean | null
+          lp_pair_address: string | null
           market_cap: number | null
           market_cap_usd: number | null
           max_trade_amount: number | null
@@ -1909,6 +1912,7 @@ export type Database = {
           migration_validated: boolean | null
           name: string
           network_environment: string | null
+          on_chain_price: number | null
           on_chain_reserve: number | null
           on_chain_supply: number | null
           price_change_24h: number | null
@@ -1940,6 +1944,7 @@ export type Database = {
         }
         Insert: {
           airdrop_batches_completed?: number | null
+          airdrop_batches_total?: number | null
           allow_automated_trading?: boolean | null
           avatar_url?: string | null
           block_number?: number | null
@@ -1979,6 +1984,8 @@ export type Database = {
           graduation_threshold?: number | null
           id?: string
           is_active?: boolean | null
+          is_v8?: boolean | null
+          lp_pair_address?: string | null
           market_cap?: number | null
           market_cap_usd?: number | null
           max_trade_amount?: number | null
@@ -1986,6 +1993,7 @@ export type Database = {
           migration_validated?: boolean | null
           name: string
           network_environment?: string | null
+          on_chain_price?: number | null
           on_chain_reserve?: number | null
           on_chain_supply?: number | null
           price_change_24h?: number | null
@@ -2017,6 +2025,7 @@ export type Database = {
         }
         Update: {
           airdrop_batches_completed?: number | null
+          airdrop_batches_total?: number | null
           allow_automated_trading?: boolean | null
           avatar_url?: string | null
           block_number?: number | null
@@ -2056,6 +2065,8 @@ export type Database = {
           graduation_threshold?: number | null
           id?: string
           is_active?: boolean | null
+          is_v8?: boolean | null
+          lp_pair_address?: string | null
           market_cap?: number | null
           market_cap_usd?: number | null
           max_trade_amount?: number | null
@@ -2063,6 +2074,7 @@ export type Database = {
           migration_validated?: boolean | null
           name?: string
           network_environment?: string | null
+          on_chain_price?: number | null
           on_chain_reserve?: number | null
           on_chain_supply?: number | null
           price_change_24h?: number | null
@@ -2740,6 +2752,30 @@ export type Database = {
           },
         ]
       }
+      event_indexer_state: {
+        Row: {
+          contract_address: string
+          event_type: string
+          id: string
+          last_block_indexed: number
+          updated_at: string | null
+        }
+        Insert: {
+          contract_address: string
+          event_type: string
+          id?: string
+          last_block_indexed?: number
+          updated_at?: string | null
+        }
+        Update: {
+          contract_address?: string
+          event_type?: string
+          id?: string
+          last_block_indexed?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       graduation_analytics: {
         Row: {
           agent_id: string
@@ -3115,6 +3151,7 @@ export type Database = {
         Row: {
           agent_id: string | null
           block_number: number
+          block_timestamp: string | null
           created_at: string | null
           fee: number
           id: string
@@ -3131,6 +3168,7 @@ export type Database = {
         Insert: {
           agent_id?: string | null
           block_number: number
+          block_timestamp?: string | null
           created_at?: string | null
           fee: number
           id?: string
@@ -3147,6 +3185,7 @@ export type Database = {
         Update: {
           agent_id?: string | null
           block_number?: number
+          block_timestamp?: string | null
           created_at?: string | null
           fee?: number
           id?: string
