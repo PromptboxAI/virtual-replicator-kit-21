@@ -4978,6 +4978,7 @@ export type Database = {
           price_impact_percent: number
         }[]
       }
+      sync_circulating_supply: { Args: never; Returns: undefined }
       tf_step_minutes: { Args: { tf: string }; Returns: number }
       tf_step_seconds: { Args: { tf: string }; Returns: number }
       tokens_sold_from_prompt_v3: {
