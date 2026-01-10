@@ -193,6 +193,19 @@ serve(async (req) => {
       }
     }
 
+    // Build V8-specific fields
+    const v8Fields = {
+      prototype_token_address: data.prototype_token_address || null,
+      final_token_address: data.final_token_address || null,
+      graduation_phase: data.graduation_phase || 'not_started',
+      airdrop_batches_completed: data.airdrop_batches_completed || 0,
+      on_chain_supply: data.on_chain_supply || 0,
+      on_chain_reserve: data.on_chain_reserve || 0,
+      snapshot_block_number: data.snapshot_block_number || null,
+      snapshot_hash: data.snapshot_hash || null,
+      is_v8: !!data.prototype_token_address, // Flag to identify V8 agents
+    };
+
     // Build enhanced response - ensure graduation_threshold is at top level too
     const tokenData = {
       ...data,
@@ -203,6 +216,8 @@ serve(async (req) => {
       creator: creator,
       // Include graduation/DEX info when available
       graduation: graduation,
+      // V8 fields
+      ...v8Fields,
     };
 
     const timestamp = Date.now();
