@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserRole } from './useUserRole';
 import { useToast } from './use-toast';
@@ -29,7 +29,7 @@ const getCachedSettings = (): AdminSettings | null => {
   try {
     const cached = localStorage.getItem(ADMIN_SETTINGS_CACHE_KEY);
     if (!cached) return null;
-    
+
     const { settings, timestamp }: CachedSettings = JSON.parse(cached);
     if (Date.now() - timestamp > ADMIN_SETTINGS_CACHE_TTL) {
       localStorage.removeItem(ADMIN_SETTINGS_CACHE_KEY);
@@ -43,101 +43,124 @@ const getCachedSettings = (): AdminSettings | null => {
 
 const setCachedSettings = (settings: AdminSettings) => {
   try {
-    localStorage.setItem(ADMIN_SETTINGS_CACHE_KEY, JSON.stringify({
-      settings,
-      timestamp: Date.now(),
-    }));
+    localStorage.setItem(
+      ADMIN_SETTINGS_CACHE_KEY,
+      JSON.stringify({
+        settings,
+        timestamp: Date.now(),
+      })
+    );
   } catch {
     // Ignore localStorage errors
   }
 };
 
 export const useAdminSettings = () => {
+  const cached = typeof window !== 'undefined' ? getCachedSettings() : null;
+
   // Initialize with cached data for instant display
-  const [settings, setSettings] = useState<AdminSettings | null>(() => getCachedSettings());
-  const [isLoading, setIsLoading] = useState(!getCachedSettings());
+  const [settings, setSettings] = useState<AdminSettings | null>(() => cached);
+
+  // IMPORTANT: isLoading should ONLY mean "we have no settings yet".
+  // Background refreshes must not flip this to true, otherwise pages like /create
+  // will unmount and users lose form state.
+  const [isLoading, setIsLoading] = useState(() => cached === null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const settingsRef = useRef<AdminSettings | null>(settings);
   useEffect(() => {
-    // Fetch in background (even if we have cache, to get fresh data)
-    fetchSettings();
-    
-    // Use polling instead of realtime to avoid CHANNEL_ERROR issues
-    // Poll every 30 seconds for admin settings changes
+    settingsRef.current = settings;
+  }, [settings]);
+
+  const fetchSettings = useCallback(
+    async ({ background = false }: { background?: boolean } = {}) => {
+      const hasSettings = settingsRef.current !== null;
+
+      try {
+        // Loading states: only block UI if we don't have settings yet.
+        if (!hasSettings) setIsLoading(true);
+        else setIsRefreshing(true);
+
+        // Don't clear a previous error for silent background refreshes.
+        if (!background) setError(null);
+
+        const { data, error } = await supabase.from('admin_settings').select('key, value');
+
+        console.log('🔍 Admin settings fetch result:', { data, error });
+
+        if (error) throw error;
+
+        // Convert array of key-value pairs to settings object
+        // Supabase JSONB values are already parsed, no need to JSON.parse again
+        const settingsObj = data.reduce((acc, item) => {
+          acc[item.key] = item.value;
+          return acc;
+        }, {} as Record<string, any>);
+
+        console.log('🔍 Settings object:', settingsObj);
+
+        // Apply default values for missing settings ONLY
+        const defaultSettings: AdminSettings = {
+          deployment_mode: 'database',
+          allowed_lock_durations: [15, 60, 240, 1440],
+          allowed_frameworks: ['PROMPT', 'OPENAI', 'ANTHROPIC'],
+          max_prebuy_amount: 1000,
+          creation_fee: 100,
+          test_mode_enabled: true,
+          trading_fee_percent: 1,
+          graduation_threshold: 42160,
+          mev_protection_enabled: false,
+          emergency_pause: false,
+        };
+
+        // ONLY use defaults for keys that don't exist in the database
+        const finalSettings = Object.keys(defaultSettings).reduce((acc, key) => {
+          if (Object.prototype.hasOwnProperty.call(settingsObj, key)) {
+            acc[key] = settingsObj[key]; // Use database value
+          } else {
+            acc[key] = defaultSettings[key]; // Use default only if missing
+          }
+          return acc;
+        }, {} as Record<string, any>);
+
+        const finalSettingsTyped = finalSettings as AdminSettings;
+        setSettings(finalSettingsTyped);
+        setCachedSettings(finalSettingsTyped); // Cache for future page loads
+      } catch (err) {
+        console.error('Error fetching admin settings:', err);
+        setError(err instanceof Error ? err.message : 'Failed to fetch settings');
+      } finally {
+        setIsLoading(false);
+        setIsRefreshing(false);
+      }
+    },
+    []
+  );
+
+  useEffect(() => {
+    // Fetch once on mount; if we already have cached settings, do it as a background refresh.
+    fetchSettings({ background: settingsRef.current !== null });
+
+    // Use polling instead of realtime to avoid CHANNEL_ERROR issues.
+    // Poll every 30 seconds for admin settings changes.
     const pollInterval = setInterval(() => {
-      fetchSettings();
+      fetchSettings({ background: true });
     }, 30000);
 
     return () => {
       clearInterval(pollInterval);
     };
-  }, []);
-
-  const fetchSettings = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const { data, error } = await supabase
-        .from('admin_settings')
-        .select('key, value');
-
-      console.log('🔍 Admin settings fetch result:', { data, error });
-
-      if (error) throw error;
-
-      // Convert array of key-value pairs to settings object
-      // Supabase JSONB values are already parsed, no need to JSON.parse again
-      const settingsObj = data.reduce((acc, item) => {
-        acc[item.key] = item.value;
-        return acc;
-      }, {} as Record<string, any>);
-
-      console.log('🔍 Settings object:', settingsObj);
-
-      // Apply default values for missing settings ONLY
-      const defaultSettings: AdminSettings = {
-        deployment_mode: 'database',
-        allowed_lock_durations: [15, 60, 240, 1440],
-        allowed_frameworks: ['PROMPT', 'OPENAI', 'ANTHROPIC'],
-        max_prebuy_amount: 1000,
-        creation_fee: 100,
-        test_mode_enabled: true,
-        trading_fee_percent: 1,
-        graduation_threshold: 42160,
-        mev_protection_enabled: false,
-        emergency_pause: false,
-      };
-
-      // ONLY use defaults for keys that don't exist in the database
-      const finalSettings = Object.keys(defaultSettings).reduce((acc, key) => {
-        if (settingsObj.hasOwnProperty(key)) {
-          acc[key] = settingsObj[key]; // Use database value
-        } else {
-          acc[key] = defaultSettings[key]; // Use default only if missing
-        }
-        return acc;
-      }, {} as Record<string, any>);
-
-      const finalSettingsTyped = finalSettings as AdminSettings;
-      setSettings(finalSettingsTyped);
-      setCachedSettings(finalSettingsTyped); // Cache for future page loads
-    } catch (err) {
-      console.error('Error fetching admin settings:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch settings');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [fetchSettings]);
 
   return {
     settings,
     isLoading,
+    isRefreshing,
     error,
-    refreshSettings: fetchSettings,
+    refreshSettings: () => fetchSettings(),
   };
 };
-
 export const useUpdateAdminSettings = () => {
   const { isAdmin } = useUserRole();
   const { toast } = useToast();
