@@ -447,7 +447,7 @@ export default function CreateAgent() {
         .from('admin_settings')
         .select('value')
         .eq('key', 'graduation_config')
-        .single();
+        .maybeSingle();
       
       const graduationConfig = graduationConfigData?.value as any;
       const graduationMode = graduationConfig?.graduation_mode || 'database';

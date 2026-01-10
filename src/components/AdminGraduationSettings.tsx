@@ -51,7 +51,7 @@ export function AdminGraduationSettings() {
         .from('admin_settings')
         .select('value')
         .eq('key', 'graduation_config')
-        .single();
+        .maybeSingle();
       
       if (data?.value) {
         const config = data.value as any;
