@@ -44,6 +44,8 @@ export function useSiteMetadata() {
       if (error) throw error;
       return data as SiteMetadata[];
     },
+    staleTime: 5 * 60 * 1000, // 5 minutes - prevent refetching
+    gcTime: 10 * 60 * 1000, // 10 minutes cache
   });
 }
 
@@ -60,6 +62,8 @@ export function useGlobalMetadata() {
       if (error && error.code !== 'PGRST116') throw error;
       return data as SiteMetadata | null;
     },
+    staleTime: 5 * 60 * 1000, // 5 minutes - prevent refetching
+    gcTime: 10 * 60 * 1000, // 10 minutes cache
   });
 }
 

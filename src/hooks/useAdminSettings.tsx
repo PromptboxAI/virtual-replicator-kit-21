@@ -16,35 +16,60 @@ export interface AdminSettings {
   emergency_pause: boolean;
 }
 
+// Cache key for localStorage
+const ADMIN_SETTINGS_CACHE_KEY = 'admin_settings_cache';
+const ADMIN_SETTINGS_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+interface CachedSettings {
+  settings: AdminSettings;
+  timestamp: number;
+}
+
+const getCachedSettings = (): AdminSettings | null => {
+  try {
+    const cached = localStorage.getItem(ADMIN_SETTINGS_CACHE_KEY);
+    if (!cached) return null;
+    
+    const { settings, timestamp }: CachedSettings = JSON.parse(cached);
+    if (Date.now() - timestamp > ADMIN_SETTINGS_CACHE_TTL) {
+      localStorage.removeItem(ADMIN_SETTINGS_CACHE_KEY);
+      return null;
+    }
+    return settings;
+  } catch {
+    return null;
+  }
+};
+
+const setCachedSettings = (settings: AdminSettings) => {
+  try {
+    localStorage.setItem(ADMIN_SETTINGS_CACHE_KEY, JSON.stringify({
+      settings,
+      timestamp: Date.now(),
+    }));
+  } catch {
+    // Ignore localStorage errors
+  }
+};
+
 export const useAdminSettings = () => {
-  const [settings, setSettings] = useState<AdminSettings | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // Initialize with cached data for instant display
+  const [settings, setSettings] = useState<AdminSettings | null>(() => getCachedSettings());
+  const [isLoading, setIsLoading] = useState(!getCachedSettings());
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Fetch in background (even if we have cache, to get fresh data)
     fetchSettings();
-
-    // Set up real-time subscription for admin_settings changes
-    const channel = supabase
-      .channel('admin-settings-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*', // Listen to all changes (INSERT, UPDATE, DELETE)
-          schema: 'public',
-          table: 'admin_settings'
-        },
-        (payload) => {
-          console.log('🔔 Admin settings real-time change:', payload);
-          fetchSettings(); // Refetch when settings change
-        }
-      )
-      .subscribe((status) => {
-        console.log('🔌 Admin settings subscription status:', status);
-      });
+    
+    // Use polling instead of realtime to avoid CHANNEL_ERROR issues
+    // Poll every 30 seconds for admin settings changes
+    const pollInterval = setInterval(() => {
+      fetchSettings();
+    }, 30000);
 
     return () => {
-      supabase.removeChannel(channel);
+      clearInterval(pollInterval);
     };
   }, []);
 
@@ -94,8 +119,9 @@ export const useAdminSettings = () => {
         return acc;
       }, {} as Record<string, any>);
 
-      console.log('🔍 Final settings:', finalSettings);
-      setSettings(finalSettings as AdminSettings);
+      const finalSettingsTyped = finalSettings as AdminSettings;
+      setSettings(finalSettingsTyped);
+      setCachedSettings(finalSettingsTyped); // Cache for future page loads
     } catch (err) {
       console.error('Error fetching admin settings:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch settings');
