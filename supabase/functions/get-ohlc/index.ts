@@ -192,14 +192,14 @@ Deno.serve(async (req) => {
 
     console.log(`Fetching OHLC data for agent ${agentId}, timeframe: ${timeframe}, limit: ${limit}`);
 
-    // Check if this is a V8 agent (has prototype_token_address)
+    // Check if this is a V8 agent (has prototype_token_address or is_v8 flag)
     const { data: agent } = await supabase
       .from('agents')
-      .select('prototype_token_address')
+      .select('prototype_token_address, is_v8')
       .eq('id', agentId)
       .single();
 
-    const isV8Agent = !!agent?.prototype_token_address;
+    const isV8Agent = !!agent?.prototype_token_address || agent?.is_v8 === true;
 
     let ohlcData: OHLCBucket[] = [];
 
