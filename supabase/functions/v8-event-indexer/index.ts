@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createPublicClient, http, formatEther, parseAbiItem } from "https://esm.sh/viem@2.7.0";
+import { baseSepolia } from "https://esm.sh/viem@2.7.0/chains";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,149 +13,27 @@ const BONDING_CURVE_V8 = Deno.env.get('BONDING_CURVE_V8_ADDRESS') || '0xc511a151
 const AGENT_FACTORY_V8 = Deno.env.get('AGENT_FACTORY_V8_ADDRESS') || '0xe8214F54e4a670A92B8A6Fc2Da1DB70b091A4a79';
 const BASE_SEPOLIA_RPC = Deno.env.get('BASE_SEPOLIA_RPC') || 'https://sepolia.base.org';
 
-// Event signatures (keccak256 of event signature)
-const EVENT_SIGNATURES = {
-  // AgentCreated(bytes32 indexed agentId, address indexed prototypeToken, address indexed creator, string name, string symbol, uint256 timestamp)
-  AGENT_CREATED: '0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0',
-  // Trade(bytes32 indexed agentId, address indexed trader, bool isBuy, uint256 promptAmountGross, uint256 promptAmountNet, uint256 tokenAmount, uint256 fee, uint256 price, uint256 supplyAfter, uint256 reserveAfter, uint256 timestamp)
-  TRADE: '0x2c76e7a47fd53e2854856ac3f0a5f3ee40d15cfaa82266357ea9779c486ab9c3',
-  // GraduationTriggered(bytes32 indexed agentId, uint256 finalSupply, uint256 finalReserve, uint256 timestamp)
-  GRADUATION_TRIGGERED: '0x7c0c3c84c67c85fcac635147348bfe374c24a1a93d0366d1cfe9c5c86bb12c42',
-  // Transfer(address indexed from, address indexed to, uint256 value)
-  TRANSFER: '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
-};
+// Event ABIs using viem's parseAbiItem
+const AGENT_CREATED_EVENT = parseAbiItem(
+  'event AgentCreated(bytes32 indexed agentId, address indexed prototypeToken, address indexed creator, string name, string symbol, uint256 timestamp)'
+);
+
+const TRADE_EVENT = parseAbiItem(
+  'event Trade(bytes32 indexed agentId, address indexed trader, bool isBuy, uint256 promptAmountGross, uint256 promptAmountNet, uint256 tokenAmount, uint256 fee, uint256 price, uint256 supplyAfter, uint256 reserveAfter, uint256 timestamp)'
+);
+
+const GRADUATION_TRIGGERED_EVENT = parseAbiItem(
+  'event GraduationTriggered(bytes32 indexed agentId, uint256 finalSupply, uint256 finalReserve, uint256 timestamp)'
+);
+
+const TRANSFER_EVENT = parseAbiItem(
+  'event Transfer(address indexed from, address indexed to, uint256 value)'
+);
 
 // Convert bytes32 to UUID
 function bytes32ToUuid(bytes32: string): string {
   const hex = bytes32.slice(2, 34); // Remove 0x and take first 32 chars
   return `${hex.slice(0,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}-${hex.slice(16,20)}-${hex.slice(20,32)}`;
-}
-
-// Format wei to ether
-function formatEther(wei: bigint): string {
-  const str = wei.toString().padStart(19, '0');
-  const whole = str.slice(0, -18) || '0';
-  const decimal = str.slice(-18).replace(/0+$/, '');
-  return decimal ? `${whole}.${decimal}` : whole;
-}
-
-// Get current block number
-async function getCurrentBlockNumber(): Promise<bigint> {
-  const response = await fetch(BASE_SEPOLIA_RPC, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      jsonrpc: '2.0',
-      id: 1,
-      method: 'eth_blockNumber',
-      params: []
-    })
-  });
-  const result = await response.json();
-  if (result.error) throw new Error(result.error.message);
-  return BigInt(result.result);
-}
-
-// Get block timestamp
-async function getBlockTimestamp(blockNumber: bigint): Promise<string> {
-  const response = await fetch(BASE_SEPOLIA_RPC, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      jsonrpc: '2.0',
-      id: 1,
-      method: 'eth_getBlockByNumber',
-      params: [`0x${blockNumber.toString(16)}`, false]
-    })
-  });
-  const result = await response.json();
-  if (result.error) throw new Error(result.error.message);
-  const timestamp = parseInt(result.result.timestamp, 16);
-  return new Date(timestamp * 1000).toISOString();
-}
-
-// Fetch logs from RPC
-async function getLogs(address: string, topics: (string | null)[], fromBlock: bigint, toBlock: bigint) {
-  const response = await fetch(BASE_SEPOLIA_RPC, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      jsonrpc: '2.0',
-      id: 1,
-      method: 'eth_getLogs',
-      params: [{
-        address,
-        topics,
-        fromBlock: `0x${fromBlock.toString(16)}`,
-        toBlock: `0x${toBlock.toString(16)}`
-      }]
-    })
-  });
-  const result = await response.json();
-  if (result.error) throw new Error(result.error.message);
-  return result.result || [];
-}
-
-// Decode Trade event data
-function decodeTradeEvent(log: { topics: string[], data: string }) {
-  const agentId = log.topics[1];
-  const trader = '0x' + log.topics[2].slice(26);
-  
-  // Decode non-indexed parameters from data
-  const data = log.data.slice(2); // Remove 0x
-  const isBuy = BigInt('0x' + data.slice(0, 64)) === 1n;
-  const promptAmountGross = BigInt('0x' + data.slice(64, 128));
-  const promptAmountNet = BigInt('0x' + data.slice(128, 192));
-  const tokenAmount = BigInt('0x' + data.slice(192, 256));
-  const fee = BigInt('0x' + data.slice(256, 320));
-  const price = BigInt('0x' + data.slice(320, 384));
-  const supplyAfter = BigInt('0x' + data.slice(384, 448));
-  const reserveAfter = BigInt('0x' + data.slice(448, 512));
-  const timestamp = BigInt('0x' + data.slice(512, 576));
-  
-  return {
-    agentId,
-    trader,
-    isBuy,
-    promptAmountGross,
-    promptAmountNet,
-    tokenAmount,
-    fee,
-    price,
-    supplyAfter,
-    reserveAfter,
-    timestamp
-  };
-}
-
-// Decode GraduationTriggered event data
-function decodeGraduationTriggeredEvent(log: { topics: string[], data: string }) {
-  const agentId = log.topics[1];
-  const data = log.data.slice(2);
-  const finalSupply = BigInt('0x' + data.slice(0, 64));
-  const finalReserve = BigInt('0x' + data.slice(64, 128));
-  const timestamp = BigInt('0x' + data.slice(128, 192));
-  
-  return { agentId, finalSupply, finalReserve, timestamp };
-}
-
-// Decode AgentCreated event data
-function decodeAgentCreatedEvent(log: { topics: string[], data: string }) {
-  const agentId = log.topics[1];
-  const prototypeToken = '0x' + log.topics[2].slice(26);
-  const creator = '0x' + log.topics[3].slice(26);
-  
-  // Data contains name, symbol, timestamp - simplified for now
-  return { agentId, prototypeToken, creator };
-}
-
-// Decode Transfer event
-function decodeTransferEvent(log: { topics: string[], data: string }) {
-  const from = '0x' + log.topics[1].slice(26);
-  const to = '0x' + log.topics[2].slice(26);
-  const value = BigInt('0x' + log.data.slice(2));
-  
-  return { from, to, value };
 }
 
 serve(async (req) => {
@@ -167,7 +47,12 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    const currentBlock = await getCurrentBlockNumber();
+    const publicClient = createPublicClient({
+      chain: baseSepolia,
+      transport: http(BASE_SEPOLIA_RPC)
+    });
+
+    const currentBlock = await publicClient.getBlockNumber();
     const results = {
       currentBlock: Number(currentBlock),
       agentCreatedEvents: 0,
@@ -190,25 +75,24 @@ serve(async (req) => {
 
       const factoryFromBlock = factoryState?.last_block_indexed
         ? BigInt(factoryState.last_block_indexed) + 1n
-        : currentBlock - 10000n; // Start from ~10000 blocks ago if no state
+        : currentBlock - 10000n;
 
-      const agentCreatedLogs = await getLogs(
-        AGENT_FACTORY_V8,
-        [EVENT_SIGNATURES.AGENT_CREATED, null, null, null],
-        factoryFromBlock > 0n ? factoryFromBlock : 0n,
-        currentBlock
-      );
+      const agentCreatedLogs = await publicClient.getLogs({
+        address: AGENT_FACTORY_V8 as `0x${string}`,
+        event: AGENT_CREATED_EVENT,
+        fromBlock: factoryFromBlock > 0n ? factoryFromBlock : 0n,
+        toBlock: currentBlock
+      });
 
       for (const log of agentCreatedLogs) {
         try {
-          const { agentId, prototypeToken, creator } = decodeAgentCreatedEvent(log);
-          const agentUuid = bytes32ToUuid(agentId);
+          const agentId = bytes32ToUuid(log.args.agentId!);
 
           await supabase.from('agents').update({
-            prototype_token_address: prototypeToken.toLowerCase(),
-            is_v8: true,
-            creator_wallet_address: creator.toLowerCase()
-          }).eq('id', agentUuid);
+            prototype_token_address: log.args.prototypeToken?.toLowerCase(),
+            creator_wallet_address: log.args.creator?.toLowerCase(),
+            is_v8: true
+          }).eq('id', agentId);
 
           results.agentCreatedEvents++;
         } catch (e) {
@@ -216,7 +100,6 @@ serve(async (req) => {
         }
       }
 
-      // Update indexer state
       await supabase.from('event_indexer_state').upsert({
         contract_address: AGENT_FACTORY_V8.toLowerCase(),
         event_type: 'AgentCreated',
@@ -242,43 +125,39 @@ serve(async (req) => {
         ? BigInt(curveState.last_block_indexed) + 1n
         : currentBlock - 10000n;
 
-      const tradeLogs = await getLogs(
-        BONDING_CURVE_V8,
-        [EVENT_SIGNATURES.TRADE, null, null],
-        curveFromBlock > 0n ? curveFromBlock : 0n,
-        currentBlock
-      );
+      const tradeLogs = await publicClient.getLogs({
+        address: BONDING_CURVE_V8 as `0x${string}`,
+        event: TRADE_EVENT,
+        fromBlock: curveFromBlock > 0n ? curveFromBlock : 0n,
+        toBlock: currentBlock
+      });
 
       for (const log of tradeLogs) {
         try {
-          const trade = decodeTradeEvent(log);
-          const agentUuid = bytes32ToUuid(trade.agentId);
-          const blockNumber = BigInt(log.blockNumber);
-          const blockTimestamp = await getBlockTimestamp(blockNumber);
+          const agentId = bytes32ToUuid(log.args.agentId!);
+          const block = await publicClient.getBlock({ blockNumber: log.blockNumber });
 
-          // Insert trade record
           await supabase.from('on_chain_trades').upsert({
-            agent_id: agentUuid,
+            agent_id: agentId,
             transaction_hash: log.transactionHash,
-            block_number: Number(blockNumber),
-            block_timestamp: blockTimestamp,
-            trader_address: trade.trader.toLowerCase(),
-            is_buy: trade.isBuy,
-            prompt_amount_gross: formatEther(trade.promptAmountGross),
-            prompt_amount_net: formatEther(trade.promptAmountNet),
-            token_amount: formatEther(trade.tokenAmount),
-            fee: formatEther(trade.fee),
-            price: formatEther(trade.price),
-            supply_after: formatEther(trade.supplyAfter),
-            reserve_after: formatEther(trade.reserveAfter)
+            block_number: Number(log.blockNumber),
+            block_timestamp: new Date(Number(block.timestamp) * 1000).toISOString(),
+            trader_address: log.args.trader!.toLowerCase(),
+            is_buy: log.args.isBuy,
+            prompt_amount_gross: formatEther(log.args.promptAmountGross!),
+            prompt_amount_net: formatEther(log.args.promptAmountNet!),
+            token_amount: formatEther(log.args.tokenAmount!),
+            fee: formatEther(log.args.fee!),
+            price: formatEther(log.args.price!),
+            supply_after: formatEther(log.args.supplyAfter!),
+            reserve_after: formatEther(log.args.reserveAfter!)
           }, { onConflict: 'transaction_hash' });
 
-          // Update agent's on-chain state
           await supabase.from('agents').update({
-            on_chain_supply: formatEther(trade.supplyAfter),
-            on_chain_reserve: formatEther(trade.reserveAfter),
-            on_chain_price: formatEther(trade.price)
-          }).eq('id', agentUuid);
+            on_chain_supply: formatEther(log.args.supplyAfter!),
+            on_chain_reserve: formatEther(log.args.reserveAfter!),
+            on_chain_price: formatEther(log.args.price!)
+          }).eq('id', agentId);
 
           results.tradeEvents++;
         } catch (e) {
@@ -286,7 +165,6 @@ serve(async (req) => {
         }
       }
 
-      // Update indexer state
       await supabase.from('event_indexer_state').upsert({
         contract_address: BONDING_CURVE_V8.toLowerCase(),
         event_type: 'Trade',
@@ -312,23 +190,22 @@ serve(async (req) => {
         ? BigInt(gradState.last_block_indexed) + 1n
         : currentBlock - 10000n;
 
-      const graduationLogs = await getLogs(
-        BONDING_CURVE_V8,
-        [EVENT_SIGNATURES.GRADUATION_TRIGGERED, null],
-        gradFromBlock > 0n ? gradFromBlock : 0n,
-        currentBlock
-      );
+      const graduationLogs = await publicClient.getLogs({
+        address: BONDING_CURVE_V8 as `0x${string}`,
+        event: GRADUATION_TRIGGERED_EVENT,
+        fromBlock: gradFromBlock > 0n ? gradFromBlock : 0n,
+        toBlock: currentBlock
+      });
 
       for (const log of graduationLogs) {
         try {
-          const { agentId, finalSupply, finalReserve } = decodeGraduationTriggeredEvent(log);
-          const agentUuid = bytes32ToUuid(agentId);
+          const agentId = bytes32ToUuid(log.args.agentId!);
 
           await supabase.from('agents').update({
             graduation_phase: 'triggered',
-            on_chain_supply: formatEther(finalSupply),
-            on_chain_reserve: formatEther(finalReserve)
-          }).eq('id', agentUuid);
+            on_chain_supply: formatEther(log.args.finalSupply!),
+            on_chain_reserve: formatEther(log.args.finalReserve!)
+          }).eq('id', agentId);
 
           results.graduationEvents++;
         } catch (e) {
@@ -336,7 +213,6 @@ serve(async (req) => {
         }
       }
 
-      // Update indexer state
       await supabase.from('event_indexer_state').upsert({
         contract_address: BONDING_CURVE_V8.toLowerCase(),
         event_type: 'GraduationTriggered',
@@ -372,47 +248,47 @@ serve(async (req) => {
             ? BigInt(tokenState.last_block_indexed) + 1n
             : currentBlock - 10000n;
 
-          const transferLogs = await getLogs(
-            agent.prototype_token_address,
-            [EVENT_SIGNATURES.TRANSFER, null, null],
-            tokenFromBlock > 0n ? tokenFromBlock : 0n,
-            currentBlock
-          );
+          const transferLogs = await publicClient.getLogs({
+            address: agent.prototype_token_address as `0x${string}`,
+            event: TRANSFER_EVENT,
+            fromBlock: tokenFromBlock > 0n ? tokenFromBlock : 0n,
+            toBlock: currentBlock
+          });
 
           for (const log of transferLogs) {
             try {
-              const { from, to, value } = decodeTransferEvent(log);
-              const blockNumber = Number(BigInt(log.blockNumber));
+              const from = log.args.from!;
+              const to = log.args.to!;
+              const value = log.args.value!;
 
-              // Decrement sender (if not mint from zero address)
+              // Decrement sender (if not mint)
               if (from !== '0x0000000000000000000000000000000000000000') {
                 await supabase.rpc('update_indexed_balance', {
                   p_agent_id: agent.id,
                   p_wallet: from.toLowerCase(),
                   p_delta: -Number(formatEther(value)),
-                  p_block: blockNumber,
+                  p_block: Number(log.blockNumber),
                   p_token_type: 'prototype'
                 });
               }
 
-              // Increment receiver (if not burn to zero address)
+              // Increment receiver (if not burn)
               if (to !== '0x0000000000000000000000000000000000000000') {
                 await supabase.rpc('update_indexed_balance', {
                   p_agent_id: agent.id,
                   p_wallet: to.toLowerCase(),
                   p_delta: Number(formatEther(value)),
-                  p_block: blockNumber,
+                  p_block: Number(log.blockNumber),
                   p_token_type: 'prototype'
                 });
               }
 
               results.transfersProcessed++;
             } catch (e) {
-              results.errors.push(`Transfer decode error for ${agent.id}: ${e.message}`);
+              results.errors.push(`Transfer decode error: ${e.message}`);
             }
           }
 
-          // Update indexer state for this token
           await supabase.from('event_indexer_state').upsert({
             contract_address: tokenAddress,
             event_type: 'Transfer',
