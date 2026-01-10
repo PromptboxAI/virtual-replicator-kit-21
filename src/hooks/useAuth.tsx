@@ -21,44 +21,12 @@ export function useAuth() {
   const [hasInitialized, setHasInitialized] = useState(false);
   const [initTimeout, setInitTimeout] = useState(false);
   
-  // Stabilized auth state to prevent flickering
-  const [stableAuthenticated, setStableAuthenticated] = useState(false);
-  const [stableUser, setStableUser] = useState(user);
-  const authChangeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Stabilize auth state changes - only update after state is stable for 500ms
-  // This prevents UI flickering from transient Privy state changes
-  useEffect(() => {
-    if (authChangeTimeoutRef.current) {
-      clearTimeout(authChangeTimeoutRef.current);
-    }
-
-    // If becoming authenticated, update immediately
-    if (ready && authenticated && user) {
-      setStableAuthenticated(true);
-      setStableUser(user);
-      return;
-    }
-
-    // If becoming unauthenticated, delay to avoid flickering
-    // Only sign out if state remains unauthenticated for 1 second
-    authChangeTimeoutRef.current = setTimeout(() => {
-      if (ready && !authenticated) {
-        setStableAuthenticated(false);
-        setStableUser(null);
-      }
-    }, 1000);
-
-    return () => {
-      if (authChangeTimeoutRef.current) {
-        clearTimeout(authChangeTimeoutRef.current);
-      }
-    };
-  }, [ready, authenticated, user]);
+  // Direct auth state - no artificial delays
+  // Privy's ready state is sufficient for determining when auth is resolved
 
   // Log authentication state changes with timeout protection
   useEffect(() => {
-    console.log('Privy state:', { ready, authenticated, stableAuthenticated, user: user?.id });
+    console.log('Privy state:', { ready, authenticated, user: user?.id });
     
     // Set timeout if Privy doesn't initialize within 10 seconds
     const timeout = setTimeout(() => {
@@ -69,7 +37,7 @@ export function useAuth() {
     }, 10000);
     
     return () => clearTimeout(timeout);
-  }, [ready, authenticated, stableAuthenticated, user?.id]);
+  }, [ready, authenticated, user?.id]);
 
   // Sync Privy user with Supabase profiles (optimized with localStorage cache)
   useEffect(() => {
@@ -196,14 +164,11 @@ export function useAuth() {
     }
   };
 
-  const immediateAuthenticated = ready && authenticated && !!user;
+  const isAuthenticated = ready && authenticated && !!user;
 
   return {
-    // Prefer the raw Privy state immediately when authenticated to avoid one-render "null user" flickers
-    user: immediateAuthenticated ? user : (stableAuthenticated ? stableUser : null),
-    session: immediateAuthenticated
-      ? { user }
-      : (stableAuthenticated ? { user: stableUser } : null),
+    user: isAuthenticated ? user : null,
+    session: isAuthenticated ? { user } : null,
     loading: !ready || isProcessing,
     signOut: logout,
     signIn: login,
@@ -211,7 +176,7 @@ export function useAuth() {
     linkWallet,
     unlinkEmail,
     unlinkWallet,
-    authenticated: immediateAuthenticated || stableAuthenticated,
+    authenticated: isAuthenticated,
     ready: ready && !initTimeout,
     showTermsModal,
     hasAcceptedTerms,

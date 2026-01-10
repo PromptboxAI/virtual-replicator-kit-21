@@ -57,7 +57,14 @@ const AuthProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { authenticated, ready, login } = usePrivy();
   
   if (!ready) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-pulse flex flex-col items-center gap-4">
+          <div className="h-12 w-12 rounded-full bg-muted"></div>
+          <div className="h-4 w-32 rounded bg-muted"></div>
+        </div>
+      </div>
+    );
   }
   
   if (!authenticated) {
@@ -73,21 +80,23 @@ const AdminProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAdmin, isLoading } = useUserRole();
   const { ready } = usePrivy();
   
-  console.log('AdminProtectedRoute - ready:', ready, 'isLoading:', isLoading, 'isAdmin:', isAdmin);
-  console.log('AdminProtectedRoute - Route accessed:', window.location.pathname);
-  
   // Wait for both Privy to be ready AND user role to be loaded
   if (!ready || isLoading) {
-    console.log('AdminProtectedRoute - showing loading...');
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-pulse flex flex-col items-center gap-4">
+          <div className="h-12 w-12 rounded-full bg-muted"></div>
+          <div className="h-4 w-32 rounded bg-muted"></div>
+          <div className="h-3 w-24 rounded bg-muted"></div>
+        </div>
+      </div>
+    );
   }
   
   if (!isAdmin) {
-    console.log('AdminProtectedRoute - redirecting to home because not admin');
     return <Navigate to="/" replace />;
   }
   
-  console.log('AdminProtectedRoute - allowing access');
   return <>{children}</>;
 };
 
