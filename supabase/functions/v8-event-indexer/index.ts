@@ -267,8 +267,7 @@ serve(async (req) => {
                   p_agent_id: agent.id,
                   p_wallet: from.toLowerCase(),
                   p_delta: -Number(formatEther(value)),
-                  p_block: Number(log.blockNumber),
-                  p_token_type: 'prototype'
+                  p_block: Number(log.blockNumber)
                 });
               }
 
@@ -278,8 +277,7 @@ serve(async (req) => {
                   p_agent_id: agent.id,
                   p_wallet: to.toLowerCase(),
                   p_delta: Number(formatEther(value)),
-                  p_block: Number(log.blockNumber),
-                  p_token_type: 'prototype'
+                  p_block: Number(log.blockNumber)
                 });
               }
 

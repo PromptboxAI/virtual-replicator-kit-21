@@ -17,11 +17,9 @@ import {
   V8_CONSTANTS,
   BONDING_CURVE_V8_ABI,
   PROTOTYPE_TOKEN_ABI,
+  PROMPT_TOKEN_ADDRESS,
   uuidToBytes32 
 } from '@/lib/contractsV8';
-
-// PROMPT Token address (same as V7)
-const PROMPT_TOKEN_ADDRESS = '0x3D6AfE2fB73fFEcDfE66a0c5BF878e77051Bb4fd' as Address;
 
 interface AgentV8State {
   id: string;
