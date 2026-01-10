@@ -42,6 +42,8 @@ export default function Faucet() {
     chainId: baseSepolia.id,
     query: {
       enabled: !!contractAddress && !!address,
+      refetchInterval: 10000, // Poll every 10s for balance updates
+      staleTime: 5000, // Consider data stale after 5s
     }
   });
 
@@ -107,13 +109,16 @@ export default function Faucet() {
 
   // Refetch balance when transaction is confirmed
   useEffect(() => {
-    if (isConfirmed) {
+    if (isConfirmed && txHash) {
       toast.success('Tokens claimed successfully!', { id: 'tx-confirm' });
       console.log('Transaction confirmed, refetching balance...');
-      refetchBalance();
-      refetchLastClaim();
+      // Delay slightly to ensure chain state is updated
+      setTimeout(() => {
+        refetchBalance();
+        refetchLastClaim();
+      }, 2000);
     }
-  }, [isConfirmed, refetchBalance, refetchLastClaim]);
+  }, [isConfirmed, txHash, refetchBalance, refetchLastClaim]);
 
   const handleClaim = async () => {
     if (!address) {
