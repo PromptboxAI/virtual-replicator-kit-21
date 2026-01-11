@@ -3,6 +3,10 @@
  * 
  * Validates V8 agent configuration before database insertion
  * Ensures all required V8 flags and constants are set correctly
+ * 
+ * Economic Model (Original V7):
+ * - P0 (Starting Price): 0.00004 PROMPT per token
+ * - P1 (Graduation Price): 0.0003 PROMPT per token
  */
 
 import { V8_CONSTANTS } from './contractsV8';
