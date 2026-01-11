@@ -28,15 +28,20 @@ export const V7_REUSED_CONTRACTS = {
   ECOSYSTEM_REWARDS: '0xce11297AD83e1A6cF3635226a2348B8Ed7a6C925',
 } as const;
 
-// V8 Constants
+// V8 Constants - SINGLE SOURCE OF TRUTH
 export const V8_CONSTANTS = {
   // Graduation threshold in PROMPT
-  GRADUATION_THRESHOLD: '42160',
+  GRADUATION_THRESHOLD: 42160,            // Number for comparisons
+  GRADUATION_THRESHOLD_STR: '42160',      // String for DB
   GRADUATION_THRESHOLD_WEI: BigInt('42160000000000000000000'),
   
   // Bonding curve parameters
-  P0: BigInt('10000000000000'), // 0.00001 PROMPT (starting price)
-  P1: BigInt('100000000'), // 0.0000000001 (price coefficient)
+  // P0 = 0.00001 PROMPT per token (starting price)
+  // P1 = 0.0000000001 (price coefficient for linear curve)
+  P0: BigInt('10000000000000'),           // 0.00001 in wei (10^13)
+  P1: BigInt('100000000'),                // 0.0000000001 in wei (10^8)
+  P0_STRING: '0.00001',                   // For DB storage
+  P1_STRING: '0.0000000001',              // For DB storage
   
   // Trading fee
   TRADING_FEE_BPS: 50, // 0.5%
@@ -45,9 +50,16 @@ export const V8_CONSTANTS = {
   AIRDROP_BATCH_SIZE: 100,
   
   // Token allocations (percentages)
-  HOLDER_ALLOCATION: 80, // 80% to curve participants
-  TEAM_ALLOCATION: 10,   // 10% to team (vested)
-  REWARDS_ALLOCATION: 10, // 10% to ecosystem rewards
+  HOLDER_ALLOCATION: 80,   // 80% to curve participants
+  TEAM_ALLOCATION: 10,     // 10% to team (vested)
+  REWARDS_ALLOCATION: 10,  // 10% to ecosystem rewards
+  
+  // Total supply
+  TOTAL_SUPPLY: 1000000000, // 1 billion tokens
+  
+  // Chain
+  CHAIN_ID: 84532,         // Base Sepolia
+  RPC_URL: 'https://sepolia.base.org',
 } as const;
 
 // BondingCurveV8 ABI (minimal for frontend)
