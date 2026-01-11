@@ -387,9 +387,9 @@ serve(async (req) => {
       pricing_model: 'bonding_curve_v8',                    // NOT linear_v7
       graduation_mode: 'on_chain',                          // NOT database
 
-      // V8 Pricing Constants
-      created_p0: V8_CONFIG.P0,                             // '0.00001'
-      created_p1: V8_CONFIG.P1,                             // '0.0000000001'
+      // V8 Pricing Constants - ORIGINAL V7 ECONOMIC MODEL
+      created_p0: V8_CONFIG.P0,                             // '0.00004'
+      created_p1: V8_CONFIG.P1,                             // '0.0003'
       prompt_usd_rate: currentPromptUsdRate,
       created_prompt_usd_rate: currentPromptUsdRate,
 
