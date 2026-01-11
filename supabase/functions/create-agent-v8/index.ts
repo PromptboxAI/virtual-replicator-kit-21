@@ -11,6 +11,7 @@ const corsHeaders = {
 
 // ============================================================================
 // V8 CONSTANTS - SINGLE SOURCE OF TRUTH
+// Based on original V7 economic model for LP ratios and market cap calculations
 // ============================================================================
 const V8_CONFIG = {
   // Contract Addresses (Base Sepolia)
@@ -20,12 +21,14 @@ const V8_CONFIG = {
   GRADUATION_MANAGER: '0x3c6878857FB1d1a1155b016A4b904c479395B2D9',
   PROMPT_TOKEN: '0x04d30a1697FdaDAFd647B46ef2253F4Dccf17673',
 
-  // Pricing Constants (string for DB, matches deployed contract)
-  P0: '0.00001',           // Starting price (0.00001 PROMPT per token)
-  P1: '0.0000000001',      // Price coefficient
+  // Pricing Constants - ORIGINAL V7 ECONOMIC MODEL
+  // P0 = 0.00004 PROMPT per token (starting price)
+  // P1 = 0.0003 PROMPT per token (graduation price)
+  P0: '0.00004',           // Starting price (NOT 0.00001)
+  P1: '0.0003',            // Graduation price (NOT 0.0000000001)
 
   // Graduation
-  GRADUATION_THRESHOLD: 42160,  // PROMPT required to graduate (NOT 42000)
+  GRADUATION_THRESHOLD: 42160,  // PROMPT required to graduate
 
   // Fees
   TRADING_FEE_BPS: 50,     // 0.5%

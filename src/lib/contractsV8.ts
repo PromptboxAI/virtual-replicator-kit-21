@@ -29,19 +29,20 @@ export const V7_REUSED_CONTRACTS = {
 } as const;
 
 // V8 Constants - SINGLE SOURCE OF TRUTH
+// Based on original V7 economic model for LP ratios and market cap calculations
 export const V8_CONSTANTS = {
   // Graduation threshold in PROMPT
   GRADUATION_THRESHOLD: 42160,            // Number for comparisons
   GRADUATION_THRESHOLD_STR: '42160',      // String for DB
   GRADUATION_THRESHOLD_WEI: BigInt('42160000000000000000000'),
   
-  // Bonding curve parameters
-  // P0 = 0.00001 PROMPT per token (starting price)
-  // P1 = 0.0000000001 (price coefficient for linear curve)
-  P0: BigInt('10000000000000'),           // 0.00001 in wei (10^13)
-  P1: BigInt('100000000'),                // 0.0000000001 in wei (10^8)
-  P0_STRING: '0.00001',                   // For DB storage
-  P1_STRING: '0.0000000001',              // For DB storage
+  // Bonding curve parameters - ORIGINAL V7 ECONOMIC MODEL
+  // P0 = 0.00004 PROMPT per token (starting price)
+  // P1 = 0.0003 PROMPT per token (graduation price)
+  P0: BigInt('40000000000000'),           // 0.00004 in wei (4 * 10^13)
+  P1: BigInt('300000000000000'),          // 0.0003 in wei (3 * 10^14)
+  P0_STRING: '0.00004',                   // For DB storage
+  P1_STRING: '0.0003',                    // For DB storage (graduation price)
   
   // Trading fee
   TRADING_FEE_BPS: 50, // 0.5%
