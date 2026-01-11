@@ -302,7 +302,7 @@ serve(async (req) => {
             prototypeToken: agent?.prototype_token_address,
             supply: '0',
             reserve: '0',
-            currentPrice: '0.00001',  // V8 P0
+            currentPrice: '0.00004',  // V8 P0 (original V7 economic model)
             graduated: false,
             graduationPhase: agent?.graduation_phase,
             contractAddress: BONDING_CURVE_V8,
