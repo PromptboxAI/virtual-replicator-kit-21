@@ -36,6 +36,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useAccount } from 'wagmi';
 import { calculateBuyReturn } from "@/lib/bondingCurveV7";
 import { V7_CONSTANTS } from "@/lib/constants";
+import { V8_CONSTANTS } from "@/lib/contractsV8";
 import { retrySupabaseUpdate } from "@/lib/retryUtils";
 
 // Hook for debounced value
@@ -453,13 +454,18 @@ export default function CreateAgent() {
       const graduationMode = graduationConfig?.graduation_mode || 'database';
       const targetMarketCapUsd = graduationMode === 'smart_contract' ? 65000 : null;
       
-      // 🎯 Use V7 bonding curve constants - single source of truth
-      const P0 = V7_CONSTANTS.DEFAULT_P0;
-      const P1 = V7_CONSTANTS.DEFAULT_P1;
-      const graduationThreshold = V7_CONSTANTS.GRADUATION_THRESHOLD;
-      
       // Get deployment mode early
       const deploymentMode = adminSettings?.deployment_mode || 'database';
+      
+      // 🎯 Use V8 constants for smart_contract mode, V7 for database mode
+      const isV8Mode = deploymentMode === 'smart_contract';
+      // V8 uses string values, V7 uses numbers - convert to string for DB
+      const P0_str = isV8Mode ? V8_CONSTANTS.P0_STRING : String(V7_CONSTANTS.DEFAULT_P0);
+      const P1_str = isV8Mode ? V8_CONSTANTS.P1_STRING : String(V7_CONSTANTS.DEFAULT_P1);
+      const P0_num = isV8Mode ? parseFloat(V8_CONSTANTS.P0_STRING) : V7_CONSTANTS.DEFAULT_P0;
+      const graduationThreshold = isV8Mode ? V8_CONSTANTS.GRADUATION_THRESHOLD : V7_CONSTANTS.GRADUATION_THRESHOLD;
+      const pricingModel = isV8Mode ? 'bonding_curve_v8' : 'linear_v7';
+      const effectiveGraduationMode = isV8Mode ? 'on_chain' : graduationMode;
       
       // Create agent metadata record (required for both modes)
       // In smart_contract mode: metadata only, trading blocked until contract deployed
@@ -477,7 +483,7 @@ export default function CreateAgent() {
           twitter_url: formData.twitter_url || null,
           avatar_url: finalAvatarUrl,
           total_supply: formData.total_supply,
-          current_price: initialPrice,
+          current_price: P0_num,
           market_cap: 0,
           creation_cost: CREATION_COST,
           prompt_raised: 0,
@@ -487,17 +493,23 @@ export default function CreateAgent() {
           status: deploymentMode === 'database' ? 'ACTIVE' : 'ACTIVATING',
           test_mode: appIsTestMode,
           
-          // ✅ V6.1 PRICING FIELDS
+          // ✅ V8/V7 PRICING FIELDS - mode-specific
           created_prompt_usd_rate: currentPromptUsdRate,
-          created_p0: P0,
-          created_p1: P1,
-          graduation_mode: graduationMode,
+          created_p0: P0_num,
+          created_p1: parseFloat(P1_str),
+          graduation_mode: effectiveGraduationMode,
           target_market_cap_usd: targetMarketCapUsd,
           
-          // ✅ V7 BONDING CURVE
-          pricing_model: 'linear_v7',
+          // ✅ V8 FLAG - CRITICAL for routing
+          is_v8: isV8Mode,
+          
+          // ✅ Pricing model based on mode
+          pricing_model: pricingModel,
           bonding_curve_supply: 0,
           migration_validated: true,
+          
+          // ✅ Graduation threshold - V8 uses 42160, V7 uses 42000
+          graduation_threshold: graduationThreshold,
           
           // 🔒 MEV PROTECTION & DEPLOYMENT
           creation_locked: formData.creation_locked,
@@ -510,8 +522,14 @@ export default function CreateAgent() {
           creator_wallet_address: walletAddress || null,
           deployment_method: deploymentMode === 'smart_contract' ? 'factory' : null,
           
+          // ✅ On-chain fields initialized for V8
+          on_chain_supply: 0,
+          on_chain_reserve: 0,
+          on_chain_price: isV8Mode ? P0_num : null,
+          
           // 🎓 Graduation should ONLY occur after threshold is reached
           token_graduated: false,
+          graduation_phase: 'not_started',
         }])
         .select()
         .single();
