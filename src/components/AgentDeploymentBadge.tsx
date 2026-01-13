@@ -3,7 +3,7 @@ import { Database, Link2, Rocket, Loader2, XCircle } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface AgentDeploymentBadgeProps {
-  deploymentStatus: 'not_deployed' | 'deploying' | 'deployed' | 'deployment_failed';
+  deploymentStatus: 'not_deployed' | 'pending' | 'deploying' | 'deployed' | 'deployment_failed' | 'failed';
   networkEnvironment?: 'testnet' | 'mainnet';
   chainId?: number;
   showTooltip?: boolean;
@@ -25,6 +25,7 @@ export function AgentDeploymentBadge({
           variant: 'secondary' as const,
           tooltip: 'This agent exists only in the database (test mode)'
         };
+      case 'pending':
       case 'deploying':
         return {
           icon: Loader2,

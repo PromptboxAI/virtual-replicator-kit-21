@@ -120,7 +120,7 @@ export function NewAgentCreator() {
           .from('agents')
           .update({
             status: 'ACTIVATING',
-            deployment_status: 'deploying',
+            deployment_status: 'pending',
             is_active: false,
             failed_at: null,
             failure_reason: null,
@@ -144,7 +144,7 @@ export function NewAgentCreator() {
             category: agentData.category,
             creator_id: address,
             framework: 'G.A.M.E.',
-            deployment_status: 'deploying',
+            deployment_status: 'pending',
             network_environment: 'testnet',
             chain_id: 84532,
             status: 'ACTIVATING'

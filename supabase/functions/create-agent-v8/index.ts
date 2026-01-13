@@ -385,7 +385,7 @@ serve(async (req) => {
       creation_mode: 'smart_contract',                      // MUST be smart_contract
       graduation_threshold: V8_CONFIG.GRADUATION_THRESHOLD, // 42160
       pricing_model: 'bonding_curve_v8',                    // NOT linear_v7
-      graduation_mode: 'on_chain',                          // NOT database
+      graduation_mode: 'smart_contract',                     // on-chain V8 mode
 
       // V8 Pricing Constants - ORIGINAL V7 ECONOMIC MODEL
       created_p0: V8_CONFIG.P0,                             // '0.00004'
