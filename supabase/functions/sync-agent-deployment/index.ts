@@ -7,11 +7,13 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// V6 Factory address
+// V6 Factory address and event signature
 const AGENT_FACTORY_V6_ADDRESS = '0x9852671994E4DD979438145fc0a26e123eCc22Dc';
+const AGENT_CREATED_V6_SIGNATURE = keccak256(toHex('AgentCreated(address,address,string,string,uint256)'));
 
-// AgentCreated event signature
-const AGENT_CREATED_SIGNATURE = keccak256(toHex('AgentCreated(address,address,string,string,uint256)'));
+// V8 Factory address and event signature
+const AGENT_FACTORY_V8_ADDRESS = '0xe8214F54e4a670A92B8A6Fc2Da1DB70b091A4a79';
+const AGENT_CREATED_V8_SIGNATURE = keccak256(toHex('AgentCreated(bytes32,address,address,string,string)'));
 
 interface SyncRequest {
   agentId?: string;
@@ -79,7 +81,7 @@ async function syncAllStuckDeployments(supabase: any, publicClient: any) {
 
   const { data: stuckAgents, error } = await supabase
     .from('agents')
-    .select('id, name, symbol, deployment_tx_hash, created_at, creator_id')
+    .select('id, name, symbol, deployment_tx_hash, created_at, creator_id, is_v8')
     .eq('deployment_status', 'pending')
     .is('token_contract_address', null)
     .lt('created_at', tenMinutesAgo);
@@ -144,11 +146,26 @@ async function verifyAndSyncFromTxHash(supabase: any, publicClient: any, agentId
     return { success: false, error: 'Transaction reverted on-chain' };
   }
 
+  // Parse AgentCreated event from logs - check both V6 and V8 signatures
   let tokenAddress: string | undefined;
+  let isV8Event = false;
+
   for (const log of receipt.logs) {
-    if (log.topics[0] === AGENT_CREATED_SIGNATURE) {
+    // Check V6 event signature: AgentCreated(address,address,string,string,uint256)
+    // V6: topics[1] = agentToken (indexed address)
+    if (log.topics[0] === AGENT_CREATED_V6_SIGNATURE) {
       tokenAddress = '0x' + log.topics[1].slice(-40);
-      console.log(`[sync-agent-deployment] Found token address from event: ${tokenAddress}`);
+      isV8Event = false;
+      console.log(`[sync-agent-deployment] Found V6 AgentCreated event, token: ${tokenAddress}`);
+      break;
+    }
+    
+    // Check V8 event signature: AgentCreated(bytes32,address,address,string,string)
+    // V8: topics[1] = agentId (bytes32 indexed), topics[2] = prototypeToken (indexed address)
+    if (log.topics[0] === AGENT_CREATED_V8_SIGNATURE) {
+      tokenAddress = '0x' + log.topics[2].slice(-40);
+      isV8Event = true;
+      console.log(`[sync-agent-deployment] Found V8 AgentCreated event, prototypeToken: ${tokenAddress}`);
       break;
     }
   }
@@ -158,7 +175,7 @@ async function verifyAndSyncFromTxHash(supabase: any, publicClient: any, agentId
   }
 
   if (agentId) {
-    const { error: updateError } = await supabase.from('agents').update({
+    const updateData: any = {
       token_contract_address: tokenAddress,
       token_address: tokenAddress,
       deployment_tx_hash: txHash,
@@ -166,16 +183,23 @@ async function verifyAndSyncFromTxHash(supabase: any, publicClient: any, agentId
       status: 'ACTIVE',
       is_active: true,
       token_graduated: false,
-    }).eq('id', agentId);
+    };
+
+    // For V8 agents, also set prototype_token_address
+    if (isV8Event) {
+      updateData.prototype_token_address = tokenAddress;
+    }
+
+    const { error: updateError } = await supabase.from('agents').update(updateData).eq('id', agentId);
 
     if (updateError) {
       return { success: false, error: `Database update failed: ${updateError.message}` };
     }
     
-    console.log(`[sync-agent-deployment] Successfully synced agent ${agentId} with token ${tokenAddress}`);
+    console.log(`[sync-agent-deployment] Successfully synced agent ${agentId} with token ${tokenAddress} (V8: ${isV8Event})`);
   }
 
-  return { success: true, tokenAddress, txHash, message: 'Agent synced successfully from on-chain data' };
+  return { success: true, tokenAddress, txHash, isV8: isV8Event, message: 'Agent synced successfully from on-chain data' };
 }
 
 async function syncByTokenAddress(supabase: any, publicClient: any, agentId: string, tokenAddress: string) {
@@ -190,14 +214,28 @@ async function syncByTokenAddress(supabase: any, publicClient: any, agentId: str
     );
   }
 
-  const { error: updateError } = await supabase.from('agents').update({
+  // Get agent to check if it's V8
+  const { data: agent } = await supabase
+    .from('agents')
+    .select('is_v8')
+    .eq('id', agentId)
+    .single();
+
+  const updateData: any = {
     token_contract_address: tokenAddress,
     token_address: tokenAddress,
     deployment_status: 'deployed',
     status: 'ACTIVE',
     is_active: true,
     token_graduated: false,
-  }).eq('id', agentId);
+  };
+
+  // For V8 agents, also set prototype_token_address
+  if (agent?.is_v8) {
+    updateData.prototype_token_address = tokenAddress;
+  }
+
+  const { error: updateError } = await supabase.from('agents').update(updateData).eq('id', agentId);
 
   if (updateError) {
     return new Response(
@@ -219,7 +257,7 @@ async function syncByAgentId(supabase: any, publicClient: any, agentId: string) 
   
   const { data: agent, error } = await supabase
     .from('agents')
-    .select('name, symbol, creator_id, deployment_tx_hash, created_at')
+    .select('name, symbol, creator_id, deployment_tx_hash, created_at, is_v8')
     .eq('id', agentId)
     .single();
 
@@ -246,7 +284,7 @@ async function syncByAgentId(supabase: any, publicClient: any, agentId: string) 
 }
 
 async function searchFactoryEventsForAgent(supabase: any, publicClient: any, agent: any) {
-  console.log(`[sync-agent-deployment] Searching factory events for agent: ${agent.symbol}`);
+  console.log(`[sync-agent-deployment] Searching factory events for agent: ${agent.symbol}, is_v8: ${agent.is_v8}`);
   
   const { data: profile } = await supabase
     .from('profiles')
@@ -262,21 +300,39 @@ async function searchFactoryEventsForAgent(supabase: any, publicClient: any, age
   const currentBlock = await publicClient.getBlockNumber();
   const fromBlock = currentBlock - 1000n; // Look back 1000 blocks
 
-  console.log(`[sync-agent-deployment] Searching blocks ${fromBlock} to ${currentBlock} for creator ${creatorAddress}`);
+  // Determine which factory to search based on is_v8 flag
+  const factoryAddress = agent.is_v8 ? AGENT_FACTORY_V8_ADDRESS : AGENT_FACTORY_V6_ADDRESS;
+
+  console.log(`[sync-agent-deployment] Searching ${agent.is_v8 ? 'V8' : 'V6'} factory ${factoryAddress}, blocks ${fromBlock} to ${currentBlock} for creator ${creatorAddress}`);
+
+  // Define event structure based on version
+  const eventAbi = agent.is_v8
+    ? {
+        type: 'event',
+        name: 'AgentCreated',
+        inputs: [
+          { type: 'bytes32', name: 'agentId', indexed: true },
+          { type: 'address', name: 'prototypeToken', indexed: true },
+          { type: 'address', name: 'creator', indexed: true },
+          { type: 'string', name: 'name' },
+          { type: 'string', name: 'symbol' },
+        ],
+      }
+    : {
+        type: 'event',
+        name: 'AgentCreated',
+        inputs: [
+          { type: 'address', name: 'agentToken', indexed: true },
+          { type: 'address', name: 'creator', indexed: true },
+          { type: 'string', name: 'name' },
+          { type: 'string', name: 'symbol' },
+          { type: 'uint256', name: 'timestamp' },
+        ],
+      };
 
   const logs = await publicClient.getLogs({
-    address: AGENT_FACTORY_V6_ADDRESS as `0x${string}`,
-    event: {
-      type: 'event',
-      name: 'AgentCreated',
-      inputs: [
-        { type: 'address', name: 'agentToken', indexed: true },
-        { type: 'address', name: 'creator', indexed: true },
-        { type: 'string', name: 'name' },
-        { type: 'string', name: 'symbol' },
-        { type: 'uint256', name: 'timestamp' },
-      ],
-    },
+    address: factoryAddress as `0x${string}`,
+    event: eventAbi,
     fromBlock,
     toBlock: currentBlock,
   });
@@ -288,12 +344,13 @@ async function searchFactoryEventsForAgent(supabase: any, publicClient: any, age
     const eventSymbol = log.args.symbol;
 
     if (eventCreator === creatorAddress && eventSymbol === agent.symbol) {
-      const tokenAddress = log.args.agentToken;
+      // For V8: use prototypeToken, for V6: use agentToken
+      const tokenAddress = agent.is_v8 ? log.args.prototypeToken : log.args.agentToken;
       const txHash = log.transactionHash;
 
       console.log(`[sync-agent-deployment] Found matching event! Token: ${tokenAddress}, Tx: ${txHash}`);
 
-      const { error: updateError } = await supabase.from('agents').update({
+      const updateData: any = {
         token_contract_address: tokenAddress,
         token_address: tokenAddress,
         deployment_tx_hash: txHash,
@@ -301,13 +358,20 @@ async function searchFactoryEventsForAgent(supabase: any, publicClient: any, age
         status: 'ACTIVE',
         is_active: true,
         token_graduated: false,
-      }).eq('id', agent.id);
+      };
+
+      // For V8 agents, also set prototype_token_address
+      if (agent.is_v8) {
+        updateData.prototype_token_address = tokenAddress;
+      }
+
+      const { error: updateError } = await supabase.from('agents').update(updateData).eq('id', agent.id);
 
       if (updateError) {
         return { success: false, error: `Database update failed: ${updateError.message}` };
       }
 
-      return { success: true, tokenAddress, txHash, message: 'Found and synced from factory events' };
+      return { success: true, tokenAddress, txHash, isV8: agent.is_v8, message: 'Found and synced from factory events' };
     }
   }
 
