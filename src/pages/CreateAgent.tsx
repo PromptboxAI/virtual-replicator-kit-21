@@ -465,7 +465,7 @@ export default function CreateAgent() {
       const P0_num = isV8Mode ? parseFloat(V8_CONSTANTS.P0_STRING) : V7_CONSTANTS.DEFAULT_P0;
       const graduationThreshold = isV8Mode ? V8_CONSTANTS.GRADUATION_THRESHOLD : V7_CONSTANTS.GRADUATION_THRESHOLD;
       const pricingModel = isV8Mode ? 'bonding_curve_v8' : 'linear_v7';
-      const effectiveGraduationMode = isV8Mode ? 'on_chain' : graduationMode;
+      const effectiveGraduationMode = isV8Mode ? 'smart_contract' : graduationMode;
       
       // Create agent metadata record (required for both modes)
       // In smart_contract mode: metadata only, trading blocked until contract deployed
@@ -516,7 +516,7 @@ export default function CreateAgent() {
           creation_expires_at: creationExpiresAt,
           creator_prebuy_amount: formData.creator_prebuy_amount,
           creation_mode: deploymentMode,
-          deployment_status: deploymentMode === 'smart_contract' ? 'deploying' : 'not_deployed',
+          deployment_status: deploymentMode === 'smart_contract' ? 'pending' : 'not_deployed',
           
           // ✅ Creator & Deployment Info
           creator_wallet_address: walletAddress || null,
@@ -584,7 +584,7 @@ export default function CreateAgent() {
                     token_address: deployResult.tokenAddress,
                     deployment_tx_hash: deployResult.txHash,
                     deployment_status: 'deployed',
-                    deployment_method: 'factory_v8',
+                    deployment_method: 'factory',
                     deployed_at: new Date().toISOString(),
                     creator_wallet_address: walletAddress || null,
                     status: 'ACTIVE',
