@@ -3,6 +3,11 @@
  * 
  * Phase 6: Trade Event Listener
  * Listens for BondingCurveV8 Trade events and syncs to database for OHLC generation.
+ * 
+ * Features:
+ * - Handles RPC block range limits (max 100k blocks per query)
+ * - Updates current_price and circulating_supply from on-chain state
+ * - Calculates price from bonding curve formula if no trades
  */
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
@@ -21,21 +26,54 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// V8 Constants
+const V8_CONFIG = {
+  BONDING_CURVE: '0xc511a151b0E04D5Ba87968900eE90d310530D5fB',
+  P0: 0.00004,   // Starting price
+  P1: 0.0003,    // Graduation price
+  TOTAL_SUPPLY: 1_000_000_000,
+  GRADUATION_THRESHOLD: 42160,
+  MAX_BLOCK_RANGE: 50000, // RPC limit is 100k, use 50k for safety
+};
+
 // Trade event from BondingCurveV8
 const tradeEvent = parseAbiItem(
   'event Trade(bytes32 indexed agentId, address indexed trader, bool isBuy, uint256 promptAmountGross, uint256 promptAmountNet, uint256 tokenAmount, uint256 fee, uint256 price, uint256 supplyAfter, uint256 reserveAfter, uint256 timestamp)'
 );
 
+// getAgentState function ABI for reading on-chain state
+const getAgentStateAbi = [{
+  name: 'getAgentState',
+  type: 'function',
+  stateMutability: 'view',
+  inputs: [{ name: 'agentId', type: 'bytes32' }],
+  outputs: [
+    { name: 'prototypeToken', type: 'address' },
+    { name: 'supply', type: 'uint256' },
+    { name: 'reserve', type: 'uint256' },
+    { name: 'currentPrice', type: 'uint256' },
+    { name: 'graduated', type: 'bool' }
+  ]
+}] as const;
+
 // Convert bytes32 back to UUID
 function bytes32ToUuid(bytes32: string): string {
-  // Remove 0x prefix and padding
   const hex = bytes32.slice(2).replace(/^0+/, '');
-  // Reconstruct UUID format
-  if (hex.length < 32) {
-    // It might be a shortened hex, try to interpret it
-    return hex;
-  }
+  if (hex.length < 32) return hex;
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20, 32)}`;
+}
+
+// UUID to bytes32
+function uuidToBytes32(uuid: string): `0x${string}` {
+  const hex = uuid.replace(/-/g, '');
+  return `0x${hex.padStart(64, '0')}` as `0x${string}`;
+}
+
+// Calculate price from bonding curve formula
+// Price = P0 + (P1 - P0) * (supply / totalSupply)
+function calculatePriceFromSupply(supply: number): number {
+  const ratio = supply / V8_CONFIG.TOTAL_SUPPLY;
+  return V8_CONFIG.P0 + (V8_CONFIG.P1 - V8_CONFIG.P0) * ratio;
 }
 
 serve(async (req) => {
@@ -49,7 +87,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    const BONDING_CURVE_V8 = Deno.env.get('BONDING_CURVE_V8_ADDRESS') || '0xc511a151b0E04D5Ba87968900eE90d310530D5fB';
+    const BONDING_CURVE_V8 = Deno.env.get('BONDING_CURVE_V8_ADDRESS') || V8_CONFIG.BONDING_CURVE;
     const RPC_URL = Deno.env.get('BASE_SEPOLIA_RPC') || 'https://sepolia.base.org';
 
     const publicClient = createPublicClient({
@@ -61,6 +99,7 @@ serve(async (req) => {
     let fromBlock: bigint | undefined;
     let toBlock: bigint | 'latest' = 'latest';
     let agentIdFilter: string | undefined;
+    let syncStateOnly = false; // New: just sync on-chain state without trade events
 
     if (req.method === 'POST') {
       try {
@@ -68,11 +107,78 @@ serve(async (req) => {
         fromBlock = body.fromBlock ? BigInt(body.fromBlock) : undefined;
         toBlock = body.toBlock ? BigInt(body.toBlock) : 'latest';
         agentIdFilter = body.agentId;
+        syncStateOnly = body.syncStateOnly === true;
       } catch {
         // Use defaults
       }
     }
 
+    const currentBlock = await publicClient.getBlockNumber();
+
+    // If syncStateOnly mode, just read on-chain state and update database
+    if (syncStateOnly && agentIdFilter) {
+      console.log(`[sync-state] Syncing on-chain state for agent ${agentIdFilter}`);
+      
+      const agentIdBytes32 = uuidToBytes32(agentIdFilter);
+      
+      try {
+        const result = await publicClient.readContract({
+          address: BONDING_CURVE_V8 as Address,
+          abi: getAgentStateAbi,
+          functionName: 'getAgentState',
+          args: [agentIdBytes32],
+        });
+
+        const [prototypeToken, supply, reserve, currentPrice, graduated] = result;
+        
+        const supplyNum = Number(formatEther(supply));
+        const reserveNum = Number(formatEther(reserve));
+        const priceNum = Number(formatEther(currentPrice));
+
+        console.log(`[sync-state] On-chain state:`, { supply: supplyNum, reserve: reserveNum, price: priceNum, graduated });
+
+        // Update agent with on-chain state
+        const { error: updateError } = await supabase
+          .from('agents')
+          .update({
+            on_chain_supply: supplyNum,
+            on_chain_reserve: reserveNum,
+            on_chain_price: priceNum,
+            current_price: priceNum,
+            circulating_supply: Math.floor(supplyNum),
+            prompt_raised: reserveNum,
+            bonding_curve_supply: supplyNum,
+            shares_sold: supplyNum,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', agentIdFilter);
+
+        if (updateError) {
+          console.error(`[sync-state] Update error:`, updateError);
+          throw updateError;
+        }
+
+        return new Response(
+          JSON.stringify({
+            ok: true,
+            data: {
+              agentId: agentIdFilter,
+              onChainState: { supply: supplyNum, reserve: reserveNum, price: priceNum, graduated },
+              currentBlock: currentBlock.toString(),
+            },
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      } catch (stateError: any) {
+        console.error(`[sync-state] Error reading on-chain state:`, stateError);
+        return new Response(
+          JSON.stringify({ ok: false, error: stateError.message }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
+    // Standard trade sync mode
     // If no fromBlock specified, get last synced block
     if (!fromBlock) {
       const { data: lastTrade } = await supabase
@@ -84,23 +190,33 @@ serve(async (req) => {
 
       fromBlock = lastTrade?.block_number 
         ? BigInt(lastTrade.block_number) + 1n 
-        : 0n;
+        : currentBlock - BigInt(V8_CONFIG.MAX_BLOCK_RANGE); // Only look back MAX_BLOCK_RANGE blocks by default
     }
 
-    console.log(`Syncing trades from block ${fromBlock} to ${toBlock}`);
+    // Resolve toBlock if 'latest'
+    const resolvedToBlock = toBlock === 'latest' ? currentBlock : toBlock;
+
+    // Ensure we don't exceed max block range
+    let actualFromBlock = fromBlock;
+    if (resolvedToBlock - actualFromBlock > BigInt(V8_CONFIG.MAX_BLOCK_RANGE)) {
+      actualFromBlock = resolvedToBlock - BigInt(V8_CONFIG.MAX_BLOCK_RANGE);
+      console.log(`[sync-trades] Block range limited to ${V8_CONFIG.MAX_BLOCK_RANGE} blocks`);
+    }
+
+    console.log(`[sync-trades] Syncing trades from block ${actualFromBlock} to ${resolvedToBlock}`);
 
     // Fetch Trade events
     const logs = await publicClient.getLogs({
       address: BONDING_CURVE_V8 as Address,
       event: tradeEvent,
-      fromBlock,
-      toBlock,
+      fromBlock: actualFromBlock,
+      toBlock: resolvedToBlock,
     });
 
-    console.log(`Found ${logs.length} trade events`);
+    console.log(`[sync-trades] Found ${logs.length} trade events`);
 
     const tradesToInsert: any[] = [];
-    const agentUpdates: Map<string, { supply: bigint; reserve: bigint }> = new Map();
+    const agentUpdates: Map<string, { supply: bigint; reserve: bigint; price: number }> = new Map();
 
     for (const log of logs) {
       const {
@@ -116,7 +232,6 @@ serve(async (req) => {
         reserveAfter,
       } = log.args;
 
-      // Skip if filtering by agentId and doesn't match
       const agentIdRaw = agentIdBytes32 as string;
       
       // Try to find matching agent
@@ -127,13 +242,16 @@ serve(async (req) => {
         .single();
 
       if (!agent) {
-        console.log(`No agent found for bytes32: ${agentIdRaw}`);
+        console.log(`[sync-trades] No agent found for bytes32: ${agentIdRaw}`);
         continue;
       }
 
       if (agentIdFilter && agent.id !== agentIdFilter) {
         continue;
       }
+
+      const supplyNum = Number(formatEther(supplyAfter as bigint));
+      const calculatedPrice = calculatePriceFromSupply(supplyNum);
 
       tradesToInsert.push({
         agent_id: agent.id,
@@ -154,6 +272,7 @@ serve(async (req) => {
       agentUpdates.set(agent.id, {
         supply: supplyAfter as bigint,
         reserve: reserveAfter as bigint,
+        price: calculatedPrice,
       });
     }
 
@@ -167,27 +286,34 @@ serve(async (req) => {
         });
 
       if (insertError) {
-        console.error('Error inserting trades:', insertError);
+        console.error('[sync-trades] Error inserting trades:', insertError);
       }
     }
 
-    // Update agent states
+    // Update agent states with all relevant fields
     for (const [agentId, state] of agentUpdates) {
+      const supply = Number(formatEther(state.supply));
+      const reserve = Number(formatEther(state.reserve));
+      
       const { error: updateError } = await supabase
         .from('agents')
         .update({
-          on_chain_supply: Number(formatEther(state.supply)),
-          on_chain_reserve: Number(formatEther(state.reserve)),
+          on_chain_supply: supply,
+          on_chain_reserve: reserve,
+          on_chain_price: state.price,
+          current_price: state.price,
+          circulating_supply: Math.floor(supply),
+          prompt_raised: reserve,
+          bonding_curve_supply: supply,
+          shares_sold: supply,
           updated_at: new Date().toISOString(),
         })
         .eq('id', agentId);
 
       if (updateError) {
-        console.error(`Error updating agent ${agentId}:`, updateError);
+        console.error(`[sync-trades] Error updating agent ${agentId}:`, updateError);
       }
     }
-
-    const currentBlock = await publicClient.getBlockNumber();
 
     return new Response(
       JSON.stringify({
@@ -195,15 +321,15 @@ serve(async (req) => {
         data: {
           tradesProcessed: tradesToInsert.length,
           agentsUpdated: agentUpdates.size,
-          fromBlock: fromBlock.toString(),
-          toBlock: toBlock === 'latest' ? currentBlock.toString() : toBlock.toString(),
+          fromBlock: actualFromBlock.toString(),
+          toBlock: resolvedToBlock.toString(),
           currentBlock: currentBlock.toString(),
         },
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
-  } catch (error) {
-    console.error('Sync error:', error);
+  } catch (error: any) {
+    console.error('[sync-trades] Sync error:', error);
     return new Response(
       JSON.stringify({
         ok: false,
