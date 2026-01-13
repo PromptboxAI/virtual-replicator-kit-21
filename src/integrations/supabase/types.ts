@@ -2335,6 +2335,7 @@ export type Database = {
           metadata: Json | null
           retry_count: number | null
           status: string
+          updated_at: string | null
         }
         Insert: {
           created_at?: string
@@ -2346,6 +2347,7 @@ export type Database = {
           metadata?: Json | null
           retry_count?: number | null
           status?: string
+          updated_at?: string | null
         }
         Update: {
           created_at?: string
@@ -2357,6 +2359,7 @@ export type Database = {
           metadata?: Json | null
           retry_count?: number | null
           status?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
