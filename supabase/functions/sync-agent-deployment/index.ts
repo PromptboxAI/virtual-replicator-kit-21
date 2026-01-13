@@ -80,7 +80,7 @@ async function syncAllStuckDeployments(supabase: any, publicClient: any) {
   const { data: stuckAgents, error } = await supabase
     .from('agents')
     .select('id, name, symbol, deployment_tx_hash, created_at, creator_id')
-    .eq('deployment_status', 'deploying')
+    .eq('deployment_status', 'pending')
     .is('token_contract_address', null)
     .lt('created_at', tenMinutesAgo);
 

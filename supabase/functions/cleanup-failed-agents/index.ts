@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
     const { data: stuckWithTxAgents } = await supabase
       .from('agents')
       .select('id, name, symbol, deployment_tx_hash, created_at')
-      .eq('deployment_status', 'deploying')
+      .eq('deployment_status', 'pending')
       .not('deployment_tx_hash', 'is', null)
       .is('token_contract_address', null)
       .lt('created_at', tenMinutesAgo);
@@ -87,7 +87,7 @@ Deno.serve(async (req) => {
         failed_at: new Date().toISOString(),
         failure_reason: 'Creation abandoned: no transaction submitted after 30 minutes'
       })
-      .eq('deployment_status', 'deploying')
+      .eq('deployment_status', 'pending')
       .is('deployment_tx_hash', null)
       .is('token_contract_address', null)
       .lt('created_at', thirtyMinutesAgo)

@@ -60,8 +60,8 @@ export function validateV8Agent(agent: V8AgentRecord): ValidationResult {
     errors.push(`pricing_model must be 'bonding_curve_v8', got '${agent.pricing_model}'`);
   }
   
-  if (agent.graduation_mode !== 'on_chain') {
-    errors.push(`graduation_mode must be 'on_chain', got '${agent.graduation_mode}'`);
+  if (agent.graduation_mode !== 'smart_contract') {
+    errors.push(`graduation_mode must be 'smart_contract', got '${agent.graduation_mode}'`);
   }
   
   if (agent.creation_mode !== 'smart_contract') {
@@ -196,7 +196,7 @@ export function isValidV8Agent(agent: V8AgentRecord): boolean {
     agent.creation_mode === 'smart_contract' &&
     agent.graduation_threshold === V8_CONSTANTS.GRADUATION_THRESHOLD &&
     agent.pricing_model === 'bonding_curve_v8' &&
-    agent.graduation_mode === 'on_chain' &&
+    agent.graduation_mode === 'smart_contract' &&
     !!agent.prototype_token_address
   );
 }
@@ -210,7 +210,7 @@ export function getV8Defaults() {
     creation_mode: 'smart_contract',
     graduation_threshold: V8_CONSTANTS.GRADUATION_THRESHOLD,
     pricing_model: 'bonding_curve_v8',
-    graduation_mode: 'on_chain',
+    graduation_mode: 'smart_contract',
     created_p0: V8_CONSTANTS.P0_STRING,
     created_p1: V8_CONSTANTS.P1_STRING,
     total_supply: V8_CONSTANTS.TOTAL_SUPPLY,
