@@ -474,10 +474,60 @@ serve(async (req) => {
         const prebuyWei = parseEther(prebuy_amount.toString());
         prebuyTxHash = await executeV8Prebuy(agentId, prebuyWei);
 
-        // Update agent with prebuy info
+        console.log('[V8] Prebuy executed, syncing on-chain state...');
+
+        // Read on-chain state after prebuy
+        const publicClient = createPublicClient({
+          chain: baseSepolia,
+          transport: http(Deno.env.get('BASE_SEPOLIA_RPC') || V8_CONFIG.RPC_URL),
+        });
+
+        const agentIdBytes32 = uuidToBytes32(agentId);
+        
+        // Read getAgentState from BondingCurve - correct ABI
+        const getAgentStateAbi = [{
+          name: 'getAgentState',
+          type: 'function',
+          stateMutability: 'view',
+          inputs: [{ name: 'agentId', type: 'bytes32' }],
+          outputs: [
+            { name: 'prototypeToken', type: 'address' },
+            { name: 'supply', type: 'uint256' },
+            { name: 'reserve', type: 'uint256' },
+            { name: 'currentPrice', type: 'uint256' },
+            { name: 'graduated', type: 'bool' }
+          ]
+        }] as const;
+
+        const result = await publicClient.readContract({
+          address: V8_CONFIG.BONDING_CURVE as `0x${string}`,
+          abi: getAgentStateAbi,
+          functionName: 'getAgentState',
+          args: [agentIdBytes32],
+        });
+
+        const [, supplyWei, reserveWei, currentPriceWei] = result;
+        const supply = Number(formatEther(supplyWei));
+        const reserve = Number(formatEther(reserveWei));
+        const price = Number(formatEther(currentPriceWei));
+
+        console.log('[V8] Post-prebuy state:', { supply, reserve, price });
+
+        // Update agent with prebuy info AND on-chain state
         await supabase
           .from('agents')
-          .update({ creator_prebuy_amount: prebuy_amount.toString() })
+          .update({ 
+            creator_prebuy_amount: prebuy_amount.toString(),
+            on_chain_supply: supply,
+            on_chain_reserve: reserve,
+            on_chain_price: price,
+            current_price: price,
+            circulating_supply: Math.floor(supply),
+            prompt_raised: reserve,
+            bonding_curve_supply: supply,
+            shares_sold: supply,
+            token_holders: 1, // Creator is first holder
+          })
           .eq('id', agentId);
       } catch (prebuyError: any) {
         console.error('[V8] Prebuy failed:', prebuyError);
