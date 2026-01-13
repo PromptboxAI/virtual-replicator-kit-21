@@ -30,6 +30,7 @@ import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { ExternalWalletRequired } from "@/components/ExternalWalletRequired";
 import { ExternalWalletRequiredModal } from "@/components/ExternalWalletRequiredModal";
 import { useSmartContractCreation } from "@/hooks/useSmartContractCreation";
+import { useSmartContractCreationV8 } from "@/hooks/useSmartContractCreationV8";
 import { CreatorPrebuyPanel } from "@/components/CreatorPrebuyPanel";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 // import { useAgentTokens } from "@/hooks/useAgentTokens";
@@ -96,8 +97,13 @@ export default function CreateAgent() {
   const { isConnected, promptBalance, hasExternalWallet, address: walletAddress } = usePrivyWallet();
   const { settings: adminSettings, isLoading: adminSettingsLoading } = useAdminSettings();
   
-  // Smart contract creation hook - V6
-  const { deployAgentV6, executePrebuy, approvePrompt, isDeploying, isApproving, promptBalance: contractPromptBalance, allowance } = useSmartContractCreation();
+  // Smart contract creation hooks - V6 (legacy) and V8 (on-chain trading)
+  const { deployAgentV6, executePrebuy, approvePrompt, isDeploying: isDeployingV6, isApproving: isApprovingV6, promptBalance: contractPromptBalance, allowance } = useSmartContractCreation();
+  const { deployAgentV8, executePrebuyV8, isDeploying: isDeployingV8, isApproving: isApprovingV8 } = useSmartContractCreationV8();
+  
+  // Combined deploying/approving state
+  const isDeploying = isDeployingV6 || isDeployingV8;
+  const isApproving = isApprovingV6 || isApprovingV8;
   
   // Check if contracts are deployed (from localStorage)
   const promptTokenAddress = typeof window !== 'undefined' ? localStorage.getItem('promptTokenAddress') : null;
@@ -556,39 +562,44 @@ export default function CreateAgent() {
       const agentId = data.id;
       let deployedTokenAddress: string | undefined;
 
-      // 📈 V6 Smart Contract Integration
+      // 📈 V8 Smart Contract Integration (on-chain trading)
       if (deploymentMode === 'smart_contract') {
-        console.log('[CreateAgent] V6 Smart Contract Mode: Deploying via user wallet...');
+        console.log('[CreateAgent] V8 Smart Contract Mode: Deploying via user wallet...');
         try {
-          // V6 Flow: User wallet calls AgentFactoryV6.createAgent(name, symbol)
-          // Factory charges 100 PROMPT and deploys AgentTokenV6
-          const deployResult = await deployAgentV6({
+          // V8 Flow: User wallet calls AgentFactoryV8.createAgent(agentId, name, symbol, creator)
+          // Factory charges 100 PROMPT and deploys PrototypeToken registered with V8 bonding curve
+          const deployResult = await deployAgentV8({
+            id: agentId, // Required for V8 - links on-chain to database
             name: formData.name,
             symbol: formData.symbol.toUpperCase(),
-            id: agentId
           });
 
           if (deployResult.success && deployResult.tokenAddress) {
-            console.log('[CreateAgent] V6 deployment successful:', deployResult);
+            console.log('[CreateAgent] V8 deployment successful:', deployResult);
             deployedTokenAddress = deployResult.tokenAddress;
             
-            // CRITICAL: Update agent with token address + tx hash
+            // CRITICAL: Update agent with V8 token address + tx hash
             // Uses retry logic to ensure database sync succeeds
             const { error: updateError } = await retrySupabaseUpdate(
               async () => {
                 const result = await supabase
                   .from('agents')
                   .update({ 
-                    token_contract_address: deployResult.tokenAddress,
+                    // V8 uses prototype_token_address instead of token_contract_address
+                    prototype_token_address: deployResult.tokenAddress,
                     token_address: deployResult.tokenAddress,
                     deployment_tx_hash: deployResult.txHash,
                     deployment_status: 'deployed',
-                    deployment_method: 'factory',
+                    deployment_method: 'factory_v8',
                     deployed_at: new Date().toISOString(),
                     creator_wallet_address: walletAddress || null,
                     status: 'ACTIVE',
                     token_graduated: false,
-                    is_active: true
+                    is_active: true,
+                    // V8 on-chain fields
+                    on_chain_supply: 0,
+                    on_chain_reserve: 0,
+                    on_chain_price: parseFloat(V8_CONSTANTS.P0_STRING),
                   })
                   .eq('id', agentId);
                 return result;
@@ -606,7 +617,8 @@ export default function CreateAgent() {
                   body: {
                     agentId,
                     txHash: deployResult.txHash,
-                    tokenAddress: deployResult.tokenAddress
+                    tokenAddress: deployResult.tokenAddress,
+                    isV8: true
                   }
                 });
                 console.log('[CreateAgent] Recovery sync initiated');
@@ -617,33 +629,33 @@ export default function CreateAgent() {
               // Show user the contract address so they can recover manually if needed
               toast({
                 title: "Database Sync Issue",
-                description: `Contract deployed at ${deployResult.tokenAddress}. If issues persist, contact support with this address.`,
+                description: `V8 Contract deployed at ${deployResult.tokenAddress}. If issues persist, contact support with this address.`,
                 variant: "destructive",
                 duration: 30000,
               });
             } else {
               toast({
-                title: "Agent Token Deployed!",
-                description: `Token at: ${deployResult.tokenAddress.slice(0, 10)}...${deployResult.tokenAddress.slice(-8)}`,
+                title: "V8 Agent Token Deployed!",
+                description: `Prototype token at: ${deployResult.tokenAddress.slice(0, 10)}...${deployResult.tokenAddress.slice(-8)}`,
               });
             }
 
-            // V7: Execute prebuy via trading-engine-v7 (database mode)
+            // V8: Execute prebuy via V8 bonding curve if specified
             if (formData.prebuy_amount && formData.prebuy_amount > 0) {
-              console.log('[CreateAgent] Executing V7 prebuy:', formData.prebuy_amount);
-              const prebuySuccess = await executePrebuy(agentId, formData.prebuy_amount);
+              console.log('[CreateAgent] Executing V8 prebuy:', formData.prebuy_amount);
+              const prebuySuccess = await executePrebuyV8(agentId, formData.prebuy_amount);
               if (prebuySuccess) {
                 toast({
-                  title: "Prebuy Successful!",
+                  title: "V8 Prebuy Successful!",
                   description: `Purchased ${formData.prebuy_amount} PROMPT worth of ${formData.symbol}`,
                 });
               }
             }
           } else {
             // Deployment failed but continue with database mode
-            console.error('[CreateAgent] V6 deployment failed:', deployResult.error);
+            console.error('[CreateAgent] V8 deployment failed:', deployResult.error);
             toast({
-              title: "Contract Deployment Failed",
+              title: "V8 Contract Deployment Failed",
               description: deployResult.error || "Falling back to database mode.",
               variant: "destructive"
             });
@@ -653,6 +665,7 @@ export default function CreateAgent() {
               .from('agents')
               .update({ 
                 creation_mode: 'database',
+                is_v8: false, // Revert V8 flag on failure
                 token_graduated: false,
                 status: 'ACTIVE',
                 deployment_status: 'failed',
@@ -661,9 +674,9 @@ export default function CreateAgent() {
               .eq('id', agentId);
           }
         } catch (error) {
-          console.error('[CreateAgent] Smart contract deployment error:', error);
+          console.error('[CreateAgent] V8 smart contract deployment error:', error);
           toast({
-            title: "Deployment Error",
+            title: "V8 Deployment Error",
             description: "Falling back to database mode. Your agent has been created.",
             variant: "destructive"
           });
@@ -673,6 +686,7 @@ export default function CreateAgent() {
             .from('agents')
             .update({ 
               creation_mode: 'database',
+              is_v8: false, // Revert V8 flag on failure
               token_graduated: false,
               status: 'ACTIVE',
               deployment_status: 'failed',

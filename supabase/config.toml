@@ -268,3 +268,16 @@ verify_jwt = false
 
 [functions.graduation-manager-v7]
 verify_jwt = false
+
+# V8 Bonding Curve Edge Functions
+[functions.create-agent-v8]
+verify_jwt = false
+
+[functions.get-quote-v8]
+verify_jwt = false
+
+[functions.graduation-orchestrator-v8]
+verify_jwt = false
+
+[functions.v8-event-indexer]
+verify_jwt = false
