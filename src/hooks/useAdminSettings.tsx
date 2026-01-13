@@ -1,7 +1,14 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserRole } from './useUserRole';
 import { useToast } from './use-toast';
+
+// Deep equality check for settings to prevent unnecessary re-renders
+const settingsAreEqual = (a: AdminSettings | null, b: AdminSettings | null): boolean => {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  return JSON.stringify(a) === JSON.stringify(b);
+};
 
 export interface AdminSettings {
   deployment_mode: 'database' | 'smart_contract';
@@ -87,8 +94,6 @@ export const useAdminSettings = () => {
 
         const { data, error } = await supabase.from('admin_settings').select('key, value');
 
-        console.log('🔍 Admin settings fetch result:', { data, error });
-
         if (error) throw error;
 
         // Convert array of key-value pairs to settings object
@@ -97,8 +102,6 @@ export const useAdminSettings = () => {
           acc[item.key] = item.value;
           return acc;
         }, {} as Record<string, any>);
-
-        console.log('🔍 Settings object:', settingsObj);
 
         // Apply default values for missing settings ONLY
         const defaultSettings: AdminSettings = {
@@ -125,8 +128,12 @@ export const useAdminSettings = () => {
         }, {} as Record<string, any>);
 
         const finalSettingsTyped = finalSettings as AdminSettings;
-        setSettings(finalSettingsTyped);
-        setCachedSettings(finalSettingsTyped); // Cache for future page loads
+        
+        // Only update state if settings actually changed (deep equality check)
+        if (!settingsAreEqual(settingsRef.current, finalSettingsTyped)) {
+          setSettings(finalSettingsTyped);
+          setCachedSettings(finalSettingsTyped); // Cache for future page loads
+        }
       } catch (err) {
         console.error('Error fetching admin settings:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch settings');

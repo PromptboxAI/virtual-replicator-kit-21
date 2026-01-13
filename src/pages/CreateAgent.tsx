@@ -110,13 +110,7 @@ export default function CreateAgent() {
   const factoryAddress = typeof window !== 'undefined' ? localStorage.getItem('factoryAddress') : null;
   const CREATION_COST = 100;
 
-  console.log('CreateAgent Debug:', {
-    user: !!user,
-    authLoading,
-    balanceLoading,
-    balance,
-    currentStep
-  });
+  // Debug logging removed to prevent console spam during re-renders
 
   const [formData, setFormData] = useState<AgentFormData>({
     name: "",
@@ -873,8 +867,6 @@ export default function CreateAgent() {
       </div>
     );
   }
-
-  console.log('Rendering main CreateAgent form');
 
   const estimatedMarketCap = 0; // Will be determined by bonding curve
 

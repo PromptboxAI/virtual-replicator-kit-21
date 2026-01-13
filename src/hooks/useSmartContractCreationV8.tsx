@@ -15,6 +15,7 @@ import {
   V8_CONTRACTS,
   PROMPT_TOKEN_ADDRESS,
   AGENT_FACTORY_V8_ABI,
+  BONDING_CURVE_V8_ABI,
   uuidToBytes32,
   V8_CONSTANTS,
 } from '@/lib/contractsV8';
@@ -314,7 +315,8 @@ export const useSmartContractCreationV8 = () => {
 
   /**
    * Execute prebuy via V8 bonding curve
-   * Uses on-chain buy through BondingCurveV8
+   * Uses direct on-chain buy through BondingCurveV8.buy()
+   * User wallet signs the transaction - no edge function needed
    */
   const executePrebuyV8 = async (agentId: string, promptAmount: number): Promise<boolean> => {
     if (!address || !writeContractAsync || !publicClient || !isConnected || promptAmount <= 0) {
@@ -322,36 +324,64 @@ export const useSmartContractCreationV8 = () => {
       return true;
     }
 
-    console.log('[V8] Executing prebuy via edge function:', {
+    const agentIdBytes32 = uuidToBytes32(agentId);
+    const amountWei = parseEther(String(promptAmount));
+
+    console.log('[V8] Executing on-chain prebuy:', {
       agentId,
+      agentIdBytes32,
       walletAddress: address,
       promptAmount,
+      amountWei: amountWei.toString(),
+      bondingCurve: V8_CONTRACTS.BONDING_CURVE,
     });
 
     try {
-      // Call the create-agent-v8 edge function for prebuy
-      // The edge function handles the on-chain transaction from platform wallet
       toast({
         title: 'Processing V8 Prebuy',
-        description: `Purchasing ${promptAmount} PROMPT worth of tokens...`,
+        description: `Approving ${promptAmount} PROMPT for bonding curve...`,
       });
 
-      const { data, error } = await supabase.functions.invoke('create-agent-v8', {
-        body: {
-          agentId,
-          prebuy_amount: promptAmount,
-          prebuy_only: true, // Flag to indicate this is just a prebuy, not a full creation
-        },
+      // Step 1: Approve PROMPT for bonding curve spending
+      const approveTx = await writeContractAsync({
+        address: PROMPT_TOKEN_ADDRESS as `0x${string}`,
+        abi: PROMPT_TOKEN_ABI,
+        functionName: 'approve',
+        args: [V8_CONTRACTS.BONDING_CURVE as `0x${string}`, amountWei],
+        account: address,
+        chain,
       });
 
-      if (error || !data?.success) {
-        throw new Error(error?.message || data?.error || 'Prebuy failed');
-      }
+      console.log('[V8] Prebuy approval tx sent:', approveTx);
+      await publicClient.waitForTransactionReceipt({ hash: approveTx });
+      console.log('[V8] Prebuy approval confirmed');
+
+      toast({
+        title: 'Approval Confirmed',
+        description: `Buying ${promptAmount} PROMPT worth of tokens...`,
+      });
+
+      // Step 2: Call buy on bonding curve with minTokensOut = 0 (accept any slippage for prebuy)
+      const buyTx = await writeContractAsync({
+        address: V8_CONTRACTS.BONDING_CURVE as `0x${string}`,
+        abi: BONDING_CURVE_V8_ABI,
+        functionName: 'buy',
+        args: [agentIdBytes32, amountWei, 0n], // minTokensOut = 0 for simplicity
+        account: address,
+        chain,
+      });
+
+      console.log('[V8] Prebuy buy tx sent:', buyTx);
+      const receipt = await publicClient.waitForTransactionReceipt({ hash: buyTx });
+      console.log('[V8] Prebuy buy confirmed:', receipt.transactionHash);
 
       toast({
         title: 'V8 Prebuy Successful!',
-        description: `Prebuy completed. Tx: ${data.prebuy_tx_hash?.slice(0, 10)}...`,
+        description: `Prebuy completed. Tx: ${buyTx.slice(0, 10)}...`,
       });
+
+      // Refetch balance after buy
+      await refetchBalance();
 
       return true;
     } catch (error) {
