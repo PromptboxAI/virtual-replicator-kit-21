@@ -215,9 +215,13 @@ export default function AIAgentsMarketplace() {
                             key={agent.id}
                             id={agent.id}
                             name={agent.name}
-                            creator={agent.creator_id || "Unknown"}
+                            symbol={agent.symbol}
+                            creator={agent.creator_wallet_address || agent.creator_id || "Unknown"}
                             category={agent.category || "Other"}
+                            description={agent.description || undefined}
                             avatarUrl={agent.avatar_url || undefined}
+                            tokenAddress={agent.token_address}
+                            tokenGraduated={agent.token_graduated}
                             integrations={[]}
                           />
                         ))}
@@ -256,9 +260,13 @@ export default function AIAgentsMarketplace() {
                         key={agent.id}
                         id={agent.id}
                         name={agent.name}
-                        creator={agent.creator_id || "Unknown"}
+                        symbol={agent.symbol}
+                        creator={agent.creator_wallet_address || agent.creator_id || "Unknown"}
                         category={agent.category || "Other"}
+                        description={agent.description || undefined}
                         avatarUrl={agent.avatar_url || undefined}
+                        tokenAddress={agent.token_address}
+                        tokenGraduated={agent.token_graduated}
                         integrations={[]}
                       />
                     ))}
