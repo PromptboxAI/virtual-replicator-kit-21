@@ -53,6 +53,17 @@ export default function AIAgentsMarketplace() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedIntegration, setSelectedIntegration] = useState<string | null>(null);
 
+  // Valid category IDs
+  const validCategoryIds = CATEGORIES.map(c => c.id.toLowerCase());
+
+  // Helper to normalize agent category to valid marketplace category
+  const normalizeCategory = (category: string | null): string => {
+    if (!category) return "Other";
+    const lowerCategory = category.toLowerCase();
+    if (validCategoryIds.includes(lowerCategory)) return category;
+    return "Other"; // Map unknown categories to "Other"
+  };
+
   // Filter agents
   const filteredAgents = useMemo(() => {
     return agents.filter((agent) => {
@@ -61,9 +72,10 @@ export default function AIAgentsMarketplace() {
         agent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         agent.description?.toLowerCase().includes(searchQuery.toLowerCase());
 
+      const normalizedCategory = normalizeCategory(agent.category);
       const matchesCategory =
         selectedCategory === "all" ||
-        agent.category?.toLowerCase() === selectedCategory.toLowerCase();
+        normalizedCategory.toLowerCase() === selectedCategory.toLowerCase();
 
       return matchesSearch && matchesCategory;
     });
@@ -74,7 +86,7 @@ export default function AIAgentsMarketplace() {
     const grouped: Record<string, typeof agents> = {};
     CATEGORIES.filter((c) => c.id !== "all").forEach((cat) => {
       grouped[cat.id] = filteredAgents.filter(
-        (agent) => agent.category?.toLowerCase() === cat.id.toLowerCase()
+        (agent) => normalizeCategory(agent.category).toLowerCase() === cat.id.toLowerCase()
       );
     });
     return grouped;
