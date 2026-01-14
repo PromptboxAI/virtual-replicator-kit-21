@@ -44,19 +44,18 @@ export function useAgents() {
     async function fetchAgents() {
       try {
         console.log('Fetching agents with isTestMode:', isTestMode, 'deploymentMode:', deploymentMode);
-        console.log('Query params: is_active=true, test_mode=', isTestMode, 'creation_mode=', deploymentMode);
         
+        // Fetch agents matching the deployment mode OR V8 smart contract agents
         const { data, error } = await supabase
           .from('agents')
           .select('*')
           .eq('is_active', true)
           .eq('test_mode', isTestMode)
-          .eq('creation_mode', deploymentMode)
+          .or(`creation_mode.eq.${deploymentMode},is_v8.eq.true`)
           .order('market_cap', { ascending: false });
 
         console.log('Agents query result - isTestMode:', isTestMode, 'data count:', data?.length || 0);
-        console.log('Sample agent test_mode values:', data?.slice(0, 3).map(a => ({ name: a.name, test_mode: a.test_mode })));
-        console.log('Agents error:', error);
+        if (error) console.error('Agents error:', error);
 
         if (error) throw error;
 
