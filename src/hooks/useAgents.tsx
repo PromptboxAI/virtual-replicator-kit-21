@@ -16,11 +16,13 @@ export interface Agent {
   price_change_24h: number | null;
   is_active: boolean;
   creator_id: string | null;
+  creator_wallet_address: string | null;
   status: string | null;
   test_mode: boolean | null;
   token_holders: number | null;
   creation_mode: string | null;
-  // Bonding curve fields
+  // Token and bonding curve fields
+  token_address: string | null;
   prompt_raised: number | null;
   token_graduated: boolean | null;
   graduation_threshold: number | null;

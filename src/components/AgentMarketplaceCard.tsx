@@ -1,5 +1,8 @@
 import { Card } from "@/components/ui/card";
-import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Link, useNavigate } from "react-router-dom";
+import { TrendingUp, ExternalLink } from "lucide-react";
 
 // Integration icon mapping
 const integrationIcons: Record<string, { icon: string; name: string }> = {
@@ -15,20 +18,29 @@ const integrationIcons: Record<string, { icon: string; name: string }> = {
 interface AgentMarketplaceCardProps {
   id: string;
   name: string;
+  symbol?: string;
   creator: string;
   category: string;
+  description?: string;
   integrations?: string[];
   avatarUrl?: string;
+  tokenAddress?: string | null;
+  tokenGraduated?: boolean | null;
 }
 
 export function AgentMarketplaceCard({
   id,
   name,
+  symbol,
   creator,
   category,
+  description,
   integrations = [],
   avatarUrl,
+  tokenAddress,
+  tokenGraduated,
 }: AgentMarketplaceCardProps) {
+  const navigate = useNavigate();
   const displayedIntegrations = integrations.slice(0, 3);
   const overflowCount = integrations.length - 3;
 
@@ -39,32 +51,89 @@ export function AgentMarketplaceCard({
     return address.length > 20 ? `${address.slice(0, 17)}...` : address;
   };
 
+  const getTradeUrl = () => {
+    // If graduated, link to external trading subdomain
+    if (tokenGraduated && tokenAddress) {
+      return `https://trade.promptbox.com/${tokenAddress}`;
+    }
+    // Otherwise, link to internal agent page for bonding curve trading
+    return `/agent/${id}`;
+  };
+
+  const handleTradeClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const url = getTradeUrl();
+    if (url.startsWith('http')) {
+      window.open(url, '_blank');
+    } else {
+      navigate(url);
+    }
+  };
+
   return (
-    <Link to={`/ai-agents/${id}`}>
-      <Card className="group p-5 hover:shadow-lg transition-all duration-200 hover:border-primary/40 cursor-pointer bg-card border-border rounded-xl h-full">
-        {/* Integration icons row */}
-        <div className="flex items-center gap-2 mb-4">
-          {avatarUrl && (
-            <div className="w-8 h-8 rounded-lg overflow-hidden bg-muted">
+    <Card className="group p-5 hover:shadow-lg transition-all duration-200 hover:border-primary/40 bg-card border-border rounded-xl h-full flex flex-col">
+      {/* Top row: Avatar + Category Badge */}
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex items-center gap-3">
+          {avatarUrl ? (
+            <div className="w-12 h-12 rounded-xl overflow-hidden bg-muted ring-2 ring-border">
               <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
             </div>
+          ) : (
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center ring-2 ring-border">
+              <span className="text-lg font-bold text-primary">
+                {name.slice(0, 2).toUpperCase()}
+              </span>
+            </div>
           )}
+          <div>
+            <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-1">
+              {name}
+            </h3>
+            {symbol && (
+              <span className="text-sm text-muted-foreground">${symbol}</span>
+            )}
+          </div>
+        </div>
+        {category && (
+          <Badge variant="secondary" className="text-xs shrink-0">
+            {category}
+          </Badge>
+        )}
+      </div>
+
+      {/* Description */}
+      {description && (
+        <p className="text-sm text-muted-foreground line-clamp-2 mb-4 flex-1">
+          {description}
+        </p>
+      )}
+      {!description && (
+        <p className="text-sm text-muted-foreground/50 italic line-clamp-2 mb-4 flex-1">
+          No description available
+        </p>
+      )}
+
+      {/* Integration icons */}
+      {displayedIntegrations.length > 0 && (
+        <div className="flex items-center gap-1.5 mb-4">
           {displayedIntegrations.map((integration, index) => {
             const integrationData = integrationIcons[integration.toLowerCase()];
             return (
               <div
                 key={index}
-                className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center overflow-hidden"
+                className="w-6 h-6 rounded-md bg-muted flex items-center justify-center overflow-hidden"
                 title={integrationData?.name || integration}
               >
                 {integrationData ? (
                   <img
                     src={integrationData.icon}
                     alt={integrationData.name}
-                    className="w-5 h-5 object-contain"
+                    className="w-4 h-4 object-contain"
                   />
                 ) : (
-                  <span className="text-xs font-medium text-muted-foreground">
+                  <span className="text-[10px] font-medium text-muted-foreground">
                     {integration.slice(0, 2).toUpperCase()}
                   </span>
                 )}
@@ -72,30 +141,48 @@ export function AgentMarketplaceCard({
             );
           })}
           {overflowCount > 0 && (
-            <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
-              <span className="text-xs font-medium text-muted-foreground">+{overflowCount}</span>
+            <div className="w-6 h-6 rounded-md bg-muted flex items-center justify-center">
+              <span className="text-[10px] font-medium text-muted-foreground">+{overflowCount}</span>
             </div>
           )}
         </div>
+      )}
 
-        {/* Agent name */}
-        <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors mb-3 line-clamp-2">
-          {name}
-        </h3>
-
-        {/* Creator with avatar */}
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center">
-            <span className="text-[10px] font-medium text-primary">
-              {truncateAddress(creator).slice(0, 2).toUpperCase()}
-            </span>
-          </div>
-          <p className="text-sm text-muted-foreground truncate">
-            {truncateAddress(creator)}
-          </p>
+      {/* Creator */}
+      <div className="flex items-center gap-2 mb-4">
+        <div className="w-5 h-5 rounded-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center">
+          <span className="text-[8px] font-medium text-primary">
+            {truncateAddress(creator).slice(0, 2).toUpperCase()}
+          </span>
         </div>
-      </Card>
-    </Link>
+        <p className="text-xs text-muted-foreground truncate">
+          {truncateAddress(creator)}
+        </p>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex gap-2 mt-auto">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="flex-1"
+          asChild
+        >
+          <Link to={`/ai-agents/${id}`}>
+            View Details
+          </Link>
+        </Button>
+        <Button 
+          size="sm" 
+          className="flex-1 gap-1.5"
+          onClick={handleTradeClick}
+        >
+          <TrendingUp className="h-3.5 w-3.5" />
+          Trade
+          {tokenGraduated && <ExternalLink className="h-3 w-3" />}
+        </Button>
+      </div>
+    </Card>
   );
 }
 

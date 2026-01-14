@@ -461,6 +461,30 @@ export default function AgentShowcase() {
                 </CardContent>
               </Card>
             )}
+
+            {/* Placeholder when no marketing content exists */}
+            {!agent.project_pitch && !marketing?.whitepaper_content && (!marketing?.screenshots || marketing.screenshots.length === 0) && (!marketing?.demo_videos || marketing.demo_videos.length === 0) && (
+              <Card className="border-dashed border-2 border-muted-foreground/20">
+                <CardContent className="py-12 text-center">
+                  <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+                    <span className="text-2xl">📝</span>
+                  </div>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">
+                    Marketing Info Coming Soon
+                  </h3>
+                  <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6">
+                    The creator hasn't added detailed marketing information yet. Check back later for project details, whitepaper, screenshots, and more.
+                  </p>
+                  <Button 
+                    size="lg"
+                    onClick={() => window.location.href = getTradeUrl()}
+                  >
+                    Trade ${agent.symbol}
+                    <ExternalLink className="h-4 w-4 ml-2" />
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Right Column - Team & Roadmap */}
