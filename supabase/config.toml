@@ -281,3 +281,6 @@ verify_jwt = false
 
 [functions.v8-event-indexer]
 verify_jwt = false
+
+[functions.fix-agent-state]
+verify_jwt = false
