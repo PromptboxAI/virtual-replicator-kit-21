@@ -311,9 +311,34 @@ export default function AIAgentsMarketplace() {
             </div>
           </section>
 
-          {/* Black CTA Section */}
-          <section className="bg-foreground text-background">
-            <div className="container mx-auto px-4 py-20">
+          {/* Black CTA Section with 3-layer dot pattern */}
+          <section className="py-20 bg-foreground text-background relative overflow-hidden">
+            {/* Dense primary dot grid */}
+            <div 
+              className="absolute inset-0"
+              style={{
+                backgroundImage: 'radial-gradient(circle, hsl(var(--background) / 0.08) 1px, transparent 1px)',
+                backgroundSize: '8px 8px',
+              }}
+            />
+            {/* Medium density layer */}
+            <div 
+              className="absolute inset-0"
+              style={{
+                backgroundImage: 'radial-gradient(circle, hsl(var(--background) / 0.05) 0.8px, transparent 0.8px)',
+                backgroundSize: '12px 12px',
+              }}
+            />
+            {/* Sparse larger dots for depth variation */}
+            <div 
+              className="absolute inset-0"
+              style={{
+                backgroundImage: 'radial-gradient(circle, hsl(var(--background) / 0.03) 1.5px, transparent 1.5px)',
+                backgroundSize: '24px 24px',
+              }}
+            />
+            
+            <div className="container mx-auto px-4 relative z-10">
               <div className="max-w-4xl mx-auto text-center">
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-background/10 border border-background/20 mb-6">
                   <Shield className="w-4 h-4 text-background" />
@@ -326,11 +351,21 @@ export default function AIAgentsMarketplace() {
                 <p className="text-xl text-background/70 mb-10 max-w-2xl mx-auto">
                   Join creators building and monetizing AI agents on Promptbox.
                 </p>
-                <div className="flex justify-center">
-                  <Button asChild size="lg" variant="outline" className="gap-2 px-10 py-6 text-lg border-background/50 text-foreground bg-background hover:bg-background/90">
+                <div className="flex flex-wrap gap-4 justify-center">
+                  <Button asChild size="lg" className="gap-2 bg-background text-foreground hover:bg-background/90 px-8 transition-all duration-300 hover:scale-105 hover:shadow-xl group">
                     <Link to="/create">
                       Start Building
-                      <ArrowRight className="w-5 h-5" />
+                      <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                    </Link>
+                  </Button>
+                  <Button 
+                    size="lg" 
+                    variant="outline" 
+                    className="border-background bg-foreground text-background hover:bg-foreground/90 px-8 transition-all duration-300 hover:scale-105"
+                    asChild
+                  >
+                    <Link to="/contact">
+                      Talk to Sales
                     </Link>
                   </Button>
                 </div>
