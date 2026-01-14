@@ -15,6 +15,17 @@ serve(async (req) => {
 
     console.log('Fetching market overview...');
 
+    // Count active tokens (V8 smart contract agents)
+    const { count: activeTokens, error: tokenCountError } = await supabase
+      .from('agents')
+      .select('*', { count: 'exact', head: true })
+      .eq('is_active', true)
+      .eq('creation_mode', 'smart_contract');
+
+    if (tokenCountError) {
+      console.error('Error counting active tokens:', tokenCountError);
+    }
+
     // Get aggregated stats from agent_prices_latest
     // Note: View uses mc_prompt/mc_usd, volume_24h, holders, change_24h_pct
     const { data: stats, error: statsError } = await supabase
@@ -23,11 +34,12 @@ serve(async (req) => {
 
     if (statsError) {
       console.error('Stats query error, falling back to agents table:', statsError);
-      // Fallback to agents table
+      // Fallback to agents table - only count smart_contract agents
       const { data: agentStats, error: agentError } = await supabase
         .from('agents')
         .select('market_cap, volume_24h, token_holders')
-        .eq('is_active', true);
+        .eq('is_active', true)
+        .eq('creation_mode', 'smart_contract');
       
       if (agentError) throw agentError;
       
@@ -43,6 +55,7 @@ serve(async (req) => {
             totalVolume24h,
             totalHolders,
             activeAgents: agentStats?.length || 0,
+            activeTokens: activeTokens || 0,
             topGainers: [],
             topLosers: [],
             timestamp: new Date().toISOString()
@@ -85,6 +98,7 @@ serve(async (req) => {
       totalVolume24h,
       totalHolders,
       activeAgents,
+      activeTokens: activeTokens || 0,
       topGainers: gainers || [],
       topLosers: losers || [],
       timestamp: new Date().toISOString()
