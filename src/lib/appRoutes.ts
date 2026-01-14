@@ -40,6 +40,7 @@ export const APP_ROUTES: AppRoute[] = [
   { path: '/press-releases', name: 'Press Releases', isDynamic: false, isIndexable: true },
   { path: '/platform/ai-agents', name: 'AI Agents Hub', isDynamic: false, isIndexable: true },
   { path: '/platform/ai-agents/:agentId', name: 'AI Agent Detail', isDynamic: true, isIndexable: true },
+  { path: '/contact', name: 'Contact', isDynamic: false, isIndexable: true },
 ];
 
 export function getMissingRoutes(existingPaths: string[]): AppRoute[] {

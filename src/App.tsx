@@ -41,6 +41,7 @@ const Terms = lazy(() => import("./pages/Terms"));
 const PromptboxDPA = lazy(() => import("./pages/PromptboxDPA"));
 const Careers = lazy(() => import("./pages/Careers"));
 const Status = lazy(() => import("./pages/Status"));
+const Contact = lazy(() => import("./pages/Contact"));
 const ApiReference = lazy(() => import("./pages/ApiReference"));
 const PressReleases = lazy(() => import("./pages/PressReleases"));
 const Roadmap = lazy(() => import("./pages/Roadmap"));
@@ -245,6 +246,7 @@ const App = () => {
               <Route path="/promptbox-dpa" element={<PromptboxDPA />} />
               <Route path="/careers" element={<Careers />} />
               <Route path="/status" element={<Status />} />
+              <Route path="/contact" element={<Contact />} />
               <Route path="/api-reference" element={<ApiReference />} />
               <Route path="/press-releases" element={<PressReleases />} />
               <Route path="/roadmap" element={<Roadmap />} />

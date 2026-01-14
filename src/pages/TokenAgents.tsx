@@ -507,8 +507,11 @@ const TokenAgents = () => {
                 size="lg" 
                 variant="outline" 
                 className="border-background bg-foreground text-background hover:bg-foreground/90 px-8 transition-all duration-300 hover:scale-105"
+                asChild
               >
-                Talk to Sales
+                <Link to="/contact">
+                  Talk to Sales
+                </Link>
               </Button>
             </div>
           </div>
