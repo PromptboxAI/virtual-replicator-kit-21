@@ -89,7 +89,7 @@ const TokenAgents = () => {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
             {/* Creators Card */}
-            <Card className="relative p-8 min-h-[380px] hover:shadow-lg transition-all duration-300 overflow-hidden bg-[hsl(0_0%_97%)] dark:bg-[hsl(0_0%_12%)] border-border/30 rounded-2xl">
+            <Card className="relative p-8 min-h-[380px] hover:shadow-lg transition-all duration-300 overflow-hidden bg-[hsl(0_0%_97%)] dark:bg-[hsl(0_0%_12%)] border-border/60 rounded-2xl">
               <div className="relative z-10 flex flex-col h-full">
                 <div>
                   <h4 className="text-xl font-semibold text-foreground mb-3">Creators</h4>
@@ -112,7 +112,7 @@ const TokenAgents = () => {
             </Card>
 
             {/* Investors Card */}
-            <Card className="relative p-8 min-h-[380px] hover:shadow-lg transition-all duration-300 overflow-hidden bg-[hsl(0_0%_97%)] dark:bg-[hsl(0_0%_12%)] border-border/30 rounded-2xl">
+            <Card className="relative p-8 min-h-[380px] hover:shadow-lg transition-all duration-300 overflow-hidden bg-[hsl(0_0%_97%)] dark:bg-[hsl(0_0%_12%)] border-border/60 rounded-2xl">
               <div className="relative z-10 flex flex-col h-full">
                 <div>
                   <h4 className="text-xl font-semibold text-foreground mb-3">Investors</h4>
@@ -135,7 +135,7 @@ const TokenAgents = () => {
             </Card>
 
             {/* Developers Card */}
-            <Card className="relative p-8 min-h-[380px] hover:shadow-lg transition-all duration-300 overflow-hidden bg-[hsl(0_0%_97%)] dark:bg-[hsl(0_0%_12%)] border-border/30 rounded-2xl">
+            <Card className="relative p-8 min-h-[380px] hover:shadow-lg transition-all duration-300 overflow-hidden bg-[hsl(0_0%_97%)] dark:bg-[hsl(0_0%_12%)] border-border/60 rounded-2xl">
               <div className="relative z-10 flex flex-col h-full">
                 <div>
                   <h4 className="text-xl font-semibold text-foreground mb-3">Developers</h4>
@@ -158,7 +158,7 @@ const TokenAgents = () => {
             </Card>
 
             {/* Users Card */}
-            <Card className="relative p-8 min-h-[380px] hover:shadow-lg transition-all duration-300 overflow-hidden bg-[hsl(0_0%_97%)] dark:bg-[hsl(0_0%_12%)] border-border/30 rounded-2xl">
+            <Card className="relative p-8 min-h-[380px] hover:shadow-lg transition-all duration-300 overflow-hidden bg-[hsl(0_0%_97%)] dark:bg-[hsl(0_0%_12%)] border-border/60 rounded-2xl">
               <div className="relative z-10 flex flex-col h-full">
                 <div>
                   <h4 className="text-xl font-semibold text-foreground mb-3">Users</h4>
