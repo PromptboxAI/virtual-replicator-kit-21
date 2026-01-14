@@ -107,7 +107,7 @@ const TokenAgents = () => {
               </div>
               {/* Large icon */}
               <div className="absolute bottom-8 right-8">
-                <Users className="h-14 w-14 text-foreground" strokeWidth={1.2} />
+                <Users className="h-20 w-20 text-foreground" strokeWidth={1} />
               </div>
             </Card>
 
@@ -130,7 +130,7 @@ const TokenAgents = () => {
               </div>
               {/* Large icon */}
               <div className="absolute bottom-8 right-8">
-                <TrendingUp className="h-14 w-14 text-foreground" strokeWidth={1.2} />
+                <TrendingUp className="h-20 w-20 text-foreground" strokeWidth={1} />
               </div>
             </Card>
 
@@ -153,7 +153,7 @@ const TokenAgents = () => {
               </div>
               {/* Large icon */}
               <div className="absolute bottom-8 right-8">
-                <Bot className="h-14 w-14 text-foreground" strokeWidth={1.2} />
+                <Bot className="h-20 w-20 text-foreground" strokeWidth={1} />
               </div>
             </Card>
 
@@ -176,7 +176,7 @@ const TokenAgents = () => {
               </div>
               {/* Large icon */}
               <div className="absolute bottom-8 right-8">
-                <Wallet className="h-14 w-14 text-foreground" strokeWidth={1.2} />
+                <Wallet className="h-20 w-20 text-foreground" strokeWidth={1} />
               </div>
             </Card>
           </div>
