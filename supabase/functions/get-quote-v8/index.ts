@@ -49,9 +49,11 @@ const BONDING_CURVE_ABI = [
     inputs: [{ name: 'agentId', type: 'bytes32' }],
     outputs: [
       { name: 'prototypeToken', type: 'address' },
-      { name: 'supply', type: 'uint256' },
-      { name: 'reserve', type: 'uint256' },
+      { name: 'creator', type: 'address' },           // V8 contract returns 7 values
+      { name: 'tokensSold', type: 'uint256' },
+      { name: 'promptReserve', type: 'uint256' },
       { name: 'currentPrice', type: 'uint256' },
+      { name: 'graduationProgress', type: 'uint256' },
       { name: 'graduated', type: 'bool' }
     ]
   },
@@ -267,7 +269,8 @@ serve(async (req) => {
       case 'getState':
       default: {
         try {
-          const [prototypeToken, supply, reserve, currentPrice, graduated] = await publicClient.readContract({
+          // Destructure 7 values: [prototypeToken, creator, tokensSold, promptReserve, currentPrice, graduationProgress, graduated]
+          const [prototypeToken, creator, supply, reserve, currentPrice, graduationProgress, graduated] = await publicClient.readContract({
             address: BONDING_CURVE_V8 as `0x${string}`,
             abi: BONDING_CURVE_ABI,
             functionName: 'getAgentState',
@@ -281,10 +284,12 @@ serve(async (req) => {
             name: agent?.name,
             symbol: agent?.symbol,
             prototypeToken,
+            creator,
             prototypeTokenDb: agent?.prototype_token_address,
             supply: formatEther(supply),
             reserve: formatEther(reserve),
             currentPrice: formatEther(currentPrice),
+            graduationProgress: formatEther(graduationProgress),
             graduated,
             graduationPhase: agent?.graduation_phase,
             contractAddress: BONDING_CURVE_V8

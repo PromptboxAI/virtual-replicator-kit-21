@@ -101,9 +101,11 @@ export const BONDING_CURVE_V8_ABI = [
     inputs: [{ name: 'agentId', type: 'bytes32' }],
     outputs: [
       { name: 'prototypeToken', type: 'address' },
-      { name: 'supply', type: 'uint256' },
-      { name: 'reserve', type: 'uint256' },
+      { name: 'creator', type: 'address' },           // V8 contract returns 7 values
+      { name: 'tokensSold', type: 'uint256' },
+      { name: 'promptReserve', type: 'uint256' },
       { name: 'currentPrice', type: 'uint256' },
+      { name: 'graduationProgress', type: 'uint256' },
       { name: 'graduated', type: 'bool' }
     ]
   },

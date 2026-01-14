@@ -41,7 +41,7 @@ const tradeEvent = parseAbiItem(
   'event Trade(bytes32 indexed agentId, address indexed trader, bool isBuy, uint256 promptAmountGross, uint256 promptAmountNet, uint256 tokenAmount, uint256 fee, uint256 price, uint256 supplyAfter, uint256 reserveAfter, uint256 timestamp)'
 );
 
-// getAgentState function ABI for reading on-chain state
+// getAgentState function ABI for reading on-chain state - CORRECT 7-output ABI
 const getAgentStateAbi = [{
   name: 'getAgentState',
   type: 'function',
@@ -49,9 +49,11 @@ const getAgentStateAbi = [{
   inputs: [{ name: 'agentId', type: 'bytes32' }],
   outputs: [
     { name: 'prototypeToken', type: 'address' },
-    { name: 'supply', type: 'uint256' },
-    { name: 'reserve', type: 'uint256' },
+    { name: 'creator', type: 'address' },           // V8 contract returns 7 values
+    { name: 'tokensSold', type: 'uint256' },
+    { name: 'promptReserve', type: 'uint256' },
     { name: 'currentPrice', type: 'uint256' },
+    { name: 'graduationProgress', type: 'uint256' },
     { name: 'graduated', type: 'bool' }
   ]
 }] as const;
@@ -129,13 +131,14 @@ serve(async (req) => {
           args: [agentIdBytes32],
         });
 
-        const [prototypeToken, supply, reserve, currentPrice, graduated] = result;
+        // Destructure 7 values: [prototypeToken, creator, tokensSold, promptReserve, currentPrice, graduationProgress, graduated]
+        const [prototypeToken, creator, supply, reserve, currentPrice, graduationProgress, graduated] = result;
         
         const supplyNum = Number(formatEther(supply));
         const reserveNum = Number(formatEther(reserve));
         const priceNum = Number(formatEther(currentPrice));
 
-        console.log(`[sync-state] On-chain state:`, { supply: supplyNum, reserve: reserveNum, price: priceNum, graduated });
+        console.log(`[sync-state] On-chain state:`, { supply: supplyNum, reserve: reserveNum, price: priceNum, graduationProgress: formatEther(graduationProgress), graduated });
 
         // Update agent with on-chain state
         const { error: updateError } = await supabase
