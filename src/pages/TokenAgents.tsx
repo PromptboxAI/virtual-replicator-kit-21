@@ -25,7 +25,8 @@ const TokenAgents = () => {
         <div className="max-w-5xl mx-auto text-center space-y-4 md:space-y-8 animate-fade-in">
           <div className="mt-16 md:mt-0 space-y-3 md:space-y-6">
             <h1 className="text-[36px] md:text-6xl lg:text-7xl font-heading font-medium text-foreground leading-tight tracking-tight">
-              Launch Tokenized<br className="md:hidden" /> AI Agents as a<br className="md:hidden" /> Micro-SaaS Business<span className="hidden md:inline">.</span>
+              Launch Tokenized<br />
+              AI Agentic Systems
             </h1>
             <p className="text-[15px] md:text-xl text-zinc-700 max-w-2xl mx-auto leading-relaxed">
               Promptbox lets you create, fund, and run tokenized AI agents with visual workflows, deep integrations, and on-chain rails - from a growing library of ready-to-launch templates.
