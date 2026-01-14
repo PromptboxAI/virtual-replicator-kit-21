@@ -55,6 +55,7 @@ const Footer = () => {
               <a href="https://promptbox.gitbook.io/promptbox/" target="_blank" rel="noopener noreferrer" className="block hover:text-foreground transition-colors">Documentation</a>
               <Link to="/api-reference" className="block hover:text-foreground transition-colors">API Reference</Link>
               <Link to="/status" className="block hover:text-foreground transition-colors">Status Page</Link>
+              <Link to="/contact" className="block hover:text-foreground transition-colors">Contact</Link>
             </div>
           </div>
 
