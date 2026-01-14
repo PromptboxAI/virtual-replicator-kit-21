@@ -89,7 +89,7 @@ const TokenAgents = () => {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
             {/* Creators Card */}
-            <Card className="relative p-6 pt-8 pb-8 min-h-[320px] hover:shadow-lg transition-all duration-300 overflow-hidden bg-card border-border/50">
+            <Card className="relative p-8 min-h-[380px] hover:shadow-lg transition-all duration-300 overflow-hidden bg-[hsl(0_0%_97%)] dark:bg-[hsl(0_0%_12%)] border-border/30 rounded-2xl">
               <div className="relative z-10 flex flex-col h-full">
                 <div>
                   <h4 className="text-xl font-semibold text-foreground mb-3">Creators</h4>
@@ -98,21 +98,21 @@ const TokenAgents = () => {
                   </p>
                 </div>
               </div>
-              {/* Dotted pattern background */}
-              <div className="absolute bottom-0 right-0 w-32 h-32 opacity-10">
+              {/* Large watermark-style dotted pattern */}
+              <div className="absolute bottom-0 right-0 w-48 h-48 opacity-[0.07]">
                 <div className="w-full h-full" style={{
-                  backgroundImage: 'radial-gradient(circle, currentColor 1px, transparent 1px)',
-                  backgroundSize: '8px 8px'
+                  backgroundImage: 'radial-gradient(circle, currentColor 2px, transparent 2px)',
+                  backgroundSize: '10px 10px'
                 }} />
               </div>
               {/* Large icon */}
-              <div className="absolute bottom-6 right-6">
-                <Users className="h-12 w-12 text-foreground" strokeWidth={1.5} />
+              <div className="absolute bottom-8 right-8">
+                <Users className="h-14 w-14 text-foreground" strokeWidth={1.2} />
               </div>
             </Card>
 
             {/* Investors Card */}
-            <Card className="relative p-6 pt-8 pb-8 min-h-[320px] hover:shadow-lg transition-all duration-300 overflow-hidden bg-card border-border/50">
+            <Card className="relative p-8 min-h-[380px] hover:shadow-lg transition-all duration-300 overflow-hidden bg-[hsl(0_0%_97%)] dark:bg-[hsl(0_0%_12%)] border-border/30 rounded-2xl">
               <div className="relative z-10 flex flex-col h-full">
                 <div>
                   <h4 className="text-xl font-semibold text-foreground mb-3">Investors</h4>
@@ -121,21 +121,21 @@ const TokenAgents = () => {
                   </p>
                 </div>
               </div>
-              {/* Dotted pattern background */}
-              <div className="absolute bottom-0 right-0 w-32 h-32 opacity-10">
+              {/* Large watermark-style dotted pattern */}
+              <div className="absolute bottom-0 right-0 w-48 h-48 opacity-[0.07]">
                 <div className="w-full h-full" style={{
-                  backgroundImage: 'radial-gradient(circle, currentColor 1px, transparent 1px)',
-                  backgroundSize: '8px 8px'
+                  backgroundImage: 'radial-gradient(circle, currentColor 2px, transparent 2px)',
+                  backgroundSize: '10px 10px'
                 }} />
               </div>
               {/* Large icon */}
-              <div className="absolute bottom-6 right-6">
-                <TrendingUp className="h-12 w-12 text-foreground" strokeWidth={1.5} />
+              <div className="absolute bottom-8 right-8">
+                <TrendingUp className="h-14 w-14 text-foreground" strokeWidth={1.2} />
               </div>
             </Card>
 
             {/* Developers Card */}
-            <Card className="relative p-6 pt-8 pb-8 min-h-[320px] hover:shadow-lg transition-all duration-300 overflow-hidden bg-card border-border/50">
+            <Card className="relative p-8 min-h-[380px] hover:shadow-lg transition-all duration-300 overflow-hidden bg-[hsl(0_0%_97%)] dark:bg-[hsl(0_0%_12%)] border-border/30 rounded-2xl">
               <div className="relative z-10 flex flex-col h-full">
                 <div>
                   <h4 className="text-xl font-semibold text-foreground mb-3">Developers</h4>
@@ -144,39 +144,39 @@ const TokenAgents = () => {
                   </p>
                 </div>
               </div>
-              {/* Dotted pattern background */}
-              <div className="absolute bottom-0 right-0 w-32 h-32 opacity-10">
+              {/* Large watermark-style dotted pattern */}
+              <div className="absolute bottom-0 right-0 w-48 h-48 opacity-[0.07]">
                 <div className="w-full h-full" style={{
-                  backgroundImage: 'radial-gradient(circle, currentColor 1px, transparent 1px)',
-                  backgroundSize: '8px 8px'
+                  backgroundImage: 'radial-gradient(circle, currentColor 2px, transparent 2px)',
+                  backgroundSize: '10px 10px'
                 }} />
               </div>
               {/* Large icon */}
-              <div className="absolute bottom-6 right-6">
-                <Bot className="h-12 w-12 text-foreground" strokeWidth={1.5} />
+              <div className="absolute bottom-8 right-8">
+                <Bot className="h-14 w-14 text-foreground" strokeWidth={1.2} />
               </div>
             </Card>
 
             {/* Users Card */}
-            <Card className="relative p-6 pt-8 pb-8 min-h-[320px] hover:shadow-lg transition-all duration-300 overflow-hidden bg-card border-border/50">
+            <Card className="relative p-8 min-h-[380px] hover:shadow-lg transition-all duration-300 overflow-hidden bg-[hsl(0_0%_97%)] dark:bg-[hsl(0_0%_12%)] border-border/30 rounded-2xl">
               <div className="relative z-10 flex flex-col h-full">
                 <div>
                   <h4 className="text-xl font-semibold text-foreground mb-3">Users</h4>
                   <p className="text-muted-foreground text-sm leading-relaxed">
-                    Transparent pricing, verifiable performance, and agents that work like micro-SaaS.
+                    Access to AI agents curated by quality, with fair tokenomics and governed by the community.
                   </p>
                 </div>
               </div>
-              {/* Dotted pattern background */}
-              <div className="absolute bottom-0 right-0 w-32 h-32 opacity-10">
+              {/* Large watermark-style dotted pattern */}
+              <div className="absolute bottom-0 right-0 w-48 h-48 opacity-[0.07]">
                 <div className="w-full h-full" style={{
-                  backgroundImage: 'radial-gradient(circle, currentColor 1px, transparent 1px)',
-                  backgroundSize: '8px 8px'
+                  backgroundImage: 'radial-gradient(circle, currentColor 2px, transparent 2px)',
+                  backgroundSize: '10px 10px'
                 }} />
               </div>
               {/* Large icon */}
-              <div className="absolute bottom-6 right-6">
-                <Coins className="h-12 w-12 text-foreground" strokeWidth={1.5} />
+              <div className="absolute bottom-8 right-8">
+                <Wallet className="h-14 w-14 text-foreground" strokeWidth={1.2} />
               </div>
             </Card>
           </div>
