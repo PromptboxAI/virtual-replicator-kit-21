@@ -4604,6 +4604,51 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles_public: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string | null
+          display_name: string | null
+          ens_name: string | null
+          id: string | null
+          twitter_avatar_url: string | null
+          twitter_display_name: string | null
+          twitter_username: string | null
+          user_id: string | null
+          username: string | null
+          wallet_address: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          ens_name?: string | null
+          id?: string | null
+          twitter_avatar_url?: string | null
+          twitter_display_name?: string | null
+          twitter_username?: string | null
+          user_id?: string | null
+          username?: string | null
+          wallet_address?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          ens_name?: string | null
+          id?: string | null
+          twitter_avatar_url?: string | null
+          twitter_display_name?: string | null
+          twitter_username?: string | null
+          user_id?: string | null
+          username?: string | null
+          wallet_address?: string | null
+        }
+        Relationships: []
+      }
       token_metadata_cache: {
         Row: {
           avatar_url: string | null
