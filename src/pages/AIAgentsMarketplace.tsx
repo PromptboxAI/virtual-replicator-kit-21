@@ -21,11 +21,11 @@ import supabaseLogo from "@/assets/supabase-logo.png";
 // Category definitions
 const CATEGORIES = [
   { id: "all", label: "All", icon: "✨" },
-  { id: "AI", label: "AI", icon: "🤖" },
-  { id: "Sales", label: "Sales", icon: "💼" },
-  { id: "IT Ops", label: "IT Ops", icon: "⚙️" },
   { id: "Marketing", label: "Marketing", icon: "📢" },
-  { id: "Dev Ops", label: "Dev Ops", icon: "🔧" },
+  { id: "Sales", label: "Sales", icon: "💼" },
+  { id: "Support", label: "Support", icon: "🎧" },
+  { id: "IT Ops", label: "IT Ops", icon: "⚙️" },
+  { id: "Document Ops", label: "Document Ops", icon: "📄" },
   { id: "Other", label: "Other", icon: "📦" },
 ];
 
@@ -184,6 +184,27 @@ export default function AIAgentsMarketplace() {
               </div>
             </div>
             <BuildFirstAgentCard />
+
+            {/* Browse by Category */}
+            <div className="mt-12">
+              <h3 className="text-lg font-semibold text-foreground mb-4">Browse by Category</h3>
+              <div className="flex flex-wrap gap-3">
+                {CATEGORIES.filter((c) => c.id !== "all").map((category) => (
+                  <button
+                    key={category.id}
+                    onClick={() => setSelectedCategory(category.id)}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all border ${
+                      selectedCategory === category.id
+                        ? "bg-primary text-primary-foreground border-primary shadow-md"
+                        : "bg-card text-foreground border-border hover:border-primary/50 hover:bg-muted"
+                    }`}
+                  >
+                    <span className="mr-2">{category.icon}</span>
+                    {category.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </section>
 
           {/* Agent Grid */}
