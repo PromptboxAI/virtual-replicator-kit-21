@@ -315,25 +315,25 @@ export default function AIAgentsMarketplace() {
           <section className="py-20 bg-foreground text-background relative overflow-hidden">
             {/* Dense primary dot grid */}
             <div 
-              className="absolute inset-0"
+              className="absolute inset-0 opacity-[0.08]"
               style={{
-                backgroundImage: 'radial-gradient(circle, hsl(var(--background) / 0.08) 1px, transparent 1px)',
+                backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
                 backgroundSize: '8px 8px',
               }}
             />
             {/* Medium density layer */}
             <div 
-              className="absolute inset-0"
+              className="absolute inset-0 opacity-[0.05]"
               style={{
-                backgroundImage: 'radial-gradient(circle, hsl(var(--background) / 0.05) 0.8px, transparent 0.8px)',
+                backgroundImage: 'radial-gradient(circle, white 0.8px, transparent 0.8px)',
                 backgroundSize: '12px 12px',
               }}
             />
             {/* Sparse larger dots for depth variation */}
             <div 
-              className="absolute inset-0"
+              className="absolute inset-0 opacity-[0.03]"
               style={{
-                backgroundImage: 'radial-gradient(circle, hsl(var(--background) / 0.03) 1.5px, transparent 1.5px)',
+                backgroundImage: 'radial-gradient(circle, white 1.5px, transparent 1.5px)',
                 backgroundSize: '24px 24px',
               }}
             />
