@@ -17,9 +17,9 @@ const certifications = [
   {
     id: '002',
     name: 'SOC 2 Type II',
-    status: 'in-progress',
+    status: 'pending',
     category: 'SECURITY',
-    description: 'Currently in our audit phase, demonstrating our commitment to rigorous security standards and data protection.',
+    description: 'Currently in our building infrastructure phase, demonstrating our commitment to rigorous security standards and data protection.',
     icon: (
       <div className="w-16 h-16 rounded-full border border-background/20 flex items-center justify-center">
         <Clock className="w-8 h-8 text-background/60" />
@@ -90,9 +90,9 @@ export const SecuritySection = () => {
               {/* Content */}
               <h3 className="text-xl font-heading font-medium text-background mb-2 flex items-center gap-2">
                 {cert.name}
-                {cert.status === 'in-progress' && (
+              {cert.status === 'pending' && (
                   <span className="text-xs font-mono text-background/40 bg-background/10 px-2 py-0.5 rounded">
-                    In Progress
+                    Pending
                   </span>
                 )}
               </h3>
