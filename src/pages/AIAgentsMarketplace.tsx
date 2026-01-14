@@ -313,27 +313,27 @@ export default function AIAgentsMarketplace() {
 
           {/* Black CTA Section with 3-layer dot pattern */}
           <section className="py-20 bg-foreground text-background relative overflow-hidden">
-            {/* Dense primary dot grid */}
+            {/* Dense primary dot grid - 1px dots, 8px spacing, 8% opacity */}
             <div 
-              className="absolute inset-0 opacity-[0.08]"
+              className="absolute inset-0"
               style={{
-                backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
+                backgroundImage: 'radial-gradient(circle, rgba(255, 255, 255, 0.08) 1px, transparent 1px)',
                 backgroundSize: '8px 8px',
               }}
             />
-            {/* Medium density layer */}
+            {/* Medium density layer - 0.8px dots, 12px spacing, 5% opacity */}
             <div 
-              className="absolute inset-0 opacity-[0.05]"
+              className="absolute inset-0"
               style={{
-                backgroundImage: 'radial-gradient(circle, white 0.8px, transparent 0.8px)',
+                backgroundImage: 'radial-gradient(circle, rgba(255, 255, 255, 0.05) 0.8px, transparent 0.8px)',
                 backgroundSize: '12px 12px',
               }}
             />
-            {/* Sparse larger dots for depth variation */}
+            {/* Sparse larger dots for depth variation - 1.5px dots, 24px spacing, 3% opacity */}
             <div 
-              className="absolute inset-0 opacity-[0.03]"
+              className="absolute inset-0"
               style={{
-                backgroundImage: 'radial-gradient(circle, white 1.5px, transparent 1.5px)',
+                backgroundImage: 'radial-gradient(circle, rgba(255, 255, 255, 0.03) 1.5px, transparent 1.5px)',
                 backgroundSize: '24px 24px',
               }}
             />
