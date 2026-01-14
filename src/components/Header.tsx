@@ -73,9 +73,6 @@ export function Header() {
                 <Link to="/learn" className="text-foreground hover:text-primary transition-colors font-medium">
                   Learn
                 </Link>
-                <Link to="/about" className="text-foreground hover:text-primary transition-colors font-medium">
-                  About
-                </Link>
               </nav>
             </div>
 
@@ -287,14 +284,6 @@ export function Header() {
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       Learn
-                    </Link>
-                    
-                    <Link 
-                      to="/about" 
-                      className="text-lg font-medium text-foreground hover:text-primary transition-colors"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      About
                     </Link>
                     
                     {user ? (
