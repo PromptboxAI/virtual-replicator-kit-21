@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAppMode } from './useAppMode';
-import { useAdminSettings } from './useAdminSettings';
 
 export interface Agent {
   id: string;
@@ -33,25 +32,22 @@ export function useAgents() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { isTestMode, isLoading: appModeLoading } = useAppMode();
-  const { settings, isLoading: settingsLoading } = useAdminSettings();
 
   useEffect(() => {
-    // Don't fetch until app mode and settings are determined
-    if (appModeLoading || settingsLoading) return;
-    
-    const deploymentMode = settings?.deployment_mode || 'database';
+    // Don't fetch until app mode is determined
+    if (appModeLoading) return;
     
     async function fetchAgents() {
       try {
-        console.log('Fetching agents with isTestMode:', isTestMode, 'deploymentMode:', deploymentMode);
+        console.log('Fetching smart_contract agents with isTestMode:', isTestMode);
         
-        // Fetch agents matching the deployment mode OR V8 smart contract agents
+        // Only fetch smart_contract agents, filtered by test_mode (testnet vs mainnet)
         const { data, error } = await supabase
           .from('agents')
           .select('*')
           .eq('is_active', true)
           .eq('test_mode', isTestMode)
-          .or(`creation_mode.eq.${deploymentMode},is_v8.eq.true`)
+          .eq('creation_mode', 'smart_contract')
           .order('market_cap', { ascending: false });
 
         console.log('Agents query result - isTestMode:', isTestMode, 'data count:', data?.length || 0);
@@ -96,7 +92,7 @@ export function useAgents() {
     }
 
     fetchAgents();
-  }, [isTestMode, appModeLoading, settingsLoading, settings?.deployment_mode]);
+  }, [isTestMode, appModeLoading]);
 
   return { agents, loading, error };
 }
