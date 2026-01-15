@@ -121,14 +121,6 @@ export default function AIAgentsMarketplace() {
 
             <div className="relative container mx-auto px-4 py-20 md:py-28">
               <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
-                {/* Badge */}
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-background/10 border border-background/20 mb-8">
-                  <Sparkles className="w-4 h-4 text-primary" />
-                  <span className="text-sm font-medium">
-                    {isTestMode ? "Testnet Mode" : "Mainnet"} • {totalAgents} Templates Available
-                  </span>
-                </div>
-
                 {/* Main headline */}
                 <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight text-white">
                   Automate Anything with
