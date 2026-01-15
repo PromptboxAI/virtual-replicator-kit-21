@@ -9,6 +9,9 @@ const TWITTER_CLIENT_ID = Deno.env.get('TWITTER_CLIENT_ID')?.trim()
 const TWITTER_CLIENT_SECRET = Deno.env.get('TWITTER_CLIENT_SECRET')?.trim()
 const TWITTER_REDIRECT_URI = `${supabaseUrl}/functions/v1/twitter-auth`
 
+// Get frontend origin from environment variable, fallback to published URL
+const FRONTEND_ORIGIN = Deno.env.get('FRONTEND_URL') || 'https://virtual-replicator-kit-21.lovable.app'
+
 function generateOAuthSignature(
   method: string,
   url: string,
@@ -160,12 +163,14 @@ Deno.serve(async (req) => {
         access_token_secret: accessTokenSecret
       }
 
-      // Close the popup and return data to parent
+      // Close the popup and return data to parent with specific origin (not wildcard)
       const html = `
         <html>
           <body>
             <script>
-              window.opener.postMessage(${JSON.stringify({ success: true, data: twitterData })}, '*');
+              if (window.opener) {
+                window.opener.postMessage(${JSON.stringify({ success: true, data: twitterData })}, '${FRONTEND_ORIGIN}');
+              }
               window.close();
             </script>
           </body>
