@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
+import { sanitizeHTML } from '@/lib/sanitize';
 
 interface Agent {
   id: string;
@@ -333,7 +334,7 @@ export const AgentInformationSections = ({ agent }: AgentInformationSectionsProp
               {marketingData?.whitepaper_content && (
                 <div 
                   className="prose prose-sm max-w-none dark:prose-invert"
-                  dangerouslySetInnerHTML={{ __html: marketingData.whitepaper_content }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHTML(marketingData.whitepaper_content) }}
                 />
               )}
               

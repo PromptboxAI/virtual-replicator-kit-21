@@ -6,6 +6,7 @@ import { CalendarDays, Users, Activity, Code, Zap, Camera, BarChart3, ExternalLi
 import { supabase } from '@/integrations/supabase/client';
 import { isAgentGraduatedV3, formatPriceV3, getCurrentPriceV3, tokensSoldFromPromptRaisedV3 } from '@/lib/bondingCurveV3';
 import { useAgentRealtime } from '@/hooks/useAgentRealtime';
+import { sanitizeHTML } from '@/lib/sanitize';
 
 interface AgentMarketingTabProps {
   agent: {
@@ -290,7 +291,7 @@ export function AgentMarketingTab({ agent }: AgentMarketingTabProps) {
               {hasWhitepaperContent && (
                 <div 
                   className="prose prose-sm max-w-none dark:prose-invert"
-                  dangerouslySetInnerHTML={{ __html: marketingData.whitepaper_content }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHTML(marketingData.whitepaper_content) }}
                 />
               )}
               

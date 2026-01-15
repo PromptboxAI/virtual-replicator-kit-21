@@ -36,8 +36,20 @@ export const useTwitterAuth = () => {
         'width=500,height=600,scrollbars=yes,resizable=yes'
       );
 
-      // Listen for message from popup
+      // Listen for message from popup with origin validation
       const handleMessage = async (event: MessageEvent) => {
+        // Security: Validate the origin of the message
+        // Allow messages from the same origin or from Supabase edge functions
+        const allowedOrigins = [
+          window.location.origin,
+          'https://cjzazuuwapsliacmjxfg.supabase.co'
+        ];
+        
+        if (!allowedOrigins.some(origin => event.origin.startsWith(origin) || event.origin === origin)) {
+          console.warn('Rejected message from untrusted origin:', event.origin);
+          return;
+        }
+        
         if (event.data.success && event.data.data) {
           const twitterData = event.data.data as TwitterData;
           

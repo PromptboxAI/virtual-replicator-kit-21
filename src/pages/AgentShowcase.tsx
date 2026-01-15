@@ -12,6 +12,7 @@ import { ArrowLeft, ExternalLink, Share2, Twitter, Calendar, User, Tag, Globe, U
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import { Helmet } from "react-helmet-async";
+import { sanitizeHTML } from "@/lib/sanitize";
 
 // Integration icon mapping
 const integrationIcons: Record<string, { icon: string; name: string }> = {
@@ -394,7 +395,7 @@ export default function AgentShowcase() {
                 <CardContent>
                   <div 
                     className="prose prose-sm dark:prose-invert max-w-none"
-                    dangerouslySetInnerHTML={{ __html: agent.project_pitch }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeHTML(agent.project_pitch) }}
                   />
                 </CardContent>
               </Card>
@@ -409,7 +410,7 @@ export default function AgentShowcase() {
                 <CardContent>
                   <div 
                     className="prose prose-sm dark:prose-invert max-w-none"
-                    dangerouslySetInnerHTML={{ __html: marketing.whitepaper_content }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeHTML(marketing.whitepaper_content) }}
                   />
                 </CardContent>
               </Card>
