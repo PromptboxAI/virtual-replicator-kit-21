@@ -175,6 +175,13 @@ async function verifyAndSyncFromTxHash(supabase: any, publicClient: any, agentId
   }
 
   if (agentId) {
+    // Fetch agent to get created_p0 for correct V8 starting price
+    const { data: agent } = await supabase
+      .from('agents')
+      .select('created_p0')
+      .eq('id', agentId)
+      .single();
+
     const updateData: any = {
       token_contract_address: tokenAddress,
       token_address: tokenAddress,
@@ -185,9 +192,15 @@ async function verifyAndSyncFromTxHash(supabase: any, publicClient: any, agentId
       token_graduated: false,
     };
 
-    // For V8 agents, also set prototype_token_address
+    // For V8 agents, also set prototype_token_address and correct starting price
     if (isV8Event) {
       updateData.prototype_token_address = tokenAddress;
+      // V8 agents should use created_p0 as starting price, not the legacy 0.03
+      if (agent?.created_p0) {
+        updateData.current_price = parseFloat(agent.created_p0);
+        updateData.on_chain_price = parseFloat(agent.created_p0);
+        console.log(`[sync-agent-deployment] Setting V8 price to created_p0: ${agent.created_p0}`);
+      }
     }
 
     const { error: updateError } = await supabase.from('agents').update(updateData).eq('id', agentId);
@@ -214,10 +227,10 @@ async function syncByTokenAddress(supabase: any, publicClient: any, agentId: str
     );
   }
 
-  // Get agent to check if it's V8
+  // Get agent to check if it's V8 and get created_p0 for correct price
   const { data: agent } = await supabase
     .from('agents')
-    .select('is_v8')
+    .select('is_v8, created_p0')
     .eq('id', agentId)
     .single();
 
@@ -230,9 +243,15 @@ async function syncByTokenAddress(supabase: any, publicClient: any, agentId: str
     token_graduated: false,
   };
 
-  // For V8 agents, also set prototype_token_address
+  // For V8 agents, also set prototype_token_address and correct starting price
   if (agent?.is_v8) {
     updateData.prototype_token_address = tokenAddress;
+    // V8 agents should use created_p0 as starting price, not the legacy 0.03
+    if (agent.created_p0) {
+      updateData.current_price = parseFloat(agent.created_p0);
+      updateData.on_chain_price = parseFloat(agent.created_p0);
+      console.log(`[sync-agent-deployment] Setting V8 price to created_p0: ${agent.created_p0}`);
+    }
   }
 
   const { error: updateError } = await supabase.from('agents').update(updateData).eq('id', agentId);
