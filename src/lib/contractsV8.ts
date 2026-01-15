@@ -174,7 +174,8 @@ export const AGENT_FACTORY_V8_ABI = [
       { name: 'prototypeToken', type: 'address', indexed: true },
       { name: 'creator', type: 'address', indexed: true },
       { name: 'name', type: 'string', indexed: false },
-      { name: 'symbol', type: 'string', indexed: false }
+      { name: 'symbol', type: 'string', indexed: false },
+      { name: 'timestamp', type: 'uint256', indexed: false }
     ]
   }
 ] as const;

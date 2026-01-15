@@ -244,8 +244,8 @@ export const useSmartContractCreationV8 = () => {
       // Parse V8 AgentCreated event to get prototype token address
       let tokenAddress: string | undefined;
 
-      // V8 AgentCreated event signature: AgentCreated(bytes32 indexed agentId, address indexed prototypeToken, address indexed creator, string name, string symbol)
-      const agentCreatedSignature = keccak256(toHex('AgentCreated(bytes32,address,address,string,string)'));
+      // V8 AgentCreated event signature: AgentCreated(bytes32 indexed agentId, address indexed prototypeToken, address indexed creator, string name, string symbol, uint256 timestamp)
+      const agentCreatedSignature = keccak256(toHex('AgentCreated(bytes32,address,address,string,string,uint256)'));
 
       for (const log of receipt.logs) {
         const logWithTopics = log as { address: string; topics?: readonly string[]; data: string };
