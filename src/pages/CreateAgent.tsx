@@ -568,9 +568,30 @@ export default function CreateAgent() {
             symbol: formData.symbol.toUpperCase(),
           });
 
-          if (deployResult.success && deployResult.tokenAddress) {
+          if (deployResult.success) {
             console.log('[CreateAgent] V8 deployment successful:', deployResult);
             deployedTokenAddress = deployResult.tokenAddress;
+            
+            // Fallback: If tokenAddress is undefined, call sync-agent-deployment to recover
+            if (!deployedTokenAddress && deployResult.txHash) {
+              console.log('[CreateAgent] Token address not parsed from event, triggering sync fallback...');
+              try {
+                const syncResult = await supabase.functions.invoke('sync-agent-deployment', {
+                  body: { 
+                    agentId, 
+                    txHash: deployResult.txHash,
+                    isV8: true 
+                  }
+                });
+                
+                if (syncResult.data?.tokenAddress) {
+                  deployedTokenAddress = syncResult.data.tokenAddress;
+                  console.log('[CreateAgent] Recovered token address via sync:', deployedTokenAddress);
+                }
+              } catch (syncError) {
+                console.warn('[CreateAgent] Sync fallback failed:', syncError);
+              }
+            }
             
             // CRITICAL: Update agent with V8 token address + tx hash
             // Uses retry logic to ensure database sync succeeds
@@ -579,9 +600,10 @@ export default function CreateAgent() {
                 const result = await supabase
                   .from('agents')
                   .update({ 
-                    // V8 uses prototype_token_address instead of token_contract_address
-                    prototype_token_address: deployResult.tokenAddress,
-                    token_address: deployResult.tokenAddress,
+                    // V8 uses prototype_token_address - also write to token_contract_address for backwards compatibility
+                    prototype_token_address: deployedTokenAddress,
+                    token_address: deployedTokenAddress,
+                    token_contract_address: deployedTokenAddress, // Backwards compatibility
                     deployment_tx_hash: deployResult.txHash,
                     deployment_status: 'deployed',
                     deployment_method: 'factory',
@@ -630,8 +652,24 @@ export default function CreateAgent() {
             } else {
               toast({
                 title: "V8 Agent Token Deployed!",
-                description: `Prototype token at: ${deployResult.tokenAddress.slice(0, 10)}...${deployResult.tokenAddress.slice(-8)}`,
+                description: deployedTokenAddress 
+                  ? `Prototype token at: ${deployedTokenAddress.slice(0, 10)}...${deployedTokenAddress.slice(-8)}`
+                  : 'Token deployed successfully',
               });
+            }
+
+            // Immediately sync on-chain state for V8 agents after deployment
+            try {
+              console.log('[CreateAgent] Triggering immediate V8 state sync after deployment...');
+              await supabase.functions.invoke('sync-on-chain-trades', {
+                body: { 
+                  agentIdFilter: agentId, 
+                  syncStateOnly: true 
+                }
+              });
+              console.log('[CreateAgent] V8 state sync after deployment completed');
+            } catch (syncError) {
+              console.warn('[CreateAgent] V8 state sync after deployment failed (non-critical):', syncError);
             }
 
             // V8: Execute prebuy via V8 bonding curve if specified
@@ -643,9 +681,23 @@ export default function CreateAgent() {
                   title: "V8 Prebuy Successful!",
                   description: `Purchased ${formData.prebuy_amount} PROMPT worth of ${formData.symbol}`,
                 });
+
+                // Immediately sync on-chain state after prebuy
+                try {
+                  console.log('[CreateAgent] Triggering V8 state sync after prebuy...');
+                  await supabase.functions.invoke('sync-on-chain-trades', {
+                    body: { 
+                      agentIdFilter: agentId, 
+                      syncStateOnly: true 
+                    }
+                  });
+                  console.log('[CreateAgent] Post-prebuy V8 state sync completed');
+                } catch (syncError) {
+                  console.warn('[CreateAgent] Post-prebuy sync failed (non-critical):', syncError);
+                }
               }
             }
-          } else {
+          } else if (!deployResult.success) {
             // Deployment failed but continue with database mode
             console.error('[CreateAgent] V8 deployment failed:', deployResult.error);
             toast({

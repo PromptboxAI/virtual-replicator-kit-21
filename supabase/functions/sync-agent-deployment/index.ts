@@ -11,9 +11,9 @@ const corsHeaders = {
 const AGENT_FACTORY_V6_ADDRESS = '0x9852671994E4DD979438145fc0a26e123eCc22Dc';
 const AGENT_CREATED_V6_SIGNATURE = keccak256(toHex('AgentCreated(address,address,string,string,uint256)'));
 
-// V8 Factory address and event signature
+// V8 Factory address and event signature (includes uint256 timestamp)
 const AGENT_FACTORY_V8_ADDRESS = '0xe8214F54e4a670A92B8A6Fc2Da1DB70b091A4a79';
-const AGENT_CREATED_V8_SIGNATURE = keccak256(toHex('AgentCreated(bytes32,address,address,string,string)'));
+const AGENT_CREATED_V8_SIGNATURE = keccak256(toHex('AgentCreated(bytes32,address,address,string,string,uint256)'));
 
 interface SyncRequest {
   agentId?: string;
@@ -324,7 +324,7 @@ async function searchFactoryEventsForAgent(supabase: any, publicClient: any, age
 
   console.log(`[sync-agent-deployment] Searching ${agent.is_v8 ? 'V8' : 'V6'} factory ${factoryAddress}, blocks ${fromBlock} to ${currentBlock} for creator ${creatorAddress}`);
 
-  // Define event structure based on version
+  // Define event structure based on version (V8 includes timestamp)
   const eventAbi = agent.is_v8
     ? {
         type: 'event',
@@ -335,6 +335,7 @@ async function searchFactoryEventsForAgent(supabase: any, publicClient: any, age
           { type: 'address', name: 'creator', indexed: true },
           { type: 'string', name: 'name' },
           { type: 'string', name: 'symbol' },
+          { type: 'uint256', name: 'timestamp' },
         ],
       }
     : {

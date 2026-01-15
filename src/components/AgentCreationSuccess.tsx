@@ -19,6 +19,8 @@ interface AgentData {
   symbol: string;
   token_address: string | null;
   token_contract_address?: string | null;
+  prototype_token_address?: string | null;
+  is_v8?: boolean;
   prebuy_amount?: number;
 }
 
@@ -51,7 +53,7 @@ export default function AgentCreationSuccess() {
 
       const { data, error } = await supabase
         .from('agents')
-        .select('name, symbol, token_address, token_contract_address, creator_prebuy_amount')
+        .select('name, symbol, token_address, token_contract_address, prototype_token_address, is_v8, creator_prebuy_amount')
         .eq('id', agentId)
         .maybeSingle();
 
@@ -67,6 +69,8 @@ export default function AgentCreationSuccess() {
           symbol: data.symbol,
           token_address: data.token_address,
           token_contract_address: data.token_contract_address,
+          prototype_token_address: data.prototype_token_address,
+          is_v8: data.is_v8,
           prebuy_amount: (data.creator_prebuy_amount ?? undefined) as number | undefined,
         });
       }
@@ -77,7 +81,10 @@ export default function AgentCreationSuccess() {
   }, [agentId, state]);
 
   const agentName = agentData?.name || 'Your Agent';
-  const tokenAddress = agentData?.token_contract_address || agentData?.token_address || null;
+  // For V8 agents, prioritize prototype_token_address
+  const tokenAddress = agentData?.is_v8 
+    ? (agentData?.prototype_token_address || agentData?.token_contract_address || agentData?.token_address)
+    : (agentData?.token_contract_address || agentData?.token_address) || null;
   const prebuyAmount = agentData?.prebuy_amount;
 
   if (loading) {
