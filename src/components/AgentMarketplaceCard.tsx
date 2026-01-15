@@ -76,7 +76,8 @@ export function AgentMarketplaceCard({
   // List view layout
   if (viewMode === "list") {
     return (
-      <Card className="group p-4 hover:shadow-lg transition-all duration-200 hover:border-primary/40 bg-card border-border rounded-xl flex items-center gap-4">
+      <Link to={`/ai-agents/${id}`} className="block">
+        <Card className="group p-4 hover:shadow-lg transition-all duration-200 hover:border-primary/40 bg-card border-border rounded-xl flex items-center gap-4">
         {/* Avatar */}
         {avatarUrl ? (
           <div className="w-12 h-12 shrink-0 rounded-xl overflow-hidden bg-muted ring-2 ring-border">
@@ -112,12 +113,13 @@ export function AgentMarketplaceCard({
           )}
         </div>
 
-        {/* Actions */}
-        <div className="flex gap-2 shrink-0">
+        {/* Actions - hidden on mobile */}
+        <div className="hidden sm:flex gap-2 shrink-0">
           <Button 
             variant="outline" 
             size="sm"
             asChild
+            onClick={(e) => e.stopPropagation()}
           >
             <Link to={`/ai-agents/${id}`}>
               View
@@ -133,7 +135,8 @@ export function AgentMarketplaceCard({
             {tokenGraduated && <ExternalLink className="h-3 w-3" />}
           </Button>
         </div>
-      </Card>
+        </Card>
+      </Link>
     );
   }
 
