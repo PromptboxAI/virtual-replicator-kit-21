@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
-import { Search, Sparkles, ArrowRight, Zap, Bot, TrendingUp, Shield } from "lucide-react";
+import { Search, Sparkles, ArrowRight, Zap, Bot, TrendingUp, Shield, LayoutGrid, List } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
@@ -9,6 +9,7 @@ import { AgentMarketplaceCard, BuildFirstAgentCard } from "@/components/AgentMar
 import { useAgents } from "@/hooks/useAgents";
 import { useAppMode } from "@/hooks/useAppMode";
 import { Link } from "react-router-dom";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 // Import logo assets
 import openaiLogo from "@/assets/openai-logo.png";
@@ -52,6 +53,7 @@ export default function AIAgentsMarketplace() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedIntegration, setSelectedIntegration] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   // Valid category IDs
   const validCategoryIds = CATEGORIES.map(c => c.id.toLowerCase());
@@ -221,10 +223,27 @@ export default function AIAgentsMarketplace() {
 
           {/* Agent Grid */}
           <section className="container mx-auto px-4 py-16">
+            {/* View Toggle */}
+            <div className="flex justify-end mb-6">
+              <ToggleGroup type="single" value={viewMode} onValueChange={(v) => v && setViewMode(v as "grid" | "list")}>
+                <ToggleGroupItem value="grid" aria-label="Grid view" className="gap-1.5">
+                  <LayoutGrid className="h-4 w-4" />
+                  <span className="hidden sm:inline">Grid</span>
+                </ToggleGroupItem>
+                <ToggleGroupItem value="list" aria-label="List view" className="gap-1.5">
+                  <List className="h-4 w-4" />
+                  <span className="hidden sm:inline">List</span>
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </div>
+
             {loading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className={viewMode === "grid" 
+                ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6" 
+                : "flex flex-col gap-3"
+              }>
                 {[...Array(8)].map((_, i) => (
-                  <div key={i} className="h-52 rounded-2xl bg-muted animate-pulse" />
+                  <div key={i} className={viewMode === "grid" ? "h-52 rounded-2xl bg-muted animate-pulse" : "h-20 rounded-xl bg-muted animate-pulse"} />
                 ))}
               </div>
             ) : selectedCategory === "all" ? (
@@ -242,7 +261,10 @@ export default function AIAgentsMarketplace() {
                           {categoryAgents.length}
                         </span>
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                      <div className={viewMode === "grid" 
+                        ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6" 
+                        : "flex flex-col gap-3"
+                      }>
                         {categoryAgents.map((agent) => (
                           <AgentMarketplaceCard
                             key={agent.id}
@@ -256,6 +278,7 @@ export default function AIAgentsMarketplace() {
                             tokenAddress={agent.token_address}
                             tokenGraduated={agent.token_graduated}
                             integrations={[]}
+                            viewMode={viewMode}
                           />
                         ))}
                       </div>
@@ -287,7 +310,10 @@ export default function AIAgentsMarketplace() {
                   </span>
                 </div>
                 {filteredAgents.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  <div className={viewMode === "grid" 
+                    ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6" 
+                    : "flex flex-col gap-3"
+                  }>
                     {filteredAgents.map((agent) => (
                       <AgentMarketplaceCard
                         key={agent.id}
@@ -301,6 +327,7 @@ export default function AIAgentsMarketplace() {
                         tokenAddress={agent.token_address}
                         tokenGraduated={agent.token_graduated}
                         integrations={[]}
+                        viewMode={viewMode}
                       />
                     ))}
                   </div>

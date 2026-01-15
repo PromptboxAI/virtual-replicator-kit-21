@@ -26,6 +26,7 @@ interface AgentMarketplaceCardProps {
   avatarUrl?: string;
   tokenAddress?: string | null;
   tokenGraduated?: boolean | null;
+  viewMode?: "grid" | "list";
 }
 
 export function AgentMarketplaceCard({
@@ -39,6 +40,7 @@ export function AgentMarketplaceCard({
   avatarUrl,
   tokenAddress,
   tokenGraduated,
+  viewMode = "grid",
 }: AgentMarketplaceCardProps) {
   const navigate = useNavigate();
   const displayedIntegrations = integrations.slice(0, 3);
@@ -71,6 +73,71 @@ export function AgentMarketplaceCard({
     }
   };
 
+  // List view layout
+  if (viewMode === "list") {
+    return (
+      <Card className="group p-4 hover:shadow-lg transition-all duration-200 hover:border-primary/40 bg-card border-border rounded-xl flex items-center gap-4">
+        {/* Avatar */}
+        {avatarUrl ? (
+          <div className="w-12 h-12 shrink-0 rounded-xl overflow-hidden bg-muted ring-2 ring-border">
+            <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
+          </div>
+        ) : (
+          <div className="w-12 h-12 shrink-0 rounded-xl bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center ring-2 ring-border">
+            <span className="text-lg font-bold text-primary">
+              {name.slice(0, 2).toUpperCase()}
+            </span>
+          </div>
+        )}
+
+        {/* Info */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors truncate">
+              {name}
+            </h3>
+            {symbol && (
+              <span className="text-sm text-muted-foreground shrink-0">${symbol}</span>
+            )}
+            {category && (
+              <Badge variant="secondary" className="text-xs shrink-0 hidden sm:inline-flex">
+                {category}
+              </Badge>
+            )}
+          </div>
+          {description && (
+            <p className="text-sm text-muted-foreground line-clamp-1">
+              {description}
+            </p>
+          )}
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-2 shrink-0">
+          <Button 
+            variant="outline" 
+            size="sm"
+            asChild
+          >
+            <Link to={`/ai-agents/${id}`}>
+              View
+            </Link>
+          </Button>
+          <Button 
+            size="sm" 
+            className="gap-1.5"
+            onClick={handleTradeClick}
+          >
+            <TrendingUp className="h-3.5 w-3.5" />
+            Trade
+            {tokenGraduated && <ExternalLink className="h-3 w-3" />}
+          </Button>
+        </div>
+      </Card>
+    );
+  }
+
+  // Grid view layout (default)
   return (
     <Card className="group p-5 hover:shadow-lg transition-all duration-200 hover:border-primary/40 bg-card border-border rounded-xl h-full flex flex-col">
       {/* Top row: Avatar + Category Badge */}
