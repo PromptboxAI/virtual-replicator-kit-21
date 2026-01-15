@@ -7,11 +7,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const supabase = createClient(
-  Deno.env.get('SUPABASE_URL') ?? '',
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-  { auth: { persistSession: false } }
-);
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
 
 // Twitter API credentials from agent's encrypted storage
 function generateOAuthSignature(
@@ -110,27 +108,96 @@ serve(async (req) => {
   }
 
   try {
+    // ========================================
+    // AUTHENTICATION CHECK
+    // ========================================
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      console.error('[POST-TWEET] Missing Authorization header');
+      return new Response(
+        JSON.stringify({ success: false, error: 'Authorization required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Create a client with the user's auth token to verify identity
+    const userSupabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      global: { headers: { Authorization: authHeader } },
+      auth: { persistSession: false }
+    });
+
+    // Get the authenticated user
+    const { data: { user }, error: authError } = await userSupabase.auth.getUser();
+    if (authError || !user) {
+      console.error('[POST-TWEET] Authentication failed:', authError?.message);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Unauthorized: Invalid or expired token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log(`[POST-TWEET] Authenticated user: ${user.id}`);
+
+    // Parse request body
     const { agentId, content } = await req.json();
     
     if (!agentId || !content) {
-      throw new Error('Missing agentId or content');
+      return new Response(
+        JSON.stringify({ success: false, error: 'Missing agentId or content' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    console.log(`[POST-TWEET] Posting tweet for agent ${agentId}: ${content}`);
+    // Validate content length (Twitter limit is 280 characters)
+    if (content.length > 280) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Tweet content exceeds 280 characters' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
-    // Get agent with Twitter credentials
-    const { data: agent, error: agentError } = await supabase
+    // ========================================
+    // AUTHORIZATION CHECK - Verify user owns the agent
+    // ========================================
+    // Use service role client for database queries
+    const serviceSupabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+      auth: { persistSession: false }
+    });
+
+    // Get agent and verify ownership
+    const { data: agent, error: agentError } = await serviceSupabase
       .from('agents')
-      .select('*')
+      .select('id, creator_id, twitter_api_configured, twitter_api_encrypted_credentials')
       .eq('id', agentId)
       .single();
 
     if (agentError || !agent) {
-      throw new Error(`Agent not found: ${agentError?.message}`);
+      console.error('[POST-TWEET] Agent not found:', agentError?.message);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Agent not found' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
+    // Check if user owns the agent
+    if (agent.creator_id !== user.id) {
+      console.error(`[POST-TWEET] Forbidden: User ${user.id} does not own agent ${agentId} (owner: ${agent.creator_id})`);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Forbidden: You do not own this agent' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log(`[POST-TWEET] User ${user.id} authorized to post for agent ${agentId}`);
+
+    // ========================================
+    // TWITTER API CONFIGURATION CHECK
+    // ========================================
     if (!agent.twitter_api_configured || !agent.twitter_api_encrypted_credentials) {
-      throw new Error('Twitter API not configured for this agent');
+      return new Response(
+        JSON.stringify({ success: false, error: 'Twitter API not configured for this agent' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     // Decrypt stored credentials (simplified for demo - in production use proper encryption)
@@ -144,16 +211,22 @@ serve(async (req) => {
         throw new Error('Missing required Twitter API credentials');
       }
     } catch (parseError) {
-      throw new Error('Failed to parse stored Twitter credentials');
+      console.error('[POST-TWEET] Failed to parse credentials:', parseError);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Failed to parse stored Twitter credentials' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    // Post the tweet
+    // ========================================
+    // POST THE TWEET
+    // ========================================
     const tweetResult = await sendTweet(content, credentials);
     
     console.log(`[POST-TWEET] Tweet posted successfully:`, tweetResult);
 
-    // Log the successful tweet
-    await supabase
+    // Log the successful tweet with user attribution
+    await serviceSupabase
       .from('agent_logs')
       .insert({
         agent_id: agentId,
@@ -162,6 +235,7 @@ serve(async (req) => {
         context: { 
           tweet_id: tweetResult.data?.id,
           content: content,
+          posted_by_user_id: user.id,
           timestamp: new Date().toISOString()
         }
       });
@@ -176,21 +250,6 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('[POST-TWEET] Error:', error);
-
-    // Log the error
-    if (req.body) {
-      const { agentId } = await req.json();
-      if (agentId) {
-        await supabase
-          .from('agent_logs')
-          .insert({
-            agent_id: agentId,
-            log_level: 'error',
-            message: `Tweet posting failed: ${error.message}`,
-            context: { error: error.message }
-          });
-      }
-    }
 
     return new Response(JSON.stringify({ 
       success: false,
