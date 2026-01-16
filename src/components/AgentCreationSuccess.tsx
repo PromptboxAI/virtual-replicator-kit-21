@@ -119,7 +119,7 @@ export default function AgentCreationSuccess() {
               <span className="font-semibold">{agentName}</span> is now live
             </p>
             
-            {prebuyAmount && prebuyAmount > 0 && (
+            {prebuyAmount !== undefined && prebuyAmount > 0 && (
               <p className="text-base text-foreground/70">
                 Pre-buy of {prebuyAmount} PROMPT executed
               </p>
