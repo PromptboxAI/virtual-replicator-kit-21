@@ -124,6 +124,13 @@ serve(async (req) => {
       const agentIdBytes32 = uuidToBytes32(agentIdFilter);
       
       try {
+        // First get agent details to know the creator wallet and prototype token
+        const { data: agentDetails } = await supabase
+          .from('agents')
+          .select('creator_wallet_address, prototype_token_address')
+          .eq('id', agentIdFilter)
+          .single();
+
         const result = await publicClient.readContract({
           address: BONDING_CURVE_V8 as Address,
           abi: getAgentStateAbi,
@@ -140,7 +147,41 @@ serve(async (req) => {
 
         console.log(`[sync-state] On-chain state:`, { supply: supplyNum, reserve: reserveNum, price: priceNum, graduationProgress: formatEther(graduationProgress), graduated });
 
-        // Update agent with on-chain state
+        // Fix 5: Count token_holders from indexed_holder_balances
+        let tokenHoldersCount = 0;
+        try {
+          const { count } = await supabase
+            .from('indexed_holder_balances')
+            .select('*', { count: 'exact', head: true })
+            .eq('agent_id', agentIdFilter)
+            .gt('token_balance', 0);
+          tokenHoldersCount = count || 0;
+          console.log(`[sync-state] Token holders count: ${tokenHoldersCount}`);
+        } catch (countError) {
+          console.warn(`[sync-state] Error counting holders:`, countError);
+        }
+
+        // Fix 5: Calculate dev_ownership_pct from creator's balance
+        let devOwnershipPct = 0;
+        if (agentDetails?.creator_wallet_address && supplyNum > 0) {
+          try {
+            const { data: creatorBalance } = await supabase
+              .from('indexed_holder_balances')
+              .select('token_balance')
+              .eq('agent_id', agentIdFilter)
+              .eq('wallet_address', agentDetails.creator_wallet_address.toLowerCase())
+              .single();
+            
+            if (creatorBalance?.token_balance) {
+              devOwnershipPct = (creatorBalance.token_balance / supplyNum) * 100;
+              console.log(`[sync-state] Dev ownership: ${devOwnershipPct.toFixed(4)}%`);
+            }
+          } catch (devError) {
+            console.warn(`[sync-state] Error calculating dev ownership:`, devError);
+          }
+        }
+
+        // Update agent with on-chain state + token_holders + dev_ownership_pct
         const { error: updateError } = await supabase
           .from('agents')
           .update({
@@ -152,6 +193,8 @@ serve(async (req) => {
             prompt_raised: reserveNum,
             bonding_curve_supply: supplyNum,
             shares_sold: supplyNum,
+            token_holders: tokenHoldersCount,
+            dev_ownership_pct: devOwnershipPct,
             updated_at: new Date().toISOString(),
           })
           .eq('id', agentIdFilter);
@@ -167,6 +210,8 @@ serve(async (req) => {
             data: {
               agentId: agentIdFilter,
               onChainState: { supply: supplyNum, reserve: reserveNum, price: priceNum, graduated },
+              tokenHolders: tokenHoldersCount,
+              devOwnershipPct: devOwnershipPct,
               currentBlock: currentBlock.toString(),
             },
           }),

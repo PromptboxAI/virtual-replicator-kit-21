@@ -63,6 +63,7 @@ export interface DeploymentResultV8 {
   success: boolean;
   txHash: string;
   tokenAddress?: string;
+  blockNumber?: number;
   error?: string;
 }
 
@@ -294,6 +295,7 @@ export const useSmartContractCreationV8 = () => {
       return {
         txHash: tx,
         tokenAddress,
+        blockNumber: Number(receipt.blockNumber),
         success: true,
       };
     } catch (error) {
