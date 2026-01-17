@@ -606,8 +606,10 @@ export default function CreateAgent() {
                     token_contract_address: deployedTokenAddress, // Backwards compatibility
                     deployment_tx_hash: deployResult.txHash,
                     deployment_status: 'deployed',
+                    deployment_verified: true, // Fix 3: Mark as verified
                     deployment_method: 'factory',
                     deployed_at: new Date().toISOString(),
+                    block_number: deployResult.blockNumber || null, // Fix 3: Store block number
                     creator_wallet_address: walletAddress || null,
                     status: 'ACTIVE',
                     token_graduated: false,
@@ -677,6 +679,12 @@ export default function CreateAgent() {
               console.log('[CreateAgent] Executing V8 prebuy:', formData.prebuy_amount);
               const prebuySuccess = await executePrebuyV8(agentId, formData.prebuy_amount);
               if (prebuySuccess) {
+                // Fix 3: Update creator_prebuy_amount after successful prebuy
+                await supabase
+                  .from('agents')
+                  .update({ creator_prebuy_amount: formData.prebuy_amount })
+                  .eq('id', agentId);
+                
                 toast({
                   title: "V8 Prebuy Successful!",
                   description: `Purchased ${formData.prebuy_amount} PROMPT worth of ${formData.symbol}`,
