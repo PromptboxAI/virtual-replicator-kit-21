@@ -1,13 +1,44 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { usePublicClient } from 'wagmi';
+import { formatEther, type Address } from 'viem';
+import { V8_CONTRACTS, BONDING_CURVE_V8_ABI, uuidToBytes32 } from '@/lib/contractsV8';
 
 /**
  * Centralized hook for fetching agent prices with auto-polling
- * Automatically uses the correct pricing function based on agent's pricing_model
- * Polls every 2 seconds to keep price updated
+ * 
+ * For V8 agents: Reads directly from blockchain (millisecond accuracy)
+ * For V4 agents: Uses RPC function
+ * For legacy agents: Uses stored current_price
+ * 
+ * Polls every 2 seconds for database-backed models, uses event watching for V8
  */
 export function useAgentPrice(agentId: string | undefined) {
   const [price, setPrice] = useState<number>(0);
+  const [isV8, setIsV8] = useState<boolean>(false);
+  const publicClient = usePublicClient();
+
+  // Fetch V8 price directly from blockchain
+  const fetchV8Price = useCallback(async () => {
+    if (!publicClient || !agentId) return null;
+    
+    try {
+      const agentIdBytes32 = uuidToBytes32(agentId);
+      
+      const result = await publicClient.readContract({
+        address: V8_CONTRACTS.BONDING_CURVE as Address,
+        abi: BONDING_CURVE_V8_ABI,
+        functionName: 'getAgentState',
+        args: [agentIdBytes32],
+      });
+
+      const [, , , , currentPrice] = result as [string, string, bigint, bigint, bigint, bigint, boolean];
+      return Number(formatEther(currentPrice));
+    } catch (err) {
+      console.error('[useAgentPrice] V8 blockchain read error:', err);
+      return null;
+    }
+  }, [publicClient, agentId]);
 
   useEffect(() => {
     if (!agentId) {
@@ -17,18 +48,29 @@ export function useAgentPrice(agentId: string | undefined) {
 
     const fetchPrice = async () => {
       try {
-        // First, get the agent's pricing model
+        // First, get the agent's pricing model and V8 status
         const { data: agent, error: agentError } = await supabase
           .from('agents')
-          .select('pricing_model, current_price')
+          .select('pricing_model, current_price, is_v8, prototype_token_address')
           .eq('id', agentId)
           .single();
 
         if (agentError) throw agentError;
 
-        // Use the appropriate pricing function based on pricing_model
-        if (agent?.pricing_model === 'linear_v4') {
-          // ✅ RPC now returns TEXT - convert to number
+        // V8 agents: Read directly from blockchain
+        if (agent?.is_v8 || agent?.prototype_token_address) {
+          setIsV8(true);
+          const blockchainPrice = await fetchV8Price();
+          if (blockchainPrice !== null) {
+            setPrice(blockchainPrice);
+          } else {
+            // Fallback to database if blockchain read fails
+            setPrice(agent?.current_price || 0);
+          }
+        }
+        // V4 agents: Use RPC function
+        else if (agent?.pricing_model === 'linear_v4') {
+          setIsV8(false);
           const { data: calculatedPrice, error: priceError } = await supabase.rpc(
             'get_agent_current_price_v4',
             { p_agent_id: agentId }
@@ -36,8 +78,10 @@ export function useAgentPrice(agentId: string | undefined) {
 
           if (priceError) throw priceError;
           setPrice(calculatedPrice ? parseFloat(calculatedPrice) : 0);
-        } else {
-          // For legacy agents (V3 and earlier), use the stored current_price
+        } 
+        // Legacy agents: Use stored current_price
+        else {
+          setIsV8(false);
           setPrice(agent?.current_price || 0);
         }
       } catch (err: any) {
@@ -49,11 +93,12 @@ export function useAgentPrice(agentId: string | undefined) {
     // Fetch immediately
     fetchPrice();
     
-    // Then poll every 2 seconds
-    const interval = setInterval(fetchPrice, 2000);
+    // Poll interval: faster for V8 (500ms), slower for database-backed (2s)
+    const pollInterval = isV8 ? 500 : 2000;
+    const interval = setInterval(fetchPrice, pollInterval);
     
     return () => clearInterval(interval);
-  }, [agentId]);
+  }, [agentId, fetchV8Price, isV8]);
 
   return price;
 }
