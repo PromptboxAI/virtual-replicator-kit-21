@@ -15,7 +15,9 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Card } from '@/components/ui/card';
 import { useTheme } from 'next-themes';
-import { useChartRealtime } from '@/hooks/useChartRealtime';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useChartRealtime, LiveCandle, ChartInterval as RealtimeChartInterval } from '@/hooks/useChartRealtime';
 import { useChartDrawings } from '@/hooks/useChartDrawings';
 import { useMobileGestures } from '@/hooks/useMobileGestures';
 import { useAdvancedIndicators } from '@/hooks/useAdvancedIndicators';
@@ -73,6 +75,23 @@ export const EnhancedTradingViewChart = ({
   const [showGraduationOverlay, setShowGraduationOverlay] = useState(true);
   const [showPriceImpact, setShowPriceImpact] = useState(true);
   const { theme } = useTheme();
+  
+  // Detect if agent is V8 for real-time blockchain updates
+  const { data: agentVersionData } = useQuery({
+    queryKey: ['agent-version', agentId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('agents')
+        .select('is_v8, prompt_usd_rate')
+        .eq('id', agentId)
+        .single();
+      return data;
+    },
+    staleTime: 60000, // Cache for 1 minute
+  });
+  
+  const isV8 = agentVersionData?.is_v8 ?? false;
+  const promptUsdRate = agentVersionData?.prompt_usd_rate ?? 1;
   
   // Get metrics for supply policy
   const { metrics } = useAgentMetrics(agentId);
@@ -395,11 +414,65 @@ export const EnhancedTradingViewChart = ({
     }
   }, [ohlcData, metrics, viewMode, chartType, showVolume, onPriceUpdate, ohlcLoading]);
 
-  // Real-time updates (disabled - we rely on OHLC polling for now)
+  // Handle live candle updates from blockchain events (V8 only)
+  const handleLiveCandleUpdate = useCallback((candle: LiveCandle) => {
+    if (!mainSeriesRef.current || !chartRef.current) return;
+    
+    // Convert PROMPT price to USD for display
+    const priceUsd = candle.close * promptUsdRate;
+    const supply = metrics?.supply?.circulating ? parseFloat(metrics.supply.circulating) : 0;
+    
+    try {
+      if (chartType === 'candlestick') {
+        // Update candlestick with live data
+        const chartCandle = {
+          time: candle.time as Time,
+          open: viewMode === 'marketcap' ? candle.open * promptUsdRate * supply : candle.open * promptUsdRate,
+          high: viewMode === 'marketcap' ? candle.high * promptUsdRate * supply : candle.high * promptUsdRate,
+          low: viewMode === 'marketcap' ? candle.low * promptUsdRate * supply : candle.low * promptUsdRate,
+          close: viewMode === 'marketcap' ? candle.close * promptUsdRate * supply : candle.close * promptUsdRate,
+        };
+        mainSeriesRef.current.update(chartCandle);
+      } else {
+        // Line/Area chart - update with close price
+        const value = viewMode === 'marketcap' 
+          ? candle.close * promptUsdRate * supply 
+          : candle.close * promptUsdRate;
+        mainSeriesRef.current.update({
+          time: candle.time as Time,
+          value,
+        });
+      }
+      
+      // Update volume if enabled
+      if (showVolume && volumeSeriesRef.current && candle.volume > 0) {
+        const prevCandle = mainSeriesRef.current?.data?.()?.slice(-2)?.[0];
+        const isUp = !prevCandle || candle.close >= candle.open;
+        volumeSeriesRef.current.update({
+          time: candle.time as Time,
+          value: candle.volume,
+          color: isUp ? '#10b98155' : '#ef444455',
+        });
+      }
+      
+      // Update displayed price
+      const displayPrice = viewMode === 'marketcap' 
+        ? candle.close * promptUsdRate * supply 
+        : candle.close * promptUsdRate;
+      setCurrentPrice(displayPrice);
+      
+    } catch (error) {
+      console.warn('Error updating live candle:', error);
+    }
+  }, [chartType, viewMode, promptUsdRate, metrics?.supply?.circulating, showVolume]);
+
+  // Real-time updates handler (for OHLCV data structure)
   const handleRealtimeUpdate = useCallback((newData: any) => {
-    // TODO: Re-enable when real-time uses per-bucket FX
-    console.log('Real-time update received but not applied:', newData);
-  }, []);
+    // For non-V8, this is used; for V8, handleLiveCandleUpdate handles it
+    if (!isV8) {
+      console.log('Real-time OHLCV update received:', newData);
+    }
+  }, [isV8]);
 
   const handlePriceChange = useCallback((price: number) => {
     // Animate price changes
@@ -409,15 +482,20 @@ export const EnhancedTradingViewChart = ({
       setTimeout(() => setPriceAnimation(null), 1000);
     }
     
-    setCurrentPrice(price);
-    onPriceUpdate?.(price);
-  }, [currentPrice, onPriceUpdate]);
+    // For V8, price is in PROMPT - convert to USD
+    const priceUsd = isV8 ? price * promptUsdRate : price;
+    setCurrentPrice(priceUsd);
+    onPriceUpdate?.(priceUsd);
+  }, [currentPrice, onPriceUpdate, isV8, promptUsdRate]);
 
-  const { isConnected } = useChartRealtime({
+  const { isConnected, liveCandle } = useChartRealtime({
     agentId,
     onUpdate: handleRealtimeUpdate,
+    onLiveCandleUpdate: isV8 ? handleLiveCandleUpdate : undefined,
     onPriceChange: handlePriceChange,
-    enabled: !loading
+    enabled: !loading,
+    isV8,
+    interval: interval as RealtimeChartInterval,
   });
 
   // ✅ Show empty state if no trades exist
