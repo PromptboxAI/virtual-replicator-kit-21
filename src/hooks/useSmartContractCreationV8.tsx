@@ -364,14 +364,34 @@ export const useSmartContractCreationV8 = () => {
       });
 
       // Step 2: Call buy on bonding curve with minTokensOut = 0 (accept any slippage for prebuy)
-      const buyTx = await writeContractAsync({
-        address: V8_CONTRACTS.BONDING_CURVE as `0x${string}`,
-        abi: BONDING_CURVE_V8_ABI,
-        functionName: 'buy',
-        args: [agentIdBytes32, amountWei, 0n], // minTokensOut = 0 for simplicity
-        account: address,
-        chain,
+      console.log('[V8] Preparing buy call with params:', {
+        bondingCurve: V8_CONTRACTS.BONDING_CURVE,
+        agentIdBytes32,
+        amountWei: amountWei.toString(),
+        chainId: chain?.id,
       });
+
+      let buyTx: `0x${string}`;
+      try {
+        buyTx = await writeContractAsync({
+          address: V8_CONTRACTS.BONDING_CURVE as `0x${string}`,
+          abi: BONDING_CURVE_V8_ABI,
+          functionName: 'buy',
+          args: [agentIdBytes32, amountWei, 0n], // minTokensOut = 0 for simplicity
+          account: address,
+          chain,
+        });
+      } catch (buyError: any) {
+        console.error('[V8] Buy writeContractAsync failed:', buyError);
+        console.error('[V8] Buy error details:', {
+          message: buyError?.message,
+          code: buyError?.code,
+          cause: buyError?.cause,
+          shortMessage: buyError?.shortMessage,
+          data: buyError?.data,
+        });
+        throw buyError;
+      }
 
       console.log('[V8] Prebuy buy tx sent:', buyTx);
       const receipt = await publicClient.waitForTransactionReceipt({ hash: buyTx });
