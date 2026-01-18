@@ -5,7 +5,7 @@
  * Unlike V7 (database-mode), V8 trades are executed on-chain via BondingCurveV8 contract.
  */
 
-import { useState, useCallback, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAccount, usePublicClient, useWalletClient } from 'wagmi';
 import { parseEther, formatEther, type Address } from 'viem';
@@ -47,40 +47,92 @@ export function useBondingCurveV8(agentId: string) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch agent state from database
-  const { data: agentState, isLoading: isLoadingAgent, refetch: refetchAgent } = useQuery({
-    queryKey: ['agent-v8-state', agentId],
-    queryFn: async (): Promise<AgentV8State | null> => {
+  // Fetch agent metadata from database (name, symbol, etc. - doesn't change often)
+  const { data: agentMetadata } = useQuery({
+    queryKey: ['agent-v8-metadata', agentId],
+    queryFn: async () => {
       const { data, error } = await supabase
         .from('agents')
-        .select(`
-          id, name, symbol, 
-          prototype_token_address,
-          on_chain_supply, on_chain_reserve,
-          current_price, token_graduated,
-          graduation_phase, prompt_raised
-        `)
+        .select('id, name, symbol, prototype_token_address, graduation_phase')
         .eq('id', agentId)
         .single();
-
       if (error || !data) return null;
-
-      return {
-        id: data.id,
-        name: data.name,
-        symbol: data.symbol,
-        prototypeTokenAddress: data.prototype_token_address,
-        supply: BigInt(Math.floor((data.on_chain_supply || 0) * 1e18)),
-        reserve: BigInt(Math.floor((data.on_chain_reserve || 0) * 1e18)),
-        currentPrice: BigInt(Math.floor((data.current_price || 0.00001) * 1e18)),
-        graduated: data.token_graduated || false,
-        graduationPhase: data.graduation_phase || 'not_started',
-        promptRaised: data.prompt_raised || 0,
-      };
+      return data;
     },
-    refetchInterval: 5000,
+    staleTime: 60000, // Metadata doesn't change often
     enabled: !!agentId,
   });
+
+  // Fetch live state directly from blockchain (real-time accuracy)
+  const { data: liveState, isLoading: isLoadingAgent, refetch: refetchAgent } = useQuery({
+    queryKey: ['agent-v8-live-state', agentId],
+    queryFn: async (): Promise<AgentV8State | null> => {
+      if (!publicClient || !agentMetadata) return null;
+
+      try {
+        const agentIdBytes32 = uuidToBytes32(agentId);
+        
+        const result = await publicClient.readContract({
+          address: V8_CONTRACTS.BONDING_CURVE as Address,
+          abi: BONDING_CURVE_V8_ABI,
+          functionName: 'getAgentState',
+          args: [agentIdBytes32],
+        });
+
+        const [
+          prototypeToken,
+          creator,
+          tokensSold,
+          promptReserve,
+          currentPrice,
+          graduationProgress,
+          graduated
+        ] = result as [string, string, bigint, bigint, bigint, bigint, boolean];
+
+        return {
+          id: agentMetadata.id,
+          name: agentMetadata.name,
+          symbol: agentMetadata.symbol,
+          prototypeTokenAddress: prototypeToken,
+          supply: tokensSold,
+          reserve: promptReserve,
+          currentPrice: currentPrice,
+          graduated: graduated,
+          graduationPhase: graduated ? 'completed' : (agentMetadata.graduation_phase || 'not_started'),
+          promptRaised: Number(formatEther(promptReserve)),
+        };
+      } catch (error) {
+        console.error('[useBondingCurveV8] Blockchain read failed, using database fallback:', error);
+        
+        // Fallback to database if blockchain read fails
+        const { data, error: dbError } = await supabase
+          .from('agents')
+          .select('on_chain_supply, on_chain_reserve, current_price, token_graduated, prompt_raised')
+          .eq('id', agentId)
+          .single();
+          
+        if (dbError || !data) return null;
+        
+        return {
+          id: agentMetadata.id,
+          name: agentMetadata.name,
+          symbol: agentMetadata.symbol,
+          prototypeTokenAddress: agentMetadata.prototype_token_address,
+          supply: BigInt(Math.floor((data.on_chain_supply || 0) * 1e18)),
+          reserve: BigInt(Math.floor((data.on_chain_reserve || 0) * 1e18)),
+          currentPrice: BigInt(Math.floor((data.current_price || 0.00001) * 1e18)),
+          graduated: data.token_graduated || false,
+          graduationPhase: agentMetadata.graduation_phase || 'not_started',
+          promptRaised: data.prompt_raised || 0,
+        };
+      }
+    },
+    refetchInterval: 1000, // Poll blockchain every 1 second for live trading
+    enabled: !!agentId && !!publicClient && !!agentMetadata,
+  });
+
+  // Use live state, falling back to metadata-only state
+  const agentState = liveState;
 
   // Fetch user's token balance
   const { data: userBalance, isLoading: isLoadingBalance } = useQuery({
