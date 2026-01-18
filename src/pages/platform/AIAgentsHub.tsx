@@ -160,7 +160,7 @@ const useCaseCategories = [
 
 // Animation variants
 const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0, y: 8 },
   visible: { opacity: 1, y: 0 }
 };
 
@@ -169,7 +169,7 @@ const staggerContainer = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.1
+      staggerChildren: 0.03
     }
   }
 };
@@ -181,7 +181,7 @@ const scaleIn = {
 
 const AnimatedSection = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const isInView = useInView(ref, { once: true, margin: "0px" });
   
   return (
     <motion.div
@@ -189,7 +189,7 @@ const AnimatedSection = ({ children, className = "" }: { children: React.ReactNo
       initial="hidden"
       animate={isInView ? "visible" : "hidden"}
       variants={fadeInUp}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+      transition={{ duration: 0.15, ease: "easeOut" }}
       className={className}
     >
       {children}
@@ -252,7 +252,7 @@ const AIAgentsHub = () => {
               className="grid grid-cols-1 md:grid-cols-3 gap-6"
               initial="hidden"
               whileInView="visible"
-              viewport={{ once: true, margin: "-100px" }}
+              viewport={{ once: true, margin: "0px" }}
               variants={staggerContainer}
             >
               {useCaseCategories.map((useCase, index) => (
@@ -260,7 +260,7 @@ const AIAgentsHub = () => {
                   key={index} 
                   className={`p-6 rounded-lg border border-border bg-background hover:border-foreground/30 transition-all duration-300 cursor-pointer hover:shadow-md hover:-translate-y-1 ${index === 0 ? 'border-foreground/50' : ''}`}
                   variants={scaleIn}
-                  transition={{ duration: 0.4, delay: index * 0.1 }}
+                  transition={{ duration: 0.15, delay: index * 0.02 }}
                   whileHover={{ scale: 1.02 }}
                 >
                   <h3 className="font-semibold text-foreground mb-2">{useCase.title}</h3>
@@ -331,7 +331,7 @@ const AIAgentsHub = () => {
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
               initial="hidden"
               whileInView="visible"
-              viewport={{ once: true, margin: "-50px" }}
+              viewport={{ once: true, margin: "0px" }}
               variants={staggerContainer}
             >
               {agents.map((agent, index) => {
@@ -340,7 +340,7 @@ const AIAgentsHub = () => {
                   <motion.div
                     key={agent.id}
                     variants={fadeInUp}
-                    transition={{ duration: 0.4, delay: index * 0.05 }}
+                    transition={{ duration: 0.15, delay: index * 0.02 }}
                   >
                     <Link to={`/platform/ai-agents/${agent.id}`}>
                       <motion.div

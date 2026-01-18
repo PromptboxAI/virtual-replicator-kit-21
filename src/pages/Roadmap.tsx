@@ -243,10 +243,10 @@ export default function Roadmap() {
               {roadmapData.map((phase, index) => (
                 <motion.div
                   key={phase.phase}
-                  initial={{ opacity: 0, y: 40 }}
+                  initial={{ opacity: 0, y: 12 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  viewport={{ once: true, margin: "-100px" }}
+                  transition={{ duration: 0.2, delay: index * 0.03 }}
+                  viewport={{ once: true, margin: "0px" }}
                   className={`relative grid lg:grid-cols-2 gap-8 lg:gap-16 ${
                     index % 2 === 1 ? "lg:direction-rtl" : ""
                   }`}
