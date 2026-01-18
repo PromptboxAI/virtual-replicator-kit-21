@@ -178,13 +178,16 @@ export default function CreateAgent() {
     }
   }, [formData, currentStep]);
 
-  // Symbol validation states (after formData is declared)
+  // Symbol and Name validation states (after formData is declared)
   const [symbolAvailable, setSymbolAvailable] = useState<boolean | null>(null);
   const [checkingSymbol, setCheckingSymbol] = useState(false);
+  const [nameAvailable, setNameAvailable] = useState<boolean | null>(null);
+  const [checkingName, setCheckingName] = useState(false);
   const [deployMethod, setDeployMethod] = useState<'sequential' | 'atomic'>('sequential');
   const [approvalReady, setApprovalReady] = useState(false);
   const [showWalletModal, setShowWalletModal] = useState(false);
   const debouncedSymbol = useDebounce(formData.symbol, 500);
+  const debouncedName = useDebounce(formData.name, 500);
 
   const categories = [
     "Trading Bot",
@@ -226,6 +229,34 @@ export default function CreateAgent() {
 
     checkSymbol();
   }, [debouncedSymbol]);
+
+  // Real-time name validation
+  useEffect(() => {
+    if (!debouncedName || debouncedName.length < 2) {
+      setNameAvailable(null);
+      return;
+    }
+
+    const checkName = async () => {
+      setCheckingName(true);
+      try {
+        const { data } = await supabase
+          .from('agents')
+          .select('name')
+          .eq('name', debouncedName)
+          .maybeSingle();
+
+        setNameAvailable(!data);
+      } catch (error) {
+        console.error('Name validation error:', error);
+        setNameAvailable(null);
+      } finally {
+        setCheckingName(false);
+      }
+    };
+
+    checkName();
+  }, [debouncedName]);
 
   // Load existing Twitter connection
   useEffect(() => {
@@ -537,12 +568,27 @@ export default function CreateAgent() {
       if (error) {
         console.error('Database error:', error);
         
-        if (error.code === '23505' && error.message?.includes('symbol')) {
-          toast({ 
-            title: "Creation Failed", 
-            description: "This symbol is already used on the platform.", 
-            variant: "destructive" 
-          });
+        if (error.code === '23505') {
+          // Duplicate key violation - could be symbol OR name
+          if (error.message?.includes('symbol')) {
+            toast({ 
+              title: "Creation Failed", 
+              description: "This symbol is already used on the platform.", 
+              variant: "destructive" 
+            });
+          } else if (error.message?.includes('name')) {
+            toast({ 
+              title: "Creation Failed", 
+              description: "This agent name is already taken. Please choose a different name.", 
+              variant: "destructive" 
+            });
+          } else {
+            toast({ 
+              title: "Creation Failed", 
+              description: "An agent with this name or symbol already exists.", 
+              variant: "destructive" 
+            });
+          }
         } else {
           toast({ 
             title: "Creation Failed", 
@@ -706,47 +752,53 @@ export default function CreateAgent() {
               }
             }
           } else if (!deployResult.success) {
-            // Deployment failed but continue with database mode
+            // Deployment failed - DELETE the agent record to allow retry with same name/symbol
             console.error('[CreateAgent] V8 deployment failed:', deployResult.error);
             toast({
               title: "V8 Contract Deployment Failed",
-              description: deployResult.error || "Falling back to database mode.",
+              description: deployResult.error || "Please try again.",
               variant: "destructive"
             });
             
-            // Update agent to database mode on failure - clear deployment_status
-            await supabase
+            // Delete the failed agent record so user can retry
+            const { error: deleteError } = await supabase
               .from('agents')
-              .update({ 
-                creation_mode: 'database',
-                is_v8: false, // Revert V8 flag on failure
-                token_graduated: false,
-                status: 'ACTIVE',
-                deployment_status: 'failed',
-                is_active: true
-              })
+              .delete()
               .eq('id', agentId);
+            
+            if (deleteError) {
+              console.error('[CreateAgent] Failed to cleanup agent record:', deleteError);
+            } else {
+              console.log('[CreateAgent] Cleaned up failed agent record:', agentId);
+            }
+            
+            // Clear the draft so user starts fresh
+            sessionStorage.removeItem(DRAFT_KEY);
+            return; // Don't proceed to success page
           }
         } catch (error) {
           console.error('[CreateAgent] V8 smart contract deployment error:', error);
           toast({
             title: "V8 Deployment Error",
-            description: "Falling back to database mode. Your agent has been created.",
+            description: "Deployment failed. Please try again.",
             variant: "destructive"
           });
           
-          // Update agent to database mode on failure - clear deployment_status
-          await supabase
+          // Delete the failed agent record so user can retry
+          const { error: deleteError } = await supabase
             .from('agents')
-            .update({ 
-              creation_mode: 'database',
-              is_v8: false, // Revert V8 flag on failure
-              token_graduated: false,
-              status: 'ACTIVE',
-              deployment_status: 'failed',
-              is_active: true
-            })
+            .delete()
             .eq('id', agentId);
+          
+          if (deleteError) {
+            console.error('[CreateAgent] Failed to cleanup agent record:', deleteError);
+          } else {
+            console.log('[CreateAgent] Cleaned up failed agent record:', agentId);
+          }
+          
+          // Clear the draft so user starts fresh
+          sessionStorage.removeItem(DRAFT_KEY);
+          return; // Don't proceed to success page
         }
       } else {
         // Database mode - show info about creation
@@ -1158,6 +1210,29 @@ export default function CreateAgent() {
                             {formData.name.length} / 100
                           </p>
                         </div>
+                        {/* Name validation feedback */}
+                        {formData.name && formData.name.length >= 2 && (
+                          <div className="mt-2 flex items-center gap-2">
+                            {checkingName && (
+                              <>
+                                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                <p className="text-sm text-muted-foreground">Checking availability...</p>
+                              </>
+                            )}
+                            {!checkingName && nameAvailable === false && (
+                              <>
+                                <AlertCircle className="h-4 w-4 text-destructive" />
+                                <p className="text-sm text-destructive">This name is already taken</p>
+                              </>
+                            )}
+                            {!checkingName && nameAvailable === true && (
+                              <>
+                                <Check className="h-4 w-4 text-green-500" />
+                                <p className="text-sm text-green-500">Name available</p>
+                              </>
+                            )}
+                          </div>
+                        )}
                       </div>
 
                       <div>
