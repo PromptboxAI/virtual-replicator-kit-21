@@ -42,12 +42,14 @@ export function useAgents() {
         console.log('Fetching smart_contract agents with isTestMode:', isTestMode);
         
         // Only fetch smart_contract agents, filtered by test_mode (testnet vs mainnet)
+        // Only show fully deployed & verified agents to prevent "dead" tokens from appearing
         const { data, error } = await supabase
           .from('agents')
           .select('*')
           .eq('is_active', true)
           .eq('test_mode', isTestMode)
           .eq('creation_mode', 'smart_contract')
+          .eq('deployment_verified', true) // Hide agents until deployment is fully verified
           .order('market_cap', { ascending: false });
 
         console.log('Agents query result - isTestMode:', isTestMode, 'data count:', data?.length || 0);
