@@ -63,10 +63,8 @@ export function useAgentPrice(agentId: string | undefined) {
           const blockchainPrice = await fetchV8Price();
           if (blockchainPrice !== null) {
             setPrice(blockchainPrice);
-          } else {
-            // Fallback to database if blockchain read fails
-            setPrice(agent?.current_price || 0);
           }
+          // No fallback - blockchain is source of truth for V8
         }
         // V4 agents: Use RPC function
         else if (agent?.pricing_model === 'linear_v4') {

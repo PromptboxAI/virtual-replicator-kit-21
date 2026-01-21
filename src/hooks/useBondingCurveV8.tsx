@@ -101,30 +101,9 @@ export function useBondingCurveV8(agentId: string) {
           graduationPhase: graduated ? 'completed' : (agentMetadata.graduation_phase || 'not_started'),
           promptRaised: Number(formatEther(promptReserve)),
         };
-      } catch (error) {
-        console.error('[useBondingCurveV8] Blockchain read failed, using database fallback:', error);
-        
-        // Fallback to database if blockchain read fails
-        const { data, error: dbError } = await supabase
-          .from('agents')
-          .select('on_chain_supply, on_chain_reserve, current_price, token_graduated, prompt_raised')
-          .eq('id', agentId)
-          .single();
-          
-        if (dbError || !data) return null;
-        
-        return {
-          id: agentMetadata.id,
-          name: agentMetadata.name,
-          symbol: agentMetadata.symbol,
-          prototypeTokenAddress: agentMetadata.prototype_token_address,
-          supply: BigInt(Math.floor((data.on_chain_supply || 0) * 1e18)),
-          reserve: BigInt(Math.floor((data.on_chain_reserve || 0) * 1e18)),
-          currentPrice: BigInt(Math.floor((data.current_price || 0.00001) * 1e18)),
-          graduated: data.token_graduated || false,
-          graduationPhase: agentMetadata.graduation_phase || 'not_started',
-          promptRaised: data.prompt_raised || 0,
-        };
+      } catch (error: any) {
+        console.error('[useBondingCurveV8] Blockchain read failed:', error);
+        throw new Error(`Failed to read blockchain state: ${error.message}`);
       }
     },
     refetchInterval: 1000, // Poll blockchain every 1 second for live trading
@@ -254,11 +233,21 @@ export function useBondingCurveV8(agentId: string) {
       const receipt = await publicClient.waitForTransactionReceipt({ hash: buyHash });
       return { hash: buyHash, receipt };
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       toast({
         title: 'Buy successful!',
         description: `Transaction: ${data.hash.slice(0, 10)}...`,
       });
+      
+      // Sync database for historical data (charts, trade history)
+      try {
+        await supabase.functions.invoke('sync-on-chain-trades', {
+          body: { agentIdFilter: agentId, syncStateOnly: true }
+        });
+      } catch (e) {
+        console.warn('[useBondingCurveV8] Database sync failed (non-critical):', e);
+      }
+      
       queryClient.invalidateQueries({ queryKey: ['agent-v8-state', agentId] });
       queryClient.invalidateQueries({ queryKey: ['user-token-balance-v8', agentId] });
     },
@@ -321,11 +310,21 @@ export function useBondingCurveV8(agentId: string) {
       const receipt = await publicClient.waitForTransactionReceipt({ hash: sellHash });
       return { hash: sellHash, receipt };
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       toast({
         title: 'Sell successful!',
         description: `Transaction: ${data.hash.slice(0, 10)}...`,
       });
+      
+      // Sync database for historical data (charts, trade history)
+      try {
+        await supabase.functions.invoke('sync-on-chain-trades', {
+          body: { agentIdFilter: agentId, syncStateOnly: true }
+        });
+      } catch (e) {
+        console.warn('[useBondingCurveV8] Database sync failed (non-critical):', e);
+      }
+      
       queryClient.invalidateQueries({ queryKey: ['agent-v8-state', agentId] });
       queryClient.invalidateQueries({ queryKey: ['user-token-balance-v8', agentId] });
     },
