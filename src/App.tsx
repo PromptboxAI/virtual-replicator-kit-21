@@ -157,10 +157,24 @@ const App = () => {
               />
               <Route path="/dashboard" element={<MyAgents />} />
               <Route path="/my-agents" element={<Navigate to="/dashboard" replace />} />
-              <Route path="/dashboard/:agentId" element={<CreatorAgentDashboard />} />
+              <Route
+                path="/dashboard/:agentId"
+                element={
+                  <WagmiWrapper>
+                    <CreatorAgentDashboard />
+                  </WagmiWrapper>
+                }
+              />
               <Route path="/market" element={<Market />} />
               <Route path="/agents" element={<AllAgents />} />
-              <Route path="/agent/:agentId" element={<UnifiedAgentPage />} />
+              <Route
+                path="/agent/:agentId"
+                element={
+                  <WagmiWrapper>
+                    <UnifiedAgentPage />
+                  </WagmiWrapper>
+                }
+              />
               <Route
                 path="/admin"
                 element={
