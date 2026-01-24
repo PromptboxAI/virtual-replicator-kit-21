@@ -15,13 +15,12 @@ serve(async (req) => {
 
     console.log('Fetching market overview...');
 
-    // Count active tokens (V8 smart contract agents) - only verified deployments
+    // Count active tokens (V8 smart contract agents)
     const { count: activeTokens, error: tokenCountError } = await supabase
       .from('agents')
       .select('*', { count: 'exact', head: true })
       .eq('is_active', true)
-      .eq('creation_mode', 'smart_contract')
-      .eq('deployment_verified', true);
+      .eq('creation_mode', 'smart_contract');
 
     if (tokenCountError) {
       console.error('Error counting active tokens:', tokenCountError);
@@ -35,13 +34,12 @@ serve(async (req) => {
 
     if (statsError) {
       console.error('Stats query error, falling back to agents table:', statsError);
-      // Fallback to agents table - only count verified smart_contract agents
+      // Fallback to agents table
       const { data: agentStats, error: agentError } = await supabase
         .from('agents')
         .select('market_cap, volume_24h, token_holders')
         .eq('is_active', true)
-        .eq('creation_mode', 'smart_contract')
-        .eq('deployment_verified', true);
+        .eq('creation_mode', 'smart_contract');
       
       if (agentError) throw agentError;
       
