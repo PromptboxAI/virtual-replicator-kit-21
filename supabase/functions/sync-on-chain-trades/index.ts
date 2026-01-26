@@ -26,6 +26,36 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Multiple RPC endpoints for redundancy - try primary first, then fallbacks
+const RPC_ENDPOINTS = [
+  Deno.env.get('BASE_SEPOLIA_RPC') || 'https://sepolia.base.org',
+  'https://base-sepolia.blockpi.network/v1/rpc/public',
+  'https://base-sepolia-rpc.publicnode.com',
+];
+
+// Helper to create client with fallback RPCs
+async function createClientWithFallback(chain: typeof baseSepolia): Promise<ReturnType<typeof createPublicClient>> {
+  for (let i = 0; i < RPC_ENDPOINTS.length; i++) {
+    const rpcUrl = RPC_ENDPOINTS[i];
+    try {
+      const client = createPublicClient({
+        chain,
+        transport: http(rpcUrl, { timeout: 10000 }),
+      });
+      // Test the connection with a simple call
+      await client.getBlockNumber();
+      console.log(`[sync-trades] Connected to RPC: ${rpcUrl}`);
+      return client;
+    } catch (error) {
+      console.warn(`[sync-trades] RPC ${rpcUrl} failed (${i + 1}/${RPC_ENDPOINTS.length}):`, error.message);
+      if (i === RPC_ENDPOINTS.length - 1) {
+        throw new Error(`All ${RPC_ENDPOINTS.length} RPC endpoints failed. Last error: ${error.message}`);
+      }
+    }
+  }
+  throw new Error('No RPC endpoints available');
+}
+
 // V8 Constants
 const V8_CONFIG = {
   BONDING_CURVE: '0xc511a151b0E04D5Ba87968900eE90d310530D5fB',
@@ -90,12 +120,9 @@ serve(async (req) => {
     );
 
     const BONDING_CURVE_V8 = Deno.env.get('BONDING_CURVE_V8_ADDRESS') || V8_CONFIG.BONDING_CURVE;
-    const RPC_URL = Deno.env.get('BASE_SEPOLIA_RPC') || 'https://sepolia.base.org';
-
-    const publicClient = createPublicClient({
-      chain: baseSepolia,
-      transport: http(RPC_URL),
-    });
+    
+    // Create client with automatic RPC fallback
+    const publicClient = await createClientWithFallback(baseSepolia);
 
     // Parse request
     let fromBlock: bigint | undefined;

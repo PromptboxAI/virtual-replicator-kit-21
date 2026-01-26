@@ -6,33 +6,55 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const BASE_SEPOLIA_RPC = Deno.env.get('BASE_SEPOLIA_RPC') || 'https://sepolia.base.org';
+// Multiple RPC endpoints for redundancy
+const RPC_ENDPOINTS = [
+  Deno.env.get('BASE_SEPOLIA_RPC') || 'https://sepolia.base.org',
+  'https://base-sepolia.blockpi.network/v1/rpc/public',
+  'https://base-sepolia-rpc.publicnode.com',
+];
+
+// Helper to make RPC calls with automatic fallback
+async function rpcCallWithFallback(method: string, params: any[]): Promise<any> {
+  let lastError: Error | null = null;
+  
+  for (let i = 0; i < RPC_ENDPOINTS.length; i++) {
+    const rpcUrl = RPC_ENDPOINTS[i];
+    try {
+      const response = await fetch(rpcUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: 1,
+          method,
+          params
+        })
+      });
+
+      const result = await response.json();
+      if (result.error) {
+        throw new Error(result.error.message || JSON.stringify(result.error));
+      }
+      
+      return result.result;
+    } catch (error) {
+      console.warn(`[index-events] RPC ${rpcUrl} failed (${i + 1}/${RPC_ENDPOINTS.length}):`, error.message);
+      lastError = error;
+    }
+  }
+  
+  throw new Error(`All ${RPC_ENDPOINTS.length} RPC endpoints failed. Last error: ${lastError?.message}`);
+}
 
 // ERC20 Transfer event signature
 const TRANSFER_EVENT_TOPIC = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
 
 // Zero address
-const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 // Get current block number
 async function getCurrentBlockNumber(): Promise<bigint> {
-  const response = await fetch(BASE_SEPOLIA_RPC, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      jsonrpc: '2.0',
-      id: 1,
-      method: 'eth_blockNumber',
-      params: []
-    })
-  });
-
-  const result = await response.json();
-  if (result.error) {
-    throw new Error(result.error.message);
-  }
-
-  return BigInt(result.result);
+  const result = await rpcCallWithFallback('eth_blockNumber', []);
+  return BigInt(result);
 }
 
 // Get Transfer logs for a token address
@@ -47,28 +69,14 @@ async function getTransferLogs(
   blockNumber: bigint;
   transactionHash: string;
 }>> {
-  const response = await fetch(BASE_SEPOLIA_RPC, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      jsonrpc: '2.0',
-      id: 1,
-      method: 'eth_getLogs',
-      params: [{
-        address: tokenAddress,
-        topics: [TRANSFER_EVENT_TOPIC],
-        fromBlock: '0x' + fromBlock.toString(16),
-        toBlock: '0x' + toBlock.toString(16)
-      }]
-    })
-  });
+  const result = await rpcCallWithFallback('eth_getLogs', [{
+    address: tokenAddress,
+    topics: [TRANSFER_EVENT_TOPIC],
+    fromBlock: '0x' + fromBlock.toString(16),
+    toBlock: '0x' + toBlock.toString(16)
+  }]);
 
-  const result = await response.json();
-  if (result.error) {
-    throw new Error(result.error.message);
-  }
-
-  return (result.result || []).map((log: {
+  return (result || []).map((log: {
     topics: string[];
     data: string;
     blockNumber: string;
