@@ -772,8 +772,27 @@ export default function CreateAgent() {
               console.log('[CreateAgent] Cleaned up failed agent record:', agentId);
             }
             
-            // Clear the draft so user starts fresh
+            // Clear the draft and reset state so user starts completely fresh
             sessionStorage.removeItem(DRAFT_KEY);
+            setCurrentStep(0);
+            setFormData({
+              name: "",
+              symbol: "",
+              description: "",
+              category: "",
+              framework: "PROMPT",
+              website_url: "",
+              twitter_url: "",
+              avatar_url: "",
+              total_supply: 1000000000,
+              project_pitch: "",
+              prebuy_amount: 0,
+              creation_locked: false,
+              lock_duration_minutes: 60,
+              creator_prebuy_amount: 0
+            });
+            setAvatarFile(null);
+            setIsCreating(false);
             return; // Don't proceed to success page
           }
         } catch (error) {
@@ -796,8 +815,27 @@ export default function CreateAgent() {
             console.log('[CreateAgent] Cleaned up failed agent record:', agentId);
           }
           
-          // Clear the draft so user starts fresh
+          // Clear the draft and reset state so user starts completely fresh
           sessionStorage.removeItem(DRAFT_KEY);
+          setCurrentStep(0);
+          setFormData({
+            name: "",
+            symbol: "",
+            description: "",
+            category: "",
+            framework: "PROMPT",
+            website_url: "",
+            twitter_url: "",
+            avatar_url: "",
+            total_supply: 1000000000,
+            project_pitch: "",
+            prebuy_amount: 0,
+            creation_locked: false,
+            lock_duration_minutes: 60,
+            creator_prebuy_amount: 0
+          });
+          setAvatarFile(null);
+          setIsCreating(false);
           return; // Don't proceed to success page
         }
       } else {
