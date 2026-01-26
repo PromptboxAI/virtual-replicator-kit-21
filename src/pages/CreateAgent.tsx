@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -130,8 +130,17 @@ export default function CreateAgent() {
     creator_prebuy_amount: 0
   });
 
+  // Track if we just cleared draft due to deployment failure (skip restore toast)
+  const skipDraftRestoreToast = useRef(false);
+
   // Restore draft on first mount
   useEffect(() => {
+    // Skip if we just cleared the draft due to failure
+    if (skipDraftRestoreToast.current) {
+      skipDraftRestoreToast.current = false;
+      return;
+    }
+    
     try {
       const raw = sessionStorage.getItem(DRAFT_KEY);
       if (!raw) return;
@@ -773,6 +782,8 @@ export default function CreateAgent() {
             }
             
             // Clear the draft and reset state so user starts completely fresh
+            // Mark to skip "draft restored" toast since we're intentionally clearing
+            skipDraftRestoreToast.current = true;
             sessionStorage.removeItem(DRAFT_KEY);
             setCurrentStep(0);
             setFormData({
@@ -816,6 +827,8 @@ export default function CreateAgent() {
           }
           
           // Clear the draft and reset state so user starts completely fresh
+          // Mark to skip "draft restored" toast since we're intentionally clearing
+          skipDraftRestoreToast.current = true;
           sessionStorage.removeItem(DRAFT_KEY);
           setCurrentStep(0);
           setFormData({
