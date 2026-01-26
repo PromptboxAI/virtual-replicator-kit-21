@@ -6,7 +6,11 @@ import type {
 } from "@/components/ui/toast"
 
 const TOAST_LIMIT = 1
-const TOAST_REMOVE_DELAY = 1000000
+// Default Radix toast duration is 5000ms; we set it explicitly for consistency.
+const DEFAULT_TOAST_DURATION = 5000
+// How long after a toast is dismissed we remove it from state.
+// Keep short to avoid “stuck” toasts in controlled mode.
+const TOAST_REMOVE_DELAY = 1000
 
 type ToasterToast = ToastProps & {
   id: string
@@ -153,6 +157,7 @@ function toast({ ...props }: Toast) {
     type: "ADD_TOAST",
     toast: {
       ...props,
+      duration: props.duration ?? DEFAULT_TOAST_DURATION,
       id,
       open: true,
       onOpenChange: (open) => {
