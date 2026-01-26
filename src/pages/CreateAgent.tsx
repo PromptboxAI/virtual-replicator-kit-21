@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -130,14 +130,16 @@ export default function CreateAgent() {
     creator_prebuy_amount: 0
   });
 
-  // Track if we just cleared draft due to deployment failure (skip restore toast)
-  const skipDraftRestoreToast = useRef(false);
+  // Key used to suppress toast after intentional draft clear (survives page navigation)
+  const SKIP_TOAST_KEY = 'agent_draft_cleared';
 
   // Restore draft on first mount
   useEffect(() => {
-    // Skip if we just cleared the draft due to failure
-    if (skipDraftRestoreToast.current) {
-      skipDraftRestoreToast.current = false;
+    // Check if we intentionally cleared the draft (flag set before navigation/reload)
+    const wasCleared = sessionStorage.getItem(SKIP_TOAST_KEY);
+    if (wasCleared) {
+      sessionStorage.removeItem(SKIP_TOAST_KEY);
+      sessionStorage.removeItem(DRAFT_KEY); // Ensure it's really gone
       return;
     }
     
@@ -824,8 +826,8 @@ export default function CreateAgent() {
             }
             
             // Clear the draft and reset state so user starts completely fresh
-            // Mark to skip "draft restored" toast since we're intentionally clearing
-            skipDraftRestoreToast.current = true;
+            // Set flag to skip "draft restored" toast on next mount (survives navigation)
+            sessionStorage.setItem(SKIP_TOAST_KEY, 'true');
             sessionStorage.removeItem(DRAFT_KEY);
             setCurrentStep(0);
             setFormData({
@@ -869,8 +871,8 @@ export default function CreateAgent() {
           }
           
           // Clear the draft and reset state so user starts completely fresh
-          // Mark to skip "draft restored" toast since we're intentionally clearing
-          skipDraftRestoreToast.current = true;
+          // Set flag to skip "draft restored" toast on next mount (survives navigation)
+          sessionStorage.setItem(SKIP_TOAST_KEY, 'true');
           sessionStorage.removeItem(DRAFT_KEY);
           setCurrentStep(0);
           setFormData({
