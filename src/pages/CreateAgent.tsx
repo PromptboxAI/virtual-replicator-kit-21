@@ -145,8 +145,30 @@ export default function CreateAgent() {
       const raw = sessionStorage.getItem(DRAFT_KEY);
       if (!raw) return;
 
-      const parsed = JSON.parse(raw) as { formData?: Partial<AgentFormData>; currentStep?: number };
+      const parsed = JSON.parse(raw) as {
+        formData?: Partial<AgentFormData>;
+        currentStep?: number;
+      };
       if (!parsed?.formData) return;
+
+      // If the draft is effectively empty, don't restore (and clean it up).
+      const f = parsed.formData;
+      const hasMeaningfulDraft = Boolean(
+        f.name ||
+          f.symbol ||
+          f.description ||
+          f.category ||
+          f.website_url ||
+          f.twitter_url ||
+          f.project_pitch ||
+          (typeof f.prebuy_amount === 'number' && f.prebuy_amount > 0) ||
+          f.creation_locked
+      );
+
+      if (!hasMeaningfulDraft) {
+        sessionStorage.removeItem(DRAFT_KEY);
+        return;
+      }
 
       setFormData((prev) => ({
         ...prev,
@@ -170,6 +192,26 @@ export default function CreateAgent() {
   // Save draft continuously (cheap + prevents lost work)
   useEffect(() => {
     try {
+      // Don't persist an empty/initial draft (prevents “draft restored” after we intentionally reset).
+      const isPristineDraft =
+        currentStep === 0 &&
+        !formData.name &&
+        !formData.symbol &&
+        !formData.description &&
+        !formData.category &&
+        !formData.website_url &&
+        !formData.twitter_url &&
+        !formData.project_pitch &&
+        formData.prebuy_amount === 0 &&
+        formData.creation_locked === false &&
+        formData.lock_duration_minutes === 60 &&
+        formData.creator_prebuy_amount === 0;
+
+      if (isPristineDraft) {
+        sessionStorage.removeItem(DRAFT_KEY);
+        return;
+      }
+
       sessionStorage.setItem(
         DRAFT_KEY,
         JSON.stringify({
