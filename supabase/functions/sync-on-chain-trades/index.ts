@@ -33,14 +33,14 @@ const RPC_ENDPOINTS = [
   'https://base-sepolia-rpc.publicnode.com',
 ];
 
-// Helper to create client with fallback RPCs
+// Helper to create client with fallback RPCs (for initial connection test)
 async function createClientWithFallback(chain: typeof baseSepolia): Promise<ReturnType<typeof createPublicClient>> {
   for (let i = 0; i < RPC_ENDPOINTS.length; i++) {
     const rpcUrl = RPC_ENDPOINTS[i];
     try {
       const client = createPublicClient({
         chain,
-        transport: http(rpcUrl, { timeout: 10000 }),
+        transport: http(rpcUrl, { timeout: 15000 }),
       });
       // Test the connection with a simple call
       await client.getBlockNumber();
@@ -54,6 +54,33 @@ async function createClientWithFallback(chain: typeof baseSepolia): Promise<Retu
     }
   }
   throw new Error('No RPC endpoints available');
+}
+
+// Helper for retrying RPC operations with fallback endpoints
+async function withRpcRetry<T>(
+  operation: (client: ReturnType<typeof createPublicClient>) => Promise<T>,
+  chain: typeof baseSepolia
+): Promise<T> {
+  let lastError: Error | null = null;
+  
+  for (let i = 0; i < RPC_ENDPOINTS.length; i++) {
+    const rpcUrl = RPC_ENDPOINTS[i];
+    try {
+      const client = createPublicClient({
+        chain,
+        transport: http(rpcUrl, { timeout: 15000 }),
+      });
+      return await operation(client);
+    } catch (error: any) {
+      lastError = error;
+      console.warn(`[sync-trades] RPC operation failed on ${rpcUrl} (${i + 1}/${RPC_ENDPOINTS.length}):`, error.message);
+      if (i < RPC_ENDPOINTS.length - 1) {
+        console.log(`[sync-trades] Retrying with next RPC endpoint...`);
+      }
+    }
+  }
+  
+  throw lastError || new Error('All RPC endpoints exhausted');
 }
 
 // V8 Constants
@@ -158,12 +185,15 @@ serve(async (req) => {
           .eq('id', agentIdFilter)
           .single();
 
-        const result = await publicClient.readContract({
-          address: BONDING_CURVE_V8 as Address,
-          abi: getAgentStateAbi,
-          functionName: 'getAgentState',
-          args: [agentIdBytes32],
-        });
+        const result = await withRpcRetry(
+          (client) => client.readContract({
+            address: BONDING_CURVE_V8 as Address,
+            abi: getAgentStateAbi,
+            functionName: 'getAgentState',
+            args: [agentIdBytes32],
+          }),
+          baseSepolia
+        );
 
         // Destructure 7 values: [prototypeToken, creator, tokensSold, promptReserve, currentPrice, graduationProgress, graduated]
         const [prototypeToken, creator, supply, reserve, currentPrice, graduationProgress, graduated] = result;
@@ -280,13 +310,16 @@ serve(async (req) => {
 
     console.log(`[sync-trades] Syncing trades from block ${actualFromBlock} to ${resolvedToBlock}`);
 
-    // Fetch Trade events
-    const logs = await publicClient.getLogs({
-      address: BONDING_CURVE_V8 as Address,
-      event: tradeEvent,
-      fromBlock: actualFromBlock,
-      toBlock: resolvedToBlock,
-    });
+    // Fetch Trade events with RPC retry
+    const logs = await withRpcRetry(
+      (client) => client.getLogs({
+        address: BONDING_CURVE_V8 as Address,
+        event: tradeEvent,
+        fromBlock: actualFromBlock,
+        toBlock: resolvedToBlock,
+      }),
+      baseSepolia
+    );
 
     console.log(`[sync-trades] Found ${logs.length} trade events`);
 

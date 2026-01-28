@@ -212,6 +212,24 @@ async function verifyAndSyncFromTxHash(supabase: any, publicClient: any, agentId
     }
     
     console.log(`[sync-agent-deployment] Successfully synced agent ${agentId} with token ${tokenAddress} (V8: ${isV8Event})`);
+    
+    // Initialize agent_runtime_status (server-side to bypass RLS)
+    const { error: runtimeError } = await supabase
+      .from('agent_runtime_status')
+      .upsert({
+        agent_id: agentId,
+        is_active: false,
+        current_goal: 'Awaiting AI configuration',
+        performance_metrics: {},
+        revenue_generated: 0,
+        tasks_completed: 0
+      }, { onConflict: 'agent_id' });
+    
+    if (runtimeError) {
+      console.warn(`[sync-agent-deployment] Runtime status init warning:`, runtimeError.message);
+    } else {
+      console.log(`[sync-agent-deployment] Runtime status initialized for agent ${agentId}`);
+    }
   }
 
   return { success: true, tokenAddress, txHash, isV8: isV8Event, message: 'Agent synced successfully from on-chain data' };
