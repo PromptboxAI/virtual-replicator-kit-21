@@ -538,6 +538,36 @@ serve(async (req) => {
       }
     }
 
+    // CRITICAL: Sync on-chain state to database after deployment/prebuy
+    // This ensures trades and metrics are captured immediately, not waiting for the cron indexer
+    try {
+      console.log('[V8] Triggering sync-on-chain-trades for new agent...');
+      const syncResponse = await fetch(
+        `${Deno.env.get('SUPABASE_URL')}/functions/v1/sync-on-chain-trades`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            agentId: agentId,
+            syncStateOnly: true, // Read on-chain state and update DB
+          }),
+        }
+      );
+      
+      if (syncResponse.ok) {
+        const syncResult = await syncResponse.json();
+        console.log('[V8] Sync completed:', syncResult);
+      } else {
+        console.warn('[V8] Sync failed with status:', syncResponse.status);
+      }
+    } catch (syncError) {
+      console.warn('[V8] Sync-on-chain-trades error (non-blocking):', syncError);
+      // Non-blocking - agent creation still succeeded
+    }
+
     // Initialize runtime status
     await supabase
       .from('agent_runtime_status')
