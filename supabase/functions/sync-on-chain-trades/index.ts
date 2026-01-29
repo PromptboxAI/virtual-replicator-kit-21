@@ -185,6 +185,36 @@ serve(async (req) => {
           .eq('id', agentIdFilter)
           .single();
 
+        // CRITICAL: Index holder balances FIRST to ensure fresh data
+        if (agentDetails?.prototype_token_address) {
+          try {
+            console.log(`[sync-state] Calling index-prototype-events for agent ${agentIdFilter}`);
+            const indexResponse = await fetch(
+              `${Deno.env.get('SUPABASE_URL')}/functions/v1/index-prototype-events`,
+              {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  agentId: agentIdFilter,
+                  prototypeTokenAddress: agentDetails.prototype_token_address,
+                  maxBlocks: 10000,
+                }),
+              }
+            );
+            if (indexResponse.ok) {
+              const indexResult = await indexResponse.json();
+              console.log(`[sync-state] Indexer result:`, indexResult);
+            } else {
+              console.warn(`[sync-state] Indexer failed: ${indexResponse.status}`);
+            }
+          } catch (indexError) {
+            console.warn(`[sync-state] Error calling indexer:`, indexError);
+          }
+        }
+
         const result = await withRpcRetry(
           (client) => client.readContract({
             address: BONDING_CURVE_V8 as Address,

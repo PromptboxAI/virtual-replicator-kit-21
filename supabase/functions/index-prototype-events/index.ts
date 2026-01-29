@@ -50,6 +50,7 @@ async function rpcCallWithFallback(method: string, params: any[]): Promise<any> 
 const TRANSFER_EVENT_TOPIC = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
 
 // Zero address
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 // Get current block number
 async function getCurrentBlockNumber(): Promise<bigint> {
