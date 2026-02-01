@@ -5,7 +5,7 @@ import { useWeb3ContractDeployment } from '@/hooks/useWeb3ContractDeployment';
 import { useAuth } from '@/hooks/useAuth';
 import { Copy, ExternalLink, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
-
+import { getAddressExplorerUrl, ACTIVE_CHAIN } from '@/lib/networkConfig';
 export function ContractDeployment() {
   const { user } = useAuth();
   const { 
@@ -24,7 +24,7 @@ export function ContractDeployment() {
   };
 
   const openEtherscan = (address: string) => {
-    window.open(`https://sepolia.basescan.org/address/${address}`, '_blank');
+    window.open(getAddressExplorerUrl(address), '_blank');
   };
 
   return (

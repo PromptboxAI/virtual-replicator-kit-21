@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Loader2, ExternalLink, Coins, TrendingUp } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
+import { getTxExplorerUrl } from '@/lib/networkConfig'
 
 interface PlatformAllocation {
   id: string
@@ -102,7 +103,7 @@ export function PlatformAllocationsList() {
 
   const openTransaction = (txHash: string) => {
     if (txHash) {
-      window.open(`https://sepolia.basescan.org/tx/${txHash}`, '_blank')
+      window.open(getTxExplorerUrl(txHash), '_blank')
     }
   }
 

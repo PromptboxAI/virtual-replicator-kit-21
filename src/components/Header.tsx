@@ -5,7 +5,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useState } from "react";
-
+import { getAddressExplorerUrl } from "@/lib/networkConfig";
 import TestnetOnlyBanner from "./TestnetOnlyBanner";
 import { SystemStatusIndicator } from "./SystemStatusIndicator";
 import {
@@ -168,7 +168,7 @@ export function Header() {
                       {user.wallet && user.wallet.walletClientType !== 'privy' && (
                         <DropdownMenuItem asChild className="cursor-pointer">
                           <a 
-                            href={`https://sepolia.basescan.org/address/${user.wallet.address}`}
+                            href={getAddressExplorerUrl(user.wallet.address)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center"

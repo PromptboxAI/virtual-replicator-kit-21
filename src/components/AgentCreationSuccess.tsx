@@ -6,6 +6,7 @@ import { CheckCircle2, TrendingUp, Settings, ArrowRight, ExternalLink, Rocket, L
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { supabase } from '@/integrations/supabase/client';
+import { getAddressExplorerUrl } from '@/lib/networkConfig';
 
 interface LocationState {
   agentName?: string;
@@ -132,7 +133,7 @@ export default function AgentCreationSuccess() {
                   {tokenAddress.slice(0, 10)}...{tokenAddress.slice(-8)}
                 </code>
                 <button
-                  onClick={() => window.open(`https://sepolia.basescan.org/address/${tokenAddress}`, '_blank')}
+                  onClick={() => window.open(getAddressExplorerUrl(tokenAddress), '_blank')}
                   className="text-primary hover:text-primary/80 transition-colors"
                 >
                   <ExternalLink className="h-4 w-4" />
