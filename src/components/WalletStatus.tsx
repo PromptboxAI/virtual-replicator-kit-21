@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Wallet, RefreshCw, Copy, ExternalLink } from 'lucide-react';
 import { usePrivyWallet } from '@/hooks/usePrivyWallet';
 import { useToast } from '@/hooks/use-toast';
+import { getAddressExplorerUrl } from '@/lib/networkConfig';
 
 export function WalletStatus() {
   const {
@@ -35,7 +36,7 @@ export function WalletStatus() {
 
   const openInExplorer = () => {
     if (address) {
-      window.open(`https://sepolia.basescan.org/address/${address}`, '_blank');
+      window.open(getAddressExplorerUrl(address), '_blank');
     }
   };
 

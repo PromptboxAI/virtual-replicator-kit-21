@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAccount } from 'wagmi';
 import { useNavigate } from 'react-router-dom';
 import { Rocket, Zap, Shield, Loader2, Sparkles, CheckCircle, AlertCircle, ExternalLink } from 'lucide-react';
+import { getAddressExplorerUrl, CHAIN_ID } from '@/lib/networkConfig';
 
 interface DeploymentStep {
   id: string;
@@ -145,8 +146,8 @@ export function NewAgentCreator() {
             creator_id: address,
             framework: 'G.A.M.E.',
             deployment_status: 'pending',
-            network_environment: 'testnet',
-            chain_id: 84532,
+            network_environment: CHAIN_ID === 8453 ? 'mainnet' : 'testnet',
+            chain_id: CHAIN_ID,
             status: 'ACTIVATING'
           })
           .select()
@@ -441,7 +442,7 @@ export function NewAgentCreator() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => window.open(`https://sepolia.basescan.org/address/${contractAddress}`, '_blank')}
+                        onClick={() => window.open(getAddressExplorerUrl(contractAddress), '_blank')}
                       >
                         <ExternalLink className="w-3 h-3" />
                       </Button>

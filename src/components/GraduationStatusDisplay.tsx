@@ -5,7 +5,7 @@ import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
 import { ExternalLink, Zap, Trophy, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import { formatPromptAmountV3 } from '@/lib/bondingCurveV3';
-
+import { getAddressExplorerUrl, getTxExplorerUrl } from '@/lib/networkConfig';
 interface GraduationEvent {
   id: string;
   agent_id: string;
@@ -256,7 +256,7 @@ export const GraduationStatusDisplay: React.FC<GraduationStatusDisplayProps> = (
                   <span className="truncate">{graduationEvent.v2_contract_address}</span>
                   <ExternalLink 
                     className="h-3 w-3 cursor-pointer text-primary hover:text-primary-glow transition-colors" 
-                    onClick={() => window.open(`https://sepolia.basescan.org/address/${graduationEvent.v2_contract_address}`, '_blank')}
+                    onClick={() => window.open(getAddressExplorerUrl(graduationEvent.v2_contract_address!), '_blank')}
                   />
                 </div>
               </div>
@@ -269,7 +269,7 @@ export const GraduationStatusDisplay: React.FC<GraduationStatusDisplayProps> = (
                   <span className="truncate">{graduationEvent.deployment_tx_hash}</span>
                   <ExternalLink 
                     className="h-3 w-3 cursor-pointer text-primary hover:text-primary-glow transition-colors" 
-                    onClick={() => window.open(`https://sepolia.basescan.org/tx/${graduationEvent.deployment_tx_hash}`, '_blank')}
+                    onClick={() => window.open(getTxExplorerUrl(graduationEvent.deployment_tx_hash!), '_blank')}
                   />
                 </div>
               </div>
