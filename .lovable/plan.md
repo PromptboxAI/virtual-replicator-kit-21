@@ -1,142 +1,75 @@
 
+# Promptbox V2 Waitlist Homepage
 
-# Fix Agent Creation 401/500 Errors
+## Goal
+Replace the current homepage (`/`) with a new, conversion-focused waitlist landing page reflecting Promptbox's pivot to "the second-brain layer for AI agents." Existing app routes (`/agents`, `/create`, `/dashboard`, `/admin`, etc.) stay intact.
 
-## Summary
-This plan addresses three issues observed during V8 agent creation:
-1. 401 errors when updating `agents` and inserting into `agent_runtime_status` 
-2. 500 errors from `sync-on-chain-trades` due to RPC failures
-3. Ensuring reliable agent initialization even when client-side operations fail
+## Routing change
+- `/` → new `WaitlistHome` page (was `TokenAgents`)
+- Add `/app` → existing `TokenAgents` (so the old token-agents experience is still reachable from inside the product)
+- Sticky nav anchors: Features, How It Works, Pricing, FAQ, Join Waitlist
 
----
+If you'd rather keep `TokenAgents` at `/` and put the waitlist at `/waitlist` or `/v2`, say the word — otherwise I'll go with the replacement above.
 
-## Changes Overview
+## Page sections (in order)
+1. Sticky top nav (Promptbox wordmark, anchor links, "Join Waitlist" CTA)
+2. Hero: badges ("V2 Waitlist Now Open", "Second brains for AI agents"), headline ("Build the Second Brain for Your AI Agent"), subheadline, inline waitlist form, trust line, right-side animated **BrainGraphVisual** with AlphaScout AI dashboard stats (Raw Sources 128, Wiki Pages 34, Skills 9, Health 92%, Proof Events 47, Token: Optional)
+3. Positioning: "Most AI agents are disposable. Promptbox makes them compound." + Remember / Organize / Improve cards
+4. How It Works: 6 steps (Dump Knowledge → AI Librarian → Ask the Brain → Save Outputs → Health Checks → Deploy)
+5. Features: 10 glass cards (Raw Dump Inbox, AI Wiki, Visual Brain Graph, Persistent Memory, Reusable Skills, Health Checks, Claude Standard, Hermes Self-Learning, Public Proof Feed, Optional Tokenized Agents)
+6. What is a Promptbox Brain? — folder-tree visual (Raw / Wiki / Outputs / Memory / Skills / Health Checks / Proof Feed)
+7. Use Cases: 6 cards (Crypto Research, Creator Brains, Business Knowledge, Trading Assistants, Expert Assistants, Community Agents)
+8. AgentFi optional layer: 4 cards + jurisdictional disclaimer
+9. Pricing tiers: 4 cards (Personal Brain free beta, Agent Brain $29, Self-Learning $99, Tokenized custom) + early-access note
+10. Comparison table: Generic Chatbot vs Workflow Builder vs Promptbox (6 rows)
+11. FAQ: 7 items (accordion)
+12. Final CTA + full WaitlistForm
+13. Footer with wordmark, tagline, link columns
 
-### 1. Move `agent_runtime_status` Initialization to Edge Function
+## Components to create (`src/components/waitlist/`)
+- `WaitlistNav.tsx` — sticky glass nav
+- `Hero.tsx`
+- `WaitlistForm.tsx` — email + name + "what are you building" select + optional textarea; success state; calls `submitWaitlist()` helper
+- `BrainGraphVisual.tsx` — SVG node graph (Research, Memory, Skills, Outputs, Wallet, Proof Feed) with subtle pulse animation + stats card overlay
+- `FeatureCard.tsx`, `HowItWorksStep.tsx`, `UseCaseCard.tsx`, `PricingCard.tsx`, `FAQItem.tsx` (wrap shadcn Accordion), `ComparisonTable.tsx`, `BrainFolderVisual.tsx`, `AgentFiCard.tsx`, `Footer.tsx`
+- `src/pages/WaitlistHome.tsx` — composes all sections
 
-**Problem**: Client-side INSERT to `agent_runtime_status` fails because the anonymous Supabase client has no INSERT policy.
+## Data layer
+- `waitlist_signups` table via Supabase migration with RLS:
+  - fields: email (unique, citext), name, building_type (enum-ish text), notes, source, user_agent, created_at
+  - RLS: public INSERT allowed (anonymous waitlist), SELECT restricted to admins (`has_role(auth.uid(), 'admin')`)
+  - Unique constraint on lower(email) to dedupe
+- `src/lib/waitlist.ts` — `submitWaitlist(payload)` using the existing Supabase client; returns `{ ok, alreadyJoined }`
+- Form uses `zod` schema (email, max lengths, trim) before insert; toast on success/error
 
-**Solution**: Move the runtime status initialization into the `sync-agent-deployment` edge function, which already uses the service_role and is called as a recovery mechanism.
+## Design system
+- Dark mode by default for this page (force `dark` class on root wrapper)
+- Use existing HSL semantic tokens; add a few new gradient tokens in `index.css`:
+  - `--gradient-aurora` (electric blue → violet → cyan)
+  - `--gradient-glass` and `--shadow-glow`
+- Glassmorphism: `bg-white/[0.03] backdrop-blur border border-white/10`
+- Rounded `2xl`, generous spacing, subtle hover lift, fade-in on scroll using existing tailwind animations
+- Typography: keep existing font stack; oversize hero headline with gradient text
+- Fully responsive, mobile-first; nav collapses to sheet menu on mobile
+- SEO: `<DynamicSEO>` already mounted globally — set page-specific title/description/canonical via Helmet inside `WaitlistHome`
 
-**File**: `supabase/functions/sync-agent-deployment/index.ts`
+## Copy
+All copy taken verbatim from the brief. No lorem ipsum. No "revolutionary" hype. No securities-style language. AgentFi sections include the jurisdictional disclaimer.
 
-- Add runtime status upsert after successful agent sync:
-  ```typescript
-  // After updating the agent record successfully
-  await supabase.from('agent_runtime_status').upsert({
-    agent_id: agentId,
-    is_active: false,
-    current_goal: `Awaiting AI configuration`,
-    performance_metrics: {},
-    revenue_generated: 0,
-    tasks_completed: 0
-  }, { onConflict: 'agent_id' });
-  ```
+## Technical notes
+- React + Vite + Tailwind + shadcn/ui (existing stack)
+- Reuse `Button`, `Input`, `Textarea`, `Select`, `Accordion`, `Card` from `src/components/ui`
+- No new heavy deps; SVG graph is hand-rolled with CSS animations
+- Form submission: zod validate → insert into `waitlist_signups` → handle unique-violation as "already on the list" success
+- Add `aria-` labels on form controls; semantic `<section>` + single `<h1>`
 
----
+## Verification
+- Visit `/`, confirm new page renders, nav anchors scroll smoothly
+- Submit waitlist form (valid + duplicate + invalid email) and confirm row in `waitlist_signups`
+- Confirm `/app`, `/agents`, `/dashboard`, `/admin` still work
+- Check mobile viewport (375px) and desktop (1336px) layouts
 
-### 2. Add Retry Logic for RPC Calls in `sync-on-chain-trades`
-
-**Problem**: The fallback logic only tests RPC connectivity at client initialization. If an RPC fails during `getLogs()` or `readContract()`, there's no retry with alternative endpoints.
-
-**Solution**: Wrap critical RPC calls in a retry helper that cycles through endpoints on failure.
-
-**File**: `supabase/functions/sync-on-chain-trades/index.ts`
-
-- Create a `withRpcRetry` helper function:
-  ```typescript
-  async function withRpcRetry<T>(
-    operation: (client: ReturnType<typeof createPublicClient>) => Promise<T>,
-    chain: typeof baseSepolia
-  ): Promise<T> {
-    for (let i = 0; i < RPC_ENDPOINTS.length; i++) {
-      try {
-        const client = createPublicClient({
-          chain,
-          transport: http(RPC_ENDPOINTS[i], { timeout: 15000 }),
-        });
-        return await operation(client);
-      } catch (error) {
-        console.warn(`RPC ${RPC_ENDPOINTS[i]} failed, trying next...`);
-        if (i === RPC_ENDPOINTS.length - 1) throw error;
-      }
-    }
-    throw new Error('All RPC endpoints exhausted');
-  }
-  ```
-
-- Wrap `getLogs()` calls with this helper
-- Wrap `readContract()` calls for `getAgentState` 
-
----
-
-### 3. Remove Client-Side `agent_runtime_status` INSERT
-
-**Problem**: The INSERT always fails with 401, generating console noise.
-
-**Solution**: Remove the client-side INSERT from `CreateAgent.tsx` since it's now handled by the edge function.
-
-**File**: `src/pages/CreateAgent.tsx`
-
-- Remove or comment out lines 908-925 (the `agent_runtime_status` INSERT block)
-- This eliminates the redundant 401 error in console
-
----
-
-### 4. Improve Error Handling for Non-Critical Failures
-
-**Problem**: Console shows multiple errors that don't affect the actual outcome but confuse users/developers.
-
-**Solution**: Downgrade non-critical error logging and add clearer success indicators.
-
-**File**: `src/pages/CreateAgent.tsx`
-
-- Change `console.error` to `console.warn` for non-blocking failures
-- Add a final success log when agent creation completes despite recovery being needed:
-  ```typescript
-  console.log('[CreateAgent] Agent created successfully via recovery path');
-  ```
-
----
-
-## Technical Details
-
-### Why RLS Blocks Client Updates
-
-The `agents` table has an UPDATE policy:
-```sql
-((creator_id = auth.uid()::text) OR (creator_id = auth.jwt() ->> 'sub'))
-```
-
-Since the app uses Privy (not Supabase Auth), `auth.uid()` returns NULL and `auth.jwt()` contains no 'sub' claim. This causes all client-side UPDATE attempts to fail with 401.
-
-The recovery mechanism via `sync-agent-deployment` works because it uses `SUPABASE_SERVICE_ROLE_KEY`, which bypasses RLS entirely.
-
-### RPC Fallback Strategy
-
-The improved retry logic will:
-1. Attempt the primary RPC (configurable via `BASE_SEPOLIA_RPC` env var)
-2. Fall back to `base-sepolia.blockpi.network`
-3. Fall back to `base-sepolia-rpc.publicnode.com`
-4. Only throw after all 3 fail
-
----
-
-## Files to Modify
-
-| File | Change |
-|------|--------|
-| `supabase/functions/sync-agent-deployment/index.ts` | Add `agent_runtime_status` upsert |
-| `supabase/functions/sync-on-chain-trades/index.ts` | Add `withRpcRetry` wrapper for RPC calls |
-| `src/pages/CreateAgent.tsx` | Remove client-side runtime status INSERT |
-
----
-
-## Expected Outcome
-
-After implementation:
-- No more 401 errors for `agent_runtime_status` inserts
-- No more 500 errors from RPC failures (with automatic fallback)
-- Agent creation will show cleaner console output
-- The recovery flow via `sync-agent-deployment` will also initialize runtime status
-
+## Out of scope
+- Email notifications on signup (can add later via edge function + Resend)
+- Admin UI to view signups (query directly in Supabase for now)
+- Removing/retiring the old token-agents code
