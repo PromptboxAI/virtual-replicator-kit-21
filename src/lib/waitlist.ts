@@ -11,9 +11,7 @@ export const waitlistSchema = z.object({
 
 export type WaitlistInput = z.infer<typeof waitlistSchema>;
 
-export type WaitlistResult =
-  | { ok: true; alreadyJoined: boolean }
-  | { ok: false; error: string };
+export type WaitlistResult = { ok: boolean; alreadyJoined?: boolean; error?: string };
 
 export async function submitWaitlist(input: WaitlistInput): Promise<WaitlistResult> {
   const parsed = waitlistSchema.safeParse(input);
