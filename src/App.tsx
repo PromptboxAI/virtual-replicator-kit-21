@@ -126,8 +126,8 @@ const App = () => {
           <DynamicSEO />
           <Suspense fallback={<FullScreenLoader />}>
             <Routes>
-              <Route path="/" element={<WaitlistHome />} />
-              <Route path="/app" element={<TokenAgents />} />
+              <Route path="/" element={<TokenAgents />} />
+              <Route path="/waitlist" element={<WaitlistHome />} />
               <Route path="/ai-agents" element={<AIAgentsMarketplace />} />
               <Route path="/ai-agents/:agentId" element={<AgentShowcase />} />
               <Route
