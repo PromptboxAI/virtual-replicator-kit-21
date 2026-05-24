@@ -329,25 +329,27 @@ const PricingCard = ({ tier, price, sub, desc, features, cta, featured = false, 
       <div className="absolute -top-3 left-1/2 -translate-x-1/2 mono text-[10px] tracking-[0.18em] uppercase px-3 py-1 rounded-full"
            style={{ background: "linear-gradient(180deg,#5ee0ff,#9a7cff)", color: "#06070b" }}>{badge}</div>
     )}
-    <div className="flex items-baseline justify-between">
-      <div className="text-white text-[15px] font-medium tracking-tight">{tier}</div>
-      <div className="mono text-[10px] text-white/35 tracking-[0.18em] uppercase">Early Access</div>
+    <div className="flex flex-col flex-1">
+      <div className="flex items-baseline justify-between">
+        <div className="text-white text-[15px] font-medium tracking-tight">{tier}</div>
+        <div className="mono text-[10px] text-white/35 tracking-[0.18em] uppercase">Early Access</div>
+      </div>
+      <div className="mt-4 flex items-baseline gap-2">
+        <div className={`text-[28px] font-semibold tracking-tight ${featured ? "grad-text" : "text-white"}`}>{price}</div>
+        {sub && <div className="text-[12px] text-white/45">{sub}</div>}
+      </div>
+      <p className="mt-3 text-[13px] leading-relaxed text-white/55">{desc}</p>
+      <ul className="mt-5 space-y-2.5 flex-1">
+        {features.map((f: string, i: number) => (
+          <li key={i} className="flex items-start gap-2.5 text-[13.5px] text-white/75">
+            <span className="mt-[3px] inline-flex w-4 h-4 rounded-full items-center justify-center" style={{ background: featured ? "rgba(94,224,255,0.18)" : "rgba(255,255,255,0.06)", color: featured ? "#5ee0ff" : "#a8b0c2" }}>
+              <Icon name="check" className="w-3 h-3" stroke={2.5} />
+            </span>
+            {f}
+          </li>
+        ))}
+      </ul>
     </div>
-    <div className="mt-4 flex items-baseline gap-2">
-      <div className={`text-[28px] font-semibold tracking-tight ${featured ? "grad-text" : "text-white"}`}>{price}</div>
-      {sub && <div className="text-[12px] text-white/45">{sub}</div>}
-    </div>
-    <p className="mt-3 text-[13px] leading-relaxed text-white/55">{desc}</p>
-    <ul className="mt-5 space-y-2.5">
-      {features.map((f: string, i: number) => (
-        <li key={i} className="flex items-start gap-2.5 text-[13.5px] text-white/75">
-          <span className="mt-[3px] inline-flex w-4 h-4 rounded-full items-center justify-center" style={{ background: featured ? "rgba(94,224,255,0.18)" : "rgba(255,255,255,0.06)", color: featured ? "#5ee0ff" : "#a8b0c2" }}>
-            <Icon name="check" className="w-3 h-3" stroke={2.5} />
-          </span>
-          {f}
-        </li>
-      ))}
-    </ul>
     <div className="mt-7 pt-5 border-t border-white/8">
       <Btn variant={featured ? "primary" : "ghost"} className="w-full">
         {cta}<Icon name="arrow" className="w-4 h-4" stroke={2} />
