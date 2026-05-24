@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { submitWaitlist } from "@/lib/waitlist";
 
@@ -137,6 +137,58 @@ html.pb-waitlist-root, html.pb-waitlist-root body { background:#06070b; color:#e
 .pb-waitlist .divide-white\\/8 > :not([hidden]) ~ :not([hidden]) { border-color: rgba(255,255,255,0.08); }
 .pb-waitlist .divide-white\\/5 > :not([hidden]) ~ :not([hidden]) { border-top: 1px solid rgba(255,255,255,0.05); }
 .pb-waitlist .from-ink-950 { --tw-gradient-from:#06070b var(--tw-gradient-from-position); --tw-gradient-to: rgba(6,7,11,0) var(--tw-gradient-to-position); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
+
+/* =================== Light mode overrides =================== */
+html.pb-waitlist-light { color-scheme: light; }
+html.pb-waitlist-light, html.pb-waitlist-light body { background:#f6f7fb; color:#0c1020; }
+.pb-waitlist.light .bg-mesh {
+  background:
+    radial-gradient(60rem 30rem at 80% -10%, rgba(122,92,255,0.10), transparent 60%),
+    radial-gradient(50rem 28rem at 10% 10%, rgba(54,200,238,0.08), transparent 60%),
+    radial-gradient(40rem 20rem at 50% 100%, rgba(122,92,255,0.06), transparent 70%),
+    #f6f7fb;
+}
+.pb-waitlist.light .grid-noise {
+  background-image:
+    linear-gradient(rgba(12,16,32,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(12,16,32,0.06) 1px, transparent 1px);
+}
+.pb-waitlist.light .glass { background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.65)); border-color: rgba(12,16,32,0.08); }
+.pb-waitlist.light .glass-strong { background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.75)); border-color: rgba(12,16,32,0.10); }
+.pb-waitlist.light .grad-text { background: linear-gradient(100deg,#0c1020 0%,#3a52c0 40%,#0a8aa8 70%,#6a44d1 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.pb-waitlist.light .grad-text-soft { background: linear-gradient(100deg,#0c1020 0%,#4a536b 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.pb-waitlist.light .btn-ghost { background: rgba(12,16,32,0.04); border-color: rgba(12,16,32,0.12); color:#0c1020; }
+.pb-waitlist.light .btn-ghost:hover { background: rgba(12,16,32,0.08); }
+.pb-waitlist.light .chip { background: rgba(12,16,32,0.04); border-color: rgba(12,16,32,0.10); color:#2a3148; }
+.pb-waitlist.light .input { background: rgba(12,16,32,0.03); border-color: rgba(12,16,32,0.12); color:#0c1020; }
+.pb-waitlist.light .input:focus { background: rgba(12,16,32,0.05); border-color: rgba(76,182,255,0.6); }
+.pb-waitlist.light .input::placeholder { color:#6b7388; }
+.pb-waitlist.light .tier-featured {
+  background:
+    radial-gradient(120% 80% at 50% 0%, rgba(94,180,255,0.12), transparent 60%),
+    linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.8));
+  border-color: rgba(76,182,255,0.45);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 30px 80px -30px rgba(76,182,255,0.30);
+}
+.pb-waitlist.light .text-white { color: #0c1020; }
+.pb-waitlist.light .text-white\\/30 { color: rgba(12,16,32,0.45); }
+.pb-waitlist.light .text-white\\/35 { color: rgba(12,16,32,0.5); }
+.pb-waitlist.light .text-white\\/40 { color: rgba(12,16,32,0.55); }
+.pb-waitlist.light .text-white\\/45 { color: rgba(12,16,32,0.6); }
+.pb-waitlist.light .text-white\\/50 { color: rgba(12,16,32,0.6); }
+.pb-waitlist.light .text-white\\/55 { color: rgba(12,16,32,0.65); }
+.pb-waitlist.light .text-white\\/60 { color: rgba(12,16,32,0.7); }
+.pb-waitlist.light .text-white\\/65 { color: rgba(12,16,32,0.72); }
+.pb-waitlist.light .text-white\\/70 { color: rgba(12,16,32,0.75); }
+.pb-waitlist.light .text-white\\/75 { color: rgba(12,16,32,0.8); }
+.pb-waitlist.light .text-white\\/80 { color: rgba(12,16,32,0.82); }
+.pb-waitlist.light .text-white\\/85 { color: rgba(12,16,32,0.85); }
+.pb-waitlist.light .bg-white\\/15 { background-color: rgba(12,16,32,0.10); }
+.pb-waitlist.light .bg-white\\/40 { background-color: rgba(12,16,32,0.20); }
+.pb-waitlist.light .border-white\\/8 { border-color: rgba(12,16,32,0.10); }
+.pb-waitlist.light .border-white\\/10 { border-color: rgba(12,16,32,0.12); }
+.pb-waitlist.light .divide-white\\/8 > :not([hidden]) ~ :not([hidden]) { border-color: rgba(12,16,32,0.10); }
+.pb-waitlist.light .divide-white\\/5 > :not([hidden]) ~ :not([hidden]) { border-top-color: rgba(12,16,32,0.08); }
 `;
 
 /* ------------------------------ Icons ------------------------------ */
@@ -170,6 +222,8 @@ const Icon = ({ name, className = "w-5 h-5", stroke = 1.5 }: any) => {
     case "plus": return (<svg {...common}><path d="M12 5v14M5 12h14"/></svg>);
     case "menu": return (<svg {...common}><path d="M4 7h16M4 12h16M4 17h16"/></svg>);
     case "dash": return (<svg {...common}><path d="M5 12h14"/></svg>);
+    case "sun": return (<svg {...common}><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>);
+    case "moon": return (<svg {...common}><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>);
     case "logo": return (
       <svg viewBox="0 0 28 28" className={className} fill="none">
         <defs>
@@ -409,6 +463,7 @@ const FAQItem = ({ q, a }: any) => (
 const TopNav = () => {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const { theme, toggle } = useTheme();
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
     onScroll();
@@ -436,6 +491,14 @@ const TopNav = () => {
             ))}
           </div>
           <div className="flex items-center gap-2">
+            <button
+              onClick={toggle}
+              className="w-9 h-9 rounded-lg border border-white/10 bg-white/[0.04] text-white/80 flex items-center justify-center hover:text-white transition"
+              aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+              title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+            >
+              <Icon name={theme === "dark" ? "sun" : "moon"} className="w-4 h-4" stroke={1.7} />
+            </button>
             <a href="#waitlist-top" className="hidden sm:inline-flex btn-primary text-[13px] font-medium px-4 py-2 rounded-xl">Join Waitlist</a>
             <button onClick={() => setOpen(v => !v)} className="md:hidden w-9 h-9 rounded-lg border border-white/10 bg-white/[0.04] text-white/80 flex items-center justify-center" aria-label="Toggle menu">
               <Icon name={open ? "x" : "menu"} className="w-4 h-4" stroke={2} />
@@ -1318,22 +1381,36 @@ const Footer = () => (
 );
 
 /* ------------------------------ Page ------------------------------ */
+type Theme = "dark" | "light";
+const ThemeCtx = createContext<{ theme: Theme; toggle: () => void }>({ theme: "dark", toggle: () => {} });
+const useTheme = () => useContext(ThemeCtx);
+
 export default function WaitlistHome() {
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof window === "undefined") return "dark";
+    return (localStorage.getItem("pb-waitlist-theme") as Theme) || "dark";
+  });
+
   useEffect(() => {
     const root = document.documentElement;
-    root.classList.add("pb-waitlist-root", "dark");
-    return () => { root.classList.remove("pb-waitlist-root", "dark"); };
-  }, []);
+    root.classList.add("pb-waitlist-root");
+    root.classList.toggle("dark", theme === "dark");
+    root.classList.toggle("pb-waitlist-light", theme === "light");
+    try { localStorage.setItem("pb-waitlist-theme", theme); } catch {}
+    return () => { root.classList.remove("pb-waitlist-root", "dark", "pb-waitlist-light"); };
+  }, [theme]);
+
+  const toggle = () => setTheme(t => t === "dark" ? "light" : "dark");
 
   return (
-    <>
+    <ThemeCtx.Provider value={{ theme, toggle }}>
       <Helmet>
         <title>Promptbox — The second-brain layer for AI agents</title>
         <meta name="description" content="Persistent memory, AI-managed wiki, visual brain graph, reusable skills, health checks, and public proof-of-work for AI agents. Join the V2 waitlist." />
         <link rel="canonical" href="https://promptbox.com/waitlist" />
       </Helmet>
       <style dangerouslySetInnerHTML={{ __html: STYLE }} />
-      <div className="pb-waitlist relative min-h-screen">
+      <div className={`pb-waitlist relative min-h-screen ${theme}`}>
         <TopNav />
         <main>
           <HeroSection />
@@ -1352,6 +1429,6 @@ export default function WaitlistHome() {
           <Footer />
         </main>
       </div>
-    </>
+    </ThemeCtx.Provider>
   );
 }
