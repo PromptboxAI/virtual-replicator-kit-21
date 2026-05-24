@@ -46,14 +46,14 @@ export function Header() {
               
               {/* Navigation */}
               <nav className="hidden md:flex items-center space-x-8">
-                <Link to="/ai-agents" className="text-foreground hover:text-primary transition-colors font-medium">
+                <Link to="/ai-agents" className="text-black hover:text-primary transition-colors font-medium">
                   AI Agents
                 </Link>
-                <a href="https://trade.promptbox.com" className="text-foreground hover:text-primary transition-colors font-medium" target="_blank" rel="noopener noreferrer">
+                <a href="https://trade.promptbox.com" className="text-black hover:text-primary transition-colors font-medium" target="_blank" rel="noopener noreferrer">
                   Trade
                 </a>
                 <DropdownMenu>
-                  <DropdownMenuTrigger className="flex items-center text-foreground hover:text-primary transition-colors font-medium focus:outline-none">
+                  <DropdownMenuTrigger className="flex items-center text-black hover:text-primary transition-colors font-medium focus:outline-none">
                     Create Agent
                     <ChevronDown className="ml-1 h-4 w-4" />
                   </DropdownMenuTrigger>
@@ -70,7 +70,7 @@ export function Header() {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-                <Link to="/learn" className="text-foreground hover:text-primary transition-colors font-medium">
+                <Link to="/learn" className="text-black hover:text-primary transition-colors font-medium">
                   Learn
                 </Link>
               </nav>
