@@ -119,7 +119,7 @@ export const FactoryDiagnostics = () => {
 
       // Test contract functions
       try {
-        const promptToken = await publicClient.readContract({
+        const promptToken = await (publicClient as any).readContract({
           address: contract.contract_address as `0x${string}`,
           abi: FACTORY_ABI,
           functionName: 'promptToken'
@@ -130,7 +130,7 @@ export const FactoryDiagnostics = () => {
       }
 
       try {
-        const treasury = await publicClient.readContract({
+        const treasury = await (publicClient as any).readContract({
           address: contract.contract_address as `0x${string}`,
           abi: FACTORY_ABI,
           functionName: 'treasury'
@@ -141,7 +141,7 @@ export const FactoryDiagnostics = () => {
       }
 
       try {
-        const tokens = await publicClient.readContract({
+        const tokens = await (publicClient as any).readContract({
           address: contract.contract_address as `0x${string}`,
           abi: FACTORY_ABI,
           functionName: 'getAllTokens'
