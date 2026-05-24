@@ -223,8 +223,12 @@ const WaitlistForm = ({ compact = false, idPrefix = "wl" }: any) => {
       email: state.email, name: state.name,
       building_type: state.role, notes: state.note, source: "waitlist",
     });
-    if (res.ok) setStatus("success");
-    else { setStatus("error"); setErr(res.error || "Something went wrong."); }
+    if (res.ok) {
+      setStatus("success");
+    } else {
+      setStatus("error");
+      setErr(res.error || "Something went wrong.");
+    }
   };
 
   if (status === "success") {

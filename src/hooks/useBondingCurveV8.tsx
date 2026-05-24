@@ -168,7 +168,7 @@ export function useBondingCurveV8(agentId: string) {
       const agentIdBytes32 = uuidToBytes32(agentId);
       const tokenWei = parseEther(tokenAmount);
 
-      const result = await publicClient.readContract({
+      const result = await (publicClient.readContract as any)({
         address: V8_CONTRACTS.BONDING_CURVE as Address,
         abi: BONDING_CURVE_V8_ABI,
         functionName: 'quoteSell',
