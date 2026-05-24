@@ -491,6 +491,14 @@ const TopNav = () => {
             ))}
           </div>
           <div className="flex items-center gap-2">
+            <button
+              onClick={toggle}
+              className="w-9 h-9 rounded-lg border border-white/10 bg-white/[0.04] text-white/80 flex items-center justify-center hover:text-white transition"
+              aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+              title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+            >
+              <Icon name={theme === "dark" ? "sun" : "moon"} className="w-4 h-4" stroke={1.7} />
+            </button>
             <a href="#waitlist-top" className="hidden sm:inline-flex btn-primary text-[13px] font-medium px-4 py-2 rounded-xl">Join Waitlist</a>
             <button onClick={() => setOpen(v => !v)} className="md:hidden w-9 h-9 rounded-lg border border-white/10 bg-white/[0.04] text-white/80 flex items-center justify-center" aria-label="Toggle menu">
               <Icon name={open ? "x" : "menu"} className="w-4 h-4" stroke={2} />
