@@ -223,8 +223,12 @@ const WaitlistForm = ({ compact = false, idPrefix = "wl" }: any) => {
       email: state.email, name: state.name,
       building_type: state.role, notes: state.note, source: "waitlist",
     });
-    if (res.ok) setStatus("success");
-    else { setStatus("error"); setErr(res.error || "Something went wrong."); }
+    if (!res.ok) {
+      setStatus("error");
+      setErr(res.error || "Something went wrong.");
+      return;
+    }
+    setStatus("success");
   };
 
   if (status === "success") {
@@ -249,8 +253,8 @@ const WaitlistForm = ({ compact = false, idPrefix = "wl" }: any) => {
             value={state.email} onChange={(e) => setState({ ...state, email: e.target.value })}
             className="input" autoComplete="email" />
         </div>
-        <Btn type="submit" className="shrink-0 whitespace-nowrap">
-          {status === "loading" ? "Joining…" : "Join the Waitlist"}
+        <Btn type="submit" className="shrink-0 whitespace-nowrap px-4 py-2.5 text-[13px] sm:px-5 sm:py-3 sm:text-sm">
+          {status === "loading" ? "Joining…" : <><span className="hidden sm:inline">Join the Waitlist</span><span className="sm:hidden">Join Waitlist</span></>}
           <Icon name="arrow" className="w-4 h-4" stroke={2} />
         </Btn>
         {err && <div className="text-xs text-rose-300 mt-1 sm:mt-0 sm:ml-2 self-center">{err}</div>}
@@ -606,7 +610,7 @@ const AgentDashboard = () => {
               <Icon name="brain" className="w-3.5 h-3.5 text-white" />
             </div>
             <div className="leading-tight">
-              <div className="text-white text-[13.5px] font-medium tracking-tight">AlphaScout AI</div>
+              <div className="text-white text-[13.5px] font-medium tracking-tight">Alpha AI</div>
               <div className="mono text-[10px] tracking-[0.16em] text-white/40 uppercase">agent · public</div>
             </div>
           </div>
@@ -990,7 +994,7 @@ const GraphShowcaseSection = () => (
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <Icon name="graph" className="w-4 h-4 text-cy-400"/>
-                <div className="text-white text-[13.5px] font-medium">Brain graph · AlphaScout AI</div>
+                <div className="text-white text-[13.5px] font-medium">Brain graph · Alpha AI</div>
               </div>
               <div className="flex items-center gap-2 mono text-[10px] text-white/40">
                 <span>Z 1.0</span><span>·</span><span>234 nodes</span><span>·</span><span>682 edges</span>

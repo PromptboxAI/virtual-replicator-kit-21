@@ -72,7 +72,7 @@ export function useBondingCurveV8(agentId: string) {
       try {
         const agentIdBytes32 = uuidToBytes32(agentId);
         
-        const result = await publicClient.readContract({
+        const result = await (publicClient.readContract as any)({
           address: V8_CONTRACTS.BONDING_CURVE as Address,
           abi: BONDING_CURVE_V8_ABI,
           functionName: 'getAgentState',
@@ -122,7 +122,7 @@ export function useBondingCurveV8(agentId: string) {
       }
 
       try {
-        const balance = await publicClient.readContract({
+        const balance = await (publicClient.readContract as any)({
           address: agentState.prototypeTokenAddress as Address,
           abi: PROTOTYPE_TOKEN_ABI,
           functionName: 'balanceOf',
@@ -145,7 +145,7 @@ export function useBondingCurveV8(agentId: string) {
       const agentIdBytes32 = uuidToBytes32(agentId);
       const promptWei = parseEther(promptAmount);
 
-      const result = await publicClient.readContract({
+      const result = await (publicClient.readContract as any)({
         address: V8_CONTRACTS.BONDING_CURVE as Address,
         abi: BONDING_CURVE_V8_ABI,
         functionName: 'quoteBuy',
@@ -168,7 +168,7 @@ export function useBondingCurveV8(agentId: string) {
       const agentIdBytes32 = uuidToBytes32(agentId);
       const tokenWei = parseEther(tokenAmount);
 
-      const result = await publicClient.readContract({
+      const result = await (publicClient.readContract as any)({
         address: V8_CONTRACTS.BONDING_CURVE as Address,
         abi: BONDING_CURVE_V8_ABI,
         functionName: 'quoteSell',
