@@ -137,6 +137,58 @@ html.pb-waitlist-root, html.pb-waitlist-root body { background:#06070b; color:#e
 .pb-waitlist .divide-white\\/8 > :not([hidden]) ~ :not([hidden]) { border-color: rgba(255,255,255,0.08); }
 .pb-waitlist .divide-white\\/5 > :not([hidden]) ~ :not([hidden]) { border-top: 1px solid rgba(255,255,255,0.05); }
 .pb-waitlist .from-ink-950 { --tw-gradient-from:#06070b var(--tw-gradient-from-position); --tw-gradient-to: rgba(6,7,11,0) var(--tw-gradient-to-position); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
+
+/* =================== Light mode overrides =================== */
+html.pb-waitlist-light { color-scheme: light; }
+html.pb-waitlist-light, html.pb-waitlist-light body { background:#f6f7fb; color:#0c1020; }
+.pb-waitlist.light .bg-mesh {
+  background:
+    radial-gradient(60rem 30rem at 80% -10%, rgba(122,92,255,0.10), transparent 60%),
+    radial-gradient(50rem 28rem at 10% 10%, rgba(54,200,238,0.08), transparent 60%),
+    radial-gradient(40rem 20rem at 50% 100%, rgba(122,92,255,0.06), transparent 70%),
+    #f6f7fb;
+}
+.pb-waitlist.light .grid-noise {
+  background-image:
+    linear-gradient(rgba(12,16,32,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(12,16,32,0.06) 1px, transparent 1px);
+}
+.pb-waitlist.light .glass { background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.65)); border-color: rgba(12,16,32,0.08); }
+.pb-waitlist.light .glass-strong { background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.75)); border-color: rgba(12,16,32,0.10); }
+.pb-waitlist.light .grad-text { background: linear-gradient(100deg,#0c1020 0%,#3a52c0 40%,#0a8aa8 70%,#6a44d1 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.pb-waitlist.light .grad-text-soft { background: linear-gradient(100deg,#0c1020 0%,#4a536b 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.pb-waitlist.light .btn-ghost { background: rgba(12,16,32,0.04); border-color: rgba(12,16,32,0.12); color:#0c1020; }
+.pb-waitlist.light .btn-ghost:hover { background: rgba(12,16,32,0.08); }
+.pb-waitlist.light .chip { background: rgba(12,16,32,0.04); border-color: rgba(12,16,32,0.10); color:#2a3148; }
+.pb-waitlist.light .input { background: rgba(12,16,32,0.03); border-color: rgba(12,16,32,0.12); color:#0c1020; }
+.pb-waitlist.light .input:focus { background: rgba(12,16,32,0.05); border-color: rgba(76,182,255,0.6); }
+.pb-waitlist.light .input::placeholder { color:#6b7388; }
+.pb-waitlist.light .tier-featured {
+  background:
+    radial-gradient(120% 80% at 50% 0%, rgba(94,180,255,0.12), transparent 60%),
+    linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.8));
+  border-color: rgba(76,182,255,0.45);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 30px 80px -30px rgba(76,182,255,0.30);
+}
+.pb-waitlist.light .text-white { color: #0c1020; }
+.pb-waitlist.light .text-white\\/30 { color: rgba(12,16,32,0.45); }
+.pb-waitlist.light .text-white\\/35 { color: rgba(12,16,32,0.5); }
+.pb-waitlist.light .text-white\\/40 { color: rgba(12,16,32,0.55); }
+.pb-waitlist.light .text-white\\/45 { color: rgba(12,16,32,0.6); }
+.pb-waitlist.light .text-white\\/50 { color: rgba(12,16,32,0.6); }
+.pb-waitlist.light .text-white\\/55 { color: rgba(12,16,32,0.65); }
+.pb-waitlist.light .text-white\\/60 { color: rgba(12,16,32,0.7); }
+.pb-waitlist.light .text-white\\/65 { color: rgba(12,16,32,0.72); }
+.pb-waitlist.light .text-white\\/70 { color: rgba(12,16,32,0.75); }
+.pb-waitlist.light .text-white\\/75 { color: rgba(12,16,32,0.8); }
+.pb-waitlist.light .text-white\\/80 { color: rgba(12,16,32,0.82); }
+.pb-waitlist.light .text-white\\/85 { color: rgba(12,16,32,0.85); }
+.pb-waitlist.light .bg-white\\/15 { background-color: rgba(12,16,32,0.10); }
+.pb-waitlist.light .bg-white\\/40 { background-color: rgba(12,16,32,0.20); }
+.pb-waitlist.light .border-white\\/8 { border-color: rgba(12,16,32,0.10); }
+.pb-waitlist.light .border-white\\/10 { border-color: rgba(12,16,32,0.12); }
+.pb-waitlist.light .divide-white\\/8 > :not([hidden]) ~ :not([hidden]) { border-color: rgba(12,16,32,0.10); }
+.pb-waitlist.light .divide-white\\/5 > :not([hidden]) ~ :not([hidden]) { border-top-color: rgba(12,16,32,0.08); }
 `;
 
 /* ------------------------------ Icons ------------------------------ */
