@@ -25,7 +25,7 @@ export function useAgentPrice(agentId: string | undefined) {
     try {
       const agentIdBytes32 = uuidToBytes32(agentId);
       
-      const result = await publicClient.readContract({
+      const result = await (publicClient.readContract as any)({
         address: V8_CONTRACTS.BONDING_CURVE as Address,
         abi: BONDING_CURVE_V8_ABI,
         functionName: 'getAgentState',
