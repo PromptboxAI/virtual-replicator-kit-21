@@ -227,7 +227,7 @@ export function FactoryContractTest() {
       // Try to call a view function to see if the contract responds
       let contractCallResult;
       try {
-        contractCallResult = await publicClient.readContract({
+        contractCallResult = await (publicClient as any).readContract({
           address: factoryAddress as `0x${string}`,
           abi: FACTORY_ABI,
           functionName: 'getAllTokens'
@@ -260,7 +260,7 @@ export function FactoryContractTest() {
 
       // Step 2: Get current tokens before deployment
       console.log('📋 Getting existing tokens...');
-      const tokensBefore = await publicClient.readContract({
+      const tokensBefore = await (publicClient as any).readContract({
         address: factoryAddress as `0x${string}`,
         abi: FACTORY_ABI,
         functionName: 'getAllTokens'
@@ -352,7 +352,7 @@ export function FactoryContractTest() {
 
       // Method 3: Check getAllTokens after deployment
       console.log('📋 Getting tokens after deployment...');
-      const tokensAfter = await publicClient.readContract({
+      const tokensAfter = await (publicClient as any).readContract({
         address: factoryAddress as `0x${string}`,
         abi: FACTORY_ABI,
         functionName: 'getAllTokens'
