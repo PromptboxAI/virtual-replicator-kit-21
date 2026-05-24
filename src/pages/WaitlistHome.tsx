@@ -472,11 +472,13 @@ const Glass = ({
 /* ---------------- Page ---------------- */
 
 export default function WaitlistHome() {
-  // Force dark theme on this page
+  // Force dark theme only while this page is mounted
   useEffect(() => {
-    document.documentElement.classList.add("dark");
+    const root = document.documentElement;
+    const hadDark = root.classList.contains("dark");
+    root.classList.add("dark");
     return () => {
-      // leave dark on — homepage owns the theme
+      if (!hadDark) root.classList.remove("dark");
     };
   }, []);
 
