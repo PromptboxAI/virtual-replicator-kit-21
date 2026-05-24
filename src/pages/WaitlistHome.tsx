@@ -1373,9 +1373,8 @@ const Footer = () => (
 
 /* ------------------------------ Page ------------------------------ */
 type Theme = "dark" | "light";
-const ThemeCtx = (typeof window !== "undefined")
-  ? (window as any).__pbThemeCtx ||= (require("react") as typeof import("react")).createContext<{theme: Theme; toggle: () => void}>({ theme: "dark", toggle: () => {} })
-  : null as any;
+const ThemeCtx = createContext<{ theme: Theme; toggle: () => void }>({ theme: "dark", toggle: () => {} });
+const useTheme = () => useContext(ThemeCtx);
 
 export default function WaitlistHome() {
   const [theme, setTheme] = useState<Theme>(() => {
