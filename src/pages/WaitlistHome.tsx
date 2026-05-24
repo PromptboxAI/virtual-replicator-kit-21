@@ -472,15 +472,8 @@ const Glass = ({
 /* ---------------- Page ---------------- */
 
 export default function WaitlistHome() {
-  // Force dark theme only while this page is mounted
-  useEffect(() => {
-    const root = document.documentElement;
-    const hadDark = root.classList.contains("dark");
-    root.classList.add("dark");
-    return () => {
-      if (!hadDark) root.classList.remove("dark");
-    };
-  }, []);
+  // Dark theme is scoped to this page via the `dark` class on the root wrapper below.
+  // Do not mutate <html> — it leaks dark mode into other routes.
 
   const features = [
     { icon: Inbox, title: "Raw Dump Inbox", body: "Drop in anything: documents, notes, URLs, chat exports, screenshots, meeting transcripts, PDFs, and research." },
