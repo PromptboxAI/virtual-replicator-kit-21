@@ -4438,6 +4438,39 @@ export type Database = {
         }
         Relationships: []
       }
+      waitlist_signups: {
+        Row: {
+          building_type: string | null
+          created_at: string
+          email: string
+          id: string
+          name: string | null
+          notes: string | null
+          source: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          building_type?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          name?: string | null
+          notes?: string | null
+          source?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          building_type?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string | null
+          notes?: string | null
+          source?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       watchlists: {
         Row: {
           agent_id: string
