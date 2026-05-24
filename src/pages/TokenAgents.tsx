@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +18,11 @@ import graduationProtocolImg from "@/assets/graduation-protocol.png";
 import verifiableReceiptsImg from "@/assets/verifiable-receipts.png";
 import tokenBoundAccountsImg from "@/assets/token-bound-accounts.png";
 const TokenAgents = () => {
+  // Ensure light theme on the marketing homepage (waitlist page may have left `dark` on <html>)
+  useEffect(() => {
+    document.documentElement.classList.remove("dark");
+  }, []);
+
   return <div className="min-h-screen bg-background">
       <Header />
       
