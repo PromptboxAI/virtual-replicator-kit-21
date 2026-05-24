@@ -1372,22 +1372,37 @@ const Footer = () => (
 );
 
 /* ------------------------------ Page ------------------------------ */
+type Theme = "dark" | "light";
+const ThemeCtx = (typeof window !== "undefined")
+  ? (window as any).__pbThemeCtx ||= (require("react") as typeof import("react")).createContext<{theme: Theme; toggle: () => void}>({ theme: "dark", toggle: () => {} })
+  : null as any;
+
 export default function WaitlistHome() {
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof window === "undefined") return "dark";
+    return (localStorage.getItem("pb-waitlist-theme") as Theme) || "dark";
+  });
+
   useEffect(() => {
     const root = document.documentElement;
-    root.classList.add("pb-waitlist-root", "dark");
-    return () => { root.classList.remove("pb-waitlist-root", "dark"); };
-  }, []);
+    root.classList.add("pb-waitlist-root");
+    root.classList.toggle("dark", theme === "dark");
+    root.classList.toggle("pb-waitlist-light", theme === "light");
+    try { localStorage.setItem("pb-waitlist-theme", theme); } catch {}
+    return () => { root.classList.remove("pb-waitlist-root", "dark", "pb-waitlist-light"); };
+  }, [theme]);
+
+  const toggle = () => setTheme(t => t === "dark" ? "light" : "dark");
 
   return (
-    <>
+    <ThemeCtx.Provider value={{ theme, toggle }}>
       <Helmet>
         <title>Promptbox — The second-brain layer for AI agents</title>
         <meta name="description" content="Persistent memory, AI-managed wiki, visual brain graph, reusable skills, health checks, and public proof-of-work for AI agents. Join the V2 waitlist." />
         <link rel="canonical" href="https://promptbox.com/waitlist" />
       </Helmet>
       <style dangerouslySetInnerHTML={{ __html: STYLE }} />
-      <div className="pb-waitlist relative min-h-screen">
+      <div className={`pb-waitlist relative min-h-screen ${theme}`}>
         <TopNav />
         <main>
           <HeroSection />
@@ -1406,6 +1421,6 @@ export default function WaitlistHome() {
           <Footer />
         </main>
       </div>
-    </>
+    </ThemeCtx.Provider>
   );
 }
