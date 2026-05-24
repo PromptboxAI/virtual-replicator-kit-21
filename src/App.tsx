@@ -19,6 +19,7 @@ import { ContractDeploymentTest } from "./components/ContractDeploymentTest";
 // Route-level code splitting to avoid loading the entire app graph on first paint.
 // This helps prevent Vite module transform cascades that show up as 500s for /src/... files.
 const TokenAgents = lazy(() => import("./pages/TokenAgents"));
+const WaitlistHome = lazy(() => import("./pages/WaitlistHome"));
 const Auth = lazy(() => import("./pages/Auth"));
 const About = lazy(() => import("./pages/About"));
 const Learn = lazy(() => import("./pages/Learn"));
