@@ -1225,7 +1225,7 @@ const FAQSection = () => {
             </Reveal>
             <Reveal delay={140}>
               <p className="mt-5 text-[14px] text-white/55 max-w-md">
-                Got something we didn't cover? <a className="text-cy-400 hover:underline" href="mailto:hello@promptbox.com">hello@promptbox.com</a>
+                Got something we didn't cover? <a className="text-cy-400 hover:underline" href="mailto:kevin@promptbox.com">kevin@promptbox.com</a>
               </p>
             </Reveal>
           </div>
@@ -1303,7 +1303,7 @@ const Footer = () => (
           </div>
         </div>
         <FooterCol title="Product" links={[["Waitlist","#top"],["Features","#features"],["Pricing","#pricing"],["FAQ","#faq"]]} />
-        <FooterCol title="Company" links={[["Contact","mailto:hello@promptbox.com"],["Privacy","/privacy"],["Terms","/terms"]]} />
+        <FooterCol title="Company" links={[["Contact","mailto:kevin@promptbox.com"],["Privacy","/privacy"],["Terms","/terms"]]} />
       </div>
       <div className="mt-12 pt-6 border-t border-white/8 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
         <div className="mono text-[11px] text-white/35 tracking-wider uppercase">© 2026 Promptbox Labs · All rights reserved</div>
