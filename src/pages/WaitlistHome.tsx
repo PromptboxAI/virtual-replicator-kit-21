@@ -684,7 +684,7 @@ const AgentDashboard = () => {
         </div>
       </div>
 
-      <div className="hidden lg:flex absolute -left-6 top-24 glass-strong rounded-2xl px-3 py-2 items-center gap-2">
+      <div className="hidden lg:flex absolute -left-6 -top-4 glass-strong rounded-2xl px-3 py-2 items-center gap-2">
         <Icon name="loop" className="w-4 h-4 text-vi-400"/>
         <span className="text-[12px] text-white/80">Hermes loop · 03</span>
         <span className="mono text-[10px] text-white/40">14:02</span>
